@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('contact_department_translations', function (BluePrint $table) {
+            $table->id();
+            $table->foreignId('contact_department_id')->constrained();
+            $table->foreignId('language_id')->constrained();
+            $table->string('code');
+            $table->boolean('active')->default(true);
+
+            lmpStamps($table);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('contact_department_translations');
+    }
+};

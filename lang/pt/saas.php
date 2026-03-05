@@ -1,0 +1,116 @@
+<?php
+
+return [
+    'title' => 'SimpleTravel | Sistema de Gestão de Reservas Turísticas',
+
+    // Hero
+    'hero_slide1_title' => 'Potencialize seu <span class="highlight highlight-success d-inline-block">negócio turístico</span>',
+    'hero_slide1_lead' => 'SimpleTravel é um sistema moderno, fácil de usar e 100% personalizável para operadores, atacadistas e agências, integrando prestadores para um diálogo e integração de sistemas fluidos entre todas as partes.',
+    'hero_slide2_title' => 'Gestão de <span class="highlight highlight-success d-inline-block">reservas e clientes</span>',
+    'hero_slide2_lead' => 'Centralize reservas, pagamentos e comunicação com seus clientes em uma única plataforma.<br><span class="highlight highlight-success d-inline-block">Relatórios e estatísticas</span> em tempo real para melhores decisões.',
+    'hero_slide3_title' => 'Sua presença <span class="highlight highlight-success d-inline-block">online em dias</span>',
+    'hero_slide3_lead' => 'Site, reservas e gateway de pagamento integrados. Sem desenvolvedores ou contratos longos.<br><span class="highlight highlight-success d-inline-block">Suporte em português</span> para você começar a vender rápido.',
+
+    'email_placeholder' => 'Seu e-mail',
+    'try_it' => 'Experimentar!',
+    'demo_free' => 'Demo GRÁTIS por 30 dias',
+    'no_credit_card' => 'Sem cartão de crédito',
+    'view_plans' => 'Ver planos',
+
+    // Features
+    'features_badge' => 'Recursos',
+    'features_title' => 'Melhor gestão. Melhor desempenho',
+    'features_subtitle' => 'Comece a trabalhar com <span class="text-primary fw-bold">SimpleTravel</span> para gerir seu negócio melhor',
+    'feature_item_1_title' => 'Gestão integral para operadores emissores LATAM',
+    'feature_item_1_desc' => 'Sistema especializado para operadores que vendem turismo nacional e internacional na América Latina. Centraliza reservas, cotações, clientes, prestadores, pagamentos e relatórios em uma única plataforma, com suporte multi-moeda e multi-idioma (espanhol, português e inglês). Projetado para substituir Excel, WhatsApp e processos dispersos por uma operação profissional e estruturada.',
+    'feature_item_2_title' => 'Cotações ágeis e precisas',
+    'feature_item_2_desc' => 'Monte itinerários e propostas em minutos usando tarifas atualizadas dos seus prestadores. Calcula automaticamente conversões de moeda, margens e totais por passageiro ou por grupo. Gere versões de propostas, envie orçamentos formais e reduza erros manuais que afetam sua rentabilidade.',
+    'feature_item_3_title' => 'Controle total de margens',
+    'feature_item_3_desc' => 'Defina margens mínimas, markups percentuais ou fixos e regras por produto ou canal de venda. Visualize a rentabilidade antes de confirmar uma operação e evite perdas por erros de cálculo ou diferenças cambiais. Tome decisões comerciais com informação clara e em tempo real.',
+    'feature_item_4_title' => 'Liquidações claras e sem inconsistências',
+    'feature_item_4_desc' => 'Gerencie contas correntes de clientes e prestadores no mesmo sistema. Controle sinal, pagamentos parciais, saldos pendentes e obrigações em diferentes moedas. Mantenha rastreabilidade completa entre o que cobra, o que paga e o que deve liquidar, reduzindo riscos administrativos.',
+    'feature_item_5_title' => 'Integração direta com seus prestadores',
+    'feature_item_5_desc' => 'Convide seus prestadores para registrar e atualizar seus serviços, tarifas e disponibilidade. Use a informação deles diretamente nas suas cotações e reservas, evitando duplicação de dados e erros de carga. Melhore a coordenação operativa sem alterar sua relação comercial.',
+
+    'features_cta' => 'Por que devo utilizar o Simple Travel?',
+
+    'learn_more' => 'Saiba mais',
+
+    'smart_payroll_title' => 'Gestão inteligente. Gerir sua equipe não poderia ser mais fácil',
+    'smart_payroll_desc' => 'Você pode modificar suas páginas com arrastar e soltar, importar demos com um clique e modificar as configurações com um painel de opções fácil de usar.',
+
+    'smart_item_1_title' => 'Cotações em Excel que ficam incontroláveis',
+    'smart_item_1_desc' => 'Arquivos duplicados, versões desatualizadas e cálculos manuais que colocam sua margem em risco. Cada alteração exige revisar fórmulas, moedas e totais. Um pequeno erro pode virar uma perda importante.',
+    'smart_item_2_title' => 'Tarifas dispersas e desatualizadas',
+    'smart_item_2_desc' => 'Preços guardados em e-mails, chats ou planilhas antigas. Dúvidas constantes sobre qual é a tarifa correta e em qual moeda foi cotada. A falta de uma única fonte de informação atrasa cada venda.',
+    'smart_item_3_title' => 'Margens que não se visualizam com clareza',
+    'smart_item_3_desc' => 'Sem regras automáticas de markup nem controle mínimo de rentabilidade, as decisões comerciais são tomadas "no olho". As diferenças cambiais e os ajustes de última hora afetam o resultado sem você perceber a tempo.',
+    'smart_item_4_title' => 'Liquidações manuais e pouco rastreáveis',
+    'smart_item_4_desc' => 'Sinal, pagamentos parciais, transferências internacionais e comissões geridas fora do sistema. Na hora de pagar prestadores ou fechar números, tudo depende de conferir vários documentos.',
+    'smart_item_5_title' => 'Comunicação operativa fragmentada',
+    'smart_item_5_desc' => 'Confirmações por WhatsApp, alterações por e-mail e mudanças que não ficam registradas. A informação crítica fica em conversas individuais em vez de centralizada para toda a equipe.',
+
+    'more_features_title' => 'E muito mais recursos',
+    'feature_hire_retain' => 'Contratar e reter talentos',
+    'feature_team_mgmt' => 'Gestão de equipes',
+    'feature_stay_compliant' => 'Conformidade',
+    'feature_improve_productivity' => 'Aumentar a produtividade',
+    'feature_improve_experience' => 'Melhorar a experiência',
+    'feature_time_tracking' => 'Controle de tempo self-service',
+    'feature_performance_mgmt' => 'Gestão de desempenho',
+    'feature_expert_hr' => 'RH especializado',
+    'feature_new_hire_checklist' => 'Checklist de integração',
+    'feature_tax_calculator' => 'Calculadora de impostos',
+    'sign_up_now' => 'Cadastre-se agora',
+
+    // Clients
+    'clients_badge' => 'Clientes',
+    'clients_title' => 'A gestão inteligente que você precisa',
+    'clients_subtitle' => 'Milhares de organizações confiam no <span class="text-primary fw-bold">SimpleTravel</span> para impulsionar desempenho e engajamento',
+
+    // Testimonials
+    'testimonials_badge' => 'Depoimentos',
+    'testimonials_title' => 'O que as pessoas dizem',
+    'testimonials_subtitle' => 'Algumas palavras de nossos clientes',
+    'testimonial1_quote' => 'Este app é uma bênção para todos os profissionais! A gestão dia a dia nunca foi fácil para mim. Mas com o SimpleTravel posso gerir mais de 100 projetos facilmente.',
+    'testimonial1_author' => 'Cersei Lannister',
+    'testimonial1_role' => 'Gerente de Projetos Sênior',
+    'testimonial2_quote' => 'É um dos gestores de projetos mais convenientes que já usei! Experimentei muitos apps de gestão para minhas tarefas diárias, mas este é muito melhor que os outros. Simplesmente amei!',
+    'testimonial2_author' => 'John Stark',
+    'testimonial2_role' => 'Diretor de Engenharia',
+
+    // Pricing
+    'plans_badge' => 'Planos',
+    'plans_title' => 'Planos e preços',
+    'plans_subtitle' => 'Preços que <span class="text-primary fw-bold">funcionam</span> para todos',
+    'plan_starter' => 'Starter',
+    'plan_professional' => 'Professional',
+    'plan_enterprise' => 'Enterprise',
+    'per_month' => '/ mês',
+    'plan_600_min' => 'Até 600 minutos de uso',
+    'plan_personal_only' => 'Uso pessoal apenas',
+    'plan_10_attendees' => 'Até 10 participantes',
+    'plan_email_support' => 'Suporte técnico por e-mail',
+    'plan_6000_min' => 'Até 6000 minutos de uso',
+    'plan_personal_commercial' => 'Uso pessoal ou comercial',
+    'plan_100_attendees' => 'Até 100 participantes',
+    'plan_5_teams' => 'Até 5 equipes',
+    'plan_unlimited' => 'Uso ilimitado',
+    'plan_unlimited_attendees' => 'Participantes ilimitados',
+    'plan_24x7_support' => 'Suporte técnico 24x7 por telefone',
+
+    // FAQ
+    'faq_badge' => 'Perguntas frequentes',
+    'faq_title' => 'Perguntas frequentes',
+    'faq_subtitle' => 'Algumas das perguntas mais comuns dos nossos clientes',
+    'faq1_q' => 'Posso usar este template para meu cliente?',
+    'faq1_a' => 'Sim, a licença do marketplace permite usar este tema em qualquer produto final. Para mais informações sobre licenças, consulte os termos no marketplace.',
+    'faq2_q' => 'Este tema funciona com WordPress?',
+    'faq2_a' => 'Não. É um template HTML. Não funciona diretamente com WordPress, embora você possa convertê-lo em um tema compatível.',
+    'faq3_q' => 'Como obtenho ajuda com o tema?',
+    'faq3_a' => 'Use nosso e-mail de suporte para enviar suas dúvidas ou feedback. Estamos aqui para ajudar a qualquer momento.',
+    'faq4_q' => 'Vocês atualizam o SimpleTravel regularmente?',
+    'faq4_a' => 'Sim, atualizaremos o SimpleTravel regularmente. Todas as atualizações futuras estarão disponíveis sem custo adicional.',
+    'still_have_questions' => 'Ainda tem dúvidas?',
+    'contact_us' => 'Fale conosco',
+];
