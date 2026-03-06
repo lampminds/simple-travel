@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    /*
+     * Mapbox: use a public token (pk.*) for client-side maps. Never put a secret token (sk.*) in frontend code.
+     * Get tokens at https://account.mapbox.com/access-tokens/
+     */
+    'mapbox' => [
+        'public_token' => env('MAPBOX_PUBLIC_TOKEN', ''),
+    ],
+
 ];

@@ -85,6 +85,7 @@ import masonry from "./masonry.js";
             if (L) {
                 $('[data-toggle="map"]').each(function () {
                     try {
+                        var mapboxToken = (document.querySelector('meta[name="mapbox-public-token"]') || {}).content || '';
                         var opts = $.extend({
                             markerIconPath: '/assets/images/icons/map-marker.svg',
                             markerIconPathHover: '/assets/images/icons/map-marker-filled.svg',
@@ -93,11 +94,13 @@ import masonry from "./masonry.js";
                             scrollWheelZoom: false,
                             mapCenter: [39.74739, -105], // default
                             tileLayer: {
-                                tiles: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=sk.eyJ1IjoiY29kZXJ0aGVtZXMiLCJhIjoiY2s3dmgwbmFrMTkxdTNlbXJ2a3Z3eGEwcSJ9.wZqyynPHmm1EkNjjiH8lUw',
+                                tiles: mapboxToken
+                                    ? 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapboxToken
+                                    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                                 subdomains: 'listing',
                                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-                                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-                                    'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
+                                    (mapboxToken ? ', Imagery © <a href="https://www.mapbox.com/">Mapbox</a>' : ''),
                                 id: 'mapbox/streets-v11',
                             }
                         }, $(this).data('map'));
@@ -120,13 +123,13 @@ import masonry from "./masonry.js";
                             map.scrollWheelZoom.enable();
                         });
 
-                        L.tileLayer(opts.tileLayer.tiles, {
-                            id: opts.tileLayer.id,
-                            attribution: opts.tileLayer.attribution,
-                            maxZoom: 18,
-                            tileSize: 512,
-                            zoomOffset: -1
-                        }).addTo(map);
+                        var layerOpts = { attribution: opts.tileLayer.attribution, maxZoom: 18 };
+                        if (mapboxToken) {
+                            layerOpts.id = opts.tileLayer.id;
+                            layerOpts.tileSize = 512;
+                            layerOpts.zoomOffset = -1;
+                        }
+                        L.tileLayer(opts.tileLayer.tiles, layerOpts).addTo(map);
 
                         // icon
                         var icon = L.icon({
