@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $cacheTable = (string) env('DB_CACHE_TABLE', 'sys_cache');
-        $cacheLocksTable = (string) env('DB_CACHE_LOCK_TABLE', 'sys_cache_locks');
+        // Use config (not env) so table names match config/cache.php when config is cached (production).
+        $cacheTable = (string) config('cache.stores.database.table', 'sys_cache');
+        $cacheLocksTable = (string) config('cache.stores.database.lock_table', 'sys_cache_locks');
 
         Schema::create($cacheTable, function (Blueprint $table) {
             $table->string('key')->primary();
@@ -32,8 +33,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $cacheTable = (string) env('DB_CACHE_TABLE', 'sys_cache');
-        $cacheLocksTable = (string) env('DB_CACHE_LOCK_TABLE', 'sys_cache_locks');
+        $cacheTable = (string) config('cache.stores.database.table', 'sys_cache');
+        $cacheLocksTable = (string) config('cache.stores.database.lock_table', 'sys_cache_locks');
 
         Schema::dropIfExists($cacheTable);
         Schema::dropIfExists($cacheLocksTable);

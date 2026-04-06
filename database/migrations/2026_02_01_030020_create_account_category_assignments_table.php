@@ -8,16 +8,16 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * Links accounts to catalog categories (many-to-many).
      *
      * @return void
      */
     public function up()
     {
-        Schema::create('service_plan_item_translations', function (BluePrint $table) {
+        Schema::create('account_category_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_plan_item_id')->constrained();
-            $table->foreignId('language_id')->constrained();
-            $table->string('text')->nullable();
+            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_category_id')->constrained('cat_account_categories');
 
             lmpStamps($table);
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('service_plan_item_translations');
+        Schema::dropIfExists('account_category_assignments');
     }
 };
