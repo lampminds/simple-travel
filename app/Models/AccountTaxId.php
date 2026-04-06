@@ -11,7 +11,7 @@ class AccountTaxId extends Model
 {
     use HasFactory, AuditTrait;
 
-    protected $table = 'account_tax_ids';
+    protected $table = 'cat_account_tax_ids';
 
     protected $fillable = [
         'account_id',
@@ -28,7 +28,7 @@ class AccountTaxId extends Model
     }
 
     /**
-     * Get the tax ID category (from account_categories where group='tax_id').
+     * Get the tax ID category (from cat_account_categories where group='tax_id').
      */
     public function category(): BelongsTo
     {

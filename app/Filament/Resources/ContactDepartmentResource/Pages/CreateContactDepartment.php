@@ -22,7 +22,7 @@ class CreateContactDepartment extends LmpCreateRecord
         parent::fillForm();
         $translations = [];
         foreach (Language::query()->orderBy('id')->get() as $lang) {
-            $translations[$lang->id] = ['code' => '', 'active' => true];
+            $translations[$lang->id] = ['name' => ''];
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
@@ -43,13 +43,12 @@ class CreateContactDepartment extends LmpCreateRecord
     protected function syncTranslations(ContactDepartment $record, array $translations): void
     {
         foreach ($translations as $languageId => $row) {
-            if (empty($row['code'])) {
+            if (empty($row['name'])) {
                 continue;
             }
             $record->translations()->create([
                 'language_id' => $languageId,
-                'code' => $row['code'] ?? '',
-                'active' => $row['active'] ?? true,
+                'name' => $row['name'] ?? '',
             ]);
         }
     }

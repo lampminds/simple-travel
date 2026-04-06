@@ -1,0 +1,19 @@
+# Project rules (Cursor)
+
+## Filament Resources
+
+When creating or editing Filament Resource classes, **match the parent class property types** for any overridden static properties. In particular:
+
+- **`$navigationGroup`** must be declared as `\UnitEnum|string|null` (not `?string`), because `Filament\Resources\Resource` defines it that way. Example:
+  ```php
+  protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+  ```
+- If the parent Resource uses a union type (e.g. `BackedEnum|string|null` for `$navigationIcon`), use the same type in the child to avoid PHP fatal errors about type compatibility.
+
+### sort_order / list_order columns
+
+- When a table has a **`sort_order`** or **`list_order`** column and the resource uses **`reorderable('sort_order')`** (or `reorderable('list_order')`):
+  - **Do not add an editable field** for that column in the create/edit form. Order is managed automatically by Filament’s drag-and-drop reorder. Rely on the migration default (e.g. 9999) for new records.
+  - **Do not show** the `sort_order` / `list_order` column in the index table at all (no `TextColumn::make('sort_order')` or `TextColumn::make('list_order')`).
+
+- No es necesario que alteres o agregues migrations. Yo lo hago, y cada vez que modifico algo hago un migrate:fresh de cero. Al menos por ahora que el proyecto recien comienza. Si encuentras un error en las migraciones, hacemelo saber.

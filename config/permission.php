@@ -93,7 +93,7 @@ return [
          * foreign key is other than `team_id`.
          */
 
-        'team_foreign_key' => 'team_id',
+        'team_foreign_key' => 'account_id',
     ],
 
     /*
@@ -131,7 +131,13 @@ return [
      * (view the latest version of this package's migration file)
      */
 
-    'teams' => false,
+    'teams' => true,
+
+    /*
+     * Reserved account id for platform-wide roles (Spatie team). Convention: id=1, no extra column on accounts.
+     * Users linked to this account in account_user can hold global (cross-tenant) roles when team is set to this id.
+     */
+    'platform_account_id' => (int) env('PLATFORM_ACCOUNT_ID', 1),
 
     /*
      * The class to use to resolve the permissions team id

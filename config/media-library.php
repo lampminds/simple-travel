@@ -39,7 +39,12 @@ return [
     /*
      * The fully qualified class name of the media model.
      */
-    'media_model' => Spatie\MediaLibrary\MediaCollections\Models\Media::class,
+    'media_model' => App\Models\Media::class,
+
+    /*
+     * Database table used for media records (must match the create_media_table migration).
+     */
+    'table_name' => env('MEDIA_LIBRARY_TABLE_NAME', 'sys_media'),
 
     /*
      * The fully qualified class name of the media observer.
@@ -92,9 +97,7 @@ return [
      * Here you can specify which path generator should be used for the given class.
      */
     'custom_path_generators' => [
-        // Model::class => PathGenerator::class
-        // or
-        // 'model_morph_alias' => PathGenerator::class
+        \App\Models\Service::class => \App\Support\MediaLibrary\ServicePathGenerator::class,
     ],
 
     /*

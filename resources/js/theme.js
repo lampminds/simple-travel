@@ -19,6 +19,10 @@ import "jarallax/dist/jarallax.min.js";
 
 import L from 'leaflet/dist/leaflet'
 import feather from 'feather-icons'
+
+// Expose for inline scripts / dynamic icon replacement (e.g. wizard buttons).
+window.feather = feather
+
 import AOS from 'aos'
 import Typed from "typed.js";
 import {CountUp} from 'countup.js'

@@ -1,8 +1,118 @@
-@extends('layouts.base', ['title' => 'Prompt - Your Dashboard'])
+@extends('layouts.base', ['title' => 'Prompt - Account Dashboard'])
 
 @section('content')
 
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
+
+    @php
+        use App\Models\Service;
+        use App\Models\ServiceVariant;
+
+        $account = auth()->user()?->currentAccount();
+
+        $typeCodes = collect();
+        if ($account) {
+            $typeCodes = $account->categories()
+                ->where('group', 'type')
+                ->where('active', true)
+                ->pluck('code');
+        }
+
+        $providerServiceCount = 0;
+        $providerVariantCount = 0;
+        if ($account) {
+            $providerServiceCount = Service::query()->where('account_id', $account->id)->count();
+            $providerVariantCount = ServiceVariant::query()
+                ->whereHas('service', fn ($q) => $q->where('account_id', $account->id))
+                ->count();
+        }
+
+        $hasProvider = $typeCodes->contains('provider');
+        $hasOperator = $typeCodes->contains('wholesaler') || $typeCodes->contains('tour_operator');
+        $hasAgency = $typeCodes->contains('agency');
+
+        $accountName = $account?->name ?: $account?->nick;
+    @endphp
+
+    <section class="position-relative p-3 bg-gradient2">
+        <div class="container">
+            @if (session('status'))
+                <div class="alert alert-success mb-3" role="alert">
+                    {{ session('status') }}
+                </div>
+            @endif
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-title">
+                        <h3 class="my-0">{{ $accountName ? 'Hola, ' . $accountName : 'Hola' }}</h3>
+                        <p class="mt-1 fw-medium">Selecciona el dashboard al que tienes acceso</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4 g-3">
+                <div class="col-lg-4">
+                    <div class="card h-100 {{ $hasProvider ? '' : 'opacity-50' }}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">Proveedor</h5>
+                            <p class="text-muted mb-3">Acceso al panel de proveedor</p>
+
+                            @if($hasProvider)
+                                <p class="small text-muted mb-3">
+                                    <span class="fw-semibold text-body">{{ $providerServiceCount }}</span>
+                                    {{ __('account.provider_services_label') }}
+                                    <span class="mx-1">·</span>
+                                    <span class="fw-semibold text-body">{{ $providerVariantCount }}</span>
+                                    {{ __('account.provider_variants_label') }}
+                                </p>
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/provider/dashboard') }}">Ir al dashboard</a>
+                            @else
+                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card h-100 {{ $hasOperator ? '' : 'opacity-50' }}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">Operador / Mayorista</h5>
+                            <p class="text-muted mb-3">Acceso al panel operador/mayorista</p>
+
+                            @if($hasOperator)
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/operator/dashboard') }}">Ir al dashboard</a>
+                            @else
+                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card h-100 {{ $hasAgency ? '' : 'opacity-50' }}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">Agencia</h5>
+                            <p class="text-muted mb-3">Acceso al panel de agencia</p>
+
+                            @if($hasAgency)
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/agency/dashboard') }}">Ir al dashboard</a>
+                            @else
+                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if(!($hasProvider || $hasOperator || $hasAgency))
+                <div class="alert alert-warning mt-4" role="alert">
+                    No tienes categorías asignadas para acceder a un dashboard.
+                </div>
+            @endif
+        </div>
+    </section>
+
+    @if(false)
 
     <!-- page-content start -->
     <section class="position-relative overflow-hidden bg-gradient2 py-3 px-3">
@@ -659,6 +769,8 @@
         </div>
     </section>
     <!-- page-content end -->
+
+    @endif
 
     <x-site-footer-simple />
 

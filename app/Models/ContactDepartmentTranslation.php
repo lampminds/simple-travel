@@ -10,15 +10,12 @@ class ContactDepartmentTranslation extends Model
 {
     use AuditTrait;
 
+    protected $table = 'cat_contact_department_translations';
+
     protected $fillable = [
         'contact_department_id',
         'language_id',
-        'code',
-        'active',
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
+        'name',
     ];
 
     public function contactDepartment(): BelongsTo

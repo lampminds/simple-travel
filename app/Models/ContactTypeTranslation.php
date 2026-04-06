@@ -10,17 +10,14 @@ class ContactTypeTranslation extends Model
 {
     use AuditTrait;
 
+    protected $table = 'cat_contact_type_translations';
+
     protected $fillable = [
         'contact_type_id',
         'language_id',
         'name',
         'mask',
         'validation',
-        'active',
-    ];
-
-    protected $casts = [
-        'active' => 'boolean',
     ];
 
     public function contactType(): BelongsTo

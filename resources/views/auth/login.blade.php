@@ -18,20 +18,20 @@
                                         <p class="text-muted mt-1 mb-4">
                                             Enter your email address and password to access admin panel.
                                         </p>
+                                        @if (session('status'))
+                                            <div class="alert alert-warning mb-3" role="alert">{{ session('status') }}</div>
+                                        @endif
                                         <!--form start-->
                                         <form method="POST" action="{{ route('login') }}" class="authentication-form">
 
                                             @csrf
-                                            @if (sizeof($errors) > 0)
-                                                @foreach ($errors->all() as $error)
-                                                    <p class="text-danger mb-3">{{ $error }}</p>
-                                                @endforeach
-                                            @endif
+                                            <x-form-validation-summary />
 
                                             <div class="mb-3">
                                                 <label for="email" class="form-label">Email <small>*</small></label>
-                                                <input type="email" class="form-control" id="email"
+                                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                        placeholder="Email" name="email" value="{{ old('email') }}"/>
+                                                <x-form-field-error name="email" />
                                             </div>
 
                                             <div class="mb-3">
@@ -39,8 +39,9 @@
                                                     <small>*</small></label>
                                                 <a href="{{ route('password.request') }}"
                                                    class="float-end text-muted text-unline-dashed ms-1 fs-13">¿Olvidaste tu contraseña?</a>
-                                                <input type="password" class="form-control" id="password"
+                                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
                                                        name="password" placeholder="Contraseña" required/>
+                                                <x-form-field-error name="password" />
                                             </div>
 
                                             <div class="mb-3">

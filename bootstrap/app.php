@@ -11,8 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ResolveTenantWebsiteAccount::class,
+        ]);
         $middleware->web(append: [
+            \App\Http\Middleware\SetPermissionsTeamForRequest::class,
             \App\Http\Middleware\SetLocaleFromSession::class,
+            \App\Http\Middleware\TrackUserPresence::class,
+            \App\Http\Middleware\RecordLastLogin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

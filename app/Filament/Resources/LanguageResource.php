@@ -24,6 +24,8 @@ class LanguageResource extends LmpResource
 
     protected static ?string $recordTitleAttribute = 'id';
 
+    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
+
     public static function getModelLabel(): string
     {
         return (string) __(static::$modelLabel);
@@ -34,13 +36,20 @@ class LanguageResource extends LmpResource
         return (string) __(static::$pluralModelLabel);
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        $group = static::$navigationGroup;
+
+        return $group instanceof \UnitEnum ? $group->value : ($group !== null ? (string) __($group) : null);
+    }
+
     protected static function getMainFormSchema(Schema $schema): array
     {
         return [
             Section::make('')->schema([
                 Select::make('language_id')
                     ->label(__('filament.resources.language_fields.language'))
-                    ->relationship('lmpLanguage', 'name')
+                    ->relationship('locale', 'name_en')
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -55,17 +64,22 @@ class LanguageResource extends LmpResource
                 TextColumn::make('id')
                     ->label(__('filament.resources.language_columns.id'))
                     ->sortable(),
-                TextColumn::make('lmpLanguage.name')
+                TextColumn::make('locale.name_en')
                     ->label(__('filament.resources.language_columns.language'))
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('lmpLanguage.code')
+                TextColumn::make('locale.tag')
                     ->label(__('filament.resources.language_columns.code'))
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
     }
 
     public static function getPages(): array

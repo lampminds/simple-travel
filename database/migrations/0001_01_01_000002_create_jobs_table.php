@@ -11,7 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jobs', function (Blueprint $table) {
+        $jobsTable = (string) env('DB_QUEUE_TABLE', 'sys_jobs');
+        $jobBatchesTable = (string) env('DB_JOB_BATCHES_TABLE', 'sys_job_batches');
+        $failedJobsTable = (string) env('DB_FAILED_JOBS_TABLE', 'sys_failed_jobs');
+
+        Schema::create($jobsTable, function (Blueprint $table) {
             $table->id();
             $table->string('queue')->index();
             $table->longText('payload');
@@ -21,7 +25,7 @@ return new class extends Migration
             $table->unsignedInteger('created_at');
         });
 
-        Schema::create('job_batches', function (Blueprint $table) {
+        Schema::create($jobBatchesTable, function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name');
             $table->integer('total_jobs');
@@ -34,7 +38,7 @@ return new class extends Migration
             $table->integer('finished_at')->nullable();
         });
 
-        Schema::create('failed_jobs', function (Blueprint $table) {
+        Schema::create($failedJobsTable, function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();
             $table->text('connection');
@@ -50,8 +54,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('jobs');
-        Schema::dropIfExists('job_batches');
-        Schema::dropIfExists('failed_jobs');
+        $jobsTable = (string) env('DB_QUEUE_TABLE', 'sys_jobs');
+        $jobBatchesTable = (string) env('DB_JOB_BATCHES_TABLE', 'sys_job_batches');
+        $failedJobsTable = (string) env('DB_FAILED_JOBS_TABLE', 'sys_failed_jobs');
+
+        Schema::dropIfExists($jobsTable);
+        Schema::dropIfExists($jobBatchesTable);
+        Schema::dropIfExists($failedJobsTable);
     }
 };

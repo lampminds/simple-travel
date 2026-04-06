@@ -10,31 +10,32 @@ class Language extends Model
 {
     use AuditTrait;
 
+    protected $table = 'cat_languages';
+
     protected $fillable = [
         'language_id',
     ];
 
     /**
-     * Reference to the master language data (e.g. on addons / lmp_languages).
-     * Uses App\Models\LmpLanguage so the addons connection is applied.
+     * Reference to the locale catalog (cat_locales).
      */
-    public function lmpLanguage(): BelongsTo
+    public function locale(): BelongsTo
     {
-        return $this->belongsTo(LmpLanguage::class, 'language_id');
+        return $this->belongsTo(Locale::class, 'language_id');
     }
 
     /**
-     * Display name for dropdowns and tables (from lmp_languages when available).
+     * Display name for dropdowns and tables (from cat_locales when available).
      */
     public function getDisplayNameAttribute(): string
     {
-        if ($this->relationLoaded('lmpLanguage') && $this->lmpLanguage) {
-            return $this->lmpLanguage->name ?? $this->lmpLanguage->code ?? "Language #{$this->id}";
+        if ($this->relationLoaded('locale') && $this->locale) {
+            return $this->locale->name_en ?? $this->locale->tag ?? "Language #{$this->id}";
         }
 
-        $lmp = $this->lmpLanguage;
-        if ($lmp) {
-            return $lmp->name ?? $lmp->code ?? "Language #{$this->id}";
+        $loc = $this->locale;
+        if ($loc) {
+            return $loc->name_en ?? $loc->tag ?? "Language #{$this->id}";
         }
 
         return "Language #{$this->id}";

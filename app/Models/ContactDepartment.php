@@ -11,6 +11,8 @@ class ContactDepartment extends Model
 {
     use HasFactory, AuditTrait;
 
+    protected $table = 'cat_contact_departments';
+
     protected $fillable = [
         'code',
         'active',
@@ -39,13 +41,13 @@ class ContactDepartment extends Model
     }
 
     /**
-     * Get code for display (prefers translation for current locale, else parent code).
+     * Get name for display (prefers translation for current locale, else parent code).
      */
     public function getCodeAttribute(): ?string
     {
         $trans = $this->getTranslationForDisplay();
 
-        return $trans?->code ?? $this->attributes['code'] ?? null;
+        return $trans?->name ?? $this->attributes['code'] ?? null;
     }
 
     /**
@@ -70,10 +72,8 @@ class ContactDepartment extends Model
             if (! $lang) {
                 continue;
             }
-            $lang->loadMissing('lmpLanguage');
-            $lmp = $lang->lmpLanguage;
-            $code = $lmp ? ($lmp->code ?? $lmp->code2 ?? null) : null;
-            if ($code === $locale) {
+            $lang->loadMissing('locale');
+            if (Locale::primaryTagMatches($lang->locale, $locale)) {
                 return $translation;
             }
         }

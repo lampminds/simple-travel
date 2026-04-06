@@ -21,13 +21,16 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
+        $passwordResetTokensTable = (string) env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'sys_password_reset_tokens');
+        $sessionsTable = (string) env('SESSION_TABLE', 'sys_sessions');
+
+        Schema::create($passwordResetTokensTable, function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('sessions', function (Blueprint $table) {
+        Schema::create($sessionsTable, function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
@@ -43,7 +46,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
+        $passwordResetTokensTable = (string) env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'sys_password_reset_tokens');
+        $sessionsTable = (string) env('SESSION_TABLE', 'sys_sessions');
+
+        Schema::dropIfExists($passwordResetTokensTable);
+        Schema::dropIfExists($sessionsTable);
     }
 };

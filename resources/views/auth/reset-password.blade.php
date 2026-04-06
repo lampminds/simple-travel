@@ -15,33 +15,32 @@
                                 <h6 class="h5 mb-0 mt-3">Nueva contraseña</h6>
                                 <p class="text-muted mt-1 mb-4">Ingresá tu email y la nueva contraseña.</p>
 
-                                @if ($errors->any())
-                                    @foreach ($errors->all() as $error)
-                                        <p class="text-danger mb-3">{{ $error }}</p>
-                                    @endforeach
-                                @endif
-
                                 <form method="POST" action="{{ route('password.update') }}" class="authentication-form">
                                     @csrf
                                     <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
+                                    <x-form-validation-summary />
+
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email <small>*</small></label>
-                                        <input type="email" class="form-control" id="email"
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                name="email" value="{{ old('email', $request->email) }}"
                                                required autofocus/>
+                                        <x-form-field-error name="email" />
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="password" class="form-label">Nueva contraseña <small>*</small></label>
-                                        <input type="password" class="form-control" id="password"
+                                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
                                                name="password" placeholder="Mínimo 8 caracteres" required/>
+                                        <x-form-field-error name="password" />
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="password_confirmation" class="form-label">Confirmar contraseña <small>*</small></label>
-                                        <input type="password" class="form-control" id="password_confirmation"
+                                        <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation"
                                                name="password_confirmation" placeholder="Repetí la contraseña" required/>
+                                        <x-form-field-error name="password_confirmation" />
                                     </div>
 
                                     <div class="mb-0 text-center pt-3 d-grid">

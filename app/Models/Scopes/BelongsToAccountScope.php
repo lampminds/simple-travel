@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models\Scopes;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -7,10 +8,15 @@ use Illuminate\Database\Eloquent\Scope;
 
 class BelongsToAccountScope implements Scope
 {
-    public function apply(Builder $builder, Model $model)
+    public function apply(Builder $builder, Model $model): void
     {
-        if ($account_id = auth()->user()?->account_id) {
-            $builder->where($model->getTable() . '.account_id', $account_id);
+        if (! auth()->check()) {
+            return;
+        }
+
+        $accountId = auth()->user()->currentAccountId();
+        if ($accountId !== null) {
+            $builder->where($model->getTable().'.account_id', $accountId);
         }
     }
 }

@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cache', function (Blueprint $table) {
+        $cacheTable = (string) env('DB_CACHE_TABLE', 'sys_cache');
+        $cacheLocksTable = (string) env('DB_CACHE_LOCK_TABLE', 'sys_cache_locks');
+
+        Schema::create($cacheTable, function (Blueprint $table) {
             $table->string('key')->primary();
             $table->mediumText('value');
             $table->integer('expiration');
         });
 
-        Schema::create('cache_locks', function (Blueprint $table) {
+        Schema::create($cacheLocksTable, function (Blueprint $table) {
             $table->string('key')->primary();
             $table->string('owner');
             $table->integer('expiration');
@@ -29,7 +32,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cache');
-        Schema::dropIfExists('cache_locks');
+        $cacheTable = (string) env('DB_CACHE_TABLE', 'sys_cache');
+        $cacheLocksTable = (string) env('DB_CACHE_LOCK_TABLE', 'sys_cache_locks');
+
+        Schema::dropIfExists($cacheTable);
+        Schema::dropIfExists($cacheLocksTable);
     }
 };

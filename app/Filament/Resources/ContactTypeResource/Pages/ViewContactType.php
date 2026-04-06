@@ -21,8 +21,7 @@ class ViewContactType extends LmpViewRecord
                 'name' => $trans->name,
                 'mask' => $trans->mask,
                 'validation' => $trans->validation,
-                'active' => $trans->active,
-            ] : ['name' => '', 'mask' => null, 'validation' => null, 'active' => true];
+            ] : ['name' => '', 'mask' => null, 'validation' => null];
         }
 
         return $data;

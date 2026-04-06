@@ -44,6 +44,44 @@ return [
             'throw' => false,
         ],
 
+        /*
+         * User profile avatars only (Spatie Media Library collection "avatar").
+         * Keeps uploads separate from the default media-library disk used elsewhere.
+         */
+        'avatars' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/avatars'),
+            'url' => env('APP_URL').'/storage/avatars',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        /*
+         * Service images (Spatie Media Library). Set SERVICE_MEDIA_DISK_DRIVER=s3 and AWS_* to use S3;
+         * ServicePathGenerator paths stay the same under the bucket root.
+         */
+        'service_media' => match (env('SERVICE_MEDIA_DISK_DRIVER', 'local')) {
+            's3' => [
+                'driver' => 's3',
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                'region' => env('AWS_DEFAULT_REGION'),
+                'bucket' => env('AWS_BUCKET'),
+                'url' => env('AWS_URL'),
+                'endpoint' => env('AWS_ENDPOINT'),
+                'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+                'visibility' => 'public',
+                'throw' => false,
+            ],
+            default => [
+                'driver' => 'local',
+                'root' => storage_path('app/public/service-media'),
+                'url' => env('APP_URL').'/storage/service-media',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
+        },
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

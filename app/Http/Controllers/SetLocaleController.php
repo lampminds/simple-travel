@@ -14,9 +14,8 @@ class SetLocaleController extends Controller
 {
     public function __invoke(int $language): RedirectResponse
     {
-        $lang = Language::with('lmpLanguage')->findOrFail($language);
-        $lmp = $lang->lmpLanguage;
-        $code = $lmp->code ?? $lmp->code2 ?? null;
+        $lang = Language::with('locale')->findOrFail($language);
+        $code = $lang->locale?->primaryLanguageTag();
 
         if (is_string($code) && $code !== '') {
             session(['locale' => $code]);

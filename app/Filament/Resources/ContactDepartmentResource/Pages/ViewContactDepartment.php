@@ -18,9 +18,8 @@ class ViewContactDepartment extends LmpViewRecord
         foreach ($languages as $lang) {
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
-                'code' => $trans->code,
-                'active' => $trans->active,
-            ] : ['code' => '', 'active' => true];
+                'name' => $trans->name,
+            ] : ['name' => ''];
         }
 
         return $data;

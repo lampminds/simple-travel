@@ -8,7 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('media', function (Blueprint $table) {
+        $tableName = (string) config('media-library.table_name', 'sys_media');
+
+        Schema::create($tableName, function (Blueprint $table) {
             $table->id();
 
             $table->morphs('model');
@@ -28,5 +30,12 @@ return new class extends Migration
 
             $table->nullableTimestamps();
         });
+    }
+
+    public function down(): void
+    {
+        $tableName = (string) config('media-library.table_name', 'sys_media');
+
+        Schema::dropIfExists($tableName);
     }
 };

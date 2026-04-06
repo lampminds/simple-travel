@@ -17,6 +17,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
 class AccountCategoryResource extends LmpResource
@@ -60,7 +61,7 @@ class AccountCategoryResource extends LmpResource
 
     protected static function getMainFormSchema(Schema $schema): array
     {
-        $languages = Language::query()->with('lmpLanguage')->orderBy('id')->get();
+        $languages = Language::query()->with('locale')->orderBy('id')->get();
 
         $translationSections = $languages->map(function (Language $lang) {
             return Section::make($lang->display_name)
@@ -123,8 +124,11 @@ class AccountCategoryResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('name')
                     ->label(__('filament.resources.account_category_columns.name'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(query: function ($query, $search): void {
+                        $query->whereHas('translations', function ($q) use ($search): void {
+                            $q->where('name', 'like', '%' . $search . '%');
+                        });
+                    }),
                 TextColumn::make('description')
                     ->label(__('filament.resources.account_category_columns.description'))
                     ->limit(40)
@@ -134,6 +138,7 @@ class AccountCategoryResource extends LmpResource
                 SelectFilter::make('group')
                     ->label(__('filament.resources.account_category_columns.group'))
                     ->options(fn () => AccountCategory::query()
+                        ->where('active', true)
                         ->distinct()
                         ->orderBy('group')
                         ->pluck('group', 'group')
@@ -141,7 +146,25 @@ class AccountCategoryResource extends LmpResource
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.lmpLanguage']));
+            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale']));
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['code'];
+    }
+
+    public static function modifyGlobalSearchQuery(Builder $query, string $search): void
+    {
+        $term = '%' . $search . '%';
+        $query->orWhereHas('translations', function ($q) use ($term): void {
+            $q->where('name', 'like', $term);
+        });
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
     }
 
     public static function getPages(): array

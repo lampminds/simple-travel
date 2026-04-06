@@ -43,7 +43,7 @@ class Account extends Model
      */
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(AccountCategory::class, 'account_category');
+        return $this->belongsToMany(AccountCategory::class, 'account_category_assignments');
     }
 
     /**
@@ -63,20 +63,30 @@ class Account extends Model
     }
 
     /**
-     * Get the users that belong to the account.
+     * Users that belong to this account (account_user pivot).
      */
-    public function users(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class)->withTimestamps();
     }
 
     /**
-     * Generate a unique code based on nick and random characters.
+     * Generate a unique code in the form [Alias]-NNN,
+     * where NNN is 3 random digits from 2-9 (no zeros nor ones).
      */
     public static function generateCode(string $nick): string
     {
-        $randomChars = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 5));
-        return $nick . $randomChars;
+        $digits = '23456789';
+
+        do {
+            $nnn = '';
+            for ($i = 0; $i < 3; $i++) {
+                $nnn .= $digits[random_int(0, 7)];
+            }
+            $code = $nick . '-' . $nnn;
+        } while (static::where('code', $code)->exists());
+
+        return $code;
     }
 
     /**
@@ -87,7 +97,7 @@ class Account extends Model
         parent::boot();
 
         static::creating(function ($account) {
-            if (empty($account->code)) {
+            if (empty($account->code) && ! empty($account->nick)) {
                 $account->code = static::generateCode($account->nick);
             }
         });

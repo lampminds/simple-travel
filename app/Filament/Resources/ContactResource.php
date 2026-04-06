@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContactResource\Pages;
 use App\Models\Contact;
+use App\Models\ContactPosition;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -25,6 +26,8 @@ class ContactResource extends LmpResource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_contacts';
+
     public static function getModelLabel(): string
     {
         return (string) __(static::$modelLabel);
@@ -33,6 +36,12 @@ class ContactResource extends LmpResource
     public static function getPluralModelLabel(): string
     {
         return (string) __(static::$pluralModelLabel);
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        $group = static::$navigationGroup;
+        return $group instanceof \UnitEnum ? $group->value : ($group !== null ? (string) __($group) : null);
     }
 
     protected static function getMainFormSchema(Schema $schema): array
@@ -52,7 +61,13 @@ class ContactResource extends LmpResource
                     ->maxLength(255),
                 Select::make('contact_department_id')
                     ->label(__('filament.resources.contact_fields.contact_department_id'))
-                    ->relationship('department', 'code')
+                    ->relationship('department', 'code', fn ($query) => $query->where('active', true))
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                Select::make('contact_position_id')
+                    ->label(__('filament.resources.contact_fields.contact_position_id'))
+                    ->options(fn () => ContactPosition::query()->where('active', true)->with(['translations.language.locale'])->orderBy('sort_order')->get()->pluck('code', 'id'))
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -79,8 +94,18 @@ class ContactResource extends LmpResource
                     ->label(__('filament.resources.contact_columns.department'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('position.code')
+                    ->label(__('filament.resources.contact_columns.position'))
+                    ->searchable()
+                    ->sortable(),
             ])
-            ->defaultSort('id');
+            ->defaultSort('id')
+            ->modifyQueryUsing(fn ($query) => $query->with(['account', 'department', 'position']));
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
     }
 
     public static function getPages(): array

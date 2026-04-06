@@ -18,18 +18,16 @@
                                 @if (session('status'))
                                     <div class="alert alert-success mb-3">{{ session('status') }}</div>
                                 @endif
-                                @if ($errors->any())
-                                    @foreach ($errors->all() as $error)
-                                        <p class="text-danger mb-3">{{ $error }}</p>
-                                    @endforeach
-                                @endif
 
                                 <form method="POST" action="{{ route('password.email') }}" class="authentication-form">
                                     @csrf
+                                    <x-form-validation-summary />
+
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email <small>*</small></label>
-                                        <input type="email" class="form-control" id="email"
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                placeholder="Email" name="email" value="{{ old('email') }}" required autofocus/>
+                                        <x-form-field-error name="email" />
                                     </div>
 
                                     <div class="mb-0 text-center pt-3 d-grid">

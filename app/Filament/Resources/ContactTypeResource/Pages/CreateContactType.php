@@ -22,7 +22,7 @@ class CreateContactType extends LmpCreateRecord
         parent::fillForm();
         $translations = [];
         foreach (Language::query()->orderBy('id')->get() as $lang) {
-            $translations[$lang->id] = ['name' => '', 'mask' => null, 'validation' => null, 'active' => true];
+            $translations[$lang->id] = ['name' => '', 'mask' => null, 'validation' => null];
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
@@ -51,7 +51,6 @@ class CreateContactType extends LmpCreateRecord
                 'name' => $row['name'] ?? '',
                 'mask' => $row['mask'] ?? null,
                 'validation' => $row['validation'] ?? null,
-                'active' => $row['active'] ?? true,
             ]);
         }
     }

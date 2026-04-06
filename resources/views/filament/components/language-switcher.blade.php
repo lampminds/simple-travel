@@ -2,7 +2,7 @@
     use Filament\Support\Icons\Heroicon;
 
     $currentLocale = app()->getLocale();
-    $currentLanguage = $languages->first(fn ($lang) => ($lang->lmpLanguage->code ?? $lang->lmpLanguage->code2 ?? null) === $currentLocale);
+    $currentLanguage = $languages->first(fn ($lang) => \App\Models\Locale::primaryTagMatches($lang->locale, $currentLocale));
     $triggerLabel = $currentLanguage ? $currentLanguage->display_name : __('filament.resources.language');
 @endphp
 @if ($languages->isNotEmpty())
@@ -38,8 +38,7 @@
         <x-filament::dropdown.list>
             @foreach ($languages as $lang)
                 @php
-                    $code = $lang->lmpLanguage->code ?? $lang->lmpLanguage->code2 ?? null;
-                    $isActive = $code === $currentLocale;
+                    $isActive = \App\Models\Locale::primaryTagMatches($lang->locale, $currentLocale);
                     $localeUrl = route('filament.' . filament()->getId() . '.locale', ['language' => $lang->id]);
                 @endphp
                 <x-filament::dropdown.list.item

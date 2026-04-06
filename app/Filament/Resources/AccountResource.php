@@ -14,7 +14,10 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
 class AccountResource extends LmpResource
@@ -102,7 +105,8 @@ class AccountResource extends LmpResource
                                         ->options(
                                             fn () => AccountCategory::query()
                                                 ->byGroup('tax_id')
-                                                ->with(['translations.language.lmpLanguage'])
+                                                ->where('active', true)
+                                                ->with(['translations.language.locale'])
                                                 ->ordered()
                                                 ->get()
                                                 ->mapWithKeys(fn ($c) => [$c->id => $c->name])
@@ -148,6 +152,24 @@ class AccountResource extends LmpResource
                     ->label(__('filament.resources.account_columns.email'))
                     ->searchable(),
             ])
+            ->filters([
+                SelectFilter::make('accountCategory')
+                    ->label(__('filament.resources.account_columns.account_category'))
+                    ->relationship(
+                        'categories',
+                        'code',
+                        fn (Builder $query) => $query
+                            ->where('active', true)
+                            ->byGroup('type')
+                            ->ordered()
+                            ->with(['translations.language.locale'])
+                    )
+                    ->getOptionLabelFromRecordUsing(
+                        fn (AccountCategory $record): string => $record->name ?: (string) $record->code
+                    )
+                    ->searchable()
+                    ->preload(),
+            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('id');
     }
 
@@ -160,4 +182,10 @@ class AccountResource extends LmpResource
             'edit' => Pages\EditAccount::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
 }

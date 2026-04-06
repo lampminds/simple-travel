@@ -25,9 +25,8 @@ class EditContactDepartment extends LmpEditRecord
         foreach ($languages as $lang) {
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
-                'code' => $trans->code,
-                'active' => $trans->active,
-            ] : ['code' => '', 'active' => true];
+                'name' => $trans->name,
+            ] : ['name' => ''];
         }
 
         return $data;
@@ -47,13 +46,12 @@ class EditContactDepartment extends LmpEditRecord
     {
         $record->translations()->delete();
         foreach ($translations as $languageId => $row) {
-            if (empty($row['code'])) {
+            if (empty($row['name'])) {
                 continue;
             }
             $record->translations()->create([
                 'language_id' => $languageId,
-                'code' => $row['code'] ?? '',
-                'active' => $row['active'] ?? true,
+                'name' => $row['name'] ?? '',
             ]);
         }
     }

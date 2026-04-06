@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ServicePlan;
-use App\Models\ServiceUserPrice;
+use App\Models\Plan;
+use App\Models\PlanUserPrice;
 use Illuminate\Support\Number;
 use Illuminate\View\View;
 
@@ -29,7 +29,7 @@ class PricingController extends Controller
      * Module price for a given user range. Override later with real formula.
      * For now returns the plan's base price regardless of range.
      */
-    public function getModulePriceForUserRange(ServicePlan $plan, int $upTo): string
+    public function getModulePriceForUserRange(Plan $plan, int $upTo): string
     {
         $price = $plan->price;
 
@@ -41,7 +41,7 @@ class PricingController extends Controller
      */
     public function __invoke(): View
     {
-        $servicePlans = ServicePlan::query()
+        $plans = Plan::query()
             ->where('active', true)
             ->orderBy('sort_order')
             ->with([
@@ -51,12 +51,12 @@ class PricingController extends Controller
             ])
             ->get();
 
-        $starterPlan = $servicePlans->firstWhere('code', 'starter');
-        $modulePlans = $servicePlans->where('code', '!=', 'starter')->values();
+        $starterPlan = $plans->firstWhere('code', 'starter');
+        $modulePlans = $plans->where('code', '!=', 'starter')->values();
 
-        $userRanges = ServiceUserPrice::query()
+        $userRanges = PlanUserPrice::query()
             ->orderBy('up_to')
-            ->with(['translations.language.lmpLanguage'])
+            ->with(['translations.language.locale'])
             ->get();
 
         $rangeTabs = [];
@@ -86,7 +86,7 @@ class PricingController extends Controller
         }
 
         return view('pages.pricing', compact(
-            'servicePlans',
+            'plans',
             'starterPlan',
             'modulePlans',
             'rangeTabs',

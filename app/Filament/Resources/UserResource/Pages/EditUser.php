@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpEditRecord;
+use Spatie\Permission\PermissionRegistrar;
 
 class EditUser extends LmpEditRecord
 {
@@ -15,20 +16,32 @@ class EditUser extends LmpEditRecord
     }
 
     /**
-     * Load current user roles into the form.
+     * Load current user roles and account memberships into the form.
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['roles'] = $this->getRecord()->roles->pluck('id')->toArray();
+        $record = $this->getRecord();
+        $teamId = $record->accounts()->orderBy('accounts.id')->value('accounts.id');
+        if ($teamId !== null) {
+            app(PermissionRegistrar::class)->setPermissionsTeamId((int) $teamId);
+        }
+        $record->unsetRelation('roles');
+        $data['roles'] = $record->roles->pluck('id')->toArray();
+        $data['accounts'] = $record->accounts->pluck('id')->toArray();
 
         return $data;
     }
 
     /**
-     * Persist roles relationship (Spatie) after the record is updated.
+     * Persist accounts and roles; Spatie roles need the team (account) set before sync.
      */
     protected function afterSave(): void
     {
-        $this->form->model($this->getRecord())->saveRelationships();
+        $user = $this->getRecord()->fresh(['accounts']);
+        $accountId = $user->accounts()->orderBy('accounts.id')->value('accounts.id');
+        if ($accountId) {
+            app(PermissionRegistrar::class)->setPermissionsTeamId((int) $accountId);
+        }
+        $this->form->model($user)->saveRelationships();
     }
 }

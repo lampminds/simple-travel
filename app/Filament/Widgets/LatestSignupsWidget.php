@@ -19,7 +19,7 @@ class LatestSignupsWidget extends BaseTableWidget
         return $table
             ->query(
                 User::query()
-                    ->with('account')
+                    ->with('accounts')
                     ->latest('created_at')
                     ->limit(10)
             )
@@ -30,9 +30,16 @@ class LatestSignupsWidget extends BaseTableWidget
                 TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),
-                TextColumn::make('account.name')
+                TextColumn::make('accounts_display')
                     ->label('Cuenta')
-                    ->placeholder('—'),
+                    ->getStateUsing(function (User $record): string {
+                        $names = $record->accounts->pluck('commercial_name')->filter();
+                        if ($names->isEmpty()) {
+                            $names = $record->accounts->pluck('name')->filter();
+                        }
+
+                        return $names->isEmpty() ? '—' : $names->join(', ');
+                    }),
                 TextColumn::make('email_verified_at')
                     ->label('Cuenta confirmada')
                     ->formatStateUsing(fn ($state) => $state ? 'Sí' : 'No')

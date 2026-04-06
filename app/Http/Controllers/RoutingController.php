@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 
 class RoutingController extends BaseController
 {
@@ -40,6 +42,10 @@ class RoutingController extends BaseController
      */
     public function root(Request $request, $first)
     {
+        if ($siteView = $this->tenantSiteView($request, (string) $first)) {
+            return view($siteView, $this->tenantSiteSharedData($request));
+        }
+
         return view($first);
     }
 
@@ -48,7 +54,12 @@ class RoutingController extends BaseController
      */
     public function secondLevel(Request $request, $first, $second)
     {
-        return view($first . '.' . $second);
+        $name = $first.'.'.$second;
+        if ($siteView = $this->tenantSiteView($request, $name)) {
+            return view($siteView, $this->tenantSiteSharedData($request));
+        }
+
+        return view($name);
     }
 
     /**
@@ -56,6 +67,55 @@ class RoutingController extends BaseController
      */
     public function thirdLevel(Request $request, $first, $second, $third)
     {
-        return view($first . '.' . $second . '.' . $third);
+        $name = $first.'.'.$second.'.'.$third;
+        if ($siteView = $this->tenantSiteView($request, $name)) {
+            return view($siteView, $this->tenantSiteSharedData($request));
+        }
+
+        return view($name);
+    }
+
+    /**
+     * Resolve a tenant public theme view (site::…) when the host is a tenant website and assets are published.
+     *
+     * @return non-empty-string|null
+     */
+    private function tenantSiteView(Request $request, string $dotViewName): ?string
+    {
+        if (! $request->attributes->get('tenant_website_account') instanceof Account) {
+            return null;
+        }
+
+        if (! site_assets_published()) {
+            return null;
+        }
+
+        if ($this->isSiteTemplateLayoutOrPartial($dotViewName)) {
+            return null;
+        }
+
+        $candidate = 'site::'.$dotViewName;
+
+        return View::exists($candidate) ? $candidate : null;
+    }
+
+    /**
+     * @return array{account: Account, title: string}
+     */
+    private function tenantSiteSharedData(Request $request): array
+    {
+        /** @var Account $account */
+        $account = $request->attributes->get('tenant_website_account');
+
+        return [
+            'account' => $account,
+            'title' => $account->commercial_name ?? $account->name ?? $account->nick,
+        ];
+    }
+
+    private function isSiteTemplateLayoutOrPartial(string $dotViewName): bool
+    {
+        return str_starts_with($dotViewName, 'layouts.')
+            || str_starts_with($dotViewName, 'includes.');
     }
 }

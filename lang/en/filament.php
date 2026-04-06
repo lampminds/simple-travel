@@ -9,6 +9,8 @@ return [
 
     'common' => [
         'active' => 'Active',
+        'navigation_badge_tooltip' => 'Total records',
+        'select_option' => 'Select an option',
     ],
 
     'pages' => [
@@ -45,6 +47,7 @@ return [
             'name' => 'Name',
             'commercial_name' => 'Commercial name',
             'email' => 'Email',
+            'account_category' => 'Account category',
         ],
 
         'account_category' => 'Account category',
@@ -77,7 +80,7 @@ return [
         'users' => 'Users',
 
         'user_fields' => [
-            'account_id' => 'Account',
+            'accounts' => 'Accounts',
             'name' => 'Name',
             'email' => 'Email',
             'password' => 'Password',
@@ -86,10 +89,38 @@ return [
 
         'user_columns' => [
             'id' => 'ID',
-            'account' => 'Account',
+            'accounts' => 'Accounts',
             'name' => 'Name',
             'email' => 'Email',
             'roles' => 'Roles',
+        ],
+
+        'role' => 'Role',
+        'roles' => 'Roles',
+
+        'role_fields' => [
+            'name' => 'Name',
+            'permissions' => 'Permissions',
+        ],
+
+        'role_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'permissions_count' => 'Permissions',
+        ],
+
+        'permission' => 'Permission',
+        'permissions' => 'Permissions',
+
+        'permission_fields' => [
+            'name' => 'Permission name',
+            'name_help' => 'Use a stable identifier (e.g. manage_services). Guard is web.',
+        ],
+
+        'permission_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'roles_count' => 'Roles',
         ],
 
         'parameter' => 'Parameter',
@@ -136,13 +167,34 @@ return [
 
         'contact_department_fields' => [
             'code' => 'Code',
+            'name' => 'Name',
             'sort_order' => 'Sort order',
         ],
 
         'contact_department_columns' => [
             'id' => 'ID',
             'code' => 'Code',
+            'name' => 'Name',
             'sort_order' => 'Sort order',
+        ],
+
+        'contact_position' => 'Contact position',
+        'contact_positions' => 'Contact positions',
+
+        'contact_position_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'contact_position_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'contact_position_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
         ],
 
         'contact_type' => 'Contact type',
@@ -159,6 +211,7 @@ return [
 
         'contact_type_columns' => [
             'id' => 'ID',
+            'name' => 'Name',
             'code' => 'Code',
             'mask' => 'Mask',
             'validation' => 'Validation',
@@ -171,6 +224,7 @@ return [
             'account_id' => 'Account',
             'name' => 'Name',
             'contact_department_id' => 'Department',
+            'contact_position_id' => 'Position',
         ],
 
         'contact_columns' => [
@@ -178,6 +232,7 @@ return [
             'account' => 'Account',
             'name' => 'Name',
             'department' => 'Department',
+            'position' => 'Position',
         ],
 
         'provider' => 'Provider',
@@ -250,15 +305,88 @@ return [
             'code' => 'Code',
         ],
 
-        'service_plan' => 'Service plan',
-        'service_plans' => 'Service plans',
+        'currency' => 'Currency',
+        'currencies' => 'Currencies',
 
-        'service_plan_tabs' => [
+        'currency_fields' => [
+            'currency' => 'Currency',
+        ],
+
+        'currency_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'symbol' => 'Symbol',
+            'name' => 'Name',
+        ],
+
+        'parameter_definition' => 'Parameter definition',
+        'parameter_definitions' => 'Parameter definitions',
+
+        'parameter_definition_fields' => [
+            'category' => 'Category',
+            'code' => 'Code',
+            'type' => 'Type',
+            'scope' => 'Scope',
+            'has_default' => 'Has default',
+            'ui_component' => 'UI component',
+            'ui_options' => 'UI options',
+            'help' => 'Help',
+            'comments' => 'Comments',
+        ],
+
+        'parameter_definition_columns' => [
+            'id' => 'ID',
+            'category' => 'Category',
+            'code' => 'Code',
+            'type' => 'Type',
+            'scope' => 'Scope',
+            'has_default' => 'Has default',
+            'ui_component' => 'UI component',
+        ],
+
+        'parameter_definition_ui_components' => [
+            'input' => 'Text input',
+            'select' => 'Select',
+            'checkbox' => 'Checkbox',
+            'radio' => 'Radio',
+            'switch' => 'Switch',
+            'textarea' => 'Textarea',
+            'editor' => 'Rich editor',
+            'date' => 'Date',
+            'datetime' => 'Date & time',
+            'time' => 'Time',
+        ],
+
+        'parameter_value' => 'Parameter value',
+        'parameter_values' => 'Parameter values',
+
+        'parameter_value_fields' => [
+            'parameter_definition_id' => 'Definition',
+            'account_id' => 'Account',
+            'value' => 'Value',
+            'definition_help' => 'Which parameter this row configures.',
+            'account_help' => 'Required when the definition is tenant-scoped; omitted for system-wide definitions.',
+            'value_help' => 'Stored value (interpretation depends on the definition type).',
+        ],
+
+        'parameter_value_columns' => [
+            'id' => 'ID',
+            'account' => 'Account',
+            'value' => 'Value',
+        ],
+
+        'parameter_value_duplicate' => 'A value already exists for this definition and account (or for the system default).',
+        'parameter_value_account_system' => 'System',
+
+        'plan' => 'Plan',
+        'plans' => 'Plans',
+
+        'plan_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
         ],
 
-        'service_plan_fields' => [
+        'plan_fields' => [
             'code' => 'Code',
             'active' => 'Active',
             'price' => 'Price',
@@ -266,7 +394,7 @@ return [
             'description' => 'Description',
         ],
 
-        'service_plan_columns' => [
+        'plan_columns' => [
             'id' => 'ID',
             'code' => 'Code',
             'name' => 'Name',
@@ -274,41 +402,631 @@ return [
             'active' => 'Active',
         ],
 
-        'service_plan_item' => 'Plan item',
-        'service_plan_items' => 'Plan items',
+        'plan_item' => 'Plan item',
+        'plan_items' => 'Plan items',
 
-        'service_plan_item_fields' => [
+        'plan_item_fields' => [
             'parent_id' => 'Parent item',
             'sort_order' => 'Sort order',
             'active' => 'Active',
             'text' => 'Text',
         ],
 
-        'service_plan_item_columns' => [
+        'plan_item_columns' => [
             'sort_order' => 'Sort order',
             'parent' => 'Parent',
             'text' => 'Text',
             'active' => 'Active',
         ],
 
-        'nav_service_plans' => 'Plans and pricing',
+        'nav_contacts' => 'Contacts',
+        'nav_plans' => 'Plans and pricing',
+        'nav_services' => 'Services (provider)',
+        'nav_hotels' => 'Hotels',
+        'nav_excursions' => 'Excursions',
+        'nav_gastronomy' => 'Gastronomy',
+        'nav_parameters' => 'Settings',
+        'nav_users' => 'Users',
+        'nav_authorization' => 'Authorization',
 
-        'service_user_price' => 'User range price',
-        'service_user_prices' => 'User range prices',
+        'service_hotel_type' => 'Hotel type',
+        'service_hotel_types' => 'Hotel types',
 
-        'service_user_price_tabs' => [
+        'service_hotel_type_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
         ],
 
-        'service_user_price_fields' => [
+        'service_hotel_type_fields' => [
+            'code' => 'Code',
+            'category' => 'Category',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'service_hotel_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'category' => 'Category',
+            'name' => 'Name',
+        ],
+
+        'service_hotel_type_category' => 'Hotel type category',
+        'service_hotel_type_categories' => 'Hotel type categories',
+
+        'service_hotel_type_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_hotel_type_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_hotel_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_type' => 'Gastronomy type',
+        'service_gastronomy_types' => 'Gastronomy types',
+
+        'service_gastronomy_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_type_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'service_gastronomy_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_venue' => 'Gastronomy venue',
+        'service_gastronomy_venues' => 'Gastronomy venues',
+
+        'service_gastronomy_venue_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_venue_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_venue_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_cuisine' => 'Cuisine',
+        'service_gastronomy_cuisines' => 'Cuisines',
+
+        'service_gastronomy_cuisine_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_cuisine_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_cuisine_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_menu' => 'Gastronomy menu',
+        'service_gastronomy_menus' => 'Gastronomy menus',
+
+        'service_gastronomy_menu_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_menu_fields' => [
+            'code' => 'Code',
+            'is_default' => 'Default menu',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'service_gastronomy_menu_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'is_default' => 'Default',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_menu_category' => 'Gastronomy menu category',
+        'service_gastronomy_menu_categories' => 'Gastronomy menu categories',
+
+        'service_gastronomy_menu_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_menu_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_menu_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_feature_category' => 'Gastronomy feature category',
+        'service_gastronomy_feature_categories' => 'Gastronomy feature categories',
+
+        'service_gastronomy_feature_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_feature_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_feature_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_feature' => 'Gastronomy feature',
+        'service_gastronomy_features' => 'Gastronomy features',
+
+        'service_gastronomy_feature_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_gastronomy_feature_fields' => [
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_gastronomy_feature_columns' => [
+            'id' => 'ID',
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_feature_category' => 'Feature category',
+        'service_feature_categories' => 'Feature categories',
+
+        'service_feature_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_feature_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_feature_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_feature' => 'Feature',
+        'service_features' => 'Features',
+
+        'service_feature_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+            'scopes' => 'Scopes',
+        ],
+
+        'service_feature_fields' => [
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+            'scopes' => 'Scopes',
+            'is_selectable' => 'Selectable',
+            'parent_id' => 'Parent',
+        ],
+
+        'service_feature_columns' => [
+            'id' => 'ID',
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+            'parent' => 'Parent',
+        ],
+        
+        'service_feature_parent_none' => 'No parent',
+        'service_feature_set_parent' => 'Set parent',
+        'service_feature_set_parent_failure_title' => 'Invalid parent assignment',
+        'service_feature_set_parent_success_title' => 'Parent updated',
+        'service_feature_set_parent_failure_body_self' => 'You cannot assign a feature as a parent of itself.',
+        'service_feature_set_parent_failure_body_cycle' => 'You cannot assign a parent that would create a hierarchy loop (recursion).',
+
+        'service_feature_scope' => 'Feature scope',
+        'service_feature_scopes' => 'Feature scopes',
+
+        'service_feature_scope_fields' => [
+            'type' => 'Type',
+            'feature' => 'Feature',
+        ],
+
+        'service_feature_scope_columns' => [
+            'type' => 'Type',
+            'feature' => 'Feature',
+        ],
+
+        'service_feature_scope_filters' => [
+            'type' => 'Type',
+            'feature' => 'Feature',
+        ],
+
+        'service_feature_scope_validation' => [
+            'unique_pair' => 'This type-feature combination already exists.',
+        ],
+
+        'manage_service_feature_scopes' => [
+            'navigation_label' => 'Feature scopes (by type)',
+            'title' => 'Manage feature scopes by service type',
+            'service_type' => 'Service type',
+            'section_categories' => 'Feature categories',
+            'help_categories' => 'Only features in the checked categories are listed below. Use the bulk toggle in the list header to select all or none.',
+            'feature_categories' => 'Categories to include',
+            'section_in_scope' => 'In scope for this type',
+            'section_available' => 'Available to add',
+            'help_in_scope' => 'Uncheck features to remove them from this type’s scope. Changes apply when you save.',
+            'help_available' => 'Check features to include them in this type’s scope when you save.',
+            'in_scope' => 'Features in scope',
+            'available' => 'Features not in scope',
+            'actions' => [
+                'save' => 'Save scopes',
+            ],
+            'notifications' => [
+                'saved' => 'Feature scopes saved.',
+            ],
+        ],
+
+        'service_type' => 'Service type',
+        'service_types' => 'Service types',
+
+        'service_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_type_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'sort_order' => 'Sort order',
+        ],
+
+        'service_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'sort_order' => 'Sort order',
+        ],
+
+        'service_activity' => 'Service activity',
+        'service_activities' => 'Service activities',
+
+        'service_activity_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_activity_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_activity_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_activity_category' => 'Service activity category',
+        'service_activity_categories' => 'Service activity categories',
+
+        'service_activity_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_activity_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_activity_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_excursion_type' => 'Excursion type',
+        'service_excursion_types' => 'Excursion types',
+
+        'service_excursion_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_excursion_type_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_excursion_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_excursion_type_category' => 'Excursion type category',
+        'service_excursion_type_categories' => 'Excursion type categories',
+
+        'service_excursion_type_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_excursion_type_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_excursion_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_excursion' => 'Excursion service',
+        'service_excursions' => 'Excursion services',
+
+        'service_excursion_tabs' => [
+            'general' => 'General',
+            'technical' => 'Technical',
+        ],
+
+        'service_excursion_fields' => [
+            'service_id' => 'Service',
+            'service_excursion_type_id' => 'Excursion type',
+            'difficulty_level' => 'Difficulty',
+            'min_age' => 'Min age',
+            'max_age' => 'Max age',
+            'guide_included' => 'Guide included',
+            'transport_included' => 'Transport included',
+            'outdoor_activity' => 'Outdoor activity',
+            'requires_good_weather' => 'Requires good weather',
+            'max_altitude_m' => 'Max altitude (m)',
+            'distance_km' => 'Distance (km)',
+        ],
+
+        'service_excursion_columns' => [
+            'id' => 'ID',
+            'service' => 'Service',
+            'type' => 'Type',
+            'difficulty' => 'Difficulty',
+        ],
+
+        'service_excursion_difficulty' => [
+            'easy' => 'Easy',
+            'moderate' => 'Moderate',
+            'difficult' => 'Difficult',
+        ],
+
+        'service_detail_topic' => 'Detail topic',
+        'service_detail_topics' => 'Detail topics',
+
+        'service_detail_topic_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_detail_topic_fields' => [
+            'code' => 'Code',
+            'category' => 'Category',
+            'visibility' => 'Visibility',
+            'active' => 'Active',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'service_detail_topic_visibility' => [
+            'public' => 'Public',
+            'operator' => 'Operator',
+            'internal' => 'Internal',
+        ],
+
+        'service_detail_topic_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'category' => 'Category',
+            'name' => 'Name',
+            'visibility' => 'Visibility',
+            'active' => 'Active',
+        ],
+
+        'service_detail_topic_category' => 'Detail topic category',
+        'service_detail_topic_categories' => 'Detail topic categories',
+
+        'service_detail_topic_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_detail_topic_category_fields' => [
+            'code' => 'Code',
+            'active' => 'Active',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'service_detail_topic_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'active' => 'Active',
+        ],
+
+        'service_detail' => 'Detail',
+        'service_details' => 'Details',
+
+        'service_detail_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_detail_fields' => [
+            'service_id' => 'Service',
+            'service_detail_topic_id' => 'Topic',
+            'language_id' => 'Language',
+            'description' => 'Description',
+            'active' => 'Active',
+            'sort_order' => 'Sort order',
+            'add' => 'Add detail',
+        ],
+
+        'service_detail_columns' => [
+            'id' => 'ID',
+            'service' => 'Service',
+            'topic' => 'Topic',
+            'language' => 'Language',
+            'description' => 'Description',
+            'active' => 'Active',
+        ],
+
+        'service' => 'Service',
+        'services' => 'Services',
+
+        'service_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+            'variants' => 'Variants',
+            'details' => 'Details',
+            'activities' => 'Activities',
+            'media' => 'Images',
+        ],
+
+        'service_media' => [
+            'main_image' => 'Main image',
+            'gallery' => 'Gallery (slider)',
+            'gallery_help' => 'Optional images for the slider. Drag to reorder.',
+            'max_image_size_hint' => 'Maximum 3 MB per image.',
+        ],
+
+        'service_variant_fields' => [
+            'add' => 'Add variant',
+            'sku' => 'SKU / Code',
+            'status' => 'Status',
+            'capacity_min' => 'Min capacity',
+            'capacity_max' => 'Max capacity',
+            'duration_minutes' => 'Duration (minutes)',
+            'pricing_type' => 'Pricing type',
+            'base_price' => 'Base price',
+            'currency' => 'Currency',
+            'inventory_type' => 'Inventory type',
+            'inventory_total' => 'Inventory total',
+            'booking_type' => 'Booking type',
+            'min_advance_booking_hours' => 'Min advance (hours)',
+            'max_advance_booking_days' => 'Max advance (days)',
+            'start_time' => 'Start time',
+            'end_time' => 'End time',
+            'sort_order' => 'Sort order',
+        ],
+
+        'service_variant_status' => [
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+            'hidden' => 'Hidden',
+        ],
+
+        'service_variant_pricing_type' => [
+            'per_person' => 'Per person',
+            'per_unit' => 'Per unit',
+            'per_room' => 'Per room',
+            'per_vehicle' => 'Per vehicle',
+        ],
+
+        'service_variant_inventory_type' => [
+            'unlimited' => 'Unlimited',
+            'fixed' => 'Fixed',
+            'request' => 'On request',
+        ],
+
+        'service_variant_booking_type' => [
+            'instant' => 'Instant',
+            'request' => 'On request',
+        ],
+
+        'service_fields' => [
+            'account_id' => 'Account',
+            'service_type_id' => 'Service type',
+            'city_id' => 'City',
+            'status' => 'Status',
+            'name' => 'Name',
+            'description' => 'Description',
+            'activities' => 'Activities',
+            'activities_help' => 'Select the activities that apply to this service.',
+        ],
+
+        'service_columns' => [
+            'id' => 'ID',
+            'account' => 'Account',
+            'service_type' => 'Service type',
+            'name' => 'Name',
+            'status' => 'Status',
+        ],
+
+        'service_status' => [
+            'active' => 'Active',
+            'onhold' => 'On hold',
+            'inactive' => 'Inactive',
+            'terminated' => 'Terminated',
+        ],
+
+        'plan_user_price' => 'User range price',
+        'plan_user_prices' => 'User range prices',
+
+        'plan_user_price_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'plan_user_price_fields' => [
             'up_to' => 'Up to (number of users)',
             'up_to_help' => 'E.g. 4 for "1 to 4 users", 10 for "5 to 10", etc.',
             'price' => 'Price',
             'description' => 'Description',
         ],
 
-        'service_user_price_columns' => [
+        'plan_user_price_columns' => [
             'id' => 'ID',
             'up_to' => 'Up to users',
             'up_to_format' => 'Up to :count users',

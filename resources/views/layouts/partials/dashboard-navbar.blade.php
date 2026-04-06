@@ -20,16 +20,24 @@
                             </div>
                         </a>
                     </li>
-                    <li class="nav-item pe-3">
-                        <a class="nav-link" href="#">
-                            <div class="d-flex align-items-center">
-                                <span class="icon-xs me-1 flex-shrink-0">
-                                    @svg('/duotone-icons/files/Group-folders')
-                                </span>
-                                <div class="flex-grow-1">Projects</div>
-                            </div>
-                        </a>
-                    </li>
+                    @php
+                        $currentAccount = auth()->user()?->currentAccount();
+                        $publicWebsiteUrl = $currentAccount
+                            ? \App\Support\TenantWebsiteHostParser::publicWebsiteUrlForNick($currentAccount->nick)
+                            : null;
+                    @endphp
+                    @if($publicWebsiteUrl)
+                        <li class="nav-item pe-3">
+                            <a class="nav-link" href="{{ $publicWebsiteUrl }}" target="_blank" rel="noopener noreferrer">
+                                <div class="d-flex align-items-center">
+                                    <span class="icon-xs me-1 flex-shrink-0">
+                                        @svg('/duotone-icons/home/Globe')
+                                    </span>
+                                    <div class="flex-grow-1">{{ __('account.nav_public_website') }}</div>
+                                </div>
+                            </a>
+                        </li>
+                    @endif
                     <li class="nav-item pe-3">
                         <a class="nav-link" href="#">
                             <div class="d-flex align-items-center">
@@ -148,21 +156,40 @@
                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
-                                    <img src="/images/avatars/img-8.jpg"
-                                         class="avatar avatar-xs rounded-circle me-2" alt=""/>
+                                    <img src="{{ auth()->user()->avatarThumbUrl() }}"
+                                         class="avatar avatar-xs rounded-circle me-2" alt="{{ auth()->user()->name }}"/>
                                 </div>
                                 <div class="flex-grow-1 ms-1 lh-base">
-                                    <span class="fw-semibold fs-13 d-block line-height-normal">Greeva N</span>
-                                    <span class="text-muted fs-13">Admin</span>
+                                    <span class="fw-semibold fs-13 d-block line-height-normal">{{ auth()->user()->name }}</span>
+                                    <span class="text-muted fs-13">{{ auth()->user()->getRoleNames()->first() ?? __('profile.menu_subtitle') }}</span>
                                 </div>
                             </div>
                         </a>
 
-                        <div class="dropdown-menu p-2" aria-labelledby="user">
+                        <div class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="user">
+                            @php
+                                $switchAccounts = auth()->user()->switchableAccounts();
+                                $currentAccountId = auth()->user()->currentAccountId();
+                            @endphp
+                            @if($switchAccounts->count() > 1)
+                                <h6 class="dropdown-header px-2 py-1 fs-12 text-muted mb-0">{{ __('account.switch_heading') }}</h6>
+                                @foreach($switchAccounts as $acc)
+                                    <form method="POST" action="{{ route('account.switch') }}" class="w-100">
+                                        @csrf
+                                        <input type="hidden" name="account_id" value="{{ $acc->id }}">
+                                        <button type="submit"
+                                                class="dropdown-item p-2 border-0 bg-transparent w-100 text-start @if((int) $currentAccountId === (int) $acc->id) active @endif">
+                                            <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
+                                            {{ $acc->commercial_name ?? $acc->name ?? $acc->nick }}
+                                        </button>
+                                    </form>
+                                @endforeach
+                                <div class="dropdown-divider"></div>
+                            @endif
                             <!-- item start -->
-                            <a class="dropdown-item p-2" href="#">
+                            <a class="dropdown-item p-2" href="{{ route('account.profile.edit') }}">
                                 <i class="icon icon-xxs me-1 icon-dual" data-feather="user"></i>
-                                Profile
+                                {{ __('profile.menu_profile') }}
                             </a>
                             <!-- item end -->
 
@@ -183,10 +210,13 @@
                             <div class="dropdown-divider"></div>
 
                             <!-- item start -->
-                            <a class="dropdown-item p-2" href="#">
-                                <i class="icon icon-xxs me-1 icon-dual" data-feather="unlock"></i>
-                                Sign Out
-                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="dropdown-item p-2 border-0 bg-transparent w-100 text-start">
+                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="log-out"></i>
+                                    {{ __('profile.sign_out') }}
+                                </button>
+                            </form>
                             <!-- item end -->
                         </div>
                     </li>

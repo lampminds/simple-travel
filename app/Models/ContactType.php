@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class ContactType extends Model
 {
     use HasFactory, AuditTrait;
+
+    protected $table = 'cat_contact_types';
 
     protected $fillable = [
         'code',
@@ -31,11 +34,18 @@ class ContactType extends Model
     }
 
     /**
-     * Get the contacts that use this type.
+     * Contacts that have at least one assignment row for this catalog type.
      */
-    public function contacts(): HasMany
+    public function contacts(): HasManyThrough
     {
-        return $this->hasMany(Contact::class);
+        return $this->hasManyThrough(
+            Contact::class,
+            ContactTypeAssignment::class,
+            'contact_type_id',
+            'id',
+            'id',
+            'contact_id'
+        );
     }
 
     /**
@@ -86,10 +96,8 @@ class ContactType extends Model
             if (! $lang) {
                 continue;
             }
-            $lang->loadMissing('lmpLanguage');
-            $lmp = $lang->lmpLanguage;
-            $code = $lmp ? ($lmp->code ?? $lmp->code2 ?? null) : null;
-            if ($code === $locale) {
+            $lang->loadMissing('locale');
+            if (Locale::primaryTagMatches($lang->locale, $locale)) {
                 return $translation;
             }
         }

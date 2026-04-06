@@ -21,8 +21,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::addNamespace('site', resource_path('site/resources/views'));
+
+        // Override Filament panel views (e.g. sidebar) so translation keys for nav groups are resolved
+        View::prependNamespace('filament-panels', resource_path('views/vendor/filament-panels'));
+
         View::composer('layouts.partials.navbar', function ($view) {
-            $view->with('languages', Language::with('lmpLanguage')->orderBy('id')->get());
+            $view->with('languages', Language::with('locale')->orderBy('id')->get());
         });
     }
 }

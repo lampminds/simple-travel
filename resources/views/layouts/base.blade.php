@@ -11,6 +11,7 @@
     @vite('node_modules/leaflet/dist/leaflet.css')
     @vite('node_modules/jarallax/dist/jarallax.css')
     @vite('resources/scss/theme.scss')
+    @livewireStyles
 </head>
 
 <body>
@@ -23,6 +24,7 @@
 
 @yield('script')
 @vite(['resources/js/theme.js','resources/js/swiper.js'])
+@livewireScripts
 @yield('script-bottom')
 </body>
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\RecordLastLogin;
+use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\Account;
 use App\Models\AccountCategory;
 use App\Models\User;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\PermissionRegistrar;
 
 class RegisteredUserController extends Controller
 {
@@ -66,7 +69,7 @@ class RegisteredUserController extends Controller
             ],
             'company_type' => [
                 'required',
-                Rule::exists('account_categories', 'id')->where('group', 'type'),
+                Rule::exists('cat_account_categories', 'id')->where('group', 'type'),
             ],
         ], [
             'email.unique' => __('validation.custom.email.unique_user'),
@@ -75,7 +78,7 @@ class RegisteredUserController extends Controller
         $companyName = $request->string('company_name')->trim();
         $nick = $this->uniqueNickFromCompanyName($companyName);
 
-        DB::transaction(function () use ($request, $companyName, $nick) {
+        $newAccountId = DB::transaction(function () use ($request, $companyName, $nick) {
             $account = Account::create([
                 'nick' => $nick,
                 'name' => $companyName,
@@ -86,18 +89,25 @@ class RegisteredUserController extends Controller
             $account->categories()->attach($request->company_type);
 
             $user = User::create([
-                'account_id' => $account->id,
                 'name' => Str::title($request->string('name')->trim()),
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
 
+            $user->accounts()->attach($account->id);
+
+            app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
             $user->assignRole('owner');
 
             event(new Registered($user));
 
             Auth::login($user);
+
+            return $account->id;
         });
+
+        $request->session()->put(RecordLastLogin::SESSION_KEY, true);
+        $request->session()->put(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID, $newAccountId);
 
         return redirect()->route('verification.notice');
     }

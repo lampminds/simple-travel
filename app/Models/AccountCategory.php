@@ -12,6 +12,8 @@ class AccountCategory extends Model
 {
     use HasFactory, AuditTrait;
 
+    protected $table = 'cat_account_categories';
+
     protected $fillable = [
         'group',
         'code',
@@ -37,7 +39,7 @@ class AccountCategory extends Model
      */
     public function accounts(): BelongsToMany
     {
-        return $this->belongsToMany(Account::class, 'account_category');
+        return $this->belongsToMany(Account::class, 'account_category_assignments');
     }
 
     /**
@@ -88,10 +90,8 @@ class AccountCategory extends Model
             if (! $lang) {
                 continue;
             }
-            $lang->loadMissing('lmpLanguage');
-            $lmp = $lang->lmpLanguage;
-            $code = $lmp ? ($lmp->code ?? $lmp->code2 ?? null) : null;
-            if ($code === $locale) {
+            $lang->loadMissing('locale');
+            if (Locale::primaryTagMatches($lang->locale, $locale)) {
                 return $translation;
             }
         }

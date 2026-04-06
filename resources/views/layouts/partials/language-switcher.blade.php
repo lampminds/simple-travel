@@ -1,6 +1,6 @@
 @php
     $currentLocale = app()->getLocale();
-    $currentLanguage = $languages->first(fn ($lang) => ($lang->lmpLanguage->code ?? $lang->lmpLanguage->code2 ?? null) === $currentLocale);
+    $currentLanguage = $languages->first(fn ($lang) => \App\Models\Locale::primaryTagMatches($lang->locale, $currentLocale));
     $triggerLabel = $currentLanguage ? $currentLanguage->display_name : __('nav.language');
 @endphp
 @if ($languages->isNotEmpty())
@@ -14,8 +14,7 @@
         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarLanguage">
             @foreach ($languages as $lang)
                 @php
-                    $code = $lang->lmpLanguage->code ?? $lang->lmpLanguage->code2 ?? null;
-                    $isActive = $code === $currentLocale;
+                    $isActive = \App\Models\Locale::primaryTagMatches($lang->locale, $currentLocale);
                     $localeUrl = route('locale', ['language' => $lang->id]);
                 @endphp
                 <a class="dropdown-item {{ $isActive ? 'active' : '' }}" href="{{ $localeUrl }}">

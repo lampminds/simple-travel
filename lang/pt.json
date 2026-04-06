@@ -1,5 +1,9 @@
 {
     "Audit Info": "Informação de auditoria",
     "Created by": "Criado por",
-    "Updated by": "Atualizado por"
+    "Updated by": "Atualizado por",
+    "filament.resources.nav_plans": "Planos e preços",
+    "filament.resources.nav_services": "Serviços (prestador)",
+    "filament.resources.nav_parameters": "Configurações",
+    "filament.resources.nav_users": "Utilizadores"
 }

@@ -21,11 +21,11 @@ class VerifyEmailNotification extends VerifyEmail
         $verificationUrl = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject(__('Bienvenido a :app – Confirmá tu email', ['app' => config('app.name')]))
-            ->greeting(__('¡Hola :name!', ['name' => $notifiable->name]))
-            ->line(__('Gracias por registrarte. Para activar tu cuenta, confirmá tu dirección de email haciendo clic en el botón de abajo.'))
-            ->action(__('Confirmar email'), $verificationUrl)
-            ->line(__('Si no creaste una cuenta, podés ignorar este mensaje.'));
+            ->subject(__('auth.verification.email_subject', ['app' => config('app.name')]))
+            ->greeting(__('auth.verification.email_greeting', ['name' => $notifiable->name]))
+            ->line(__('auth.verification.email_body'))
+            ->action(__('auth.verification.email_action'), $verificationUrl)
+            ->line(__('auth.verification.email_footer'));
     }
 
     /**

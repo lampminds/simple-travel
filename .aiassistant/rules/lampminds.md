@@ -3,7 +3,7 @@ apply: always
 ---
 
 DEVELOPMENT ENVIRONMENT
-- Work on Windows via Cursor, but edit files on Debian server (Samba-mounted)
+- Work on Windows editing with PHPstorm and assisted by Cursor AI agent, but edit files on Debian server (Samba-mounted)
 - Project paths: /volume_html/projectname
 - Apache2 runs in Docker container
 - Local URLs: http://project.debian (where "project" = project name)
@@ -20,7 +20,7 @@ TECH STACK
 CODING PREFERENCES
 - Prioritize readability over brevity
 - Add short docblocks for complex logic
-- Use lampminds/customization package when available in project (prefer this over creating new Filament code from scratch)
+- Use lampminds/customization package when available in project (prefer this over creating new Filament code from scratch). ]IF you detect a problem with using this package, suggest a fix before trying to patch or override its classes. We are the author of this package and we have ability to fix it.
 - If lampminds/customization not in use, use standard Laravel/Filament approach
 - Always document in english, even if the project is for spanish people.
 - Always create functions and scripts names in english.
@@ -32,7 +32,7 @@ PROGRAMMING TIPS
 - In filament indexes, only add filters if explicitly commanded, and always place them on top of the index, always visible.
 - In filament, whenever possible, build editing forms splitting data in tabs, and use 2 or 3 columns to better arrange the input fields without having to scroll.
 - In filament, After a create or edit is performed, always return to the index page
-- If any change is required in the Lampminds package, just give the directions. Never modify anything inside /vendor.
+- If a migration has the lampminds feature lmpStamps($table), then use the AudiTrait for it 
 
 ASSISTANT BEHAVIOR
 - Be concise but complete

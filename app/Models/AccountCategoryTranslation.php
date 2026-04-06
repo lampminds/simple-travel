@@ -10,6 +10,8 @@ class AccountCategoryTranslation extends Model
 {
     use AuditTrait;
 
+    protected $table = 'cat_account_category_translations';
+
     protected $fillable = [
         'account_category_id',
         'language_id',

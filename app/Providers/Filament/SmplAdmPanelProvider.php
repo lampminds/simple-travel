@@ -2,14 +2,16 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\Settings\ParameterResource;
 use App\Filament\Widgets\LatestSignupsWidget;
-use App\Http\Middleware\SetLocaleFromSession;
 use App\Http\Controllers\Filament\SetPanelLocaleController;
+use App\Http\Middleware\SetLocaleFromSession;
 use App\Models\Language;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -22,7 +24,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Lampminds\Customization\Resources\ParameterResource;
 
 class SmplAdmPanelProvider extends PanelProvider
 {
@@ -39,6 +40,17 @@ class SmplAdmPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
                 ParameterResource::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make(__('filament.resources.nav_contacts')),
+                NavigationGroup::make(__('filament.resources.nav_plans')),
+                NavigationGroup::make(__('filament.resources.nav_services')),
+                NavigationGroup::make(__('filament.resources.nav_hotels')),
+                NavigationGroup::make(__('filament.resources.nav_excursions')),
+                NavigationGroup::make(__('filament.resources.nav_gastronomy')),
+                NavigationGroup::make(__('filament.resources.nav_parameters')),
+                NavigationGroup::make(__('filament.resources.nav_users')),
+                NavigationGroup::make(__('filament.resources.nav_authorization')),
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -68,7 +80,7 @@ class SmplAdmPanelProvider extends PanelProvider
                     ->name('locale');
             })
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, function (): string {
-                $languages = Language::with('lmpLanguage')->orderBy('id')->get();
+                $languages = Language::with('locale')->orderBy('id')->get();
 
                 return view('filament.components.language-switcher', [
                     'languages' => $languages,
