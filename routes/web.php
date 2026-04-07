@@ -97,6 +97,20 @@ Route::get('pages/digitalizar-operador-turistico', App\Http\Controllers\Digitali
 Route::get('smpl_adm/contact-roles', fn () => redirect('/smpl_adm/contact-positions', 301))
     ->name('smpl_adm.contact-roles.redirect');
 
+// Local only: preview custom error pages (must be before catch-all routes).
+if (app()->isLocal()) {
+    Route::get('_errors/{code}', function (string $code) {
+        $allowed = ['403', '404', '500', '503'];
+        if (! in_array($code, $allowed, true)) {
+            abort(404);
+        }
+
+        return response()->view("errors.{$code}", [], (int) $code);
+    })
+        ->where('code', '403|404|500|503')
+        ->name('dev.error-preview');
+}
+
 // Public content routes (landings, pages, index, ui-kit, etc.)
 Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
 Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');
