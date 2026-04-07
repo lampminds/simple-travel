@@ -36,6 +36,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if (! $request->session()->has('locale')) {
+            $request->session()->put('locale', config('app.locale'));
+        }
+
         $request->session()->put(RecordLastLogin::SESSION_KEY, true);
 
         $firstAccountId = $request->user()->accounts()->orderBy('accounts.id')->value('accounts.id');

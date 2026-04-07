@@ -109,6 +109,10 @@ class RegisteredUserController extends Controller
         $request->session()->put(RecordLastLogin::SESSION_KEY, true);
         $request->session()->put(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID, $newAccountId);
 
+        if (! $request->session()->has('locale')) {
+            $request->session()->put('locale', config('app.locale'));
+        }
+
         return redirect()->route('verification.notice');
     }
 

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Notifications\VerifyEmailNotification;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
@@ -19,7 +21,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 /**
  * Application User model. Account access is only via the account_user pivot (Spatie teams).
  */
-class User extends BaseUser implements HasMedia, MustVerifyEmail
+class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
 {
     use HasFactory, InteractsWithMedia, LogsActivity;
 
@@ -92,6 +94,14 @@ class User extends BaseUser implements HasMedia, MustVerifyEmail
     public function belongsToPlatformAccount(): bool
     {
         return $this->belongsToAccount((int) config('permission.platform_account_id', 1));
+    }
+
+    /**
+     * Filament admin panel: only users linked to the platform account (see docs/permissions.md).
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'smpl_adm' && $this->belongsToPlatformAccount();
     }
 
     /**

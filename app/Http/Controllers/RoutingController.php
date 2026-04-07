@@ -46,6 +46,9 @@ class RoutingController extends BaseController
             return view($siteView, $this->tenantSiteSharedData($request));
         }
 
+        $first = (string) $first;
+        abort_unless(View::exists($first), 404);
+
         return view($first);
     }
 
@@ -59,6 +62,8 @@ class RoutingController extends BaseController
             return view($siteView, $this->tenantSiteSharedData($request));
         }
 
+        abort_unless(View::exists($name), 404);
+
         return view($name);
     }
 
@@ -71,6 +76,8 @@ class RoutingController extends BaseController
         if ($siteView = $this->tenantSiteView($request, $name)) {
             return view($siteView, $this->tenantSiteSharedData($request));
         }
+
+        abort_unless(View::exists($name), 404);
 
         return view($name);
     }
