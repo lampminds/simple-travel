@@ -1,19 +1,22 @@
-@extends('layouts.base', ['title' => ($service ?? null) ? __('wizard.step1_title_edit') : __('wizard.step1_title_new')])
+@php
+    $isEdit = ($service ?? null) !== null;
+    $serviceTypeLabel = $serviceType->name !== '' ? $serviceType->name : strtoupper($serviceType->code);
+    $step1PageTitle = $isEdit
+        ? __('wizard.step1_title_edit', ['type' => $serviceTypeLabel])
+        : __('wizard.step1_title_new', ['type' => $serviceTypeLabel]);
+@endphp
+@extends('layouts.base', ['title' => $step1PageTitle])
 
 @section('content')
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
-
-    @php
-        $isEdit = ($service ?? null) !== null;
-    @endphp
 
     <section class="position-relative p-3 bg-gradient2">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
-                        <h3 class="my-0">{{ $isEdit ? __('wizard.step1_title_edit') : __('wizard.step1_title_new') }}</h3>
-                        <p class="mt-1 fw-medium">Datos base del servicio</p>
+                        <h3 class="my-0">{{ $step1PageTitle }}</h3>
+                        <p class="mt-1 fw-medium">{{ __('wizard.step1_subtitle') }}</p>
                     </div>
                 </div>
             </div>
@@ -38,19 +41,6 @@
                                 @endif
 
                                 <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Tipo de servicio</label>
-                                            <input
-                                                type="text"
-                                                class="form-control"
-                                                value="{{ $serviceType->name ?: strtoupper($serviceType->code) }}"
-                                                disabled
-                                            >
-                                            <small class="text-muted">Este tipo es fijo para este flujo.</small>
-                                        </div>
-                                    </div>
-
                                     <div class="col-lg-6">
                                         <div class="mb-3">
                                             <label for="city_search" class="form-label">Ciudad del servicio <small>*</small></label>

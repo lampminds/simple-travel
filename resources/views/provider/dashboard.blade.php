@@ -9,18 +9,19 @@
                 <div class="col-lg-12">
                     <div class="page-title">
                         <h3 class="my-0">Dashboard de Proveedor</h3>
-                        <p class="mt-1 fw-medium">Inicia la creación de un nuevo servicio</p>
+                        @if ($services->isEmpty())
+                            <p class="mt-1 fw-medium">Inicia la creación de un nuevo servicio</p>
+                        @endif
                     </div>
                 </div>
             </div>
 
             <div class="row mt-4">
                 <div class="col-lg-12">
-                    <h4 class="h5 mb-2">{{ __('wizard.provider_services_title') }}</h4>
-                    <p class="text-muted small mb-3">{{ __('wizard.provider_services_subtitle') }}</p>
+                    <h4 class="h5 mb-3">{{ __('wizard.provider_services_title') }}</h4>
 
                     @if ($services->isEmpty())
-                        <div class="alert alert-light border mb-0" role="status">
+                        <div class="alert alert-light border mb-3" role="status">
                             {{ __('wizard.provider_services_empty') }}
                         </div>
                     @else
@@ -90,29 +91,30 @@
                 </div>
             </div>
 
-            <div class="row mt-4 g-3">
-                @forelse($serviceTypes as $serviceType)
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title mb-2">{{ $serviceType->name ?: strtoupper($serviceType->code) }}</h5>
-                                <p class="text-muted mb-3">Crear un nuevo servicio de este tipo.</p>
-                                <a
-                                    href="{{ route('services.wizard.step1', ['serviceType' => $serviceType->code]) }}"
-                                    class="btn btn-primary mt-auto"
-                                >
-                                    Nuevo servicio
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-lg-12">
+            <div class="row mt-4">
+                <div class="col-lg-12 col-xl-8">
+                    @if ($serviceTypes->isEmpty())
                         <div class="alert alert-warning mb-0" role="alert">
-                            No hay tipos de servicio activos configurados.
+                            {{ __('wizard.provider_no_service_types') }}
                         </div>
-                    </div>
-                @endforelse
+                    @else
+                        <div class="mb-0">
+                            <select
+                                id="provider-new-service-type"
+                                class="form-select form-select-lg"
+                                aria-label="{{ __('wizard.provider_new_service_placeholder') }}"
+                                onchange="if (this.value) { window.location.href = this.value; }"
+                            >
+                                <option value="">{{ __('wizard.provider_new_service_placeholder') }}</option>
+                                @foreach ($serviceTypes as $serviceType)
+                                    <option value="{{ route('services.wizard.step1', ['serviceType' => $serviceType->code]) }}">
+                                        {{ $serviceType->name !== '' ? $serviceType->name : strtoupper($serviceType->code) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <div class="mt-4">

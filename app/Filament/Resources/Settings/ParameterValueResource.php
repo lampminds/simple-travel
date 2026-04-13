@@ -48,6 +48,22 @@ class ParameterValueResource extends BaseResource
         return $group instanceof \UnitEnum ? $group->value : ($group !== null ? (string) __($group) : null);
     }
 
+    /**
+     * @return array<string, string>
+     */
+    protected static function valueSelectOptions(int $definitionId): array
+    {
+        if ($definitionId <= 0) {
+            return [];
+        }
+
+        $def = ParameterDefinition::query()
+            ->with(['parameterOptions.translations.language.locale'])
+            ->find($definitionId);
+
+        return $def ? $def->optionValueToLabelMap() : [];
+    }
+
     protected static function getMainFormSchema(Schema $schema): array
     {
         return [
@@ -76,22 +92,49 @@ class ParameterValueResource extends BaseResource
                         ->searchable()
                         ->preload()
                         ->nullable()
-                        ->visible(function (Get $get): bool {
+                        ->placeholder(__('filament.resources.parameter_value_fields.account_placeholder'))
+                        ->visible(fn (Get $get): bool => (bool) $get('parameter_definition_id'))
+                        ->disabled(function (Get $get): bool {
                             $id = $get('parameter_definition_id');
+                            if (! $id) {
+                                return true;
+                            }
 
-                            return $id && ParameterDefinition::query()->whereKey($id)->value('scope') === 'tenant';
+                            return ParameterDefinition::query()->whereKey($id)->value('scope') === 'system';
                         })
-                        ->required(function (Get $get): bool {
+                        ->dehydrated(function (Get $get): bool {
                             $id = $get('parameter_definition_id');
+                            if (! $id) {
+                                return false;
+                            }
 
-                            return $id && ParameterDefinition::query()->whereKey($id)->value('scope') === 'tenant';
+                            return ParameterDefinition::query()->whereKey($id)->value('scope') === 'tenant';
                         })
-                        ->helperText(__('filament.resources.parameter_value_fields.account_help')),
-                    Textarea::make('value')
+                        ->helperText(function (Get $get): ?string {
+                            $id = $get('parameter_definition_id');
+                            if (! $id) {
+                                return null;
+                            }
+
+                            $scope = ParameterDefinition::query()->whereKey($id)->value('scope');
+
+                            return $scope === 'system'
+                                ? __('filament.resources.parameter_value_fields.account_help_system')
+                                : __('filament.resources.parameter_value_fields.account_help');
+                        }),
+                    Select::make('value_select')
+                        ->label(__('filament.resources.parameter_value_fields.value'))
+                        ->options(fn (Get $get): array => static::valueSelectOptions((int) $get('parameter_definition_id')))
+                        ->searchable()
+                        ->nullable()
+                        ->visible(fn (Get $get): bool => ParameterDefinition::queryUsesOptionBackedValue((int) $get('parameter_definition_id')))
+                        ->helperText(__('filament.resources.parameter_value_fields.value_help')),
+                    Textarea::make('value_free')
                         ->label(__('filament.resources.parameter_value_fields.value'))
                         ->rows(6)
                         ->nullable()
                         ->columnSpanFull()
+                        ->visible(fn (Get $get): bool => ! ParameterDefinition::queryUsesOptionBackedValue((int) $get('parameter_definition_id')))
                         ->helperText(__('filament.resources.parameter_value_fields.value_help')),
                 ])
                 ->columns(2),

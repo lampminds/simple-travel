@@ -64,6 +64,15 @@ class RoutingController extends BaseController
 
         abort_unless(View::exists($name), 404);
 
+        if ($name === 'account.dashboard') {
+            $user = Auth::user();
+            $account = $user?->currentAccount();
+            $soleRoute = $account?->soleDashboardRouteName();
+            if ($soleRoute !== null) {
+                return redirect()->route($soleRoute);
+            }
+        }
+
         return view($name);
     }
 

@@ -29,6 +29,8 @@ class PlanUserPriceResource extends LmpResource
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_plans';
 
+    protected static ?int $navigationSort = 3;
+
     public static function getModelLabel(): string
     {
         return (string) __(static::$modelLabel);

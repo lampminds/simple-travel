@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedInteger('duration_minutes')->nullable()->comment('Duration in minutes');
             $table->boolean('is_bookable')->default(true);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_public')->default(false)->comment('Visible in website');
             $table->enum('booking_mode', ['instant', 'request', 'external', 'quote'])->nullable();
             $table->integer('confirmation_time_hours')->nullable()->comment('Confirmation time in hours');
             $table->enum('status', ['active', 'onhold', 'inactive', 'terminated'])->default('active');

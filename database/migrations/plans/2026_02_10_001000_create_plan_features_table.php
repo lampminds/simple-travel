@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('plan_items', function (Blueprint $table) {
+        Schema::create('plan_features', function (Blueprint $table) {
             $table->id();
             $table->foreignId('plan_id')->constrained();
             $table->smallInteger('sort_order')->default(9999)->comment('Order for listing');
@@ -23,13 +23,15 @@ return new class extends Migration
         });
 
         // Add a parent
-        Schema::table('plan_items', function (Blueprint $table) {
-            $table->foreignId('parent_id')->nullable()->constrained('plan_items');
+        Schema::table('plan_features', function (Blueprint $table) {
+            $table->foreignId('parent_id')->nullable()->constrained('plan_features');
         });
 
-        Schema::create('plan_item_translations', function (BluePrint $table) {
+        Schema::create('plan_feature_translations', function (BluePrint $table) {
             $table->id();
-            $table->foreignId('plan_item_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('plan_feature_id')
+                ->constrained('plan_features', 'id', 'plan_feature_translations_fk')
+                ->cascadeOnDelete();
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('text')->nullable();

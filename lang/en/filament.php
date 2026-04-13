@@ -15,6 +15,17 @@ return [
 
     'pages' => [
         'list_records_count' => 'Total: :count :label',
+        'website_menu_editor' => [
+            'nav_label' => 'Website menu',
+            'title' => 'Website menu editor',
+            'header_action' => 'Visual editor',
+            'section_heading' => 'Tree',
+            'hint' => 'Use the arrows to reorder items among siblings. Open a row to edit labels, route names, visibility, and which account types see it.',
+            'move_up' => 'Move up',
+            'move_down' => 'Move down',
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+        ],
     ],
 
     'resources' => [
@@ -25,6 +36,12 @@ return [
         'account_tabs' => [
             'main' => 'Main data',
             'tax_ids' => 'Tax IDs',
+            'categories' => 'Categories',
+        ],
+
+        'account_type_category_fields' => [
+            'label' => 'Account types',
+            'help' => 'One or more business types (e.g. provider, agency). Only categories with group “type” are listed.',
         ],
 
         'account_fields' => [
@@ -319,30 +336,105 @@ return [
             'name' => 'Name',
         ],
 
+        'menu' => 'Menu item',
+        'menus' => 'Website menus',
+
+        'menu_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+            'account_types' => 'Account types',
+        ],
+
+        'menu_fields' => [
+            'slug' => 'Slug',
+            'slug_help' => 'Internal key (unique). Used in code, not necessarily shown on the public site.',
+            'parent_id' => 'Parent',
+            'icon' => 'Icon',
+            'route' => 'Route name',
+            'translation_name' => 'Label',
+            'translation_tip' => 'Tooltip',
+            'account_types' => 'Visible for account types',
+            'account_types_help' => 'If none are selected, this item is hidden for every account type.',
+        ],
+
+        'menu_columns' => [
+            'id' => 'ID',
+            'label' => 'Label',
+            'route' => 'Route',
+            'parent' => 'Parent',
+            'account_types' => 'Account types',
+            'account_types_none' => 'None',
+        ],
+
+        'menu_filter' => [
+            'scope' => 'Scope',
+            'all_levels' => 'All levels',
+            'root_only' => 'Root items only',
+            'children_of' => 'Children of: :label',
+            'account_type' => 'Account type',
+            'account_type_placeholder' => 'All types',
+            'active_status' => 'Status',
+            'active_all' => 'All',
+            'active_only' => 'Active only',
+            'inactive_only' => 'Inactive only',
+        ],
+
+        'menu_validation' => [
+            'parent_cycle' => 'That parent would create a circular hierarchy.',
+        ],
+
         'parameter_definition' => 'Parameter definition',
         'parameter_definitions' => 'Parameter definitions',
 
+        'parameter_definition_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+            'options' => 'Options',
+            'values' => 'Values',
+        ],
+
         'parameter_definition_fields' => [
             'category' => 'Category',
+            'subcategory' => 'Subcategory',
             'code' => 'Code',
             'type' => 'Type',
             'scope' => 'Scope',
             'has_default' => 'Has default',
             'ui_component' => 'UI component',
             'ui_options' => 'UI options',
-            'help' => 'Help',
+            'sort_order' => 'Sort order',
+            'default_value' => 'Default value',
+            'validation_rules' => 'Validation rules',
+            'translation_name' => 'Name',
+            'translation_description' => 'Description',
+            'translation_help' => 'Help',
             'comments' => 'Comments',
         ],
 
         'parameter_definition_columns' => [
             'id' => 'ID',
             'category' => 'Category',
+            'subcategory' => 'Subcategory',
             'code' => 'Code',
+            'name' => 'Name',
             'type' => 'Type',
             'scope' => 'Scope',
             'has_default' => 'Has default',
             'ui_component' => 'UI component',
         ],
+
+        'parameter_option_fields' => [
+            'value' => 'Stored value',
+            'sort_order' => 'Sort order',
+            'label' => 'Label',
+            'labels' => 'Labels by language',
+            'add' => 'Add option',
+        ],
+
+        'parameter_definition_options_help' => 'For select, radio, checkbox, and switch components you must define at least two options (e.g. two explicit values for yes/no). Other UI types can leave this list empty and store free-text values.',
+        'parameter_definition_options_min_two' => 'This UI component requires at least two options with a stored value.',
+        'parameter_definition_values_tab_help' => 'System-scoped definitions: at most one row (account is ignored). Tenant-scoped: optional account — leave empty for one default for all accounts, or set an account per override row.',
+        'parameter_definition_values_duplicate_account' => 'Duplicate account in the values list.',
 
         'parameter_definition_ui_components' => [
             'input' => 'Text input',
@@ -364,9 +456,12 @@ return [
             'parameter_definition_id' => 'Definition',
             'account_id' => 'Account',
             'value' => 'Value',
+            'add_row' => 'Add value',
             'definition_help' => 'Which parameter this row configures.',
-            'account_help' => 'Required when the definition is tenant-scoped; omitted for system-wide definitions.',
-            'value_help' => 'Stored value (interpretation depends on the definition type).',
+            'account_placeholder' => 'Default (all accounts)',
+            'account_help_system' => 'System-scoped definitions do not store an account; this is always empty.',
+            'account_help' => 'Optional. Leave empty for one default row for all accounts, or choose an account for a per-account override.',
+            'value_help' => 'Stored value (free text, or one of the predefined options when the definition uses a list).',
         ],
 
         'parameter_value_columns' => [
@@ -384,6 +479,7 @@ return [
         'plan_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
+            'items' => 'Plan items',
         ],
 
         'plan_fields' => [
@@ -404,13 +500,34 @@ return [
 
         'plan_item' => 'Plan item',
         'plan_items' => 'Plan items',
+        'plan_items_standalone' => 'Plan items',
+
+        'plan_item_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'plan_item_standalone_columns' => [
+            'id' => 'ID',
+            'plan' => 'Plan',
+            'parent' => 'Parent (top level)',
+            'text' => 'Text',
+        ],
+
+        'plan_item_standalone_filter_parent_with_children' => 'Parent item (has sub-items)',
 
         'plan_item_fields' => [
+            'plan_id' => 'Plan',
             'parent_id' => 'Parent item',
+            'parent_root' => '— Top level (no parent) —',
+            'untitled_row' => 'Untitled item',
+            'add_row' => 'Add plan item',
             'sort_order' => 'Sort order',
             'active' => 'Active',
             'text' => 'Text',
         ],
+
+        'plan_items_repeater_help' => 'Add root items first, then sub-items and choose a top-level parent. Drag rows to change order.',
 
         'plan_item_columns' => [
             'sort_order' => 'Sort order',

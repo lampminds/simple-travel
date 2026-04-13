@@ -31,6 +31,9 @@ return [
         'placeholder_email' => 'E-mail',
         'placeholder_password' => 'Mínimo 8 caracteres',
         'placeholder_password_confirmation' => 'Repita a senha',
+        'password_show' => 'Mostrar senha',
+        'password_hide' => 'Ocultar senha',
+        'password_generate' => 'Gerar senha aleatória',
         'select_type' => 'Selecionar tipo...',
         'submit' => 'Criar conta',
         'or' => 'OU',
@@ -43,6 +46,14 @@ return [
         'carousel_slide2_text' => 'Apresente seu produto de forma clara e atrativa para seus clientes.',
         'carousel_slide3_title' => 'Soluções que convertem leads em clientes',
         'carousel_slide3_text' => 'Ferramentas pensadas para potencializar sua operação e suas vendas.',
+
+        'intro_internal' => 'Complete os seus dados para entrar na conta existente da sua empresa.',
+        'intro_external' => 'Foi convidado a experimentar a plataforma. Registe a sua empresa e o seu utilizador como de costume.',
+        'important_text_internal' => 'Este link é pessoal. Indique o email que vai usar na conta; não pode estar já registado. Depois terá de o confirmar por email, como em qualquer registo.',
+        'important_text_external' => 'Este link é pessoal. Vai criar uma empresa nova. Indique o email que vai usar; não pode estar já registado. Depois terá de o confirmar por email.',
+        'invited_company' => 'Empresa',
+        'invitation_invalid' => 'Este convite é inválido ou expirou.',
+        'invitation_email_mismatch' => 'O email deve coincidir com o convite.',
     ],
 
     'verification' => [

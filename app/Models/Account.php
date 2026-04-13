@@ -47,6 +47,15 @@ class Account extends Model
     }
 
     /**
+     * Account "business type" rows only (cat_account_categories.group = type), same pivot as {@see categories()}.
+     */
+    public function typeCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(AccountCategory::class, 'account_category_assignments')
+            ->where((new AccountCategory)->getTable().'.group', 'type');
+    }
+
+    /**
      * Get the tax IDs that belong to the account.
      */
     public function taxIds(): HasMany
@@ -68,6 +77,38 @@ class Account extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    /**
+     * When this account maps to exactly one frontend dashboard lane (provider, operator, or agency), return that route name.
+     * Wholesaler and tour_operator both map to the operator dashboard and count as one lane.
+     */
+    public function soleDashboardRouteName(): ?string
+    {
+        $typeCodes = $this->categories()
+            ->where('group', 'type')
+            ->where('active', true)
+            ->pluck('code');
+
+        $hasProvider = $typeCodes->contains('provider');
+        $hasOperator = $typeCodes->contains('wholesaler') || $typeCodes->contains('tour_operator');
+        $hasAgency = $typeCodes->contains('agency');
+
+        $laneCount = (int) $hasProvider + (int) $hasOperator + (int) $hasAgency;
+
+        if ($laneCount !== 1) {
+            return null;
+        }
+
+        if ($hasProvider) {
+            return 'provider.dashboard';
+        }
+
+        if ($hasOperator) {
+            return 'operator.dashboard';
+        }
+
+        return 'agency.dashboard';
     }
 
     /**

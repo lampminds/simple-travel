@@ -32,17 +32,40 @@ class EditPlan extends LmpEditRecord
             ] : ['price' => null, 'name' => '', 'description' => null];
         }
 
+        $record->load(['allItems.translations']);
+        $data['plan_items'] = $record->allItems
+            ->sortBy(fn ($item): array => [$item->parent_id === null ? 0 : 1, $item->sort_order])
+            ->values()
+            ->map(function ($item) use ($languages) {
+                $trans = [];
+                foreach ($languages as $lang) {
+                    $t = $item->translations->firstWhere('language_id', $lang->id);
+                    $trans[$lang->id] = ['text' => $t?->text ?? ''];
+                }
+
+                return [
+                    'id' => $item->id,
+                    'client_key' => (string) $item->id,
+                    'parent_ref' => $item->parent_id ? (string) $item->parent_id : null,
+                    'active' => $item->active,
+                    'translations' => $trans,
+                ];
+            })
+            ->all();
+
         return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return Arr::except($data, ['translations']);
+        return Arr::except($data, ['translations', 'plan_items']);
     }
 
     protected function afterSave(): void
     {
-        $this->syncTranslations($this->getRecord(), $this->form->getState()['translations'] ?? []);
+        $state = $this->form->getState();
+        $this->syncTranslations($this->getRecord(), $state['translations'] ?? []);
+        PlanResource::syncPlanItems($this->getRecord(), $state['plan_items'] ?? []);
     }
 
     protected function syncTranslations(Plan $record, array $translations): void

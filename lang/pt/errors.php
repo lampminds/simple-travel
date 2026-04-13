@@ -25,4 +25,15 @@ return [
         'description' => 'Estamos temporariamente indisponíveis. Por favor, tente novamente em breve.',
         'home' => 'Ir para o início',
     ],
+
+    'invitation' => [
+        'code' => 'Convite',
+        'title' => 'Este link de convite não pode ser utilizado',
+        'description_expired' => 'Este link expirou. Peça ao administrador da sua empresa que lhe envie um novo convite.',
+        'description_revoked' => 'Este convite foi revogado e o link deixou de funcionar. Contacte o administrador da sua empresa se ainda precisar de acesso.',
+        'description_declined' => 'Este convite já não está ativo.',
+        'description_accepted' => 'Este convite já foi utilizado. Inicie sessão com a conta que criou ou peça um novo convite se precisar de ajuda.',
+        'description_invalid' => 'Este link de convite não é válido. Verifique o endereço ou peça um novo convite ao administrador.',
+        'home' => 'Ir para o início',
+    ],
 ];

@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -34,23 +33,51 @@ return new class extends Migration
         Schema::create('cat_parameter_definition_translations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('parameter_definition_id')
-                ->constrained('cat_parameter_definitions', 'id', 'pd_translations_fk');
+                ->constrained('cat_parameter_definitions', 'id', 'pd_translations_fk')
+                ->cascadeOnDelete();
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id', 'pd_translations_lang_fk')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
             $table->string('description')->nullable();
             $table->text('help')->nullable()->comment('Help text for the user');
-        });
+            lmpStamps($table);
 
+            $table->unique(['parameter_definition_id', 'language_id'], 'pd_trans_lang_unique');
+        });
 
         Schema::create('parameter_values', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parameter_definition_id');
-            $table->foreignId('account_id')->nullable();
+            $table->foreignId('parameter_definition_id')
+                ->constrained('cat_parameter_definitions')
+                ->cascadeOnDelete();
+            $table->foreignId('account_id')->nullable()->constrained('accounts')->nullOnDelete();
             $table->text('value')->nullable();
             lmpStamps($table);
 
             $table->index(['parameter_definition_id', 'account_id']);
+        });
+
+        Schema::create('cat_parameter_options', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('parameter_definition_id')
+                ->constrained('cat_parameter_definitions')
+                ->cascadeOnDelete();
+            $table->string('value');
+            $table->integer('sort_order')->default(0);
+            lmpStamps($table);
+        });
+
+        Schema::create('cat_parameter_option_translations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('parameter_option_id')
+                ->constrained('cat_parameter_options', 'id', 'po_translations_fk')
+                ->cascadeOnDelete();
+            $table->unsignedTinyInteger('language_id');
+            $table->foreign('language_id', 'po_translations_lang_fk')->references('id')->on('cat_languages');
+            $table->string('name')->nullable();
+            lmpStamps($table);
+
+            $table->unique(['parameter_option_id', 'language_id'], 'po_trans_lang_unique');
         });
     }
 
@@ -61,6 +88,9 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('cat_parameter_option_translations');
+        Schema::dropIfExists('cat_parameter_options');
+        Schema::dropIfExists('cat_parameter_definition_translations');
         Schema::dropIfExists('parameter_values');
         Schema::dropIfExists('cat_parameter_definitions');
     }

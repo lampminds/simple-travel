@@ -21,7 +21,10 @@ class ParameterValue extends Model
     ];
 
     /**
-     * Ensure at most one row per (definition, account): account null = system-wide value.
+     * Ensure at most one row per (definition, account key).
+     *
+     * For **system** definitions: only `account_id` null is used (one row per definition).
+     * For **tenant** definitions: `account_id` null = global default; non-null = one row per account.
      *
      * @throws ValidationException
      */

@@ -6,6 +6,7 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Models\AccountCategory;
 use BackedEnum;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -121,6 +122,29 @@ class AccountResource extends LmpResource
                                 ->columns(2)
                                 ->defaultItems(0)
                                 ->addActionLabel(__('filament.resources.account_tax_id_fields.add')),
+                        ])
+                        ->visibleOn(['edit', 'view']),
+                    Tab::make(__('filament.resources.account_tabs.categories'))
+                        ->schema([
+                            CheckboxList::make('typeCategories')
+                                ->label(__('filament.resources.account_type_category_fields.label'))
+                                ->helperText(__('filament.resources.account_type_category_fields.help'))
+                                ->relationship(
+                                    'typeCategories',
+                                    'code',
+                                    modifyQueryUsing: fn (Builder $query) => $query
+                                        ->where('active', true)
+                                        ->byGroup('type')
+                                        ->ordered()
+                                        ->with(['translations.language.locale']),
+                                )
+                                ->getOptionLabelFromRecordUsing(
+                                    fn (AccountCategory $record): string => $record->name ?: (string) $record->code
+                                )
+                                ->columns(2)
+                                ->gridDirection('row')
+                                ->columnSpanFull()
+                                ->bulkToggleable(),
                         ])
                         ->visibleOn(['edit', 'view']),
                 ]),

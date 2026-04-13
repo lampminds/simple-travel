@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -24,7 +25,7 @@ class UsersTableSeeder extends Seeder
                 'id' => 1,
                 'name' => 'System',
                 'email' => 'system@simple-travel.net',
-                'email_verified_at' => NULL,
+                'email_verified_at' => Carbon::now(),
                 'password' => '',
                 'two_factor_secret' => NULL,
                 'two_factor_recovery_codes' => NULL,
@@ -39,7 +40,7 @@ class UsersTableSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Gabriel Schillaci',
                 'email' => 'support@lampminds.com',
-                'email_verified_at' => NULL,
+                'email_verified_at' => Carbon::now(),
                 'password' => '$2y$12$yWav7/oR8OF7rx4czsdt1.0N4GW0JsYPwqp3vnsXY9VkjQiehVG/m',
                 'two_factor_secret' => NULL,
                 'two_factor_recovery_codes' => NULL,

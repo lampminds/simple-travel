@@ -13,6 +13,9 @@ class CreateParameterValue extends LmpCreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $data['value'] = $data['value_select'] ?? $data['value_free'] ?? null;
+        unset($data['value_select'], $data['value_free']);
+
         $data = parent::mutateFormDataBeforeCreate($data);
 
         $defId = (int) ($data['parameter_definition_id'] ?? 0);

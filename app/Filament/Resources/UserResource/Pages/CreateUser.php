@@ -3,8 +3,9 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Support\Arr;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpCreateRecord;
-use Spatie\Permission\PermissionRegistrar;
 
 class CreateUser extends LmpCreateRecord
 {
@@ -15,16 +16,28 @@ class CreateUser extends LmpCreateRecord
         return $this->getResourceUrl('index');
     }
 
-    /**
-     * Attach accounts and roles; Spatie team must be set before role sync.
-     */
-    protected function afterCreate(): void
+    protected function fillForm(): void
     {
-        $user = $this->getRecord()->fresh(['accounts']);
-        $accountId = $user->accounts()->orderBy('accounts.id')->value('accounts.id');
-        if ($accountId) {
-            app(PermissionRegistrar::class)->setPermissionsTeamId((int) $accountId);
+        parent::fillForm();
+        $auth = auth()->user();
+        if ($auth instanceof User && ! $auth->belongsToPlatformAccount()) {
+            $accountId = $auth->currentAccountId();
+            if ($accountId !== null) {
+                $state = $this->form->getRawState() ?? [];
+                $state['accounts'] = [$accountId];
+                $this->form->fill($state);
+            }
         }
-        $this->form->model($user)->saveRelationships();
+    }
+
+    /**
+     * BelongsToMany fields are persisted in {@see UserResource} Select::saveRelationshipsUsing}
+     * when Filament runs saveRelationships() after the user row exists.
+     */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data = parent::mutateFormDataBeforeCreate($data);
+
+        return Arr::except($data, ['accounts', 'roles']);
     }
 }

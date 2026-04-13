@@ -161,7 +161,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-1 lh-base">
                                     <span class="fw-semibold fs-13 d-block line-height-normal">{{ auth()->user()->name }}</span>
-                                    <span class="text-muted fs-13">{{ auth()->user()->getRoleNames()->first() ?? __('profile.menu_subtitle') }}</span>
+                                    <span class="text-muted fs-13">{{ auth()->user()->roleNamesForCurrentAccount()->first() ?? __('profile.menu_subtitle') }}</span>
                                 </div>
                             </div>
                         </a>
@@ -192,6 +192,15 @@
                                 {{ __('profile.menu_profile') }}
                             </a>
                             <!-- item end -->
+
+                            @if(auth()->user()->hasRoleForCurrentAccount('owner'))
+                                <!-- item start -->
+                                <a class="dropdown-item p-2" href="{{ route('account.invitations.index') }}">
+                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="mail"></i>
+                                    {{ __('invitations.menu') }}
+                                </a>
+                                <!-- item end -->
+                            @endif
 
                             <!-- item start -->
                             <a class="dropdown-item p-2" href="{{ route('second', ['account', 'settings']) }}">

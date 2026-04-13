@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\Account;
 use App\Models\User;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Select;
@@ -14,8 +16,11 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserResource extends LmpResource
 {
@@ -23,7 +28,17 @@ class UserResource extends LmpResource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['accounts']);
+        $query = parent::getEloquentQuery()->with(['accounts']);
+
+        $auth = Filament::auth()->user();
+        if ($auth instanceof User && ! $auth->belongsToPlatformAccount()) {
+            $accountId = $auth->currentAccountId();
+            if ($accountId !== null) {
+                $query->whereHas('accounts', fn (Builder $q) => $q->where('accounts.id', $accountId));
+            }
+        }
+
+        return $query;
     }
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
@@ -59,11 +74,37 @@ class UserResource extends LmpResource
             Section::make('')->schema([
                 Select::make('accounts')
                     ->label(__('filament.resources.user_fields.accounts'))
-                    ->relationship('accounts', 'commercial_name')
+                    ->relationship(
+                        name: 'accounts',
+                        titleAttribute: 'commercial_name',
+                        modifyQueryUsing: function (Builder $query): void {
+                            $user = Filament::auth()->user();
+                            if (! $user instanceof User || $user->belongsToPlatformAccount()) {
+                                return;
+                            }
+                            $accountId = $user->currentAccountId();
+                            if ($accountId !== null) {
+                                $query->where('accounts.id', $accountId);
+                            }
+                        }
+                    )
+                    ->getOptionLabelFromRecordUsing(
+                        fn (Account $record): string => $record->commercial_name
+                            ?: $record->name
+                            ?: $record->code
+                            ?: (string) $record->id
+                    )
                     ->multiple()
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->saveRelationshipsUsing(static function (Select $component, Model $record, $state): void {
+                        if (! $record instanceof User) {
+                            return;
+                        }
+
+                        $record->accounts()->sync(array_values(array_filter(Arr::wrap($state ?? []))));
+                    }),
                 TextInput::make('name')
                     ->label(__('filament.resources.user_fields.name'))
                     ->placeholder(__('filament.resources.user_fields.name'))
@@ -90,7 +131,27 @@ class UserResource extends LmpResource
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
-                    ->searchable(false),
+                    ->searchable(false)
+                    ->saveRelationshipsUsing(static function (Select $component, Model $record, $state): void {
+                        if (! $record instanceof User) {
+                            return;
+                        }
+
+                        $accountId = $record->accounts()->orderBy('accounts.id')->value('accounts.id');
+                        if ($accountId === null) {
+                            return;
+                        }
+
+                        app(PermissionRegistrar::class)->setPermissionsTeamId((int) $accountId);
+
+                        $roleModel = config('permission.models.role');
+                        $roleIds = array_values(array_filter(Arr::wrap($state ?? [])));
+                        $roles = $roleIds === []
+                            ? []
+                            : $roleModel::query()->whereIn('id', $roleIds)->get()->all();
+
+                        $record->syncRoles($roles);
+                    }),
             ]),
         ];
     }

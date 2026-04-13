@@ -23,7 +23,7 @@ return [
         'heading' => 'Create account',
         'intro' => 'Fill in your company and personal details to sign up.',
         'important' => 'Important:',
-        'important_text' => 'If your company already has an account, do not register here; you should sign up via an invitation from your company administrator (we will implement this later).',
+        'important_text' => 'If your company already has an account, do not register here on your own — ask your administrator for an invitation.',
         'company_name' => 'Company name',
         'company_type' => 'Company type',
         'your_name' => 'Your name',
@@ -35,6 +35,9 @@ return [
         'placeholder_email' => 'Email',
         'placeholder_password' => 'Minimum 8 characters',
         'placeholder_password_confirmation' => 'Repeat your password',
+        'password_show' => 'Show password',
+        'password_hide' => 'Hide password',
+        'password_generate' => 'Generate random password',
         'select_type' => 'Select type...',
         'submit' => 'Create account',
         'or' => 'OR',
@@ -47,6 +50,14 @@ return [
         'carousel_slide2_text' => 'Present your product clearly and attractively to your customers.',
         'carousel_slide3_title' => 'Solutions that convert leads into customers',
         'carousel_slide3_text' => 'Tools designed to boost your operations and sales.',
+
+        'intro_internal' => 'Complete your details to join your company’s existing account.',
+        'intro_external' => 'You were invited to try the platform. Register your company and your user as usual.',
+        'important_text_internal' => 'This link is personal. Enter the email you want to use for your account; it must not already be registered. You will verify this address after signing up, same as a normal registration.',
+        'important_text_external' => 'This link is personal. You will create a new company. Enter the email you want to use; it must not already be registered. You will verify this address after signing up.',
+        'invited_company' => 'Company',
+        'invitation_invalid' => 'This invitation is invalid or has expired.',
+        'invitation_email_mismatch' => 'The email must match the invitation.',
     ],
 
     'verification' => [

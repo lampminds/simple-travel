@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileInvitationController;
 use App\Http\Controllers\ProviderDashboardController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
@@ -35,6 +36,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('account/profile/password', [ProfileController::class, 'updatePassword'])->name('account.profile.password');
     Route::post('account/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('account.profile.avatar');
     Route::delete('account/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('account.profile.avatar.destroy');
+
+    Route::get('account/invitations', [ProfileInvitationController::class, 'index'])->name('account.invitations.index');
+    Route::post('account/invitations', [ProfileInvitationController::class, 'store'])->name('account.invitations.store');
+    Route::post('account/invitations/{invitation}/revoke', [ProfileInvitationController::class, 'revoke'])
+        ->name('account.invitations.revoke');
 });
 
 // Auth-protected account routes (must be before catch-alls so they take precedence).

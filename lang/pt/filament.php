@@ -15,6 +15,17 @@ return [
 
     'pages' => [
         'list_records_count' => 'Total: :count :label',
+        'website_menu_editor' => [
+            'nav_label' => 'Menu do site',
+            'title' => 'Editor do menu do site',
+            'header_action' => 'Editor visual',
+            'section_heading' => 'Árvore',
+            'hint' => 'Use as setas para reordenar itens entre irmãos. Abra um item para editar textos, rotas, visibilidade e quais tipos de conta o veem.',
+            'move_up' => 'Subir',
+            'move_down' => 'Descer',
+            'active' => 'Ativo',
+            'inactive' => 'Inativo',
+        ],
     ],
 
     'resources' => [
@@ -25,6 +36,12 @@ return [
         'account_tabs' => [
             'main' => 'Dados principais',
             'tax_ids' => 'Identificações fiscais',
+            'categories' => 'Categorias',
+        ],
+
+        'account_type_category_fields' => [
+            'label' => 'Tipos de conta',
+            'help' => 'Um ou mais tipos de negócio (fornecedor, agência, etc.). Só aparecem categorias com grupo «type».',
         ],
 
         'account_fields' => [
@@ -319,30 +336,105 @@ return [
             'name' => 'Nome',
         ],
 
+        'menu' => 'Item de menu',
+        'menus' => 'Menus do site',
+
+        'menu_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+            'account_types' => 'Tipos de conta',
+        ],
+
+        'menu_fields' => [
+            'slug' => 'Slug',
+            'slug_help' => 'Chave interna (única). Usada no código; pode não aparecer no site público.',
+            'parent_id' => 'Pai',
+            'icon' => 'Ícone',
+            'route' => 'Nome da rota',
+            'translation_name' => 'Rótulo',
+            'translation_tip' => 'Tooltip',
+            'account_types' => 'Visível para tipos de conta',
+            'account_types_help' => 'Se nenhum estiver selecionado, o item fica oculto para todos os tipos de conta.',
+        ],
+
+        'menu_columns' => [
+            'id' => 'ID',
+            'label' => 'Rótulo',
+            'route' => 'Rota',
+            'parent' => 'Pai',
+            'account_types' => 'Tipos de conta',
+            'account_types_none' => 'Nenhum',
+        ],
+
+        'menu_filter' => [
+            'scope' => 'Âmbito',
+            'all_levels' => 'Todos os níveis',
+            'root_only' => 'Apenas raiz',
+            'children_of' => 'Filhos de: :label',
+            'account_type' => 'Tipo de conta',
+            'account_type_placeholder' => 'Todos os tipos',
+            'active_status' => 'Ativo',
+            'active_all' => 'Todos',
+            'active_only' => 'Só ativos',
+            'inactive_only' => 'Só inativos',
+        ],
+
+        'menu_validation' => [
+            'parent_cycle' => 'Esse pai criaria um ciclo na hierarquia.',
+        ],
+
         'parameter_definition' => 'Definição de parâmetro',
         'parameter_definitions' => 'Definições de parâmetros',
 
+        'parameter_definition_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+            'options' => 'Opções',
+            'values' => 'Valores',
+        ],
+
         'parameter_definition_fields' => [
             'category' => 'Categoria',
+            'subcategory' => 'Subcategoria',
             'code' => 'Código',
             'type' => 'Tipo',
             'scope' => 'Escopo',
             'has_default' => 'Tem valor padrão',
             'ui_component' => 'Componente UI',
             'ui_options' => 'Opções UI',
-            'help' => 'Ajuda',
+            'sort_order' => 'Ordem',
+            'default_value' => 'Valor padrão',
+            'validation_rules' => 'Regras de validação',
+            'translation_name' => 'Nome',
+            'translation_description' => 'Descrição',
+            'translation_help' => 'Ajuda',
             'comments' => 'Comentários',
         ],
 
         'parameter_definition_columns' => [
             'id' => 'ID',
             'category' => 'Categoria',
+            'subcategory' => 'Subcategoria',
             'code' => 'Código',
+            'name' => 'Nome',
             'type' => 'Tipo',
             'scope' => 'Escopo',
             'has_default' => 'Padrão',
             'ui_component' => 'UI',
         ],
+
+        'parameter_option_fields' => [
+            'value' => 'Valor armazenado',
+            'sort_order' => 'Ordem',
+            'label' => 'Rótulo',
+            'labels' => 'Rótulos por idioma',
+            'add' => 'Adicionar opção',
+        ],
+
+        'parameter_definition_options_help' => 'Para select, radio, checkbox e switch são necessárias pelo menos duas opções (por exemplo dois valores explícitos para sim/não). Outros componentes podem deixar a lista vazia e usar texto livre.',
+        'parameter_definition_options_min_two' => 'Este componente UI exige pelo menos duas opções com valor armazenado.',
+        'parameter_definition_values_tab_help' => 'Escopo sistema: no máximo uma linha (conta ignorada). Por inquilino: conta opcional — deixe vazio para um valor predefinido para todas as contas, ou indique uma conta por linha de substituição.',
+        'parameter_definition_values_duplicate_account' => 'Conta duplicada na lista de valores.',
 
         'parameter_definition_ui_components' => [
             'input' => 'Campo de texto',
@@ -364,9 +456,12 @@ return [
             'parameter_definition_id' => 'Definição',
             'account_id' => 'Conta',
             'value' => 'Valor',
+            'add_row' => 'Adicionar valor',
             'definition_help' => 'Qual parâmetro esta linha configura.',
-            'account_help' => 'Obrigatório quando o escopo é por conta; omitido para definições de sistema.',
-            'value_help' => 'Valor armazenado (a interpretação depende do tipo da definição).',
+            'account_placeholder' => 'Predefinição (todas as contas)',
+            'account_help_system' => 'Definições de âmbito sistema não guardam conta; fica sempre vazio.',
+            'account_help' => 'Opcional. Deixe vazio para um valor predefinido para todas as contas, ou escolha uma conta para um valor por conta.',
+            'value_help' => 'Valor armazenado (texto livre, ou uma das opções predefinidas se a definição usar lista).',
         ],
 
         'parameter_value_columns' => [
@@ -384,6 +479,7 @@ return [
         'plan_tabs' => [
             'general' => 'Geral',
             'translations' => 'Traduções',
+            'items' => 'Itens do plano',
         ],
 
         'plan_fields' => [
@@ -404,13 +500,34 @@ return [
 
         'plan_item' => 'Item do plano',
         'plan_items' => 'Itens do plano',
+        'plan_items_standalone' => 'Itens de planos',
+
+        'plan_item_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'plan_item_standalone_columns' => [
+            'id' => 'ID',
+            'plan' => 'Plano',
+            'parent' => 'Pai (nível superior)',
+            'text' => 'Texto',
+        ],
+
+        'plan_item_standalone_filter_parent_with_children' => 'Item pai (com subitens)',
 
         'plan_item_fields' => [
+            'plan_id' => 'Plano',
             'parent_id' => 'Item pai',
+            'parent_root' => '— Nível superior (sem pai) —',
+            'untitled_row' => 'Item sem título',
+            'add_row' => 'Adicionar item do plano',
             'sort_order' => 'Ordem',
             'active' => 'Ativo',
             'text' => 'Texto',
         ],
+
+        'plan_items_repeater_help' => 'Adicione primeiro os itens de nível superior, depois os subitens e escolha um pai de nível superior. Arraste as linhas para alterar a ordem.',
 
         'plan_item_columns' => [
             'sort_order' => 'Ordem',

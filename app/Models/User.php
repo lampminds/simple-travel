@@ -17,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Application User model. Account access is only via the account_user pivot (Spatie teams).
@@ -94,6 +95,52 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
     public function belongsToPlatformAccount(): bool
     {
         return $this->belongsToAccount((int) config('permission.platform_account_id', 1));
+    }
+
+    /**
+     * Whether the user has the role for the active session account (Spatie team).
+     *
+     * Use this for tenant-scoped website features. {@see SetPermissionsTeamForRequest} pins the
+     * registrar to the platform team for platform-linked users, so plain {@see hasRole()} would
+     * ignore the switched tenant.
+     */
+    public function hasRoleForCurrentAccount(string $role): bool
+    {
+        $accountId = $this->currentAccountId();
+        if ($accountId === null) {
+            return false;
+        }
+
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+        $registrar->setPermissionsTeamId($accountId);
+
+        try {
+            return $this->hasRole($role);
+        } finally {
+            $registrar->setPermissionsTeamId($previous);
+        }
+    }
+
+    /**
+     * Role names for the active session account only (navbar subtitle, etc.).
+     */
+    public function roleNamesForCurrentAccount(): Collection
+    {
+        $accountId = $this->currentAccountId();
+        if ($accountId === null) {
+            return collect();
+        }
+
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+        $registrar->setPermissionsTeamId($accountId);
+
+        try {
+            return $this->getRoleNames();
+        } finally {
+            $registrar->setPermissionsTeamId($previous);
+        }
     }
 
     /**

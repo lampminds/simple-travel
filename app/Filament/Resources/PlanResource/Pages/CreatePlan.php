@@ -26,17 +26,20 @@ class CreatePlan extends LmpCreateRecord
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
+        $state['plan_items'] = [];
         $this->form->fill($state);
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return Arr::except($data, ['translations']);
+        return Arr::except($data, ['translations', 'plan_items']);
     }
 
     protected function afterCreate(): void
     {
-        $this->syncTranslations($this->getRecord(), $this->form->getState()['translations'] ?? []);
+        $state = $this->form->getState();
+        $this->syncTranslations($this->getRecord(), $state['translations'] ?? []);
+        PlanResource::syncPlanItems($this->getRecord(), $state['plan_items'] ?? []);
     }
 
     protected function syncTranslations(Plan $record, array $translations): void

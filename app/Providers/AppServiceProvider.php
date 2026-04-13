@@ -21,6 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->loadMigrationsFrom([
+            database_path('migrations/accounts'),
+            database_path('migrations/core'),
+            database_path('migrations/plans'),
+            database_path('migrations/services'),
+            database_path('migrations/settings'),
+        ]);
+
         View::addNamespace('site', resource_path('site/resources/views'));
 
         // Override Filament panel views (e.g. sidebar) so translation keys for nav groups are resolved

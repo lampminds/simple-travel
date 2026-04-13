@@ -14,30 +14,62 @@
                                             <x-site-logo class="d-flex align-self-center" />
                                         </div>
 
+                                        @php
+                                            $inv = $invitation ?? null;
+                                            $mode = $invitationMode ?? null;
+                                        @endphp
                                         <h6 class="h5 mb-0 mt-3">{{ __('auth.register.heading') }}</h6>
-                                        <p class="text-muted mt-1 mb-4">{{ __('auth.register.intro') }}</p>
+                                        <p class="text-muted mt-1 mb-4">
+                                            @if ($mode === 'internal')
+                                                {{ __('auth.register.intro_internal') }}
+                                            @elseif ($mode === 'external')
+                                                {{ __('auth.register.intro_external') }}
+                                            @else
+                                                {{ __('auth.register.intro') }}
+                                            @endif
+                                        </p>
 
                                         <div class="alert alert-warning border-0 mb-4" role="alert">
                                             <small>
-                                                <strong>{{ __('auth.register.important') }}</strong> {{ __('auth.register.important_text') }}
+                                                <strong>{{ __('auth.register.important') }}</strong>
+                                                @if ($mode === 'internal')
+                                                    {{ __('auth.register.important_text_internal') }}
+                                                @elseif ($mode === 'external')
+                                                    {{ __('auth.register.important_text_external') }}
+                                                @else
+                                                    {{ __('auth.register.important_text') }}
+                                                @endif
                                             </small>
                                         </div>
 
                                         <form method="POST" action="{{ route('register') }}" class="authentication-form">
                                             @csrf
                                             <x-form-validation-summary />
+                                            @if ($inv)
+                                                <input type="hidden" name="invitation_token" value="{{ $inv->token }}"/>
+                                            @endif
 
+                                            @if ($mode === 'internal')
+                                                <div class="mb-3">
+                                                    <label class="form-label">{{ __('auth.register.invited_company') }}</label>
+                                                    <input type="text" class="form-control" readonly
+                                                           value="{{ $inv->account?->commercial_name ?? $inv->account?->name ?? '—' }}"/>
+                                                </div>
+                                            @endif
+
+                                            @unless ($mode === 'internal')
                                             <div class="mb-3">
                                                 <label for="company_name" class="form-label">{{ __('auth.register.company_name') }} <small>*</small></label>
                                                 <input type="text" class="form-control @error('company_name') is-invalid @enderror" id="company_name"
                                                        placeholder="{{ __('auth.register.placeholder_company_name') }}" name="company_name"
-                                                       value="{{ old('company_name') }}" required autofocus/>
+                                                       value="{{ old('company_name') }}" required
+                                                       @if($mode !== 'internal') autofocus @endif />
                                                 <x-form-field-error name="company_name" />
                                             </div>
 
                                             <div class="mb-3">
                                                 <label for="company_type" class="form-label">{{ __('auth.register.company_type') }} <small>*</small></label>
-                                                <select class="form-select @error('company_type') is-invalid @enderror" id="company_type" name="company_type" required>
+                                                <select class="form-select @error('company_type') is-invalid @enderror" id="company_type" name="company_type" @if($mode !== 'internal') required @endif>
                                                     <option value="">{{ __('auth.register.select_type') }}</option>
                                                     @foreach($companyTypes ?? [] as $id => $data)
                                                         @php
@@ -52,12 +84,13 @@
                                                 <x-form-field-error name="company_type" />
                                                 <div id="company_type_description" class="small text-muted mt-2" style="min-height: 1.5em;" aria-live="polite"></div>
                                             </div>
+                                            @endunless
 
                                             <div class="mb-3">
                                                 <label for="name" class="form-label">{{ __('auth.register.your_name') }} <small>*</small></label>
                                                 <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
                                                        placeholder="{{ __('auth.register.placeholder_name') }}" name="name"
-                                                       value="{{ old('name') }}" required/>
+                                                       value="{{ old('name') }}" required @if($mode === 'internal') autofocus @endif/>
                                                 <x-form-field-error name="name" />
                                             </div>
 
@@ -65,21 +98,39 @@
                                                 <label for="email" class="form-label">{{ __('auth.register.email') }} <small>*</small></label>
                                                 <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                        placeholder="{{ __('auth.register.placeholder_email') }}" name="email"
-                                                       value="{{ old('email') }}" required/>
+                                                       value="{{ old('email', $inv?->email) }}"
+                                                       required autocomplete="email"/>
                                                 <x-form-field-error name="email" />
                                             </div>
 
                                             <div class="mb-3">
                                                 <label for="password" class="form-label">{{ __('auth.register.password') }} <small>*</small></label>
-                                                <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
-                                                       name="password" placeholder="{{ __('auth.register.placeholder_password') }}" required/>
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
+                                                           name="password" placeholder="{{ __('auth.register.placeholder_password') }}" required
+                                                           autocomplete="new-password" minlength="8"/>
+                                                    <button type="button" class="btn btn-outline-secondary px-2" id="btn-toggle-password"
+                                                            aria-pressed="false"
+                                                            aria-label="{{ __('auth.register.password_show') }}"
+                                                            title="{{ __('auth.register.password_show') }}"
+                                                            data-label-show="{{ __('auth.register.password_show') }}"
+                                                            data-label-hide="{{ __('auth.register.password_hide') }}">
+                                                        <span id="password-toggle-icon-host"><i data-feather="eye" class="icon icon-xs"></i></span>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary px-2" id="btn-generate-password"
+                                                            aria-label="{{ __('auth.register.password_generate') }}"
+                                                            title="{{ __('auth.register.password_generate') }}">
+                                                        <i data-feather="key" class="icon icon-xs"></i>
+                                                    </button>
+                                                </div>
                                                 <x-form-field-error name="password" />
                                             </div>
 
                                             <div class="mb-3">
                                                 <label for="password_confirmation" class="form-label">{{ __('auth.register.password_confirmation') }} <small>*</small></label>
                                                 <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation"
-                                                       name="password_confirmation" placeholder="{{ __('auth.register.placeholder_password_confirmation') }}" required/>
+                                                       name="password_confirmation" placeholder="{{ __('auth.register.placeholder_password_confirmation') }}" required
+                                                       autocomplete="new-password" minlength="8"/>
                                                 <x-form-field-error name="password_confirmation" />
                                             </div>
 
@@ -183,20 +234,91 @@
 @endsection
 
 @section('script-bottom')
+@include('partials.password-toggle-feather')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('company_type');
-    const descEl = document.getElementById('company_type_description');
-    if (!select || !descEl) return;
+    const password = document.getElementById('password');
+    const passwordConfirmation = document.getElementById('password_confirmation');
+    const btnToggle = document.getElementById('btn-toggle-password');
+    const btnGenerate = document.getElementById('btn-generate-password');
 
-    function updateDescription() {
-        const opt = select.options[select.selectedIndex];
-        const desc = opt?.dataset?.description || '';
-        descEl.textContent = desc;
+    if (password && passwordConfirmation && btnToggle && btnGenerate) {
+        let passwordsVisible = false;
+
+        const toggleIconHost = document.getElementById('password-toggle-icon-host');
+
+        function setPasswordVisibility(visible) {
+            passwordsVisible = visible;
+            const type = visible ? 'text' : 'password';
+            password.type = type;
+            passwordConfirmation.type = type;
+            btnToggle.setAttribute('aria-pressed', visible ? 'true' : 'false');
+            const showLbl = btnToggle.dataset.labelShow;
+            const hideLbl = btnToggle.dataset.labelHide;
+            const nextTitle = visible ? hideLbl : showLbl;
+            btnToggle.title = nextTitle;
+            btnToggle.setAttribute('aria-label', nextTitle);
+            if (typeof window.renderPasswordToggleFeatherIcon === 'function') {
+                window.renderPasswordToggleFeatherIcon(toggleIconHost, visible);
+            }
+        }
+
+        btnToggle.addEventListener('click', function () {
+            setPasswordVisibility(!passwordsVisible);
+        });
+
+        function generateSecurePassword(length) {
+            const lower = 'abcdefghijklmnopqrstuvwxyz';
+            const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const digits = '0123456789';
+            const symbols = '!@#$%&*-_=+';
+            const all = lower + upper + digits + symbols;
+            const rand = function (max) {
+                const a = new Uint32Array(1);
+                crypto.getRandomValues(a);
+                return a[0] % max;
+            };
+            const chars = [
+                lower[rand(lower.length)],
+                upper[rand(upper.length)],
+                digits[rand(digits.length)],
+                symbols[rand(symbols.length)],
+            ];
+            for (let i = chars.length; i < length; i++) {
+                chars.push(all[rand(all.length)]);
+            }
+            for (let i = chars.length - 1; i > 0; i--) {
+                const j = rand(i + 1);
+                const t = chars[i];
+                chars[i] = chars[j];
+                chars[j] = t;
+            }
+            return chars.join('');
+        }
+
+        btnGenerate.addEventListener('click', function () {
+            const pwd = generateSecurePassword(16);
+            password.value = pwd;
+            passwordConfirmation.value = pwd;
+            setPasswordVisibility(true);
+            password.dispatchEvent(new Event('input', { bubbles: true }));
+            passwordConfirmation.dispatchEvent(new Event('input', { bubbles: true }));
+        });
     }
 
-    select.addEventListener('change', updateDescription);
-    updateDescription(); // Initial state (e.g. when old('company_type') pre-selects)
+    @if (($invitationMode ?? null) !== 'internal')
+    const select = document.getElementById('company_type');
+    const descEl = document.getElementById('company_type_description');
+    if (select && descEl) {
+        function updateCompanyTypeDescription() {
+            const opt = select.options[select.selectedIndex];
+            const desc = opt && opt.dataset ? (opt.dataset.description || '') : '';
+            descEl.textContent = desc;
+        }
+        select.addEventListener('change', updateCompanyTypeDescription);
+        updateCompanyTypeDescription();
+    }
+    @endif
 });
 </script>
 @endsection
