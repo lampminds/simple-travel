@@ -53,6 +53,9 @@ return [
             'phone' => 'Phone',
             'address_line1' => 'Address (line 1)',
             'address_line2' => 'Address (line 2)',
+            'city_id' => 'City',
+            'state_id' => 'State',
+            'country_id' => 'Country',
             'postal_code' => 'Postal code',
             'code_help' => 'Auto-generated on create.',
         ],
@@ -96,12 +99,21 @@ return [
         'user' => 'User',
         'users' => 'Users',
 
+        'user_tabs' => [
+            'general' => 'Profile',
+            'accounts_roles' => 'Accounts & roles',
+        ],
+
         'user_fields' => [
             'accounts' => 'Accounts',
             'name' => 'Name',
             'email' => 'Email',
             'password' => 'Password',
             'roles' => 'Roles',
+            'memberships_heading' => 'Account memberships',
+            'memberships_help' => 'Add one row per account. Choose the account first, then the roles for that team (Spatie permission teams use account_id).',
+            'account' => 'Account',
+            'add_membership' => 'Add account',
         ],
 
         'user_columns' => [
@@ -110,6 +122,36 @@ return [
             'name' => 'Name',
             'email' => 'Email',
             'roles' => 'Roles',
+        ],
+
+        'user_invitation' => 'Invitation',
+        'user_invitations' => 'Invitations',
+
+        'user_invitation_columns' => [
+            'id' => 'ID',
+            'account' => 'Account',
+            'email' => 'Email',
+            'type' => 'Type',
+            'status' => 'Status',
+            'expires_at' => 'Expires at',
+            'invited_by' => 'Invited by',
+        ],
+
+        'user_invitation_fields' => [
+            'account_id' => 'Account',
+            'email' => 'Email',
+            'type' => 'Type',
+            'status' => 'Status',
+            'expires_at' => 'Expires at',
+            'invited_by' => 'Invited by',
+            'token' => 'Token',
+            'accepted_at' => 'Accepted at',
+            'declined_at' => 'Declined at',
+        ],
+
+        'user_invitation_filters' => [
+            'type' => 'Type',
+            'status' => 'Status',
         ],
 
         'role' => 'Role',
@@ -267,7 +309,7 @@ return [
             'phone' => 'Phone',
             'address_line1' => 'Address (line 1)',
             'address_line2' => 'Address (line 2)',
-            'city_id' => 'City',
+            'city_id' => 'City code',
             'postal_code' => 'Postal code',
             'status' => 'Status',
             'inviting_id' => 'Inviting account',
@@ -365,6 +407,8 @@ return [
             'account_types' => 'Account types',
             'account_types_none' => 'None',
         ],
+
+        'menu_duplicate' => 'Duplicate',
 
         'menu_filter' => [
             'scope' => 'Scope',
@@ -545,6 +589,64 @@ return [
         'nav_parameters' => 'Settings',
         'nav_users' => 'Users',
         'nav_authorization' => 'Authorization',
+        'nav_onboarding' => 'Getting started',
+
+        'todo_category' => 'To-do category',
+        'todo_categories' => 'To-do categories',
+
+        'todo_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'todo_category_fields' => [
+            'code' => 'Code',
+            'sort_order' => 'Sort order',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'todo_category_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Sort order',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'todo_task' => 'To-do task (template)',
+        'todo_tasks' => 'To-do tasks (templates)',
+
+        'todo_task_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'todo_task_fields' => [
+            'account_id' => 'Account (system)',
+            'code' => 'Code',
+            'todo_category_id' => 'Category',
+            'original_task_id' => 'Based on task (optional)',
+            'action_type' => 'Action type',
+            'action_url' => 'URL (for link)',
+            'sort_order' => 'Sort order',
+            'name' => 'Title',
+            'description' => 'Description',
+        ],
+
+        'todo_task_action_types' => [
+            'link' => 'Open link',
+            'api_check' => 'API check',
+            'manual' => 'Manual',
+        ],
+
+        'todo_task_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Sort order',
+            'code' => 'Code',
+            'category' => 'Category',
+            'name' => 'Title',
+            'action_type' => 'Action',
+        ],
 
         'service_hotel_type' => 'Hotel type',
         'service_hotel_types' => 'Hotel types',
@@ -1105,7 +1207,7 @@ return [
         'service_fields' => [
             'account_id' => 'Account',
             'service_type_id' => 'Service type',
-            'city_id' => 'City',
+            'city_id' => 'City code',
             'status' => 'Status',
             'name' => 'Name',
             'description' => 'Description',
@@ -1153,3 +1255,4 @@ return [
     ],
 
 ];
+

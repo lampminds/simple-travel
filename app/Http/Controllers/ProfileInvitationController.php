@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CurrentAccountSession;
 use App\Models\UserInvitation;
 use App\Notifications\UserInvitationNotification;
 use Illuminate\Http\RedirectResponse;
@@ -28,16 +29,41 @@ class ProfileInvitationController extends Controller
         private readonly ParameterReaderController $parameterReader,
     ) {}
 
+    public function index(Request $request): RedirectResponse
+    {
+        return redirect()->route('account.invitations.employee');
+    }
+
     /**
-     * Invitations management (owner only).
+     * Employee invitations (internal users for current account).
      */
-    public function index(Request $request): View
+    public function employee(Request $request): View|RedirectResponse
+    {
+        return $this->renderInvitationPage($request, UserInvitation::TYPE_INTERNAL);
+    }
+
+    /**
+     * Company invitations (external trial with new company).
+     */
+    public function company(Request $request): View|RedirectResponse
+    {
+        return $this->renderInvitationPage($request, UserInvitation::TYPE_EXTERNAL);
+    }
+
+    /**
+     * Invitations management for current active account in session.
+     */
+    private function renderInvitationPage(Request $request, string $invitationType): View|RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user && $user->hasRoleForCurrentAccount('owner'), 403);
+        if (! $user) {
+            return redirect()->route('account.dashboard');
+        }
 
-        $accountId = $user->currentAccountId();
-        abort_unless($accountId, 403);
+        $accountId = CurrentAccountSession::accountId($request);
+        if (! $accountId) {
+            return redirect()->route('account.dashboard');
+        }
 
         UserInvitation::syncExpiredForAccount($accountId);
 
@@ -48,6 +74,7 @@ class ProfileInvitationController extends Controller
 
         $query = UserInvitation::query()
             ->where('account_id', $accountId)
+            ->where('type', $invitationType)
             ->with('invitedBy')
             ->orderByDesc('id');
 
@@ -60,20 +87,48 @@ class ProfileInvitationController extends Controller
         return view('account.invitations', [
             'invitations' => $invitations,
             'invitationExpirationDays' => $this->parameterReader->invitationExpirationDays($accountId),
+            'maxInvitationsRetries' => $this->parameterReader->maxInvitationsRetries($accountId),
             'statusFilter' => $statusFilter,
+            'invitationType' => $invitationType,
+            'indexRoute' => $invitationType === UserInvitation::TYPE_INTERNAL
+                ? 'account.invitations.employee'
+                : 'account.invitations.company',
+            'storeRoute' => $invitationType === UserInvitation::TYPE_INTERNAL
+                ? 'account.invitations.store_employee'
+                : 'account.invitations.store_company',
         ]);
     }
 
     /**
-     * Store a new invitation and email the recipient (owner only; account from current team).
+     * Store an employee invitation (internal).
      */
-    public function store(Request $request): RedirectResponse
+    public function storeEmployee(Request $request): RedirectResponse
+    {
+        return $this->storeByType($request, UserInvitation::TYPE_INTERNAL);
+    }
+
+    /**
+     * Store a company invitation (external trial).
+     */
+    public function storeCompany(Request $request): RedirectResponse
+    {
+        return $this->storeByType($request, UserInvitation::TYPE_EXTERNAL);
+    }
+
+    /**
+     * Store a new invitation and email the recipient for current active account.
+     */
+    private function storeByType(Request $request, string $invitationType): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user && $user->hasRoleForCurrentAccount('owner'), 403);
+        if (! $user) {
+            return redirect()->route('account.dashboard');
+        }
 
-        $accountId = $user->currentAccountId();
-        abort_unless($accountId, 403);
+        $accountId = CurrentAccountSession::accountId($request);
+        if (! $accountId) {
+            return redirect()->route('account.dashboard');
+        }
 
         UserInvitation::syncExpiredForAccount($accountId);
 
@@ -85,7 +140,6 @@ class ProfileInvitationController extends Controller
                 'max:255',
                 Rule::unique('users', 'email'),
             ],
-            'type' => ['required', Rule::in([UserInvitation::TYPE_INTERNAL, UserInvitation::TYPE_EXTERNAL])],
         ]);
 
         $existsPending = UserInvitation::query()
@@ -108,9 +162,10 @@ class ProfileInvitationController extends Controller
             'account_id' => $accountId,
             'email' => Str::lower($validated['email']),
             'token' => Str::random(64),
+            'send_attempts' => 1,
             'expires_at' => now()->addDays($expirationDays),
             'invited_by' => $user->id,
-            'type' => $validated['type'],
+            'type' => $invitationType,
             'status' => UserInvitation::STATUS_PENDING,
         ]);
 
@@ -118,24 +173,28 @@ class ProfileInvitationController extends Controller
             ->notify(new UserInvitationNotification($invitation));
 
         return redirect()
-            ->route('account.invitations.index')
+            ->route($invitationType === UserInvitation::TYPE_INTERNAL ? 'account.invitations.employee' : 'account.invitations.company')
             ->with('status', __('invitations.created'));
     }
 
     /**
-     * Force-revoke a pending invitation (owner only; same account).
+     * Force-revoke a pending invitation for current active account.
      */
     public function revoke(Request $request, UserInvitation $invitation): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user && $user->hasRoleForCurrentAccount('owner'), 403);
+        if (! $user) {
+            return redirect()->route('account.dashboard');
+        }
 
-        $accountId = $user->currentAccountId();
-        abort_unless($accountId && (int) $invitation->account_id === (int) $accountId, 403);
+        $accountId = CurrentAccountSession::accountId($request);
+        if (! $accountId || (int) $invitation->account_id !== (int) $accountId) {
+            return redirect()->route('account.dashboard');
+        }
 
         if ($invitation->status !== UserInvitation::STATUS_PENDING) {
             return redirect()
-                ->route('account.invitations.index')
+                ->route($invitation->type === UserInvitation::TYPE_EXTERNAL ? 'account.invitations.company' : 'account.invitations.employee')
                 ->with('status', __('invitations.not_pending'));
         }
 
@@ -147,7 +206,61 @@ class ProfileInvitationController extends Controller
         }
 
         return redirect()
-            ->route('account.invitations.index', ['status' => $returnStatus])
+            ->route(
+                $invitation->type === UserInvitation::TYPE_EXTERNAL ? 'account.invitations.company' : 'account.invitations.employee',
+                ['status' => $returnStatus]
+            )
             ->with('status', __('invitations.revoked'));
     }
+
+    /**
+     * Resend a pending invitation email while respecting max retry limit.
+     */
+    public function resend(Request $request, UserInvitation $invitation): RedirectResponse
+    {
+        $user = $request->user();
+        if (! $user) {
+            return redirect()->route('account.dashboard');
+        }
+
+        $accountId = CurrentAccountSession::accountId($request);
+        if (! $accountId || (int) $invitation->account_id !== (int) $accountId) {
+            return redirect()->route('account.dashboard');
+        }
+
+        if ($invitation->status !== UserInvitation::STATUS_PENDING) {
+            return redirect()
+                ->route($invitation->type === UserInvitation::TYPE_EXTERNAL ? 'account.invitations.company' : 'account.invitations.employee')
+                ->with('status', __('invitations.not_pending'));
+        }
+
+        $maxRetries = $this->parameterReader->maxInvitationsRetries($accountId);
+        $currentAttempts = (int) ($invitation->send_attempts ?? 1);
+        if ($currentAttempts >= $maxRetries) {
+            return redirect()
+                ->route($invitation->type === UserInvitation::TYPE_EXTERNAL ? 'account.invitations.company' : 'account.invitations.employee')
+                ->withErrors(['email' => __('invitations.max_retries_reached')]);
+        }
+
+        Notification::route('mail', $invitation->email)
+            ->notify(new UserInvitationNotification($invitation));
+
+        $invitation->forceFill([
+            'send_attempts' => $currentAttempts + 1,
+            'invited_by' => $user->id,
+        ])->save();
+
+        $returnStatus = $request->input('return_status', UserInvitation::STATUS_PENDING);
+        if (! in_array($returnStatus, self::INVITATION_STATUS_FILTERS, true)) {
+            $returnStatus = UserInvitation::STATUS_PENDING;
+        }
+
+        return redirect()
+            ->route(
+                $invitation->type === UserInvitation::TYPE_EXTERNAL ? 'account.invitations.company' : 'account.invitations.employee',
+                ['status' => $returnStatus]
+            )
+            ->with('status', __('invitations.resent'));
+    }
+
 }

@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\AccountCategory;
 use App\Models\User;
 use App\Models\UserInvitation;
+use App\Support\CurrentAccountSession;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -170,7 +171,7 @@ class RegisteredUserController extends Controller
             return $account->id;
         });
 
-        return $this->finishRegistrationSession($request, $newAccountId);
+        return $this->finishRegistrationSession($request, $newAccountId, welcomeCompanyAfterVerify: true);
     }
 
     /**
@@ -289,7 +290,7 @@ class RegisteredUserController extends Controller
             return $account->id;
         });
 
-        return $this->finishRegistrationSession($request, $newAccountId);
+        return $this->finishRegistrationSession($request, $newAccountId, welcomeCompanyAfterVerify: true);
     }
 
     /**
@@ -307,10 +308,15 @@ class RegisteredUserController extends Controller
         };
     }
 
-    private function finishRegistrationSession(Request $request, int $newAccountId): RedirectResponse
+    private function finishRegistrationSession(Request $request, int $newAccountId, bool $welcomeCompanyAfterVerify = false): RedirectResponse
     {
         $request->session()->put(RecordLastLogin::SESSION_KEY, true);
-        $request->session()->put(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID, $newAccountId);
+        CurrentAccountSession::put($request, $request->user(), $newAccountId);
+        $request->session()->forget(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION);
+
+        if ($welcomeCompanyAfterVerify) {
+            $request->session()->put('welcome_company_after_verify', true);
+        }
 
         if (! $request->session()->has('locale')) {
             $request->session()->put('locale', config('app.locale'));

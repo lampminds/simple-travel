@@ -24,20 +24,28 @@ class CreateUser extends LmpCreateRecord
             $accountId = $auth->currentAccountId();
             if ($accountId !== null) {
                 $state = $this->form->getRawState() ?? [];
-                $state['accounts'] = [$accountId];
+                $state['memberships'] = [
+                    [
+                        'account_id' => $accountId,
+                        'role_ids' => [],
+                    ],
+                ];
                 $this->form->fill($state);
             }
         }
     }
 
-    /**
-     * BelongsToMany fields are persisted in {@see UserResource} Select::saveRelationshipsUsing}
-     * when Filament runs saveRelationships() after the user row exists.
-     */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data = parent::mutateFormDataBeforeCreate($data);
 
-        return Arr::except($data, ['accounts', 'roles']);
+        return Arr::except($data, ['memberships']);
+    }
+
+    protected function afterCreate(): void
+    {
+        /** @var User $record */
+        $record = $this->getRecord();
+        $record->syncAccountMemberships($this->form->getState()['memberships'] ?? []);
     }
 }

@@ -17,6 +17,7 @@ use App\Models\ParameterValue;
 class ParameterReaderController extends Controller
 {
     public const CODE_INVITATION_EXPIRATION_DAYS = 'invitation_expiration_days';
+    public const CODE_MAX_INVITATIONS_RETRIES = 'max_invitations_retries';
 
     /** @var array<string, ?string> */
     private array $rawCache = [];
@@ -66,6 +67,16 @@ class ParameterReaderController extends Controller
         $days = $this->getInt(self::CODE_INVITATION_EXPIRATION_DAYS, $accountId, 7);
 
         return max(1, min(365, $days));
+    }
+
+    /**
+     * Maximum amount of sends allowed for one invitation (first send included).
+     */
+    public function maxInvitationsRetries(?int $accountId = null): int
+    {
+        $max = $this->getInt(self::CODE_MAX_INVITATIONS_RETRIES, $accountId, 3);
+
+        return max(1, min(20, $max));
     }
 
     private function resolveRawForDefinition(ParameterDefinition $definition, ?int $accountId): ?string

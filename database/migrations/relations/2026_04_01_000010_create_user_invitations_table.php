@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained();
             $table->string('email');
             $table->string('token')->unique();
+            $table->unsignedInteger('send_attempts')->default(1);
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('declined_at')->nullable();

@@ -4,12 +4,14 @@
 --}}
 @php
     $prefix = 'errors.'.$errorKey;
+    $titleText = $title ?? __($prefix.'.title');
+    $descriptionText = $description ?? __($prefix.'.description');
 @endphp
 <main class="err-robot">
     <div class="err-robot__stage">
         <p class="err-robot__code">{{ __($prefix.'.code') }}</p>
-        <h1 class="err-robot__title">{{ __($prefix.'.title') }}</h1>
-        <p class="err-robot__desc">{{ __($prefix.'.description') }}</p>
+        <h1 class="err-robot__title">{{ $titleText }}</h1>
+        <p class="err-robot__desc">{{ $descriptionText }}</p>
     </div>
     <div class="err-robot__visual">
         <img

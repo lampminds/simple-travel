@@ -5,11 +5,18 @@ use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileInvitationController;
 use App\Http\Controllers\ProviderDashboardController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\AccountSelectionController;
+use App\Http\Controllers\OperatorDashboardController;
+use App\Http\Controllers\RelationshipsDemoController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
+use App\Http\Controllers\SelectDashboardLaneController;
 use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
+use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\TenantSite\HomeController;
+use App\Support\AccountTypeCategoryIds;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +37,7 @@ Route::get('/', HomeController::class)->name('home');
 // Profile: auth only (no verified) so users can fix email before re-verifying after a change.
 Route::middleware(['auth'])->group(function () {
     Route::post('account/switch', AccountSwitchController::class)->name('account.switch');
+    Route::get('account/select', AccountSelectionController::class)->name('account.select');
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
@@ -38,7 +46,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('account/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('account.profile.avatar.destroy');
 
     Route::get('account/invitations', [ProfileInvitationController::class, 'index'])->name('account.invitations.index');
-    Route::post('account/invitations', [ProfileInvitationController::class, 'store'])->name('account.invitations.store');
+    Route::get('account/invitations/employee', [ProfileInvitationController::class, 'employee'])->name('account.invitations.employee');
+    Route::get('account/invitations/company', [ProfileInvitationController::class, 'company'])->name('account.invitations.company');
+    Route::post('account/invitations/employee', [ProfileInvitationController::class, 'storeEmployee'])->name('account.invitations.store_employee');
+    Route::post('account/invitations/company', [ProfileInvitationController::class, 'storeCompany'])->name('account.invitations.store_company');
+    Route::post('account/invitations/{invitation}/resend', [ProfileInvitationController::class, 'resend'])
+        ->name('account.invitations.resend');
     Route::post('account/invitations/{invitation}/revoke', [ProfileInvitationController::class, 'revoke'])
         ->name('account.invitations.revoke');
 });
@@ -46,22 +59,55 @@ Route::middleware(['auth'])->group(function () {
 // Auth-protected account routes (must be before catch-alls so they take precedence).
 // 'verified' ensures users who registered via /register must confirm email before accessing.
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('website/menu-placeholder/{missingRoute}', function (string $missingRoute) {
+        return view('website.menu-route-placeholder', ['missingRoute' => $missingRoute]);
+    })->name('website.menu.placeholder');
+
+    Route::view('welcome-company', 'pages.welcome-company')->name('welcome.company');
+
     Route::get('account/dashboard', [RoutingController::class, 'secondLevel'])->name('account.dashboard')->defaults('first', 'account')->defaults('second', 'dashboard');
+    Route::get('account/dashboard/lane/{lane}', SelectDashboardLaneController::class)
+        ->name('account.dashboard.lane')
+        ->where('lane', 'provider|operator|agency');
     Route::get('account/settings', [RoutingController::class, 'secondLevel'])->name('account.settings')->defaults('first', 'account')->defaults('second', 'settings');
+    Route::get('account/company', [AccountCompanyController::class, 'edit'])->name('account.company.edit');
+    Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
+    Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
+    Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
+    Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
     // Account dashboards by account category (must be protected against public catch-alls).
-    Route::get('provider/dashboard', [ProviderDashboardController::class, 'show'])
-        ->name('provider.dashboard');
+    Route::prefix('provider')
+        ->name('provider.')
+        ->group(function () {
+            Route::get('dashboard', [ProviderDashboardController::class, 'show'])
+                ->defaults('menu_type_id', AccountTypeCategoryIds::PROVIDER)
+                ->name('dashboard');
+            Route::get('relationships', [RelationshipsDemoController::class, 'provider'])
+                ->defaults('menu_type_id', AccountTypeCategoryIds::PROVIDER)
+                ->name('relationships');
+        });
 
-    Route::get('operator/dashboard', [RoutingController::class, 'secondLevel'])
-        ->name('operator.dashboard')
-        ->defaults('first', 'operator')
-        ->defaults('second', 'dashboard');
+    Route::prefix('operator')
+        ->name('operator.')
+        ->group(function () {
+            Route::get('dashboard', [OperatorDashboardController::class, 'show'])
+                ->defaults('menu_type_id', AccountTypeCategoryIds::WHOLESALER)
+                ->name('dashboard');
+            Route::get('relationships', [RelationshipsDemoController::class, 'operator'])
+                ->defaults('menu_type_id', AccountTypeCategoryIds::WHOLESALER)
+                ->name('relationships');
+        });
 
-    Route::get('agency/dashboard', [RoutingController::class, 'secondLevel'])
-        ->name('agency.dashboard')
-        ->defaults('first', 'agency')
-        ->defaults('second', 'dashboard');
+    Route::prefix('agency')
+        ->name('agency.')
+        ->group(function () {
+            Route::get('dashboard', [RoutingController::class, 'secondLevel'])
+                ->defaults('menu_type_id', AccountTypeCategoryIds::AGENCY)
+                ->name('dashboard')
+                ->defaults('first', 'agency')
+                ->defaults('second', 'dashboard');
+        });
 
     // Service wizard step 1 (create or edit).
     Route::get('services/wizard/{serviceType:code}/step-1', [ServiceWizardController::class, 'createStepOne'])
@@ -98,6 +144,9 @@ Route::get('pages/pricing', App\Http\Controllers\PricingController::class)->name
 
 // Digitalizar operador turístico comparison page
 Route::get('pages/digitalizar-operador-turistico', App\Http\Controllers\DigitalizarOperadorController::class)->name('pages.digitalizar-operador-turistico');
+
+// Quick access page for original purchased template demos.
+Route::view('template-demos', 'pages.template-demos')->name('template.demos');
 
 // Redirect old Filament resource URL (contact_roles renamed to contact_positions)
 Route::get('smpl_adm/contact-roles', fn () => redirect('/smpl_adm/contact-positions', 301))

@@ -9,55 +9,48 @@
             </a>
 
             <div class="collapse navbar-collapse" id="topnav-menu-content4">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item pe-3">
-                        <a class="nav-link" href="{{ route('second', [ 'account' , 'dashboard']) }}">
-                            <div class="d-flex align-items-center">
-                                <span class="icon-xs me-1 flex-shrink-0">
-                                    @svg('/duotone-icons/layout/Layout-4-blocks')
-                                </span>
-                                <div class="flex-grow-1">Home</div>
-                            </div>
-                        </a>
-                    </li>
+                <ul class="navbar-nav mx-auto website-center-nav">
                     @php
+                        $websiteNavRoots = auth()->check()
+                            ? \App\Support\WebsiteNavigation::navbarMenuRoots()
+                            : null;
+                        $showDynamicMenu = $websiteNavRoots !== null && $websiteNavRoots->isNotEmpty();
+
                         $currentAccount = auth()->user()?->currentAccount();
                         $publicWebsiteUrl = $currentAccount
                             ? \App\Support\TenantWebsiteHostParser::publicWebsiteUrlForNick($currentAccount->nick)
                             : null;
+                        $hasAccountTypes = count(\App\Support\CurrentAccountSession::typeIds(request())) > 0;
                     @endphp
-                    @if($publicWebsiteUrl)
+                    @if(! $showDynamicMenu)
                         <li class="nav-item pe-3">
-                            <a class="nav-link" href="{{ $publicWebsiteUrl }}" target="_blank" rel="noopener noreferrer">
+                            <a class="nav-link" href="{{ route('second', [ 'account' , 'dashboard']) }}">
                                 <div class="d-flex align-items-center">
                                     <span class="icon-xs me-1 flex-shrink-0">
-                                        @svg('/duotone-icons/home/Globe')
+                                        @svg('/duotone-icons/layout/Layout-4-blocks')
                                     </span>
-                                    <div class="flex-grow-1">{{ __('account.nav_public_website') }}</div>
+                                    <div class="flex-grow-1">Home</div>
                                 </div>
                             </a>
                         </li>
+                        @if($publicWebsiteUrl && $hasAccountTypes)
+                            <li class="nav-item pe-3">
+                                <a class="nav-link" href="{{ $publicWebsiteUrl }}" target="_blank" rel="noopener noreferrer">
+                                    <div class="d-flex align-items-center">
+                                        <span class="icon-xs me-1 flex-shrink-0">
+                                            @svg('/duotone-icons/home/Globe')
+                                        </span>
+                                        <div class="flex-grow-1">{{ __('account.nav_public_website') }}</div>
+                                    </div>
+                                </a>
+                            </li>
+                        @endif
                     @endif
-                    <li class="nav-item pe-3">
-                        <a class="nav-link" href="#">
-                            <div class="d-flex align-items-center">
-                                <span class="icon-xs me-1 flex-shrink-0">
-                                    @svg('/duotone-icons/text/Article')
-                                </span>
-                                <div class="flex-grow-1">Tasks</div>
-                            </div>
-                        </a>
-                    </li>
-                    <li class="nav-item pe-3">
-                        <a class="nav-link" href="#">
-                            <div class="d-flex align-items-center">
-                                <span class="icon-xs me-1 flex-shrink-0">
-                                    @svg('/duotone-icons/media/Equalizer')
-                                </span>
-                                <div class="flex-grow-1">Reports</div>
-                            </div>
-                        </a>
-                    </li>
+                    @if($showDynamicMenu)
+                        @foreach($websiteNavRoots as $navMenu)
+                            @include('layouts.partials.website-nav-menu-node', ['menu' => $navMenu, 'level' => 0])
+                        @endforeach
+                    @endif
                     @if(auth()->user()?->hasRole('admin'))
                         <li class="nav-item pe-3">
                             <a class="nav-link" href="{{ url('/smpl_adm') }}">
@@ -162,6 +155,11 @@
                                 <div class="flex-grow-1 ms-1 lh-base">
                                     <span class="fw-semibold fs-13 d-block line-height-normal">{{ auth()->user()->name }}</span>
                                     <span class="text-muted fs-13">{{ auth()->user()->roleNamesForCurrentAccount()->first() ?? __('profile.menu_subtitle') }}</span>
+                                    @if($currentAccount)
+                                        <span class="text-muted fs-12 d-block">
+                                            {{ \Illuminate\Support\Str::limit($currentAccount->commercial_name ?? $currentAccount->name ?? $currentAccount->nick ?? '', 12, '') }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         </a>
@@ -170,6 +168,7 @@
                             @php
                                 $switchAccounts = auth()->user()->switchableAccounts();
                                 $currentAccountId = auth()->user()->currentAccountId();
+                                $currentLocale = app()->getLocale();
                             @endphp
                             @if($switchAccounts->count() > 1)
                                 <h6 class="dropdown-header px-2 py-1 fs-12 text-muted mb-0">{{ __('account.switch_heading') }}</h6>
@@ -177,6 +176,7 @@
                                     <form method="POST" action="{{ route('account.switch') }}" class="w-100">
                                         @csrf
                                         <input type="hidden" name="account_id" value="{{ $acc->id }}">
+                                        <input type="hidden" name="redirect_to" value="{{ route('account.dashboard', absolute: false) }}">
                                         <button type="submit"
                                                 class="dropdown-item p-2 border-0 bg-transparent w-100 text-start @if((int) $currentAccountId === (int) $acc->id) active @endif">
                                             <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
@@ -194,6 +194,13 @@
                             <!-- item end -->
 
                             @if(auth()->user()->hasRoleForCurrentAccount('owner'))
+                                <!-- item start -->
+                                <a class="dropdown-item p-2" href="{{ route('account.company.edit') }}">
+                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
+                                    Empresa
+                                </a>
+                                <!-- item end -->
+
                                 <!-- item start -->
                                 <a class="dropdown-item p-2" href="{{ route('account.invitations.index') }}">
                                     <i class="icon icon-xxs me-1 icon-dual" data-feather="mail"></i>
@@ -215,6 +222,22 @@
                                 Support
                             </a>
                             <!-- item end -->
+
+                            @if(isset($languages) && $languages->isNotEmpty())
+                                <div class="dropdown-divider"></div>
+                                <h6 class="dropdown-header px-2 py-1 fs-12 text-muted mb-0">{{ __('nav.language') }}</h6>
+                                @foreach($languages as $lang)
+                                    @php
+                                        $isActiveLanguage = \App\Models\Locale::primaryTagMatches($lang->locale, $currentLocale);
+                                        $flag = $lang->locale?->flagEmoji() ?? '🌐';
+                                    @endphp
+                                    <a class="dropdown-item p-2 d-flex align-items-center {{ $isActiveLanguage ? 'active' : '' }}"
+                                       href="{{ route('locale', ['language' => $lang->id]) }}">
+                                        <span class="me-2" aria-hidden="true">{{ $flag }}</span>
+                                        <span>{{ $lang->display_name }}</span>
+                                    </a>
+                                @endforeach
+                            @endif
 
                             <div class="dropdown-divider"></div>
 

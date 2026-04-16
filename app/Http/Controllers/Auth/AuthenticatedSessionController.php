@@ -7,6 +7,7 @@ use App\Http\Middleware\RecordLastLogin;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
+use App\Support\CurrentAccountSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\PermissionRegistrar;
@@ -42,9 +43,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->put(RecordLastLogin::SESSION_KEY, true);
 
-        $firstAccountId = $request->user()->accounts()->orderBy('accounts.id')->value('accounts.id');
-        if ($firstAccountId !== null) {
-            $request->session()->put(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID, (int) $firstAccountId);
+        $accountIds = $request->user()->accounts()->orderBy('accounts.id')->pluck('accounts.id')->map(fn ($id) => (int) $id);
+        if ($accountIds->count() === 1) {
+            CurrentAccountSession::put($request, $request->user(), (int) $accountIds->first());
+        } elseif ($accountIds->count() > 1) {
+            $request->session()->forget(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID);
+            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_NAME);
+            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_TYPE_IDS);
+            $request->session()->put(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION, true);
+
+            return redirect()->route('account.select');
         }
 
         return redirect()->intended(RouteServiceProvider::HOME);

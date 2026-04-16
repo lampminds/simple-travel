@@ -28,6 +28,7 @@ class UserInvitation extends Model
         'account_id',
         'email',
         'token',
+        'send_attempts',
         'expires_at',
         'accepted_at',
         'declined_at',
@@ -37,6 +38,7 @@ class UserInvitation extends Model
     ];
 
     protected $casts = [
+        'send_attempts' => 'integer',
         'expires_at' => 'datetime',
         'accepted_at' => 'datetime',
         'declined_at' => 'datetime',

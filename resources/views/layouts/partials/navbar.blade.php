@@ -23,6 +23,7 @@
                     </ul>
                 @endif
 
+                @unless (request()->routeIs('home'))
                 <ul class="navbar-nav align-items-lg-center {{$classList}}">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('home') }}">{{ __('nav.home') }}</a>
@@ -349,8 +350,12 @@
                         </div>
                     </li>
                 </ul>
+                @endunless
 
-                <ul class="navbar-nav align-items-lg-center d-flex">
+                <ul class="navbar-nav align-items-lg-center d-flex ms-auto">
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ route('template.demos') }}">Template</a>
+                    </li>
                     @include('layouts.partials.language-switcher')
                     @guest
                         <li class="nav-item ms-2">

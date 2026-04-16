@@ -60,4 +60,25 @@ class Locale extends Model
 
         return $primary === $normalized;
     }
+
+    /**
+     * Emoji flag for the locale primary language (best-effort mapping).
+     */
+    public function flagEmoji(): string
+    {
+        return self::flagEmojiForPrimaryTag($this->primaryLanguageTag());
+    }
+
+    public static function flagEmojiForPrimaryTag(string $primaryTag): string
+    {
+        return match (strtolower(trim($primaryTag))) {
+            'es' => '🇪🇸',
+            'en' => '🇺🇸',
+            'pt' => '🇵🇹',
+            'fr' => '🇫🇷',
+            'it' => '🇮🇹',
+            'de' => '🇩🇪',
+            default => '🌐',
+        };
+    }
 }

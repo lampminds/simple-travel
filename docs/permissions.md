@@ -44,7 +44,7 @@ Platform roles are rows in `user_roles` with **`account_id` = platform account i
 
 ## User edit and role sync
 
-When editing a user in `UserResource`, role IDs are loaded and saved with Spatie’s team set to the **edited user’s** first linked account id (`orderBy('accounts.id')`), so the same user can have different roles per tenant team without mixing contexts in one form.
+In `UserResource`, the form uses a **Accounts & roles** tab with a repeater: **one row per account**, each row selects the account and the **role IDs for that Spatie team** (`account_id` on `user_model_has_roles`). Saving runs `User::syncAccountMemberships()`, which syncs `account_user` and then calls `syncRoles()` with `PermissionRegistrar::setPermissionsTeamId()` for each account. Global role definitions (`user_roles.account_id` null) remain assignable in any team, consistent with registration flows.
 
 ## Configuration reference
 

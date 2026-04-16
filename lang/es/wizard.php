@@ -8,7 +8,7 @@ return [
     'step1_subtitle' => 'Datos base del servicio',
     'step1_submit_create' => 'Guardar e ir al paso 2',
     'step1_submit_edit' => 'Guardar',
-    'nav_dashboard' => 'Dashboard',
+    'nav_dashboard' => 'Panel',
     'nav_to_step1' => 'Paso 1: datos base',
     'nav_to_step2' => 'Paso 2: características',
     'nav_to_step3' => 'Paso 3: variantes',

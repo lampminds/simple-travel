@@ -34,7 +34,8 @@
         }
     }
     &.topnav-menu {
-        height: 70px;
+        min-height: 70px;
+        height: auto;
         .navbar-nav {
             & > .nav-item {
                 > .nav-link {
@@ -42,6 +43,35 @@
                     display: block;
                     line-height: 70px;
                     max-height: 70px;
+                }
+            }
+        }
+        // Compact horizontal spacing and provide button-like hover feedback for website menu items.
+        .navbar-nav.mx-auto.website-center-nav {
+            max-width: min(760px, 78%);
+            width: 100%;
+            justify-content: center;
+            align-content: center;
+            gap: 0.2rem 0;
+            flex-wrap: wrap;
+            > .nav-item {
+                padding-right: 0.5rem !important;
+                > .nav-link {
+                    line-height: 1.2;
+                    max-height: none;
+                    padding: 0.45rem 0.7rem;
+                    margin: 0;
+                    border: 1px solid transparent;
+                    border-radius: 0.5rem;
+                    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+                        box-shadow 0.2s ease;
+                }
+                > .nav-link:hover,
+                > .nav-link:focus-visible {
+                    background-color: rgba($primary, 0.1);
+                    border-color: rgba($primary, 0.35);
+                    box-shadow: 0 2px 8px rgba($primary, 0.14);
+                    color: $primary;
                 }
             }
         }

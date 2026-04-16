@@ -29,6 +29,14 @@ class CreateMenu extends LmpCreateRecord
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
 
+        $duplicateId = request()->integer('duplicate');
+        if ($duplicateId > 0) {
+            $source = Menu::query()->find($duplicateId);
+            if ($source !== null) {
+                $state = array_merge($state, MenuResource::duplicateFormDefaults($source));
+            }
+        }
+
         $parentId = request()->integer('parent_id');
         if ($parentId > 0) {
             $state['parent_id'] = $parentId;

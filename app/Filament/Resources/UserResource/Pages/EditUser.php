@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpEditRecord;
-use Spatie\Permission\PermissionRegistrar;
 
 class EditUser extends LmpEditRecord
 {
@@ -18,40 +18,45 @@ class EditUser extends LmpEditRecord
     }
 
     /**
-     * Load current user roles and account memberships into the form.
+     * Load memberships (account + role ids per Spatie team) into the form.
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        $data = parent::mutateFormDataBeforeFill($data);
+
+        /** @var User $record */
         $record = $this->getRecord();
-        $teamId = $record->accounts()->orderBy('accounts.id')->value('accounts.id');
-        if ($teamId !== null) {
-            app(PermissionRegistrar::class)->setPermissionsTeamId((int) $teamId);
-        }
-        $record->unsetRelation('roles');
-        $data['roles'] = $record->roles->pluck('id')->toArray();
-        $data['accounts'] = $record->accounts->pluck('id')->toArray();
+
+        $data['memberships'] = $record->accounts
+            ->map(fn ($account): array => [
+                'account_id' => $account->id,
+                'role_ids' => $record->roleIdsForAccount((int) $account->id),
+            ])
+            ->values()
+            ->all();
 
         return $data;
     }
 
     /**
-     * BelongsToMany keys must not be mass-assigned on the user row.
+     * Pivot / JSON keys must not be mass-assigned on the user row.
      */
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data = parent::mutateFormDataBeforeSave($data);
 
-        return Arr::except($data, ['accounts', 'roles']);
+        return Arr::except($data, ['memberships']);
     }
 
-    /**
-     * Filament EditRecord does not call saveRelationships(); create flow does.
-     * Run it here so Select::saveRelationshipsUsing runs for accounts + roles (Spatie team order).
-     */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        $memberships = $this->form->getState()['memberships'] ?? [];
+
         $record = parent::handleRecordUpdate($record, $data);
-        $this->form->model($record)->saveRelationships();
+
+        if ($record instanceof User) {
+            $record->syncAccountMemberships($memberships);
+        }
 
         return $record;
     }

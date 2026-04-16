@@ -1,4 +1,4 @@
-@extends('layouts.base', ['title' => 'Prompt - Agency Dashboard'])
+@extends('layouts.base', ['title' => 'Prompt - Panel de agencia'])
 
 @section('content')
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
@@ -24,14 +24,14 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
-                        <h3 class="my-0">Dashboard de Agencia</h3>
+                        <h3 class="my-0">Panel de Agencia</h3>
                         <p class="mt-1 fw-medium">Espacio para el desarrollo del panel de agencia</p>
                     </div>
                 </div>
             </div>
 
             <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary mt-3">
-                Volver a la selección de dashboard
+                Volver a la selección de panel
             </a>
         </div>
     </section>

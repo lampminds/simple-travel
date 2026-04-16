@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Service;
-use App\Models\ServiceType;
+use App\Support\AccountDashboardLane;
+use App\Support\AccountTypeCategoryIds;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -11,7 +11,7 @@ use Illuminate\View\View;
 class ProviderDashboardController extends Controller
 {
     /**
-     * Provider dashboard: list account services and entry points to create new ones.
+     * Provider dashboard landing; service listing lives under {@see CatalogController}.
      */
     public function show(Request $request): View|RedirectResponse
     {
@@ -29,24 +29,8 @@ class ProviderDashboardController extends Controller
             return redirect()->to('/account/dashboard');
         }
 
-        $services = collect();
-        if ($account) {
-            $services = Service::query()
-                ->where('account_id', $account->id)
-                ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
-                ->orderByDesc('id')
-                ->get();
-        }
+        AccountDashboardLane::set($account, AccountTypeCategoryIds::PROVIDER);
 
-        $serviceTypes = ServiceType::query()
-            ->where('active', true)
-            ->ordered()
-            ->with('translations.language.locale')
-            ->get();
-
-        return view('provider.dashboard', [
-            'services' => $services,
-            'serviceTypes' => $serviceTypes,
-        ]);
+        return view('provider.dashboard');
     }
 }

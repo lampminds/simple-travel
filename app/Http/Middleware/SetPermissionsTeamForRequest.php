@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\CurrentAccountSession;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 class SetPermissionsTeamForRequest
 {
     public const SESSION_CURRENT_ACCOUNT_ID = 'current_account_id';
+    public const SESSION_REQUIRES_ACCOUNT_SELECTION = 'requires_account_selection';
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -34,6 +36,15 @@ class SetPermissionsTeamForRequest
         $user = Auth::user();
         $platformId = (int) config('permission.platform_account_id', 1);
 
+        $requiresSelection = (bool) $request->session()->get(self::SESSION_REQUIRES_ACCOUNT_SELECTION, false);
+        $routeName = (string) optional($request->route())->getName();
+        if (
+            $requiresSelection
+            && ! in_array($routeName, ['account.select', 'account.switch', 'logout'], true)
+        ) {
+            return redirect()->route('account.select');
+        }
+
         if ($user->belongsToAccount($platformId)) {
             $registrar->setPermissionsTeamId($platformId);
 
@@ -44,13 +55,21 @@ class SetPermissionsTeamForRequest
 
         if ($accountId !== null && ! $user->belongsToAccount((int) $accountId)) {
             $accountId = null;
+            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_NAME);
+            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_TYPE_IDS);
         }
 
         if ($accountId === null) {
+            if ($requiresSelection) {
+                $registrar->setPermissionsTeamId(null);
+
+                return $next($request);
+            }
+
             $firstId = $user->accounts()->orderBy('accounts.id')->value('accounts.id');
             $accountId = $firstId !== null ? (int) $firstId : null;
             if ($accountId !== null) {
-                $request->session()->put(self::SESSION_CURRENT_ACCOUNT_ID, $accountId);
+                CurrentAccountSession::put($request, $user, $accountId);
             }
         }
 

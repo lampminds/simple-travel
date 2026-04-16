@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Models\AccountCategory;
+use App\Models\LmpCity;
 use BackedEnum;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
@@ -26,6 +27,8 @@ class AccountResource extends LmpResource
     protected static ?string $model = Account::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $modelLabel = 'filament.resources.account';
 
@@ -90,6 +93,39 @@ class AccountResource extends LmpResource
                                     ->label(__('filament.resources.account_fields.address_line2'))
                                     ->placeholder(__('filament.resources.account_fields.address_line2'))
                                     ->maxLength(255),
+                                Select::make('city_id')
+                                    ->label(__('filament.resources.account_fields.city_id'))
+                                    ->searchable()
+                                    ->getSearchResultsUsing(function (string $search): array {
+                                        return LmpCity::query()
+                                            ->where(function (Builder $query) use ($search): void {
+                                                $query->where('name', 'like', '%' . $search . '%');
+                                                if (is_numeric($search)) {
+                                                    $query->orWhere('id', (int) $search);
+                                                }
+                                            })
+                                            ->orderBy('name')
+                                            ->limit(50)
+                                            ->pluck('name', 'id')
+                                            ->all();
+                                    })
+                                    ->getOptionLabelUsing(fn ($value): ?string => $value ? LmpCity::query()->find($value)?->name : null)
+                                    ->live()
+                                    ->afterStateHydrated(function ($state, callable $set): void {
+                                        self::setLocationLabelsFromCity($state, $set);
+                                    })
+                                    ->afterStateUpdated(function ($state, callable $set): void {
+                                        self::setLocationLabelsFromCity($state, $set);
+                                    })
+                                    ->nullable(),
+                                TextInput::make('state_name')
+                                    ->label('Estado')
+                                    ->disabled()
+                                    ->dehydrated(false),
+                                TextInput::make('country_name')
+                                    ->label('País')
+                                    ->disabled()
+                                    ->dehydrated(false),
                                 TextInput::make('postal_code')
                                     ->label(__('filament.resources.account_fields.postal_code'))
                                     ->placeholder(__('filament.resources.account_fields.postal_code'))
@@ -210,6 +246,23 @@ class AccountResource extends LmpResource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    private static function setLocationLabelsFromCity(mixed $cityId, callable $set): void
+    {
+        if (! is_numeric($cityId)) {
+            $set('state_name', null);
+            $set('country_name', null);
+
+            return;
+        }
+
+        $city = LmpCity::query()
+            ->with(['state.country'])
+            ->find((int) $cityId);
+
+        $set('state_name', $city?->state?->name);
+        $set('country_name', $city?->state?->country?->name);
     }
 
 }

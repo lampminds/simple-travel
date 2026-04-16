@@ -7,6 +7,10 @@ use App\Models\AccountCategory;
 use App\Models\Language;
 use App\Models\Menu;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +21,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -99,6 +104,53 @@ class MenuResource extends BaseResource
                 ]
             );
         }
+    }
+
+    /**
+     * Form state to pre-fill "create" when duplicating an existing menu (no DB write until save).
+     *
+     * @return array<string, mixed>
+     */
+    public static function duplicateFormDefaults(Menu $source): array
+    {
+        $source->loadMissing(['translations', 'accountTypes']);
+
+        $translations = [];
+        foreach (Language::query()->orderBy('id')->get() as $lang) {
+            $trans = $source->translations->firstWhere('language_id', $lang->id);
+            $translations[$lang->id] = [
+                'name' => $trans?->name ?? '',
+                'tip' => $trans?->tip ?? '',
+            ];
+        }
+
+        return [
+            'slug' => static::nextCopySlug((string) $source->slug),
+            'icon' => $source->icon,
+            'route' => $source->route,
+            'parent_id' => $source->parent_id,
+            'active' => (bool) $source->active,
+            'translations' => $translations,
+            'accountTypes' => $source->accountTypes->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+        ];
+    }
+
+    private static function nextCopySlug(string $baseSlug): string
+    {
+        $normalized = trim($baseSlug);
+        if ($normalized === '') {
+            $normalized = 'menu';
+        }
+
+        $candidate = $normalized.'-copy';
+        $counter = 2;
+
+        while (Menu::query()->where('slug', $candidate)->exists()) {
+            $candidate = $normalized.'-copy-'.$counter;
+            $counter++;
+        }
+
+        return $candidate;
     }
 
     /**
@@ -337,6 +389,16 @@ class MenuResource extends BaseResource
                         $query->where('active', (bool) (int) $v);
                     }),
             ], layout: \Filament\Tables\Enums\FiltersLayout::AboveContent)
+            ->recordActions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    Action::make('duplicate')
+                        ->label(__('filament.resources.menu_duplicate'))
+                        ->icon('heroicon-o-document-duplicate')
+                        ->url(fn (Menu $record): string => static::getUrl('create').'?duplicate='.$record->getKey()),
+                    DeleteAction::make(),
+                ]),
+            ], position: RecordActionsPosition::BeforeColumns)
             ->reorderable(
                 'sort_order',
                 fn ($livewire): bool => static::siblingScopeAllowsReorder($livewire),

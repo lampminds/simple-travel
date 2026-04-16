@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\SetPermissionsTeamForRequest;
+use App\Support\CurrentAccountSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Spatie\Permission\PermissionRegistrar;
@@ -26,9 +26,14 @@ class AccountSwitchController extends Controller
                 ->withErrors(['account' => __('account.switch_forbidden')]);
         }
 
-        $request->session()->put(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID, $accountId);
+        CurrentAccountSession::put($request, $request->user(), (int) $accountId);
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($accountId);
+
+        $redirectTo = $request->input('redirect_to');
+        if (is_string($redirectTo) && str_starts_with($redirectTo, '/')) {
+            return redirect()->to($redirectTo);
+        }
 
         return redirect()
             ->back()

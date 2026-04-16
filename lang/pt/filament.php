@@ -41,7 +41,7 @@ return [
 
         'account_type_category_fields' => [
             'label' => 'Tipos de conta',
-            'help' => 'Um ou mais tipos de negócio (fornecedor, agência, etc.). Só aparecem categorias com grupo «type».',
+            'help' => 'Um ou mais tipos de negócio (prestador, agência, etc.). Só aparecem categorias com grupo «type».',
         ],
 
         'account_fields' => [
@@ -53,6 +53,9 @@ return [
             'phone' => 'Telefone',
             'address_line1' => 'Morada (linha 1)',
             'address_line2' => 'Morada (linha 2)',
+            'city_id' => 'Cidade',
+            'state_id' => 'Estado',
+            'country_id' => 'País',
             'postal_code' => 'Código postal',
             'code_help' => 'Gerado automaticamente na criação.',
         ],
@@ -96,12 +99,21 @@ return [
         'user' => 'Utilizador',
         'users' => 'Utilizadores',
 
+        'user_tabs' => [
+            'general' => 'Perfil',
+            'accounts_roles' => 'Contas e funções',
+        ],
+
         'user_fields' => [
             'accounts' => 'Contas',
             'name' => 'Nome',
             'email' => 'E-mail',
             'password' => 'Palavra-passe',
             'roles' => 'Funções',
+            'memberships_heading' => 'Contas e permissões',
+            'memberships_help' => 'Uma linha por conta. Escolha primeiro a conta e depois as funções dessa equipa (Spatie usa account_id como equipa).',
+            'account' => 'Conta',
+            'add_membership' => 'Adicionar conta',
         ],
 
         'user_columns' => [
@@ -110,6 +122,36 @@ return [
             'name' => 'Nome',
             'email' => 'E-mail',
             'roles' => 'Funções',
+        ],
+
+        'user_invitation' => 'Convite',
+        'user_invitations' => 'Convites',
+
+        'user_invitation_columns' => [
+            'id' => 'ID',
+            'account' => 'Conta',
+            'email' => 'E-mail',
+            'type' => 'Tipo',
+            'status' => 'Status',
+            'expires_at' => 'Expira em',
+            'invited_by' => 'Convidado por',
+        ],
+
+        'user_invitation_fields' => [
+            'account_id' => 'Conta',
+            'email' => 'E-mail',
+            'type' => 'Tipo',
+            'status' => 'Status',
+            'expires_at' => 'Expira em',
+            'invited_by' => 'Convidado por',
+            'token' => 'Token',
+            'accepted_at' => 'Aceite em',
+            'declined_at' => 'Recusado em',
+        ],
+
+        'user_invitation_filters' => [
+            'type' => 'Tipo',
+            'status' => 'Status',
         ],
 
         'role' => 'Função',
@@ -252,8 +294,8 @@ return [
             'position' => 'Cargo',
         ],
 
-        'provider' => 'Fornecedor',
-        'providers' => 'Fornecedores',
+        'provider' => 'Prestador',
+        'providers' => 'Prestadores',
 
         'provider_tabs' => [
             'main' => 'Dados principais',
@@ -267,7 +309,7 @@ return [
             'phone' => 'Telefone',
             'address_line1' => 'Morada (linha 1)',
             'address_line2' => 'Morada (linha 2)',
-            'city_id' => 'Cidade',
+            'city_id' => 'C�digo da cidade',
             'postal_code' => 'Código postal',
             'status' => 'Estado',
             'inviting_id' => 'Conta convidante',
@@ -290,8 +332,8 @@ return [
             'terminated' => 'Rescindido',
         ],
 
-        'provider_category' => 'Categoria de fornecedor',
-        'provider_categories' => 'Categorias de fornecedor',
+        'provider_category' => 'Categoria de prestador',
+        'provider_categories' => 'Categorias de prestador',
 
         'provider_category_fields' => [
             'group' => 'Grupo',
@@ -365,6 +407,8 @@ return [
             'account_types' => 'Tipos de conta',
             'account_types_none' => 'Nenhum',
         ],
+
+        'menu_duplicate' => 'Duplicar',
 
         'menu_filter' => [
             'scope' => 'Âmbito',
@@ -545,6 +589,64 @@ return [
         'nav_parameters' => 'Configurações',
         'nav_users' => 'Utilizadores',
         'nav_authorization' => 'Autorização',
+        'nav_onboarding' => 'Guia de início',
+
+        'todo_category' => 'Categoria de tarefas',
+        'todo_categories' => 'Categorias de tarefas',
+
+        'todo_category_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'todo_category_fields' => [
+            'code' => 'Código',
+            'sort_order' => 'Ordem',
+            'name' => 'Nome',
+            'description' => 'Descrição',
+        ],
+
+        'todo_category_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Ordem',
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'todo_task' => 'Tarefa (modelo)',
+        'todo_tasks' => 'Tarefas (modelos)',
+
+        'todo_task_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'todo_task_fields' => [
+            'account_id' => 'Conta (sistema)',
+            'code' => 'Código',
+            'todo_category_id' => 'Categoria',
+            'original_task_id' => 'Baseada na tarefa (opcional)',
+            'action_type' => 'Tipo de ação',
+            'action_url' => 'URL (para ligação)',
+            'sort_order' => 'Ordem',
+            'name' => 'Título',
+            'description' => 'Descrição',
+        ],
+
+        'todo_task_action_types' => [
+            'link' => 'Abrir ligação',
+            'api_check' => 'Verificação API',
+            'manual' => 'Manual',
+        ],
+
+        'todo_task_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Ordem',
+            'code' => 'Código',
+            'category' => 'Categoria',
+            'name' => 'Título',
+            'action_type' => 'Ação',
+        ],
 
         'service_hotel_type' => 'Tipo de hotel',
         'service_hotel_types' => 'Tipos de hotel',
@@ -1105,7 +1207,7 @@ return [
         'service_fields' => [
             'account_id' => 'Conta',
             'service_type_id' => 'Tipo de serviço',
-            'city_id' => 'Cidade',
+            'city_id' => 'C�digo da cidade',
             'status' => 'Estado',
             'name' => 'Nome',
             'description' => 'Descrição',
@@ -1153,3 +1255,4 @@ return [
     ],
 
 ];
+

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Lampminds\Customization\Models\User as BaseUser;
@@ -63,6 +64,10 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
      */
     public function currentAccountId(): ?int
     {
+        if (session(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION, false)) {
+            return null;
+        }
+
         $sessionId = session(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID);
         if ($sessionId !== null && $this->belongsToAccount((int) $sessionId)) {
             return (int) $sessionId;
@@ -111,15 +116,27 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
             return false;
         }
 
-        $registrar = app(PermissionRegistrar::class);
-        $previous = $registrar->getPermissionsTeamId();
-        $registrar->setPermissionsTeamId($accountId);
+        return $this->hasRoleForAccountId($role, $accountId);
+    }
 
-        try {
-            return $this->hasRole($role);
-        } finally {
-            $registrar->setPermissionsTeamId($previous);
-        }
+    /**
+     * Check whether the user has a role in a specific account/team, regardless of current registrar team.
+     */
+    public function hasRoleForAccountId(string $role, int $accountId): bool
+    {
+        $pivot = config('permission.table_names.model_has_roles');
+        $rolesTable = config('permission.table_names.roles');
+        $roleIdCol = config('permission.column_names.role_pivot_key') ?: 'role_id';
+        $morphKey = config('permission.column_names.model_morph_key');
+        $teamKey = config('permission.column_names.team_foreign_key');
+
+        return DB::table($pivot)
+            ->join($rolesTable, $rolesTable.'.id', '=', $pivot.'.'.$roleIdCol)
+            ->where($pivot.'.'.$morphKey, $this->getKey())
+            ->where($pivot.'.model_type', static::class)
+            ->where($pivot.'.'.$teamKey, $accountId)
+            ->where($rolesTable.'.name', $role)
+            ->exists();
     }
 
     /**
@@ -149,6 +166,92 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
     public function canAccessPanel(Panel $panel): bool
     {
         return $panel->getId() === 'smpl_adm' && $this->belongsToPlatformAccount();
+    }
+
+    /**
+     * Role IDs assigned in {@see config('permission.table_names.model_has_roles')} for a given account (Spatie team).
+     *
+     * @return list<int>
+     */
+    public function roleIdsForAccount(int $accountId): array
+    {
+        $pivot = config('permission.table_names.model_has_roles');
+        $roleCol = config('permission.column_names.role_pivot_key') ?: 'role_id';
+        $morphKey = config('permission.column_names.model_morph_key');
+        $teamKey = config('permission.column_names.team_foreign_key');
+
+        return DB::table($pivot)
+            ->where($morphKey, $this->getKey())
+            ->where('model_type', static::class)
+            ->where($teamKey, $accountId)
+            ->pluck($roleCol)
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Sync `account_user` and per-account roles from Filament "memberships" state (one row per account).
+     *
+     * @param  array<int, array{account_id?: int|null, role_ids?: array<int|string>|null}>  $memberships
+     */
+    public function syncAccountMemberships(array $memberships): void
+    {
+        $merged = [];
+        foreach ($memberships as $row) {
+            $accountId = (int) ($row['account_id'] ?? 0);
+            if ($accountId < 1) {
+                continue;
+            }
+            $ids = array_map(
+                static fn ($id) => (int) $id,
+                array_values(array_filter(Arr::wrap($row['role_ids'] ?? []), static fn ($v) => $v !== null && $v !== ''))
+            );
+            if (! isset($merged[$accountId])) {
+                $merged[$accountId] = [];
+            }
+            $merged[$accountId] = array_values(array_unique(array_merge($merged[$accountId], $ids)));
+        }
+
+        $accountIds = array_keys($merged);
+        sort($accountIds);
+
+        $this->accounts()->sync($accountIds);
+
+        $pivot = config('permission.table_names.model_has_roles');
+        $morphKey = config('permission.column_names.model_morph_key');
+        $teamKey = config('permission.column_names.team_foreign_key');
+
+        $pivotQuery = DB::table($pivot)
+            ->where($morphKey, $this->getKey())
+            ->where('model_type', static::class);
+
+        if ($accountIds === []) {
+            $pivotQuery->delete();
+            $this->forgetCachedPermissions();
+
+            return;
+        }
+
+        $pivotQuery->whereNotIn($teamKey, $accountIds)->delete();
+
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+        $roleModel = config('permission.models.role');
+
+        try {
+            foreach ($merged as $accountId => $roleIds) {
+                $registrar->setPermissionsTeamId($accountId);
+                $roles = $roleIds === []
+                    ? []
+                    : $roleModel::query()->whereIn('id', $roleIds)->get()->all();
+                $this->syncRoles($roles);
+            }
+        } finally {
+            $registrar->setPermissionsTeamId($previous);
+        }
+
+        $this->forgetCachedPermissions();
     }
 
     /**

@@ -1,4 +1,4 @@
-@extends('layouts.base', ['title' => 'Prompt - Account Dashboard'])
+@extends('layouts.base', ['title' => 'Prompt - Panel de cuenta'])
 
 @section('content')
 
@@ -31,7 +31,7 @@
         $hasOperator = $typeCodes->contains('wholesaler') || $typeCodes->contains('tour_operator');
         $hasAgency = $typeCodes->contains('agency');
 
-        $accountName = $account?->name ?: $account?->nick;
+        $userName = auth()->user()?->name;
     @endphp
 
     <section class="position-relative p-3 bg-gradient2">
@@ -44,8 +44,8 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
-                        <h3 class="my-0">{{ $accountName ? 'Hola, ' . $accountName : 'Hola' }}</h3>
-                        <p class="mt-1 fw-medium">Selecciona el dashboard al que tienes acceso</p>
+                        <h3 class="my-0">{{ $userName ? 'Hola, ' . $userName : 'Hola' }}</h3>
+                        <p class="mt-1 fw-medium">Selecciona el panel al que tienes acceso</p>
                     </div>
                 </div>
             </div>
@@ -54,8 +54,8 @@
                 <div class="col-lg-4">
                     <div class="card h-100 {{ $hasProvider ? '' : 'opacity-50' }}">
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title mb-2">Proveedor</h5>
-                            <p class="text-muted mb-3">Acceso al panel de proveedor</p>
+                            <h5 class="card-title mb-2">Prestador</h5>
+                            <p class="text-muted mb-3">Acceso al panel de prestador</p>
 
                             @if($hasProvider)
                                 <p class="small text-muted mb-3">
@@ -65,7 +65,7 @@
                                     <span class="fw-semibold text-body">{{ $providerVariantCount }}</span>
                                     {{ __('account.provider_variants_label') }}
                                 </p>
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/provider/dashboard') }}">Ir al dashboard</a>
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'provider']) }}">Ir al panel</a>
                             @else
                                 <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
                             @endif
@@ -80,7 +80,7 @@
                             <p class="text-muted mb-3">Acceso al panel operador/mayorista</p>
 
                             @if($hasOperator)
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/operator/dashboard') }}">Ir al dashboard</a>
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'operator']) }}">Ir al panel</a>
                             @else
                                 <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
                             @endif
@@ -95,7 +95,7 @@
                             <p class="text-muted mb-3">Acceso al panel de agencia</p>
 
                             @if($hasAgency)
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ url('/agency/dashboard') }}">Ir al dashboard</a>
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'agency']) }}">Ir al panel</a>
                             @else
                                 <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
                             @endif
@@ -106,7 +106,7 @@
 
             @if(!($hasProvider || $hasOperator || $hasAgency))
                 <div class="alert alert-warning mt-4" role="alert">
-                    No tienes categorías asignadas para acceder a un dashboard.
+                    No tienes categorías asignadas para acceder a un panel.
                 </div>
             @endif
         </div>

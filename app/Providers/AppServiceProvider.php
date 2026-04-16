@@ -24,7 +24,9 @@ class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom([
             database_path('migrations/accounts'),
             database_path('migrations/core'),
+            database_path('migrations/help'),
             database_path('migrations/plans'),
+            database_path('migrations/relations'),
             database_path('migrations/services'),
             database_path('migrations/settings'),
         ]);
@@ -34,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
         // Override Filament panel views (e.g. sidebar) so translation keys for nav groups are resolved
         View::prependNamespace('filament-panels', resource_path('views/vendor/filament-panels'));
 
-        View::composer('layouts.partials.navbar', function ($view) {
+        View::composer(['layouts.partials.navbar', 'layouts.partials.dashboard-navbar'], function ($view) {
             $view->with('languages', Language::with('locale')->orderBy('id')->get());
         });
     }
