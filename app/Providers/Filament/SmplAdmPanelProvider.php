@@ -51,6 +51,7 @@ class SmplAdmPanelProvider extends PanelProvider
                 NavigationGroup::make(__('filament.resources.nav_parameters')),
                 NavigationGroup::make(__('filament.resources.nav_users')),
                 NavigationGroup::make(__('filament.resources.nav_authorization')),
+                NavigationGroup::make(__('filament.resources.nav_ai')),
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

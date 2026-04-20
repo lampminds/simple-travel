@@ -18,6 +18,23 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
+    'login' => [
+        'title' => 'Log in',
+        'heading' => 'Welcome back!',
+        'intro' => 'Enter your email address and password to sign in.',
+        'email' => 'Email',
+        'password' => 'Password',
+        'placeholder_email' => 'Email',
+        'placeholder_password' => 'Password',
+        'forgot_password' => 'Forgot your password?',
+        'remember_me' => 'Remember me',
+        'submit' => 'Log in',
+        'or' => 'OR',
+        'github' => 'GitHub',
+        'no_account' => 'Don’t have an account?',
+        'create_account' => 'Create account',
+    ],
+
     'register' => [
         'title' => 'Create account',
         'heading' => 'Create account',

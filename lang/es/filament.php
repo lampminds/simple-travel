@@ -592,6 +592,33 @@ return [
         'nav_users' => 'Usuarios',
         'nav_authorization' => 'Autorización',
         'nav_onboarding' => 'Guía de inicio',
+        'nav_ai' => 'Asistente IA',
+
+        'ai_knowledge_item' => 'Artículo de conocimiento',
+        'ai_knowledge_items' => 'Base de conocimiento (IA)',
+
+        'ai_knowledge_tabs' => [
+            'general' => 'General',
+            'translations' => 'Traducciones',
+        ],
+
+        'ai_knowledge_fields' => [
+            'key' => 'Clave estable',
+            'key_help' => 'Solo letras, números y guiones bajos (p. ej. editar_imagen_servicio).',
+            'title' => 'Título',
+            'content_short' => 'Resumen breve',
+            'content' => 'Cuerpo',
+            'url' => 'URL relacionada',
+            'tags' => 'Etiquetas',
+            'tags_help' => 'Palabras clave separadas por comas para filtrar.',
+        ],
+
+        'ai_knowledge_columns' => [
+            'id' => 'ID',
+            'key' => 'Clave',
+            'title_preview' => 'Título (primer idioma)',
+            'translations_count' => 'Idiomas',
+        ],
 
         'todo_category' => 'Categoría de tareas',
         'todo_categories' => 'Categorías de tareas',
@@ -615,6 +642,19 @@ return [
             'name' => 'Nombre',
         ],
 
+        'todo_category_actions' => [
+            'copy_to_account' => 'Copiar a cuenta',
+            'copy_to_account_heading' => 'Copiar tareas a una cuenta',
+            'copy_to_account_description' => 'Crea una copia de cada tarea de esta categoría (de todas las cuentas), todas asignadas a la cuenta que elijas. Se duplican filas en todo_tasks y todo_task_translations.',
+            'copy_destination_account' => 'Cuenta',
+            'copy_failed_title' => 'No se pudieron copiar las tareas',
+            'copy_invalid_account' => 'Seleccioná una cuenta válida.',
+            'copy_none_title' => 'No hay tareas para copiar',
+            'copy_none_body' => 'Esta categoría aún no tiene tareas.',
+            'copy_success_title' => 'Tareas copiadas',
+            'copy_success_body' => 'Se crearon :count tarea(s) en la cuenta seleccionada.',
+        ],
+
         'todo_task' => 'Tarea (plantilla)',
         'todo_tasks' => 'Tareas (plantillas)',
 
@@ -624,30 +664,51 @@ return [
         ],
 
         'todo_task_fields' => [
-            'account_id' => 'Cuenta (sistema)',
+            'account_id' => 'Cuenta',
             'code' => 'Código',
             'todo_category_id' => 'Categoría',
             'original_task_id' => 'Basada en tarea (opcional)',
             'action_type' => 'Tipo de acción',
-            'action_url' => 'URL (para enlace)',
+            'action_url' => 'URL',
+            'action_url_help' => 'URL completa (incluyendo https://).',
+            'route_name' => 'Ruta',
+            'route_name_help' => 'Rutas GET con nombre de la aplicación (se ocultan Filament, Livewire y rutas internas similares).',
+            'verification_type' => 'Tipo de verificación',
+            'verification_url' => 'URL de verificación',
             'sort_order' => 'Orden',
             'name' => 'Título',
             'description' => 'Descripción',
         ],
 
         'todo_task_action_types' => [
-            'link' => 'Abrir enlace',
-            'api_check' => 'Comprobación API',
-            'manual' => 'Manual',
+            'none' => 'Ninguna',
+            'route' => 'Ruta',
+            'url' => 'URL',
+            'external' => 'Externo',
+        ],
+
+        'todo_task_verification_types' => [
+            'none' => 'Ninguna',
+            'api-check' => 'Comprobación API',
         ],
 
         'todo_task_columns' => [
             'id' => 'ID',
+            'account' => 'Cuenta',
             'sort_order' => 'Orden',
             'code' => 'Código',
             'category' => 'Categoría',
             'name' => 'Título',
             'action_type' => 'Acción',
+            'verification_type' => 'Verificación',
+        ],
+
+        'todo_task_filters' => [
+            'account_id' => 'Cuenta',
+        ],
+
+        'todo_category_filters' => [
+            'account_id' => 'Con tareas de la cuenta',
         ],
 
         'service_hotel_type' => 'Tipo de hotel',

@@ -15,6 +15,8 @@ use App\Http\Controllers\SelectDashboardLaneController;
 use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
+use App\Http\Controllers\WelcomeCompanyController;
+use App\Http\Controllers\AccountTasksController;
 use App\Http\Controllers\TenantSite\HomeController;
 use App\Support\AccountTypeCategoryIds;
 
@@ -63,7 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('website.menu-route-placeholder', ['missingRoute' => $missingRoute]);
     })->name('website.menu.placeholder');
 
-    Route::view('welcome-company', 'pages.welcome-company')->name('welcome.company');
+    Route::get('welcome-company', WelcomeCompanyController::class)->name('welcome.company');
 
     Route::get('account/dashboard', [RoutingController::class, 'secondLevel'])->name('account.dashboard')->defaults('first', 'account')->defaults('second', 'dashboard');
     Route::get('account/dashboard/lane/{lane}', SelectDashboardLaneController::class)
@@ -73,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/company', [AccountCompanyController::class, 'edit'])->name('account.company.edit');
     Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
+    Route::get('account/tasks', [AccountTasksController::class, 'index'])->name('account.tasks.index');
     Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
@@ -147,6 +150,10 @@ Route::get('pages/digitalizar-operador-turistico', App\Http\Controllers\Digitali
 
 // Quick access page for original purchased template demos.
 Route::view('template-demos', 'pages.template-demos')->name('template.demos');
+
+Route::view('pages/about', 'pages.about')->name('pages.about');
+Route::view('pages/privacy', 'pages.privacy')->name('pages.privacy');
+Route::view('pages/terms', 'pages.terms')->name('pages.terms');
 
 // Redirect old Filament resource URL (contact_roles renamed to contact_positions)
 Route::get('smpl_adm/contact-roles', fn () => redirect('/smpl_adm/contact-positions', 301))

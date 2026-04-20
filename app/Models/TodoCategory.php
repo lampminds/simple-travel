@@ -42,12 +42,50 @@ class TodoCategory extends Model
 
     public function getNameAttribute(): string
     {
-        return $this->getTranslationForDisplay()?->name ?? '';
+        $fromTranslation = $this->firstFilledTranslationName();
+        if ($fromTranslation !== '') {
+            return $fromTranslation;
+        }
+
+        return trim((string) ($this->attributes['code'] ?? ''));
+    }
+
+    /**
+     * Label for tables and selects. Never returns an empty string so Filament does not treat the cell as unset.
+     */
+    public function displayLabel(): string
+    {
+        $label = $this->getNameAttribute();
+
+        return $label !== '' ? $label : '—';
     }
 
     public function getDescriptionAttribute(): ?string
     {
         return $this->getTranslationForDisplay()?->description;
+    }
+
+    /**
+     * First non-empty translation name for the current locale resolution, or any translation.
+     */
+    protected function firstFilledTranslationName(): string
+    {
+        $translation = $this->getTranslationForDisplay();
+        if ($translation && filled($translation->name)) {
+            return trim((string) $translation->name);
+        }
+
+        if (! $this->relationLoaded('translations')) {
+            $this->load('translations');
+        }
+
+        foreach ($this->translations as $row) {
+            if (filled($row->name)) {
+                return trim((string) $row->name);
+            }
+        }
+
+        return '';
     }
 
     protected function getTranslationForDisplay(): ?TodoCategoryTranslation

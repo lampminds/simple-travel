@@ -14,6 +14,23 @@ return [
     'password' => 'A senha fornecida está incorreta.',
     'throttle' => 'Muitas tentativas de acesso. Por favor, tente novamente em :seconds segundos.',
 
+    'login' => [
+        'title' => 'Entrar',
+        'heading' => 'Bem-vindo de volta!',
+        'intro' => 'Introduza o seu e-mail e palavra-passe para iniciar sessão.',
+        'email' => 'E-mail',
+        'password' => 'Palavra-passe',
+        'placeholder_email' => 'E-mail',
+        'placeholder_password' => 'Palavra-passe',
+        'forgot_password' => 'Esqueceu-se da palavra-passe?',
+        'remember_me' => 'Lembrar-me',
+        'submit' => 'Entrar',
+        'or' => 'OU',
+        'github' => 'GitHub',
+        'no_account' => 'Ainda não tem conta?',
+        'create_account' => 'Criar conta',
+    ],
+
     'register' => [
         'title' => 'Criar conta',
         'heading' => 'Criar conta',

@@ -27,15 +27,22 @@ class CreateTodoTask extends LmpCreateRecord
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
-        $state['account_id'] = (int) config('permission.platform_account_id', 1);
         $this->form->fill($state);
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['account_id'] = (int) config('permission.platform_account_id', 1);
+        $data = Arr::except($data, ['translations']);
 
-        return Arr::except($data, ['translations']);
+        if (($data['action_type'] ?? TodoTask::ACTION_NONE) === TodoTask::ACTION_NONE) {
+            $data['action_url'] = null;
+        }
+
+        if (($data['verification_type'] ?? TodoTask::VERIFICATION_NONE) === TodoTask::VERIFICATION_NONE) {
+            $data['verification_url'] = null;
+        }
+
+        return $data;
     }
 
     protected function afterCreate(): void

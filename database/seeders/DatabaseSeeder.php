@@ -70,5 +70,17 @@ class DatabaseSeeder extends Seeder
         $this->call(CatServiceFeaturesTableSeeder::class);
         $this->call(CatServiceFeatureScopesTableSeeder::class);
         $this->call(CatServiceFeatureTranslationsTableSeeder::class);
+        $this->call(CatMenusTableSeeder::class);
+        $this->call(CatMenuTranslationsTableSeeder::class);
+        $this->call(CatMenuAccountTypeAssignmentsTableSeeder::class);
+        $this->call(CatParameterDefinitionsTableSeeder::class);
+        $this->call(CatParameterDefinitionTranslationsTableSeeder::class);
+        $this->call(ParameterValuesTableSeeder::class);
+        $this->call(CatParameterOptionsTableSeeder::class);
+        $this->call(CatParameterOptionTranslationsTableSeeder::class);
+        $this->call(TodoCategoriesTableSeeder::class);
+        $this->call(TodoCategoryTranslationsTableSeeder::class);
+        $this->call(TodoTasksTableSeeder::class);
+        $this->call(TodoTaskTranslationsTableSeeder::class);
     }
 }

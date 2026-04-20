@@ -6,16 +6,16 @@
         <div class="row align-items-center">
             <div class="col">
                 <ul class="list-inline list-with-separator mb-0">
-                    <li class="list-inline-item me-0"><a href="#">About</a></li>
-                    <li class="list-inline-item me-0"><a href="#">Privacy</a></li>
-                    <li class="list-inline-item me-0"><a href="#">Terms</a></li>
-                    <li class="list-inline-item me-0"><a href="#">Developers</a></li>
+                    @auth
+                        @if(auth()->user()->hasRoleForCurrentAccount('owner'))
+                            <li class="list-inline-item me-0"><a href="{{ route('account.tasks.index') }}">{{ __('account.tasks_nav') }}</a></li>
+                        @endif
+                    @endauth
+                    <li class="list-inline-item me-0"><a href="{{ route('pages.about') }}">About</a></li>
+                    <li class="list-inline-item me-0"><a href="{{ route('pages.privacy') }}">Privacy</a></li>
+                    <li class="list-inline-item me-0"><a href="{{ route('pages.terms') }}">Terms</a></li>
+                    <li class="list-inline-item me-0"><span class="text-muted">FAQ</span></li>
                     <li class="list-inline-item me-0"><a href="#">Support</a></li>
-                    <li class="list-inline-item me-0">
-                        <a href="#">Careers
-                            <span class="align-middle badge badge-soft-info rounded-pill fw-normal fs-11 px-2 py-1">We're hiring</span>
-                        </a>
-                    </li>
                 </ul>
             </div>
             <div class="col-md-auto text-md-end mt-2 mt-md-0">

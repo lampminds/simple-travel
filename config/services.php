@@ -60,4 +60,17 @@ return [
         'url' => env('TRANSLATION_API_URL', 'https://api.mymemory.translated.net/get'),
     ],
 
+    /*
+     * OpenAI API key.
+     * Get one at https://platform.openai.com/account/api-keys
+     * 1000 requests per month are free.
+     * 10000 requests per month are paid.
+     *
+     */
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'embedding_model' => env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small'),
+        'embedding_version' => env('OPENAI_EMBEDDING_VERSION', 'v1'),
+    ],
+
 ];

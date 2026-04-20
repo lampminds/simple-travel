@@ -1,4 +1,4 @@
-@extends('layouts.base', ['title' => 'Prompt - Panel de cuenta'])
+@extends('layouts.base', ['title' => __('account.dashboard_page_title')])
 
 @section('content')
 
@@ -32,6 +32,10 @@
         $hasAgency = $typeCodes->contains('agency');
 
         $userName = auth()->user()?->name;
+        $companyName = $account
+            ? (string) ($account->commercial_name ?? $account->name ?? $account->nick ?? '')
+            : '';
+        $companyLabel = $companyName !== '' ? $companyName : __('account.dashboard_company_unknown');
     @endphp
 
     <section class="position-relative p-3 bg-gradient2">
@@ -41,72 +45,102 @@
                     {{ session('status') }}
                 </div>
             @endif
+
             <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ $userName ? 'Hola, ' . $userName : 'Hola' }}</h3>
-                        <p class="mt-1 fw-medium">Selecciona el panel al que tienes acceso</p>
+                <div class="col-12">
+                    <div class="page-title mb-3 mb-lg-4">
+                        <h3 class="my-0">
+                            @if ($userName)
+                                @if ($companyName !== '')
+                                    {{ __('account.dashboard_greeting', ['name' => $userName, 'company' => $companyName]) }}
+                                @else
+                                    {{ __('account.dashboard_greeting_no_company', ['name' => $userName]) }}
+                                @endif
+                            @else
+                                {{ __('account.dashboard_hello') }}
+                            @endif
+                        </h3>
+                        <p class="mt-1 fw-medium">{{ __('account.dashboard_subtitle') }}</p>
                     </div>
                 </div>
             </div>
 
-            <div class="row mt-4 g-3">
-                <div class="col-lg-4">
-                    <div class="card h-100 {{ $hasProvider ? '' : 'opacity-50' }}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title mb-2">Prestador</h5>
-                            <p class="text-muted mb-3">Acceso al panel de prestador</p>
+            <div class="row g-4 align-items-start">
+                <div class="col-12 col-lg-7 order-1 order-lg-2">
+                    <div class="vstack gap-3">
+                        <div class="card {{ $hasProvider ? '' : 'opacity-50' }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2">{{ __('account.dashboard_panel_provider_title') }}</h5>
+                                <p class="text-muted mb-3">{!! __('account.dashboard_panel_provider_desc', ['company' => e($companyLabel)]) !!}</p>
 
-                            @if($hasProvider)
-                                <p class="small text-muted mb-3">
-                                    <span class="fw-semibold text-body">{{ $providerServiceCount }}</span>
-                                    {{ __('account.provider_services_label') }}
-                                    <span class="mx-1">·</span>
-                                    <span class="fw-semibold text-body">{{ $providerVariantCount }}</span>
-                                    {{ __('account.provider_variants_label') }}
-                                </p>
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'provider']) }}">Ir al panel</a>
-                            @else
-                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
-                            @endif
+                                @if($hasProvider)
+                                    <p class="small text-muted mb-3 mt-3">
+                                        <span class="fw-semibold text-body">{{ $providerServiceCount }}</span>
+                                        {{ __('account.provider_services_label') }}
+                                        <span class="mx-1">·</span>
+                                        <span class="fw-semibold text-body">{{ $providerVariantCount }}</span>
+                                        {{ __('account.provider_variants_label') }}
+                                    </p>
+                                    <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'provider']) }}">{{ __('account.dashboard_go_panel') }}</a>
+                                @else
+                                    <div class="d-flex flex-column gap-2 mt-3 w-100">
+                                        <button class="btn btn-secondary w-100" type="button" disabled>{{ __('account.dashboard_not_available') }}</button>
+                                        <button type="button" class="btn btn-outline-primary w-100">{{ __('account.dashboard_request_access') }}</button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="card {{ $hasOperator ? '' : 'opacity-50' }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2">{{ __('account.dashboard_panel_operator_title') }}</h5>
+                                <p class="text-muted mb-3">{!! __('account.dashboard_panel_operator_desc', ['company' => e($companyLabel)]) !!}</p>
+
+                                @if($hasOperator)
+                                    <a class="btn btn-primary w-100 mt-3" href="{{ route('account.dashboard.lane', ['lane' => 'operator']) }}">{{ __('account.dashboard_go_panel') }}</a>
+                                @else
+                                    <div class="d-flex flex-column gap-2 mt-3 w-100">
+                                        <button class="btn btn-secondary w-100" type="button" disabled>{{ __('account.dashboard_not_available') }}</button>
+                                        <button type="button" class="btn btn-outline-primary w-100">{{ __('account.dashboard_request_access') }}</button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="card {{ $hasAgency ? '' : 'opacity-50' }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2">{{ __('account.dashboard_panel_agency_title') }}</h5>
+                                <p class="text-muted mb-3">{!! __('account.dashboard_panel_agency_desc', ['company' => e($companyLabel)]) !!}</p>
+
+                                @if($hasAgency)
+                                    <a class="btn btn-primary w-100 mt-3" href="{{ route('account.dashboard.lane', ['lane' => 'agency']) }}">{{ __('account.dashboard_go_panel') }}</a>
+                                @else
+                                    <div class="d-flex flex-column gap-2 mt-3 w-100">
+                                        <button class="btn btn-secondary w-100" type="button" disabled>{{ __('account.dashboard_not_available') }}</button>
+                                        <button type="button" class="btn btn-outline-primary w-100">{{ __('account.dashboard_request_access') }}</button>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-4">
-                    <div class="card h-100 {{ $hasOperator ? '' : 'opacity-50' }}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title mb-2">Operador / Mayorista</h5>
-                            <p class="text-muted mb-3">Acceso al panel operador/mayorista</p>
-
-                            @if($hasOperator)
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'operator']) }}">Ir al panel</a>
-                            @else
-                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card h-100 {{ $hasAgency ? '' : 'opacity-50' }}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title mb-2">Agencia</h5>
-                            <p class="text-muted mb-3">Acceso al panel de agencia</p>
-
-                            @if($hasAgency)
-                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.dashboard.lane', ['lane' => 'agency']) }}">Ir al panel</a>
-                            @else
-                                <button class="btn btn-secondary w-100 mt-auto" type="button" disabled>No disponible</button>
-                            @endif
-                        </div>
+                <div class="col-12 col-lg-5 order-2 order-lg-1">
+                    <div class="d-flex justify-content-center justify-content-lg-start align-items-start pt-lg-2">
+                        <img
+                            src="{{ asset('images/robots/panel-access-sm.png') }}"
+                            alt=""
+                            class="img-fluid"
+                            style="max-height: min(440px, 60vh); width: auto;"
+                            loading="lazy"
+                        />
                     </div>
                 </div>
             </div>
 
             @if(!($hasProvider || $hasOperator || $hasAgency))
                 <div class="alert alert-warning mt-4" role="alert">
-                    No tienes categorías asignadas para acceder a un panel.
+                    {{ __('account.dashboard_no_categories') }}
                 </div>
             @endif
         </div>

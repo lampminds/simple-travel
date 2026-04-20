@@ -39,8 +39,8 @@
                 <div class="ps-md-5">
                     <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Company</h6>
                     <ul class="list-unstyled">
-                        <li class="my-3"><a href="#" class="text-muted">About Us</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Career</a></li>
+                        <li class="my-3"><a href="{{ route('pages.about') }}" class="text-muted">About Us</a></li>
+                        <li class="my-3"><span class="text-muted">FAQ</span></li>
                         <li class="my-3"><a href="#" class="text-muted">Contact Us</a></li>
                     </ul>
                 </div>
@@ -50,8 +50,8 @@
                     <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Legal</h6>
                     <ul class="list-unstyled">
                         <li class="my-3"><a href="#" class="text-muted">Usage Policy</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Privacy Policy</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Terms of Service</a></li>
+                        <li class="my-3"><a href="{{ route('pages.privacy') }}" class="text-muted">Privacy Policy</a></li>
+                        <li class="my-3"><a href="{{ route('pages.terms') }}" class="text-muted">Terms of Service</a></li>
                         <li class="my-3"><a href="#" class="text-muted">Trust</a></li>
                     </ul>
                 </div>

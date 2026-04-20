@@ -6,7 +6,9 @@ use App\Filament\Resources\TodoTaskResource\Pages;
 use App\Models\Language;
 use App\Models\TodoCategory;
 use App\Models\TodoTask;
+use App\Support\TodoTaskRoutePicker;
 use BackedEnum;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -20,7 +22,9 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
@@ -68,13 +72,6 @@ class TodoTaskResource extends LmpResource
             : ($group !== null ? (string) __($group) : null);
     }
 
-    public static function getEloquentQuery(): Builder
-    {
-        $platformId = (int) config('permission.platform_account_id', 1);
-
-        return parent::getEloquentQuery()->where('account_id', $platformId);
-    }
-
     protected static function getMainFormSchema(Schema $schema): array
     {
         $languages = Language::query()->with('locale')->orderBy('id')->get();
@@ -93,25 +90,29 @@ class TodoTaskResource extends LmpResource
                 ->collapsible();
         })->all();
 
-        $platformId = (int) config('permission.platform_account_id', 1);
-
         return [
             Tabs::make()
                 ->tabs([
                     Tab::make(__('filament.resources.todo_task_tabs.general'))
                         ->schema([
                             Section::make('')->schema([
-                                TextInput::make('account_id')
+                                Select::make('account_id')
                                     ->label(__('filament.resources.todo_task_fields.account_id'))
-                                    ->numeric()
-                                    ->default($platformId)
-                                    ->disabled()
-                                    ->dehydrated(),
+                                    ->relationship('account', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->live(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.todo_task_fields.code'))
                                     ->required()
                                     ->maxLength(255)
-                                    ->unique(ignoreRecord: true),
+                                    ->unique(
+                                        table: 'todo_tasks',
+                                        column: 'code',
+                                        ignoreRecord: true,
+                                        modifyRuleUsing: fn ($rule, callable $get) => $rule->where('account_id', (int) $get('account_id')),
+                                    ),
                                 Select::make('todo_category_id')
                                     ->label(__('filament.resources.todo_task_fields.todo_category_id'))
                                     ->options(
@@ -120,15 +121,19 @@ class TodoTaskResource extends LmpResource
                                             ->with(['translations.language.locale'])
                                             ->orderBy('sort_order')
                                             ->get()
-                                            ->mapWithKeys(fn (TodoCategory $c) => [$c->id => $c->name !== '' ? $c->name : $c->code])
+                                            ->mapWithKeys(fn (TodoCategory $c) => [$c->id => $c->displayLabel()])
                                     )
                                     ->searchable()
                                     ->required(),
                                 Select::make('original_task_id')
                                     ->label(__('filament.resources.todo_task_fields.original_task_id'))
-                                    ->options(function ($livewire) use ($platformId): array {
+                                    ->options(function (Get $get, $livewire): array {
+                                        $accountId = $get('account_id');
+                                        if (! is_numeric($accountId)) {
+                                            return [];
+                                        }
                                         $query = TodoTask::query()
-                                            ->where('account_id', $platformId)
+                                            ->where('account_id', (int) $accountId)
                                             ->orderBy('code');
                                         $record = $livewire->record ?? null;
                                         if ($record instanceof TodoTask) {
@@ -142,16 +147,52 @@ class TodoTaskResource extends LmpResource
                                 Select::make('action_type')
                                     ->label(__('filament.resources.todo_task_fields.action_type'))
                                     ->options([
-                                        TodoTask::ACTION_LINK => __('filament.resources.todo_task_action_types.link'),
-                                        TodoTask::ACTION_API_CHECK => __('filament.resources.todo_task_action_types.api_check'),
-                                        TodoTask::ACTION_MANUAL => __('filament.resources.todo_task_action_types.manual'),
+                                        TodoTask::ACTION_NONE => __('filament.resources.todo_task_action_types.none'),
+                                        TodoTask::ACTION_ROUTE => __('filament.resources.todo_task_action_types.route'),
+                                        TodoTask::ACTION_URL => __('filament.resources.todo_task_action_types.url'),
+                                        TodoTask::ACTION_EXTERNAL => __('filament.resources.todo_task_action_types.external'),
                                     ])
-                                    ->required(),
+                                    ->default(TodoTask::ACTION_NONE)
+                                    ->required()
+                                    ->live(),
+                                Select::make('action_url')
+                                    ->label(__('filament.resources.todo_task_fields.route_name'))
+                                    ->helperText(__('filament.resources.todo_task_fields.route_name_help'))
+                                    ->options(fn (): array => TodoTaskRoutePicker::search('', 75))
+                                    ->searchable()
+                                    ->getSearchResultsUsing(fn (string $search): array => TodoTaskRoutePicker::search($search, 75))
+                                    ->getOptionLabelUsing(fn (?string $value): ?string => $value ? (TodoTaskRoutePicker::labelForName($value) ?? $value) : null)
+                                    ->nullable()
+                                    ->visible(fn (Get $get): bool => (string) $get('action_type') === TodoTask::ACTION_ROUTE)
+                                    ->dehydrated(fn (Get $get): bool => (string) $get('action_type') === TodoTask::ACTION_ROUTE),
                                 TextInput::make('action_url')
                                     ->label(__('filament.resources.todo_task_fields.action_url'))
+                                    ->helperText(__('filament.resources.todo_task_fields.action_url_help'))
+                                    ->maxLength(2048)
+                                    ->nullable()
+                                    ->visible(fn (Get $get): bool => in_array((string) $get('action_type'), [
+                                        TodoTask::ACTION_URL,
+                                        TodoTask::ACTION_EXTERNAL,
+                                    ], true))
+                                    ->dehydrated(fn (Get $get): bool => in_array((string) $get('action_type'), [
+                                        TodoTask::ACTION_URL,
+                                        TodoTask::ACTION_EXTERNAL,
+                                    ], true)),
+                                Select::make('verification_type')
+                                    ->label(__('filament.resources.todo_task_fields.verification_type'))
+                                    ->options([
+                                        TodoTask::VERIFICATION_NONE => __('filament.resources.todo_task_verification_types.none'),
+                                        TodoTask::VERIFICATION_API_CHECK => __('filament.resources.todo_task_verification_types.api-check'),
+                                    ])
+                                    ->default(TodoTask::VERIFICATION_NONE)
+                                    ->required()
+                                    ->live(),
+                                TextInput::make('verification_url')
+                                    ->label(__('filament.resources.todo_task_fields.verification_url'))
                                     ->url()
                                     ->maxLength(2048)
-                                    ->nullable(),
+                                    ->nullable()
+                                    ->visible(fn (Get $get): bool => (string) $get('verification_type') === TodoTask::VERIFICATION_API_CHECK),
                                 TextInput::make('sort_order')
                                     ->label(__('filament.resources.todo_task_fields.sort_order'))
                                     ->numeric()
@@ -175,6 +216,10 @@ class TodoTaskResource extends LmpResource
                 TextColumn::make('id')
                     ->label(__('filament.resources.todo_task_columns.id'))
                     ->sortable(),
+                TextColumn::make('account.name')
+                    ->label(__('filament.resources.todo_task_columns.account'))
+                    ->sortable()
+                    ->searchable(),
                 IconColumn::make('active')
                     ->label(__('filament.common.active'))
                     ->boolean()
@@ -186,9 +231,12 @@ class TodoTaskResource extends LmpResource
                     ->label(__('filament.resources.todo_task_columns.code'))
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('category.name')
+                TextColumn::make('category_label')
                     ->label(__('filament.resources.todo_task_columns.category'))
-                    ->sortable(),
+                    ->getStateUsing(fn (TodoTask $record): string => $record->category?->displayLabel() ?? '—')
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query->orderBy((new TodoTask)->getTable().'.todo_category_id', $direction);
+                    }),
                 TextColumn::make('name')
                     ->label(__('filament.resources.todo_task_columns.name'))
                     ->searchable(query: function (Builder $query, string $search): void {
@@ -198,17 +246,38 @@ class TodoTaskResource extends LmpResource
                     }),
                 TextColumn::make('action_type')
                     ->label(__('filament.resources.todo_task_columns.action_type'))
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        TodoTask::ACTION_LINK => __('filament.resources.todo_task_action_types.link'),
-                        TodoTask::ACTION_API_CHECK => __('filament.resources.todo_task_action_types.api_check'),
-                        TodoTask::ACTION_MANUAL => __('filament.resources.todo_task_action_types.manual'),
-                        default => $state,
+                    ->formatStateUsing(fn (?string $state): string => match ($state ?? '') {
+                        TodoTask::ACTION_NONE => __('filament.resources.todo_task_action_types.none'),
+                        TodoTask::ACTION_ROUTE => __('filament.resources.todo_task_action_types.route'),
+                        TodoTask::ACTION_URL => __('filament.resources.todo_task_action_types.url'),
+                        TodoTask::ACTION_EXTERNAL => __('filament.resources.todo_task_action_types.external'),
+                        default => (string) $state,
                     })
                     ->badge(),
+                TextColumn::make('verification_type')
+                    ->label(__('filament.resources.todo_task_columns.verification_type'))
+                    ->formatStateUsing(fn (?string $state): string => match ($state ?? '') {
+                        TodoTask::VERIFICATION_NONE => __('filament.resources.todo_task_verification_types.none'),
+                        TodoTask::VERIFICATION_API_CHECK => __('filament.resources.todo_task_verification_types.api-check'),
+                        default => (string) $state,
+                    })
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['category.translations', 'translations.language.locale']))
+            ->filters([
+                SelectFilter::make('account_id')
+                    ->label(__('filament.resources.todo_task_filters.account_id'))
+                    ->relationship('account', 'name')
+                    ->searchable()
+                    ->preload(),
+            ], layout: FiltersLayout::AboveContent)
+            ->modifyQueryUsing(fn (Builder $query) => $query->with([
+                'account',
+                'category.translations.language.locale',
+                'translations.language.locale',
+            ]))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),

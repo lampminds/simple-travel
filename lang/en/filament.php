@@ -590,6 +590,33 @@ return [
         'nav_users' => 'Users',
         'nav_authorization' => 'Authorization',
         'nav_onboarding' => 'Getting started',
+        'nav_ai' => 'AI assistant',
+
+        'ai_knowledge_item' => 'Knowledge article',
+        'ai_knowledge_items' => 'Knowledge base (AI)',
+
+        'ai_knowledge_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'ai_knowledge_fields' => [
+            'key' => 'Stable key',
+            'key_help' => 'Use letters, numbers, and underscores only (e.g. edit_service_image).',
+            'title' => 'Title',
+            'content_short' => 'Short summary',
+            'content' => 'Body',
+            'url' => 'Related URL',
+            'tags' => 'Tags',
+            'tags_help' => 'Comma-separated keywords for filtering.',
+        ],
+
+        'ai_knowledge_columns' => [
+            'id' => 'ID',
+            'key' => 'Key',
+            'title_preview' => 'Title (first locale)',
+            'translations_count' => 'Locales',
+        ],
 
         'todo_category' => 'To-do category',
         'todo_categories' => 'To-do categories',
@@ -613,6 +640,19 @@ return [
             'name' => 'Name',
         ],
 
+        'todo_category_actions' => [
+            'copy_to_account' => 'Copy to account',
+            'copy_to_account_heading' => 'Copy tasks to an account',
+            'copy_to_account_description' => 'Creates a new copy of every task in this category (from all accounts), all assigned to the account you select. Rows in todo_tasks and todo_task_translations are duplicated.',
+            'copy_destination_account' => 'Account',
+            'copy_failed_title' => 'Could not copy tasks',
+            'copy_invalid_account' => 'Select a valid account.',
+            'copy_none_title' => 'No tasks to copy',
+            'copy_none_body' => 'This category has no tasks yet.',
+            'copy_success_title' => 'Tasks copied',
+            'copy_success_body' => ':count task(s) created on the selected account.',
+        ],
+
         'todo_task' => 'To-do task (template)',
         'todo_tasks' => 'To-do tasks (templates)',
 
@@ -622,30 +662,51 @@ return [
         ],
 
         'todo_task_fields' => [
-            'account_id' => 'Account (system)',
+            'account_id' => 'Account',
             'code' => 'Code',
             'todo_category_id' => 'Category',
             'original_task_id' => 'Based on task (optional)',
             'action_type' => 'Action type',
-            'action_url' => 'URL (for link)',
+            'action_url' => 'URL',
+            'action_url_help' => 'Full URL (including https://).',
+            'route_name' => 'Route',
+            'route_name_help' => 'Named GET routes from the application (Filament, Livewire, and similar internal routes are hidden).',
+            'verification_type' => 'Verification type',
+            'verification_url' => 'Verification URL',
             'sort_order' => 'Sort order',
             'name' => 'Title',
             'description' => 'Description',
         ],
 
         'todo_task_action_types' => [
-            'link' => 'Open link',
-            'api_check' => 'API check',
-            'manual' => 'Manual',
+            'none' => 'None',
+            'route' => 'Route',
+            'url' => 'URL',
+            'external' => 'External',
+        ],
+
+        'todo_task_verification_types' => [
+            'none' => 'None',
+            'api-check' => 'API check',
         ],
 
         'todo_task_columns' => [
             'id' => 'ID',
+            'account' => 'Account',
             'sort_order' => 'Sort order',
             'code' => 'Code',
             'category' => 'Category',
             'name' => 'Title',
             'action_type' => 'Action',
+            'verification_type' => 'Verification',
+        ],
+
+        'todo_task_filters' => [
+            'account_id' => 'Account',
+        ],
+
+        'todo_category_filters' => [
+            'account_id' => 'With tasks for account',
         ],
 
         'service_hotel_type' => 'Hotel type',

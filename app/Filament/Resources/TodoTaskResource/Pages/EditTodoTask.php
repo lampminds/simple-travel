@@ -35,9 +35,17 @@ class EditTodoTask extends LmpEditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $data['account_id'] = (int) config('permission.platform_account_id', 1);
+        $data = Arr::except($data, ['translations']);
 
-        return Arr::except($data, ['translations']);
+        if (($data['action_type'] ?? TodoTask::ACTION_NONE) === TodoTask::ACTION_NONE) {
+            $data['action_url'] = null;
+        }
+
+        if (($data['verification_type'] ?? TodoTask::VERIFICATION_NONE) === TodoTask::VERIFICATION_NONE) {
+            $data['verification_url'] = null;
+        }
+
+        return $data;
     }
 
     protected function afterSave(): void

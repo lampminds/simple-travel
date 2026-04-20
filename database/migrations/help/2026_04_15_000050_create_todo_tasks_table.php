@@ -14,17 +14,21 @@ return new class extends Migration
         Schema::create('todo_tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')->constrained();
-            $table->string('code')->unique()->comment('Short name, in English');
+            $table->string('code')->comment('Short name, in English');
             $table->foreignId('todo_category_id')->constrained('todo_categories');
             $table->foreignId('original_task_id')->nullable()->constrained('todo_tasks');
 
-            $table->enum('action_type', ['link', 'api_check', 'manual']);
+            $table->enum('action_type', ['none', 'route', 'url', 'external'])->default('none');
             $table->string('action_url')->nullable();
+            $table->enum('verification_type', ['none', 'api-check'])->default('none');
+            $table->string('verification_url')->nullable();
 
             $table->smallInteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
 
             lmpStamps($table);
+
+            $table->unique(['account_id', 'code']);
         });
 
         Schema::create('todo_task_translations', function (Blueprint $table) {

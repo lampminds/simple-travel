@@ -14,6 +14,23 @@ return [
     'password' => 'La contraseña proporcionada es incorrecta.',
     'throttle' => 'Demasiados intentos de acceso. Por favor, inténtelo de nuevo en :seconds segundos.',
 
+    'login' => [
+        'title' => 'Ingresar',
+        'heading' => '¡Bienvenido de nuevo!',
+        'intro' => 'Ingresá tu email y contraseña para acceder.',
+        'email' => 'Email',
+        'password' => 'Contraseña',
+        'placeholder_email' => 'Email',
+        'placeholder_password' => 'Contraseña',
+        'forgot_password' => '¿Olvidaste tu contraseña?',
+        'remember_me' => 'Recordarme',
+        'submit' => 'Ingresar',
+        'or' => 'OR',
+        'github' => 'GitHub',
+        'no_account' => '¿No tenés cuenta?',
+        'create_account' => 'Crear cuenta',
+    ],
+
     'register' => [
         'title' => 'Crear cuenta',
         'heading' => 'Crear cuenta',

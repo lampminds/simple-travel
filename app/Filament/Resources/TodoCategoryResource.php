@@ -3,12 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TodoCategoryResource\Pages;
+use App\Models\Account;
 use App\Models\Language;
 use App\Models\TodoCategory;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -18,9 +22,13 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Throwable;
+use App\Services\TodoCategoryCopyTasksToAccountService;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
 class TodoCategoryResource extends LmpResource
@@ -139,10 +147,83 @@ class TodoCategoryResource extends LmpResource
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->filters([
+                SelectFilter::make('tasks_for_account')
+                    ->label(__('filament.resources.todo_category_filters.account_id'))
+                    ->options(fn (): array => Account::query()->orderBy('name')->pluck('name', 'id')->all())
+                    ->searchable()
+                    ->preload()
+                    ->query(function (Builder $query, array $data): void {
+                        $id = $data['value'] ?? null;
+                        if ($id === null || $id === '') {
+                            return;
+                        }
+                        $query->whereHas(
+                            'tasks',
+                            fn (Builder $q): Builder => $q->where('account_id', (int) $id)
+                        );
+                    }),
+            ], layout: FiltersLayout::AboveContent)
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['translations.language.locale']))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
+                    Action::make('copyTasksToAccount')
+                        ->label(__('filament.resources.todo_category_actions.copy_to_account'))
+                        ->icon('heroicon-o-document-duplicate')
+                        ->modalHeading(__('filament.resources.todo_category_actions.copy_to_account_heading'))
+                        ->modalDescription(__('filament.resources.todo_category_actions.copy_to_account_description'))
+                        ->form([
+                            Select::make('destination_account_id')
+                                ->label(__('filament.resources.todo_category_actions.copy_destination_account'))
+                                ->options(fn (): array => Account::query()->orderBy('name')->pluck('name', 'id')->all())
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                        ])
+                        ->action(function (array $data, TodoCategory $record): void {
+                            $dest = (int) ($data['destination_account_id'] ?? 0);
+
+                            if ($dest < 1) {
+                                Notification::make()
+                                    ->title(__('filament.resources.todo_category_actions.copy_failed_title'))
+                                    ->body(__('filament.resources.todo_category_actions.copy_invalid_account'))
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $service = new TodoCategoryCopyTasksToAccountService;
+
+                            try {
+                                $count = $service->copy($record, $dest);
+                            } catch (Throwable $e) {
+                                Notification::make()
+                                    ->title(__('filament.resources.todo_category_actions.copy_failed_title'))
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            if ($count === 0) {
+                                Notification::make()
+                                    ->title(__('filament.resources.todo_category_actions.copy_none_title'))
+                                    ->body(__('filament.resources.todo_category_actions.copy_none_body'))
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title(__('filament.resources.todo_category_actions.copy_success_title'))
+                                ->body(__('filament.resources.todo_category_actions.copy_success_body', ['count' => $count]))
+                                ->success()
+                                ->send();
+                        }),
                     DeleteAction::make(),
                 ]),
             ], position: RecordActionsPosition::BeforeColumns);

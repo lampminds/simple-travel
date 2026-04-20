@@ -31,15 +31,32 @@
 
                                     <div class="mb-3">
                                         <label for="password" class="form-label">Nueva contraseña <small>*</small></label>
-                                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
-                                               name="password" placeholder="Mínimo 8 caracteres" required/>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
+                                                   name="password" placeholder="Mínimo 8 caracteres" required minlength="8"
+                                                   autocomplete="new-password"/>
+                                            <button type="button" class="btn btn-outline-secondary px-2" id="btn-toggle-reset-password"
+                                                    aria-pressed="false"
+                                                    aria-label="{{ __('auth.register.password_show') }}"
+                                                    title="{{ __('auth.register.password_show') }}"
+                                                    data-label-show="{{ __('auth.register.password_show') }}"
+                                                    data-label-hide="{{ __('auth.register.password_hide') }}">
+                                                <span id="reset-password-toggle-icon-host"><i data-feather="eye" class="icon icon-xs"></i></span>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary px-2" id="btn-generate-reset-password"
+                                                    aria-label="{{ __('auth.register.password_generate') }}"
+                                                    title="{{ __('auth.register.password_generate') }}">
+                                                <i data-feather="key" class="icon icon-xs"></i>
+                                            </button>
+                                        </div>
                                         <x-form-field-error name="password" />
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="password_confirmation" class="form-label">Confirmar contraseña <small>*</small></label>
                                         <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation"
-                                               name="password_confirmation" placeholder="Repetí la contraseña" required/>
+                                               name="password_confirmation" placeholder="Repetí la contraseña" required minlength="8"
+                                               autocomplete="new-password"/>
                                         <x-form-field-error name="password_confirmation" />
                                     </div>
 
@@ -61,4 +78,87 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('script-bottom')
+    @include('partials.password-toggle-feather')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function generateSecurePassword(length) {
+                var lower = 'abcdefghijklmnopqrstuvwxyz';
+                var upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                var digits = '0123456789';
+                var symbols = '!@#$%&*-_=+';
+                var all = lower + upper + digits + symbols;
+                function rand(max) {
+                    var a = new Uint32Array(1);
+                    crypto.getRandomValues(a);
+                    return a[0] % max;
+                }
+                var chars = [
+                    lower[rand(lower.length)],
+                    upper[rand(upper.length)],
+                    digits[rand(digits.length)],
+                    symbols[rand(symbols.length)],
+                ];
+                for (var i = chars.length; i < length; i++) {
+                    chars.push(all[rand(all.length)]);
+                }
+                for (var j = chars.length - 1; j > 0; j--) {
+                    var k = rand(j + 1);
+                    var t = chars[j];
+                    chars[j] = chars[k];
+                    chars[k] = t;
+                }
+                return chars.join('');
+            }
+
+            var newPassword = document.getElementById('password');
+            var confirmPassword = document.getElementById('password_confirmation');
+            var btnToggleNew = document.getElementById('btn-toggle-reset-password');
+            var hostNew = document.getElementById('reset-password-toggle-icon-host');
+            var btnGenerate = document.getElementById('btn-generate-reset-password');
+            var newPairVisible = false;
+
+            if (btnToggleNew && hostNew && newPassword && confirmPassword) {
+                btnToggleNew.addEventListener('click', function () {
+                    newPairVisible = !newPairVisible;
+                    var type = newPairVisible ? 'text' : 'password';
+                    newPassword.type = type;
+                    confirmPassword.type = type;
+                    btnToggleNew.setAttribute('aria-pressed', newPairVisible ? 'true' : 'false');
+                    var showLbl = btnToggleNew.dataset.labelShow;
+                    var hideLbl = btnToggleNew.dataset.labelHide;
+                    var lbl = newPairVisible ? hideLbl : showLbl;
+                    btnToggleNew.title = lbl;
+                    btnToggleNew.setAttribute('aria-label', lbl);
+                    if (typeof window.renderPasswordToggleFeatherIcon === 'function') {
+                        window.renderPasswordToggleFeatherIcon(hostNew, newPairVisible);
+                    }
+                });
+            }
+
+            if (btnGenerate && newPassword && confirmPassword) {
+                btnGenerate.addEventListener('click', function () {
+                    var pwd = generateSecurePassword(16);
+                    newPassword.value = pwd;
+                    confirmPassword.value = pwd;
+                    newPairVisible = true;
+                    newPassword.type = 'text';
+                    confirmPassword.type = 'text';
+                    if (btnToggleNew && hostNew) {
+                        btnToggleNew.setAttribute('aria-pressed', 'true');
+                        var hideLbl = btnToggleNew.dataset.labelHide;
+                        btnToggleNew.title = hideLbl;
+                        btnToggleNew.setAttribute('aria-label', hideLbl);
+                        if (typeof window.renderPasswordToggleFeatherIcon === 'function') {
+                            window.renderPasswordToggleFeatherIcon(hostNew, true);
+                        }
+                    }
+                    newPassword.dispatchEvent(new Event('input', { bubbles: true }));
+                    confirmPassword.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            }
+        });
+    </script>
 @endsection
