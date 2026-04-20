@@ -9,23 +9,29 @@ use Illuminate\Support\Facades\DB;
 final class TodoCategoryCopyTasksToAccountService
 {
     /**
-     * Duplicates every task in the category (any source `account_id`) onto {@see $destinationAccountId},
+     * Duplicates every task in the category onto {@see $destinationAccountId},
      * including `todo_task_translations` and remapping `original_task_id` when both endpoints are in this batch.
+     * Optionally restricts the source to one account id.
      *
      * @return int Number of tasks created
      */
-    public function copy(TodoCategory $category, int $destinationAccountId): int
+    public function copy(TodoCategory $category, int $destinationAccountId, ?int $sourceAccountId = null): int
     {
         if ($destinationAccountId < 1) {
             throw new \InvalidArgumentException('Invalid destination account.');
         }
 
-        $tasks = TodoTask::query()
+        $tasksQuery = TodoTask::query()
             ->where('todo_category_id', (int) $category->getKey())
             ->with('translations')
             ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+
+        if ($sourceAccountId !== null) {
+            $tasksQuery->where('account_id', $sourceAccountId);
+        }
+
+        $tasks = $tasksQuery->get();
 
         if ($tasks->isEmpty()) {
             return 0;

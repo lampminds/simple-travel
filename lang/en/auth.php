@@ -90,6 +90,7 @@ return [
         'email_body' => 'Thanks for signing up. To activate your account, please verify your email address by clicking the button below.',
         'email_action' => 'Verify email',
         'email_footer' => 'If you did not create an account, you can ignore this message.',
+        'email_salutation' => 'Regards, :app',
         'verified' => 'Your email has been verified. You can continue using your account.',
         'already_verified' => 'Your email was already verified.',
     ],

@@ -45,9 +45,11 @@ return [
         'subject' => 'Invitación a :app',
         'greeting' => '¡Hola!',
         'line_internal' => 'Te invitaron a unirte a :company en la plataforma.',
-        'line_external' => 'Te invitaron a probar la plataforma (relacionado con :company).',
-        'expires' => 'Este enlace vence el :date.',
+        'line_external' => ':company te ha invitado a unirte a :app.',
+        'marketing_external' => 'Organizá tus viajes y tareas en minutos con una plataforma simple, colaborativa y pensada para tu equipo.',
+        'expires_in_days' => 'Este enlace vence en :days días.',
         'action' => 'Continuar el registro',
         'footer' => 'Si no esperabas este mensaje, podés ignorarlo.',
+        'rights_reserved' => 'Todos los derechos reservados.',
     ],
 ];

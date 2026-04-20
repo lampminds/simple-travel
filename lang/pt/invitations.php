@@ -45,9 +45,11 @@ return [
         'subject' => 'Convite para :app',
         'greeting' => 'Olá!',
         'line_internal' => 'Foi convidado a juntar-se a :company na plataforma.',
-        'line_external' => 'Foi convidado a experimentar a plataforma (relacionado com :company).',
-        'expires' => 'Este link expira em :date.',
+        'line_external' => ':company convidou você para entrar em :app.',
+        'marketing_external' => 'Organize viagens e tarefas da sua equipe em minutos com uma plataforma simples e colaborativa.',
+        'expires_in_days' => 'Este link expira em :days dias.',
         'action' => 'Continuar o registo',
         'footer' => 'Se não esperava esta mensagem, pode ignorá-la.',
+        'rights_reserved' => 'Todos os direitos reservados.',
     ],
 ];

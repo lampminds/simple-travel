@@ -5,5 +5,7 @@
     "filament.resources.nav_plans": "Planos e preços",
     "filament.resources.nav_services": "Serviços (prestador)",
     "filament.resources.nav_parameters": "Configurações",
-    "filament.resources.nav_users": "Utilizadores"
+    "filament.resources.nav_users": "Utilizadores",
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below into your web browser:": "Se tiver problemas ao clicar no botão \":actionText\", copie e cole o URL abaixo no seu navegador:",
+    "If you’re having trouble clicking the \":actionText\" button, copy and paste the URL below into your web browser:": "Se tiver problemas ao clicar no botão \":actionText\", copie e cole o URL abaixo no seu navegador:"
 }

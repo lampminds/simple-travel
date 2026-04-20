@@ -25,7 +25,8 @@ class VerifyEmailNotification extends VerifyEmail
             ->greeting(__('auth.verification.email_greeting', ['name' => $notifiable->name]))
             ->line(__('auth.verification.email_body'))
             ->action(__('auth.verification.email_action'), $verificationUrl)
-            ->line(__('auth.verification.email_footer'));
+            ->line(__('auth.verification.email_footer'))
+            ->salutation(__('auth.verification.email_salutation', ['app' => config('app.name')]));
     }
 
     /**

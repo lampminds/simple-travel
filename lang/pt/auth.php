@@ -86,6 +86,7 @@ return [
         'email_body' => 'Obrigado por se registrar. Para ativar a sua conta, confirme o seu endereço de e-mail clicando no botão abaixo.',
         'email_action' => 'Confirmar e-mail',
         'email_footer' => 'Se não criou uma conta, pode ignorar esta mensagem.',
+        'email_salutation' => 'Cumprimentos, :app',
         'verified' => 'O seu e-mail foi confirmado. Já pode continuar a utilizar a sua conta.',
         'already_verified' => 'O seu e-mail já estava confirmado.',
     ],

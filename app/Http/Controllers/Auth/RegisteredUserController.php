@@ -23,6 +23,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RegisteredUserController extends Controller
 {
+    private const SESSION_STARTUP_ACCOUNT_ID_AFTER_VERIFY = 'startup_account_id_after_verify';
+
     /**
      * Display the registration view.
      */
@@ -316,6 +318,7 @@ class RegisteredUserController extends Controller
 
         if ($welcomeCompanyAfterVerify) {
             $request->session()->put('welcome_company_after_verify', true);
+            $request->session()->put(self::SESSION_STARTUP_ACCOUNT_ID_AFTER_VERIFY, $newAccountId);
         }
 
         if (! $request->session()->has('locale')) {

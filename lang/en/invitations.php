@@ -45,9 +45,11 @@ return [
         'subject' => 'Invitation to join :app',
         'greeting' => 'Hello!',
         'line_internal' => 'You have been invited to join :company on the platform.',
-        'line_external' => 'You have been invited to try the platform (related to :company).',
-        'expires' => 'This link expires on :date.',
+        'line_external' => ':company has invited you to join :app.',
+        'marketing_external' => 'Get your travel planning and team tasks organized in minutes with a simple and collaborative platform.',
+        'expires_in_days' => 'This link expires in :days days.',
         'action' => 'Continue registration',
         'footer' => 'If you did not expect this message, you can ignore it.',
+        'rights_reserved' => 'All rights reserved.',
     ],
 ];

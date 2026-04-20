@@ -21,8 +21,8 @@
             <div class="col-md-auto text-md-end mt-2 mt-md-0">
                 <p class="fs-14 mb-0">
                     <script>document.write(new Date().getFullYear())</script>
-                    © Prompt. All rights reserved. Crafted by
-                    <a href="https://coderthemes.com/">Coderthemes</a>
+                    © Prompt. All rights reserved. Developed by
+                    <a href="https://lampminds.com/">Lampminds</a>
                 </p>
             </div>
         </div>
