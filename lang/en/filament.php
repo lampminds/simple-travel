@@ -182,28 +182,6 @@ return [
             'roles_count' => 'Roles',
         ],
 
-        'parameter' => 'Parameter',
-        'parameters' => 'Parameters',
-
-        'parameter_fields' => [
-            'category' => 'Category',
-            'code' => 'Code',
-            'type' => 'Type',
-            'value' => 'Value',
-            'mode' => 'Mode',
-            'help' => 'Help',
-            'comments' => 'Comments',
-        ],
-
-        'parameter_columns' => [
-            'id' => 'ID',
-            'category' => 'Category',
-            'code' => 'Code',
-            'type' => 'Type',
-            'value' => 'Value',
-            'mode' => 'Mode',
-        ],
-
         'account_tax_id' => 'Tax ID',
         'account_tax_ids' => 'Tax IDs',
 
@@ -461,6 +439,7 @@ return [
             'subcategory' => 'Subcategory',
             'code' => 'Code',
             'name' => 'Name',
+            'value' => 'Value',
             'type' => 'Type',
             'scope' => 'Scope',
             'has_default' => 'Has default',
@@ -649,8 +628,10 @@ return [
             'copy_invalid_account' => 'Select a valid account.',
             'copy_none_title' => 'No tasks to copy',
             'copy_none_body' => 'This category has no tasks yet.',
+            'copy_all_skipped_title' => 'No new tasks created',
+            'copy_all_skipped_body' => 'All :skipped task(s) were skipped because a row with the same code already exists on the selected account.',
             'copy_success_title' => 'Tasks copied',
-            'copy_success_body' => ':count task(s) created on the selected account.',
+            'copy_success_body' => ':created task(s) created. :skipped skipped (same code already on the account).',
         ],
 
         'todo_task' => 'To-do task (template)',

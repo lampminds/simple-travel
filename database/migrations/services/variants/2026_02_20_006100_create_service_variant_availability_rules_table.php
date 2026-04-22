@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->unsignedTinyInteger('weekday_mask')->nullable()
-                ->comment('Bitmask for weekdays (1 = Monday, ... 7= Sunday)');
+                ->comment('Bitmask for weekdays (1=Mon, 2=Tue, 4=Wed, ... 64=Sun)');
             $table->boolean('active')->default(true);
 
             lmpStamps($table);

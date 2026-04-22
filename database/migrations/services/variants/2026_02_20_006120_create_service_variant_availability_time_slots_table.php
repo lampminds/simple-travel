@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_variant_availability_rule_id')
                 ->constrained('service_variant_availability_rules', 'id', 'svar_id_fk');
-            $table->date('start_time')->nullable();
-            $table->date('end_time')->nullable();
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
             $table->unsignedInteger('capacity')->nullable();
             $table->unsignedInteger('cutoff_minutes')->nullable()
                 ->comment('Minutes before start time when booking closes');

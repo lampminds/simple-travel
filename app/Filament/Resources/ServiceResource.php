@@ -209,6 +209,12 @@ class ServiceResource extends LmpResource
                                             'instant' => __('filament.resources.service_variant_booking_type.instant'),
                                             'request' => __('filament.resources.service_variant_booking_type.request'),
                                         ])
+                                        ->default('request')
+                                        ->afterStateHydrated(function (Select $component, $state): void {
+                                            if (blank($state)) {
+                                                $component->state('request');
+                                            }
+                                        })
                                         ->required(),
                                     TextInput::make('min_advance_booking_hours')
                                         ->label(__('filament.resources.service_variant_fields.min_advance_booking_hours'))

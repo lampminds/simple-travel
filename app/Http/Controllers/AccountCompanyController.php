@@ -7,6 +7,7 @@ use App\Models\LmpCity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 final class AccountCompanyController extends Controller
@@ -68,21 +69,16 @@ final class AccountCompanyController extends Controller
         abort_unless($account instanceof Account, 404);
 
         $data = $request->validate([
-            'name' => ['nullable', 'string', 'max:255'],
-            'commercial_name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'address_line1' => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'commercial_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:255'],
+            'address_line1' => ['required', 'string', 'max:255'],
             'address_line2' => ['nullable', 'string', 'max:255'],
-            'city_id' => ['nullable', 'integer'],
-            'postal_code' => ['nullable', 'string', 'max:255'],
+            // Use the model class so validation runs on connection `addons` (see LmpCity::$connection).
+            'city_id' => ['required', 'integer', Rule::exists(LmpCity::class, 'id')],
+            'postal_code' => ['required', 'string', 'max:255'],
         ]);
-
-        if (! empty($data['city_id']) && ! LmpCity::query()->whereKey((int) $data['city_id'])->exists()) {
-            return back()
-                ->withErrors(['city_id' => 'La ciudad seleccionada no es válida.'])
-                ->withInput();
-        }
 
         $account->fill($data);
         $account->save();

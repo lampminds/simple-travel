@@ -197,7 +197,7 @@ class TodoCategoryResource extends LmpResource
                             $service = new TodoCategoryCopyTasksToAccountService;
 
                             try {
-                                $count = $service->copy($record, $dest);
+                                $result = $service->copy($record, $dest);
                             } catch (Throwable $e) {
                                 Notification::make()
                                     ->title(__('filament.resources.todo_category_actions.copy_failed_title'))
@@ -208,7 +208,10 @@ class TodoCategoryResource extends LmpResource
                                 return;
                             }
 
-                            if ($count === 0) {
+                            $created = (int) ($result['created'] ?? 0);
+                            $skipped = (int) ($result['skipped'] ?? 0);
+
+                            if ($created === 0 && $skipped === 0) {
                                 Notification::make()
                                     ->title(__('filament.resources.todo_category_actions.copy_none_title'))
                                     ->body(__('filament.resources.todo_category_actions.copy_none_body'))
@@ -218,9 +221,22 @@ class TodoCategoryResource extends LmpResource
                                 return;
                             }
 
+                            if ($created === 0 && $skipped > 0) {
+                                Notification::make()
+                                    ->title(__('filament.resources.todo_category_actions.copy_all_skipped_title'))
+                                    ->body(__('filament.resources.todo_category_actions.copy_all_skipped_body', ['skipped' => $skipped]))
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
                             Notification::make()
                                 ->title(__('filament.resources.todo_category_actions.copy_success_title'))
-                                ->body(__('filament.resources.todo_category_actions.copy_success_body', ['count' => $count]))
+                                ->body(__('filament.resources.todo_category_actions.copy_success_body', [
+                                    'created' => $created,
+                                    'skipped' => $skipped,
+                                ]))
                                 ->success()
                                 ->send();
                         }),

@@ -70,24 +70,29 @@ class AccountResource extends LmpResource
                                 TextInput::make('name')
                                     ->label(__('filament.resources.account_fields.name'))
                                     ->placeholder(__('filament.resources.account_fields.name'))
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                                 TextInput::make('commercial_name')
                                     ->label(__('filament.resources.account_fields.commercial_name'))
                                     ->placeholder(__('filament.resources.account_fields.commercial_name'))
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                                 TextInput::make('email')
                                     ->label(__('filament.resources.account_fields.email'))
                                     ->placeholder(__('filament.resources.account_fields.email'))
                                     ->email()
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                                 TextInput::make('phone')
                                     ->label(__('filament.resources.account_fields.phone'))
                                     ->placeholder(__('filament.resources.account_fields.phone'))
                                     ->tel()
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                                 TextInput::make('address_line1')
                                     ->label(__('filament.resources.account_fields.address_line1'))
                                     ->placeholder(__('filament.resources.account_fields.address_line1'))
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                                 TextInput::make('address_line2')
                                     ->label(__('filament.resources.account_fields.address_line2'))
@@ -117,7 +122,8 @@ class AccountResource extends LmpResource
                                     ->afterStateUpdated(function ($state, callable $set): void {
                                         self::setLocationLabelsFromCity($state, $set);
                                     })
-                                    ->nullable(),
+                                    ->nullable(fn (string $operation): bool => $operation !== 'edit')
+                                    ->required(fn (string $operation): bool => $operation === 'edit'),
                                 TextInput::make('state_name')
                                     ->label('Estado')
                                     ->disabled()
@@ -129,6 +135,7 @@ class AccountResource extends LmpResource
                                 TextInput::make('postal_code')
                                     ->label(__('filament.resources.account_fields.postal_code'))
                                     ->placeholder(__('filament.resources.account_fields.postal_code'))
+                                    ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
                             ]),
                         ]),

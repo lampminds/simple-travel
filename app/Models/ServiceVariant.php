@@ -17,6 +17,7 @@ class ServiceVariant extends Model
         'service_id',
         'sku',
         'status',
+        'booking_type',
         'pricing_type',
         'base_price',
         'currency_id',

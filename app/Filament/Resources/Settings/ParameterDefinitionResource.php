@@ -332,20 +332,61 @@ class ParameterDefinitionResource extends BaseResource
                     ->sortable(),
                 TextColumn::make('category')
                     ->label(__('filament.resources.parameter_definition_columns.category'))
-                    ->searchable()
+                    ->description(fn (ParameterDefinition $record): ?string => filled($record->subcategory)
+                        ? $record->subcategory
+                        : null)
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->where(function (Builder $q) use ($search): void {
+                            $q->where('category', 'like', '%'.$search.'%')
+                                ->orWhere('subcategory', 'like', '%'.$search.'%');
+                        });
+                    })
                     ->sortable(),
-                TextColumn::make('subcategory')
-                    ->label(__('filament.resources.parameter_definition_columns.subcategory'))
-                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('code')
                     ->label(__('filament.resources.parameter_definition_columns.code'))
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('name')
-                    ->label(__('filament.resources.parameter_definition_columns.name'))
+                    ->description(function (ParameterDefinition $record): ?string {
+                        $name = trim((string) $record->name);
+
+                        return $name !== '' ? $name : null;
+                    })
                     ->searchable(query: function (Builder $query, string $search): void {
-                        $query->whereHas('translations', function (Builder $q) use ($search): void {
-                            $q->where('name', 'like', '%'.$search.'%');
+                        $query->where(function (Builder $q) use ($search): void {
+                            $q->where('code', 'like', '%'.$search.'%')
+                                ->orWhereHas('translations', function (Builder $tq) use ($search): void {
+                                    $tq->where('name', 'like', '%'.$search.'%');
+                                });
+                        });
+                    })
+                    ->sortable(),
+                TextColumn::make('resolved_stored_value')
+                    ->label(__('filament.resources.parameter_definition_columns.value'))
+                    ->getStateUsing(function (ParameterDefinition $record): ?string {
+                        $record->loadMissing([
+                            'parameterValues' => fn ($query) => $query->whereNull('account_id'),
+                        ]);
+                        $stored = $record->parameterValues->first();
+                        if ($stored !== null) {
+                            $v = $stored->value;
+                            if ($v !== null && trim((string) $v) !== '') {
+                                return (string) $v;
+                            }
+                        }
+
+                        $default = $record->default_value;
+                        if ($default !== null && trim((string) $default) !== '') {
+                            return (string) $default;
+                        }
+
+                        return null;
+                    })
+                    ->formatStateUsing(fn (?string $state): string => filled($state) ? $state : '—')
+                    ->limit(80)
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->where(function (Builder $q) use ($search): void {
+                            $q->where('default_value', 'like', '%'.$search.'%')
+                                ->orWhereHas('parameterValues', function (Builder $pv) use ($search): void {
+                                    $pv->where('value', 'like', '%'.$search.'%');
+                                });
                         });
                     }),
                 TextColumn::make('type')
@@ -366,7 +407,10 @@ class ParameterDefinitionResource extends BaseResource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('category')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['translations.language.locale']));
+            ->modifyQueryUsing(fn (Builder $query) => $query->with([
+                'translations.language.locale',
+                'parameterValues' => fn ($q) => $q->whereNull('account_id'),
+            ]));
     }
 
     public static function getPages(): array

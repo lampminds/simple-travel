@@ -182,28 +182,6 @@ return [
             'roles_count' => 'Funções',
         ],
 
-        'parameter' => 'Parâmetro',
-        'parameters' => 'Parâmetros',
-
-        'parameter_fields' => [
-            'category' => 'Categoria',
-            'code' => 'Código',
-            'type' => 'Tipo',
-            'value' => 'Valor',
-            'mode' => 'Modo',
-            'help' => 'Ajuda',
-            'comments' => 'Comentários',
-        ],
-
-        'parameter_columns' => [
-            'id' => 'ID',
-            'category' => 'Categoria',
-            'code' => 'Código',
-            'type' => 'Tipo',
-            'value' => 'Valor',
-            'mode' => 'Modo',
-        ],
-
         'account_tax_id' => 'Identificação fiscal',
         'account_tax_ids' => 'Identificações fiscais',
 
@@ -461,6 +439,7 @@ return [
             'subcategory' => 'Subcategoria',
             'code' => 'Código',
             'name' => 'Nome',
+            'value' => 'Valor',
             'type' => 'Tipo',
             'scope' => 'Escopo',
             'has_default' => 'Padrão',
@@ -649,8 +628,10 @@ return [
             'copy_invalid_account' => 'Selecione uma conta válida.',
             'copy_none_title' => 'Não há tarefas para copiar',
             'copy_none_body' => 'Esta categoria ainda não tem tarefas.',
+            'copy_all_skipped_title' => 'Nenhuma tarefa nova criada',
+            'copy_all_skipped_body' => 'Todas as :skipped tarefa(s) já existiam na conta selecionada (mesmo código).',
             'copy_success_title' => 'Tarefas copiadas',
-            'copy_success_body' => 'Foram criadas :count tarefa(s) na conta selecionada.',
+            'copy_success_body' => 'Foram criadas :created tarefa(s). :skipped ignorada(s) (mesmo código na conta).',
         ],
 
         'todo_task' => 'Tarefa (modelo)',

@@ -18,11 +18,13 @@ return new class extends Migration
             $table->foreignId('service_variant_id')
                 ->constrained('service_variants', 'id', 'sv_id_fk');
             $table->date('date');
-            $table->date('start_time')->nullable();
+            $table->time('start_time')->nullable();
             $table->unsignedInteger('capacity')->nullable();
             $table->boolean('closed')->default(false);
             $table->string('reason')->nullable();
             lmpStamps($table);
+
+            $table->unique(['service_variant_id', 'date', 'start_time']);
         });
     }
 

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('cat_currencies', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id');
             $table->unsignedBigInteger('currency_id'); //References lmp_currencies.id on addons connection (no FK across DBs)
 
             lmpStamps($table);

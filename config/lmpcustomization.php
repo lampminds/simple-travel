@@ -25,7 +25,7 @@ return [
     */
 
     'enable_user_resource' => env('LMP_ENABLE_USER_RESOURCE', true),
-    'enable_parameter_resource' => env('LMP_ENABLE_PARAMETER_RESOURCE', true),
+    'enable_parameter_resource' => env('LMP_ENABLE_PARAMETER_RESOURCE', false),
 
     /*
     |--------------------------------------------------------------------------

@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Resources\Settings\ParameterResource;
 use App\Filament\Widgets\LatestSignupsWidget;
 use App\Http\Controllers\Filament\SetPanelLocaleController;
 use App\Http\Middleware\SetLocaleFromSession;
@@ -38,9 +37,6 @@ class SmplAdmPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->resources([
-                ParameterResource::class,
-            ])
             ->navigationGroups([
                 NavigationGroup::make(__('filament.resources.nav_contacts')),
                 NavigationGroup::make(__('filament.resources.nav_plans')),

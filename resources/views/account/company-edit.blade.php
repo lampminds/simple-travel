@@ -36,6 +36,7 @@
                                             <input
                                                 type="text"
                                                 name="name"
+                                                required
                                                 class="form-control @error('name') is-invalid @enderror"
                                                 value="{{ old('name', $account->name) }}"
                                             >
@@ -51,6 +52,7 @@
                                             <input
                                                 type="text"
                                                 name="commercial_name"
+                                                required
                                                 class="form-control @error('commercial_name') is-invalid @enderror"
                                                 value="{{ old('commercial_name', $account->commercial_name) }}"
                                             >
@@ -68,6 +70,7 @@
                                             <input
                                                 type="email"
                                                 name="email"
+                                                required
                                                 class="form-control @error('email') is-invalid @enderror"
                                                 value="{{ old('email', $account->email) }}"
                                             >
@@ -83,6 +86,7 @@
                                             <input
                                                 type="text"
                                                 name="phone"
+                                                required
                                                 class="form-control @error('phone') is-invalid @enderror"
                                                 value="{{ old('phone', $account->phone) }}"
                                             >
@@ -100,6 +104,7 @@
                                             <input
                                                 type="text"
                                                 name="address_line1"
+                                                required
                                                 class="form-control @error('address_line1') is-invalid @enderror"
                                                 value="{{ old('address_line1', $account->address_line1) }}"
                                             >
@@ -111,7 +116,7 @@
 
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Dirección (línea 2)</label>
+                                            <label class="form-label">Dirección (línea 2) <span class="text-muted fw-normal">(opcional)</span></label>
                                             <input
                                                 type="text"
                                                 name="address_line2"
@@ -138,7 +143,7 @@
                                                 value="{{ old('city_search', $currentCity?->name ?? '') }}"
                                             >
                                             <small id="city-search-hint" class="form-text text-muted">La búsqueda empieza con 4 caracteres.</small>
-                                            <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $account->city_id) }}">
+                                            <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $account->city_id) }}" required>
                                             <div id="city-results" class="list-group position-absolute w-100 mt-1 shadow-sm z-3 overflow-auto" style="max-height: 22rem;"></div>
                                             @error('city_id')
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -180,6 +185,7 @@
                                             <input
                                                 type="text"
                                                 name="postal_code"
+                                                required
                                                 class="form-control @error('postal_code') is-invalid @enderror"
                                                 value="{{ old('postal_code', $account->postal_code) }}"
                                             >

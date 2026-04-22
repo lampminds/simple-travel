@@ -26,7 +26,9 @@ return new class extends Migration
             $table->boolean('is_public')->default(false)->comment('Visible in website');
             $table->enum('booking_mode', ['instant', 'request', 'external', 'quote'])->nullable();
             $table->integer('confirmation_time_hours')->nullable()->comment('Confirmation time in hours');
-            $table->enum('status', ['active', 'onhold', 'inactive', 'terminated'])->default('active');
+            $table->enum('status', ['active', 'suspended', 'discontinued'])->default('active');
+            $table->enum('ownership_type', ['provider', 'wholesaler'])
+                ->comment('Defines if this service requires offers flow or not');
 
             lmpStamps($table);
         });
