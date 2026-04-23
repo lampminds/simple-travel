@@ -23,7 +23,8 @@ return new class extends Migration
                 ->constrained('service_transfer_vehicle_types', 'id', 'stvt_fk');
 
             $table->enum('pricing_type', ['per_vehicle', 'per_person']);
-            $table->foreignId('currency_id')->constrained('cat_currencies');
+            $table->unsignedTinyInteger('currency_id');
+            $table->foreign('currency_id')->references('id')->on('cat_currencies');
 
             $table->decimal('base_price', 10, 2)->nullable();
             $table->decimal('price_per_person', 10, 2)->nullable();

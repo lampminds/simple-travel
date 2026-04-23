@@ -13,11 +13,11 @@ class PlanItemsTableSeeder extends Seeder
      */
     public function run()
     {
-        \DB::table('plan_items')->delete();
+        \DB::table('plan_features')->delete();
 
         $rows = $this->getRows();
         $ordered = $this->orderParentsBeforeChildren($rows);
-        \DB::table('plan_items')->insert($ordered);
+        \DB::table('plan_features')->insert($ordered);
     }
 
     /**

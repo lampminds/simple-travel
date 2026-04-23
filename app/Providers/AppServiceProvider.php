@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Language;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\File;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,16 +22,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom([
-            database_path('migrations/accounts'),
-            database_path('migrations/ai'),
-            database_path('migrations/core'),
-            database_path('migrations/help'),
-            database_path('migrations/plans'),
-            database_path('migrations/relations'),
-            database_path('migrations/services'),
-            database_path('migrations/settings'),
-        ]);
+        // Looks for all migrations in the database/migrations directory, excluding those in a wip subdirectory
+        $basePath = database_path('migrations');
+
+        $directories = collect(File::allDirectories($basePath))
+            ->reject(fn ($dir) => str_contains($dir, DIRECTORY_SEPARATOR . 'wip'));
+
+        foreach ($directories as $dir) {
+            $this->loadMigrationsFrom($dir);
+        }
+
 
         View::addNamespace('site', resource_path('site/resources/views'));
 

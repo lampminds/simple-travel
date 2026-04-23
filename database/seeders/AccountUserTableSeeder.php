@@ -14,25 +14,19 @@ class AccountUserTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('account_user')->delete();
-        
+
         \DB::table('account_user')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 1,
                 'account_id' => 1,
                 'user_id' => 2,
             ),
-            1 => 
-            array (
-                'id' => 2,
-                'account_id' => 3,
-                'user_id' => 3,
-            ),
         ));
-        
-        
+
+
     }
 }

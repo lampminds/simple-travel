@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('service_offers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('provider_id')
-                ->constrained('accounts', 'id', 'fk_account_id');
+                ->constrained('accounts', 'id', 'fkp_account_id');
             $table->foreignId('wholesaler_id')
-                ->constrained('accounts', 'id', 'fk_account_id');
+                ->constrained('accounts', 'id', 'fkw_account_id');
             $table->foreignId('service_id')
                 ->nullable()
                 ->comment('For the whole service -then variant id is ignored');

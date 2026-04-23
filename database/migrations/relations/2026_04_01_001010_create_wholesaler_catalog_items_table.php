@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('wholesaler_catalog_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('provider_id')
-                ->constrained('accounts', 'id', 'fk_account_id');
+                ->constrained('accounts', 'id', 'fkp2_account_id');
             $table->foreignId('wholesaler_id')
-                ->constrained('accounts', 'id', 'fk_account_id');
+                ->constrained('accounts', 'id', 'fkw2_account_id');
 
             $table->foreignId('service_id')
                 ->nullable()

@@ -11,7 +11,7 @@ class PlanItem extends Model
 {
     use AuditTrait;
 
-    protected $table = 'plan_items';
+    protected $table = 'plan_features';
 
     protected $fillable = [
         'plan_id',
@@ -42,7 +42,7 @@ class PlanItem extends Model
 
     public function translations(): HasMany
     {
-        return $this->hasMany(PlanItemTranslation::class);
+        return $this->hasMany(PlanItemTranslation::class, 'plan_feature_id');
     }
 
     /**

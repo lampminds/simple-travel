@@ -32,8 +32,6 @@ class DatabaseSeeder extends Seeder
         $this->call(AccountUserTableSeeder::class);
         $this->call(UserModelHasRolesTableSeeder::class);
         // Pivot rows need existing accounts (FK to accounts.id).
-        $this->call(AccountCategoryAssignmentsTableSeeder::class);
-        $this->call(CatAccountTaxIdsTableSeeder::class);
         $this->call(CatContactDepartmentsTableSeeder::class);
         $this->call(CatContactDepartmentTranslationsTableSeeder::class);
         $this->call(CatContactPositionsTableSeeder::class);

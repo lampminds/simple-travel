@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create('currency_rates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('currency_id')->constrained('cat_currencies');
+            $table->unsignedTinyInteger('currency_id');
+            $table->foreign('currency_id')->references('id')->on('cat_currencies');
+
             $table->decimal('rate', 10, 3);
             $table->timestamp('starting_at');
 

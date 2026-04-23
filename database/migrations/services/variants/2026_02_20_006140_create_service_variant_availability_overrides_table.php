@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('reason')->nullable();
             lmpStamps($table);
 
-            $table->unique(['service_variant_id', 'date', 'start_time']);
+            $table->unique(['service_variant_id', 'date', 'start_time'], 'sv_date_time_unique');
         });
     }
 

@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('pricing_type', ['per_person', 'per_unit', 'per_room', 'per_vehicle', 'per_group']);
             $table->decimal('base_price', 12, 2);
             $table->unsignedTinyInteger('currency_id');
-            $table->foreign('currency_id')->references('id')->on('currencies');
+            $table->foreign('currency_id')->references('id')->on('cat_currencies');
 
             $table->enum('inventory_type', ['unlimited', 'per_day', 'per_timeslot', 'per_departure']);
             $table->unsignedInteger('inventory_total')->nullable()->comment('When inventory_type is fixed');

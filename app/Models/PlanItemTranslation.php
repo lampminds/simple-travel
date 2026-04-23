@@ -10,17 +10,17 @@ class PlanItemTranslation extends Model
 {
     use AuditTrait;
 
-    protected $table = 'plan_item_translations';
+    protected $table = 'plan_feature_translations';
 
     protected $fillable = [
-        'plan_item_id',
+        'plan_feature_id',
         'language_id',
         'text',
     ];
 
     public function planItem(): BelongsTo
     {
-        return $this->belongsTo(PlanItem::class);
+        return $this->belongsTo(PlanItem::class, 'plan_feature_id');
     }
 
     public function language(): BelongsTo
