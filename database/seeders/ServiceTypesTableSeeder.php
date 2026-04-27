@@ -36,7 +36,7 @@ class ServiceTypesTableSeeder extends Seeder
             2 =>
             array (
                 'id' => 3,
-                'code' => 'excursion',
+                'code' => 'entertainment',
                 'sort_order' => 9999,
                 'active' => 1,
             ),
@@ -52,3 +52,4 @@ class ServiceTypesTableSeeder extends Seeder
 
     }
 }
+

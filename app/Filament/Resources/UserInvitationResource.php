@@ -3,12 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserInvitationResource\Pages;
+use App\Models\Role;
 use App\Models\UserInvitation;
 use BackedEnum;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -50,10 +52,22 @@ class UserInvitationResource extends LmpResource
                         ->relationship('account', 'name')
                         ->searchable()
                         ->preload()
-                        ->required(),
+                        ->required()
+                        ->live(),
+                    Select::make('account_inviting')
+                        ->label(__('filament.resources.user_invitation_fields.account_inviting'))
+                        ->relationship('accountInviting', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->helperText(__('filament.resources.user_invitation_fields.account_inviting_helper'))
+                        ->nullable(),
                     TextInput::make('email')
                         ->label(__('filament.resources.user_invitation_fields.email'))
                         ->email()
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('name')
+                        ->label(__('filament.resources.user_invitation_fields.name'))
                         ->required()
                         ->maxLength(255),
                     Select::make('type')
@@ -62,7 +76,44 @@ class UserInvitationResource extends LmpResource
                             UserInvitation::TYPE_INTERNAL => UserInvitation::TYPE_INTERNAL,
                             UserInvitation::TYPE_EXTERNAL => UserInvitation::TYPE_EXTERNAL,
                         ])
-                        ->required(),
+                        ->required()
+                        ->live(),
+                    Select::make('role_id')
+                        ->label(__('filament.resources.user_invitation_fields.role_id'))
+                        ->options(function (Get $get): array {
+                            if (($get('type') ?? UserInvitation::TYPE_INTERNAL) === UserInvitation::TYPE_EXTERNAL) {
+                                $id = Role::platformTemplateRoleId('owner');
+                                if ($id === null) {
+                                    return [];
+                                }
+
+                                return [
+                                    $id => __('filament.resources.user_invitation_fields.role_external_owner'),
+                                ];
+                            }
+
+                            $accountId = (int) ($get('account_id') ?? 0);
+                            if ($accountId < 1) {
+                                return [];
+                            }
+
+                            return getAccountRoles($accountId, ['guest', 'admin']);
+                        })
+                        ->searchable()
+                        ->preload()
+                        ->default(function (Get $get): ?int {
+                            if (($get('type') ?? UserInvitation::TYPE_INTERNAL) === UserInvitation::TYPE_INTERNAL) {
+                                return null;
+                            }
+
+                            return Role::platformTemplateRoleId('owner');
+                        })
+                        ->disabled(fn (Get $get): bool => ($get('type') ?? UserInvitation::TYPE_INTERNAL) === UserInvitation::TYPE_EXTERNAL)
+                        ->dehydrated()
+                        ->required()
+                        ->helperText(fn (Get $get) => ($get('type') ?? null) === UserInvitation::TYPE_EXTERNAL
+                            ? __('filament.resources.user_invitation_fields.role_id_external_helper')
+                            : null),
                     Select::make('status')
                         ->label(__('filament.resources.user_invitation_fields.status'))
                         ->options([
@@ -100,7 +151,7 @@ class UserInvitationResource extends LmpResource
     public static function table(Table $table): Table
     {
         return parent::table($table)
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['account', 'invitedBy'])->orderByDesc('id'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['account', 'accountInviting', 'invitedBy', 'role'])->orderByDesc('id'))
             ->columns([
                 TextColumn::make('id')
                     ->label(__('filament.resources.user_invitation_columns.id'))
@@ -113,10 +164,29 @@ class UserInvitationResource extends LmpResource
                             ->where('commercial_name', 'like', "%{$search}%")
                             ->orWhere('name', 'like', "%{$search}%"));
                     }),
+                TextColumn::make('accountInvitingLabel')
+                    ->label(__('filament.resources.user_invitation_columns.account_inviting'))
+                    ->getStateUsing(
+                        fn (UserInvitation $record) => $record->accountInviting?->commercial_name
+                            ?: $record->accountInviting?->name
+                            ?: '—'
+                    )
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('accountInviting', fn (Builder $q) => $q
+                            ->where('commercial_name', 'like', "%{$search}%")
+                            ->orWhere('name', 'like', "%{$search}%"));
+                    }),
                 TextColumn::make('email')
                     ->label(__('filament.resources.user_invitation_columns.email'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('name')
+                    ->label(__('filament.resources.user_invitation_columns.name'))
+                    ->searchable()
+                    ->default('—'),
+                TextColumn::make('role.name')
+                    ->label(__('filament.resources.user_invitation_columns.role'))
+                    ->default('—'),
                 TextColumn::make('type')
                     ->label(__('filament.resources.user_invitation_columns.type'))
                     ->sortable(),

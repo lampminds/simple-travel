@@ -31,7 +31,10 @@ class VerifyEmailController extends Controller
 
         $startupAccountId = (int) $request->session()->pull(self::SESSION_STARTUP_ACCOUNT_ID_AFTER_VERIFY, 0);
         if ($startupAccountId > 0 && $request->user()->belongsToAccount($startupAccountId)) {
-            $accountStartupService->runForNewAccount($startupAccountId);
+            $accountStartupService->runForNewAccount(
+                $startupAccountId,
+                (int) $request->user()->id
+            );
         }
 
         if ($request->session()->pull('welcome_company_after_verify')) {

@@ -14,12 +14,12 @@ class CatMenuTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('cat_menu_translations')->delete();
-        
+
         \DB::table('cat_menu_translations')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 1,
                 'menu_id' => 2,
@@ -27,15 +27,15 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Relaciones',
                 'tip' => 'Encuentre aquí sus vínculos con otros usuarios de simple Travel',
             ),
-            1 => 
+            1 =>
             array (
                 'id' => 2,
                 'menu_id' => 1,
                 'language_id' => 2,
-                'name' => 'Home',
+                'name' => 'Panel',
                 'tip' => 'Su panel de control principal',
             ),
-            2 => 
+            2 =>
             array (
                 'id' => 3,
                 'menu_id' => 3,
@@ -43,7 +43,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Catálogo',
                 'tip' => NULL,
             ),
-            3 => 
+            3 =>
             array (
                 'id' => 4,
                 'menu_id' => 4,
@@ -51,7 +51,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Operaciones',
                 'tip' => NULL,
             ),
-            4 => 
+            4 =>
             array (
                 'id' => 5,
                 'menu_id' => 5,
@@ -59,7 +59,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Finanzas',
                 'tip' => NULL,
             ),
-            5 => 
+            5 =>
             array (
                 'id' => 6,
                 'menu_id' => 6,
@@ -67,7 +67,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Integraciones',
                 'tip' => NULL,
             ),
-            6 => 
+            6 =>
             array (
                 'id' => 7,
                 'menu_id' => 7,
@@ -75,7 +75,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Disponibilidad',
                 'tip' => NULL,
             ),
-            7 => 
+            7 =>
             array (
                 'id' => 9,
                 'menu_id' => 9,
@@ -83,7 +83,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Reservas',
                 'tip' => NULL,
             ),
-            8 => 
+            8 =>
             array (
                 'id' => 10,
                 'menu_id' => 10,
@@ -91,7 +91,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Clientes',
                 'tip' => NULL,
             ),
-            9 => 
+            9 =>
             array (
                 'id' => 11,
                 'menu_id' => 11,
@@ -99,7 +99,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Invitar empleados',
                 'tip' => NULL,
             ),
-            10 => 
+            10 =>
             array (
                 'id' => 12,
                 'menu_id' => 12,
@@ -107,7 +107,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Invitar empresas',
                 'tip' => NULL,
             ),
-            11 => 
+            11 =>
             array (
                 'id' => 13,
                 'menu_id' => 13,
@@ -115,7 +115,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Gestionar invitaciones',
                 'tip' => NULL,
             ),
-            12 => 
+            12 =>
             array (
                 'id' => 14,
                 'menu_id' => 14,
@@ -123,7 +123,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Sitio web',
                 'tip' => NULL,
             ),
-            13 => 
+            13 =>
             array (
                 'id' => 15,
                 'menu_id' => 15,
@@ -131,7 +131,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Configuración del sitio',
                 'tip' => NULL,
             ),
-            14 => 
+            14 =>
             array (
                 'id' => 16,
                 'menu_id' => 16,
@@ -140,7 +140,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'tip' => NULL,
             ),
         ));
-        
-        
+
+
     }
 }

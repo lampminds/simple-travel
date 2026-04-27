@@ -18,8 +18,8 @@ return [
     'dashboard_subtitle' => 'Selecciona el panel al que tienes acceso',
     'dashboard_panel_provider_title' => 'Prestador',
     'dashboard_panel_provider_desc' => 'Acceso al panel de prestador de <strong>:company</strong>',
-    'dashboard_panel_operator_title' => 'Operador / Mayorista',
-    'dashboard_panel_operator_desc' => 'Acceso al panel de operador/mayorista de <strong>:company</strong>',
+    'dashboard_panel_operator_title' => 'Operador',
+    'dashboard_panel_operator_desc' => 'Acceso al panel de operador de <strong>:company</strong>',
     'dashboard_panel_agency_title' => 'Agencia',
     'dashboard_panel_agency_desc' => 'Acceso al panel de agencia de <strong>:company</strong>',
     'dashboard_go_panel' => 'Ir al panel',
@@ -33,6 +33,7 @@ return [
     'tasks_heading' => 'Tareas',
     'tasks_intro' => 'Revisá las listas de tareas asignadas a tu cuenta, agrupadas por categoría. Los textos usan tu idioma actual cuando hay traducción.',
     'tasks_empty' => 'Todavía no hay tareas configuradas para esta cuenta.',
+    'tasks_completed' => 'Completada',
     'tasks_open_link' => 'Abrir enlace',
     'tasks_open_step' => 'Abrir este paso',
 ];

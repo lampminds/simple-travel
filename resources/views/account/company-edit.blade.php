@@ -32,9 +32,22 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Nombre</label>
+                                            <label class="form-label">Tipo de empresa</label>
                                             <input
                                                 type="text"
+                                                class="form-control"
+                                                value="{{ $accountTypeLabel ?? '—' }}"
+                                                readonly
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-6">
+                                        <div class="mb-3">
+                                            <label for="company_name" class="form-label">Nombre</label>
+                                            <input
+                                                type="text"
+                                                id="company_name"
                                                 name="name"
                                                 required
                                                 class="form-control @error('name') is-invalid @enderror"
@@ -48,9 +61,10 @@
 
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Nombre comercial</label>
+                                            <label for="company_commercial_name" class="form-label">Nombre comercial</label>
                                             <input
                                                 type="text"
+                                                id="company_commercial_name"
                                                 name="commercial_name"
                                                 required
                                                 class="form-control @error('commercial_name') is-invalid @enderror"
@@ -66,9 +80,10 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Email</label>
+                                            <label for="company_email" class="form-label">Email</label>
                                             <input
                                                 type="email"
+                                                id="company_email"
                                                 name="email"
                                                 required
                                                 class="form-control @error('email') is-invalid @enderror"
@@ -82,9 +97,10 @@
 
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Teléfono</label>
+                                            <label for="company_phone" class="form-label">Teléfono</label>
                                             <input
                                                 type="text"
+                                                id="company_phone"
                                                 name="phone"
                                                 required
                                                 class="form-control @error('phone') is-invalid @enderror"
@@ -100,9 +116,10 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Dirección (línea 1)</label>
+                                            <label for="company_address_line1" class="form-label">Dirección (línea 1)</label>
                                             <input
                                                 type="text"
+                                                id="company_address_line1"
                                                 name="address_line1"
                                                 required
                                                 class="form-control @error('address_line1') is-invalid @enderror"
@@ -116,9 +133,10 @@
 
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Dirección (línea 2) <span class="text-muted fw-normal">(opcional)</span></label>
+                                            <label for="company_address_line2" class="form-label">Dirección (línea 2) <span class="text-muted fw-normal">(opcional)</span></label>
                                             <input
                                                 type="text"
+                                                id="company_address_line2"
                                                 name="address_line2"
                                                 class="form-control @error('address_line2') is-invalid @enderror"
                                                 value="{{ old('address_line2', $account->address_line2) }}"
@@ -181,9 +199,10 @@
 
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Código postal</label>
+                                            <label for="company_postal_code" class="form-label">Código postal</label>
                                             <input
                                                 type="text"
+                                                id="company_postal_code"
                                                 name="postal_code"
                                                 required
                                                 class="form-control @error('postal_code') is-invalid @enderror"

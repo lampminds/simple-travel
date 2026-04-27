@@ -17,7 +17,8 @@ return new class extends Migration
         Schema::create('account_contact_type_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')
-                ->constrained('accounts', 'id', 'account_fk');
+                ->constrained('accounts', 'id', 'account_fk')
+                ->cascadeOnDelete();
             $table->foreignId('contact_id')
                 ->constrained('account_contacts', 'id', 'contact_fk');
             $table->foreignId('contact_type_id')

@@ -14,12 +14,12 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('cat_account_category_translations')->delete();
-        
+
         \DB::table('cat_account_category_translations')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 4,
                 'account_category_id' => 2,
@@ -27,7 +27,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'DNI',
                 'description' => 'Argentinian document',
             ),
-            1 => 
+            1 =>
             array (
                 'id' => 5,
                 'account_category_id' => 2,
@@ -35,7 +35,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'DNI',
                 'description' => 'Documento Nacional de Identidad',
             ),
-            2 => 
+            2 =>
             array (
                 'id' => 6,
                 'account_category_id' => 2,
@@ -43,7 +43,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'DNI',
                 'description' => 'Documento argentino',
             ),
-            3 => 
+            3 =>
             array (
                 'id' => 7,
                 'account_category_id' => 1,
@@ -51,7 +51,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Cuit',
                 'description' => 'Argentinian tax ID',
             ),
-            4 => 
+            4 =>
             array (
                 'id' => 8,
                 'account_category_id' => 1,
@@ -59,7 +59,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Cuit',
                 'description' => 'Clave única de identificación tributaria',
             ),
-            5 => 
+            5 =>
             array (
                 'id' => 9,
                 'account_category_id' => 1,
@@ -67,7 +67,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Cuit',
                 'description' => 'Número de identificação fiscal argentino',
             ),
-            6 => 
+            6 =>
             array (
                 'id' => 10,
                 'account_category_id' => 3,
@@ -75,7 +75,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Service provider',
                 'description' => 'Hotels, transport, tours, guides, rentals, gastronomic',
             ),
-            7 => 
+            7 =>
             array (
                 'id' => 11,
                 'account_category_id' => 3,
@@ -83,7 +83,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Prestador de servicios',
                 'description' => 'Hoteles, transporte, tours, rentals, guías, gastronómicos',
             ),
-            8 => 
+            8 =>
             array (
                 'id' => 12,
                 'account_category_id' => 3,
@@ -91,55 +91,31 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Prestador de serviços',
                 'description' => 'hotéis, passeios, guias, transportes',
             ),
-            9 => 
+            9 =>
             array (
                 'id' => 13,
                 'account_category_id' => 4,
                 'language_id' => 1,
-                'name' => 'Tour operator',
-                'description' => 'The one who puts together the tour package by combining several suppliers.',
+                'name' => 'Operator',
+                'description' => 'Builds tour products from several suppliers, may work B2B with providers and/or retail agencies.',
             ),
-            10 => 
+            10 =>
             array (
                 'id' => 14,
                 'account_category_id' => 4,
                 'language_id' => 2,
-                'name' => 'Operador turístico',
-                'description' => 'Es quien arma el paquete turístico combinando varios proveedores.',
+                'name' => 'Operador',
+                'description' => 'Arma el paquete o cupos a partir de varios proveedores; puede vender a agencias u otros operadores.',
             ),
-            11 => 
+            11 =>
             array (
                 'id' => 15,
                 'account_category_id' => 4,
                 'language_id' => 3,
-                'name' => 'Operador de turismo',
-                'description' => 'É ele que monta o pacote turístico, combinando vários fornecedores.',
+                'name' => 'Operador',
+                'description' => 'Monta o pacote ou allotments com vários fornecedores; pode vender a agências ou a outros operadores.',
             ),
-            12 => 
-            array (
-                'id' => 16,
-                'account_category_id' => 5,
-                'language_id' => 1,
-                'name' => 'Tour wholesaler',
-                'description' => 'Purchase large allocations from operators or directly from suppliers. Distribute to retail agencies.',
-            ),
-            13 => 
-            array (
-                'id' => 17,
-                'account_category_id' => 5,
-                'language_id' => 2,
-                'name' => 'Mayorista de turismo',
-                'description' => 'Compra grandes cupos a operadores o directamente a proveedores. Distribuye a agencias minoristas',
-            ),
-            14 => 
-            array (
-                'id' => 18,
-                'account_category_id' => 5,
-                'language_id' => 3,
-                'name' => 'Operador turístico',
-                'description' => 'Adquira grandes quantidades a operadores ou diretamente a fornecedores. Distribua para agências de retalho.',
-            ),
-            15 => 
+            12 =>
             array (
                 'id' => 19,
                 'account_category_id' => 6,
@@ -147,7 +123,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Travel Agency',
                 'description' => 'Sells to travellers',
             ),
-            16 => 
+            13 =>
             array (
                 'id' => 20,
                 'account_category_id' => 6,
@@ -155,7 +131,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Agencia de turismo',
                 'description' => 'Vende directo al público',
             ),
-            17 => 
+            14 =>
             array (
                 'id' => 21,
                 'account_category_id' => 6,
@@ -163,7 +139,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Agência de viagens',
                 'description' => 'Vende diretamente ao público',
             ),
-            18 => 
+            15 =>
             array (
                 'id' => 22,
                 'account_category_id' => 7,
@@ -171,7 +147,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'Online Travel Agency',
                 'description' => 'Digital/Online travel agency',
             ),
-            19 => 
+            16 =>
             array (
                 'id' => 23,
                 'account_category_id' => 7,
@@ -179,7 +155,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'name' => 'OTA',
                 'description' => 'Agencia de viajes digital/online',
             ),
-            20 => 
+            17 =>
             array (
                 'id' => 24,
                 'account_category_id' => 7,
@@ -188,7 +164,7 @@ class CatAccountCategoryTranslationsTableSeeder extends Seeder
                 'description' => 'Agência de viagens digital/online',
             ),
         ));
-        
-        
+
+
     }
 }

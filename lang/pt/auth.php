@@ -65,7 +65,8 @@ return [
         'carousel_slide3_text' => 'Ferramentas pensadas para potencializar sua operação e suas vendas.',
 
         'intro_internal' => 'Complete os seus dados para entrar na conta existente da sua empresa.',
-        'intro_external' => 'Foi convidado a experimentar a plataforma. Registe a sua empresa e o seu utilizador como de costume.',
+        'intro_external' => 'Foi convidado a experimentar a plataforma. Registe a sua empresa e o seu utilizador.',
+        'invitation_from' => 'Convite de: :name (:company)',
         'important_text_internal' => 'Este link é pessoal. Indique o email que vai usar na conta; não pode estar já registado. Depois terá de o confirmar por email, como em qualquer registo.',
         'important_text_external' => 'Este link é pessoal. Vai criar uma empresa nova. Indique o email que vai usar; não pode estar já registado. Depois terá de o confirmar por email.',
         'invited_company' => 'Empresa',

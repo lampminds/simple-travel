@@ -130,7 +130,10 @@ return [
         'user_invitation_columns' => [
             'id' => 'ID',
             'account' => 'Conta',
+            'account_inviting' => 'Conta que convida',
             'email' => 'E-mail',
+            'name' => 'Nome do convidado',
+            'role' => 'Função',
             'type' => 'Tipo',
             'status' => 'Status',
             'expires_at' => 'Expira em',
@@ -139,7 +142,13 @@ return [
 
         'user_invitation_fields' => [
             'account_id' => 'Conta',
+            'account_inviting' => 'Conta que convida',
+            'account_inviting_helper' => 'A conta que gerou o convite (p. ex. operador). Se ficar vazio ao criar, usa a mesma que Conta.',
             'email' => 'E-mail',
+            'name' => 'Nome do convidado',
+            'role_id' => 'Função',
+            'role_external_owner' => 'owner (empresa nova)',
+            'role_id_external_helper' => 'Convites externos usam sempre a função owner na nova empresa criada no registo.',
             'type' => 'Tipo',
             'status' => 'Status',
             'expires_at' => 'Expira em',
@@ -158,14 +167,20 @@ return [
         'roles' => 'Funções',
 
         'role_fields' => [
+            'account_id' => 'Conta',
             'name' => 'Nome',
             'permissions' => 'Permissões',
         ],
 
         'role_columns' => [
             'id' => 'ID',
+            'account' => 'Conta',
             'name' => 'Nome',
             'permissions_count' => 'Permissões',
+        ],
+
+        'role_filters' => [
+            'account_id' => 'Conta',
         ],
 
         'permission' => 'Permissão',
@@ -563,7 +578,7 @@ return [
         'nav_plans' => 'Planos e preços',
         'nav_services' => 'Serviços (prestador)',
         'nav_hotels' => 'Hotéis',
-        'nav_excursions' => 'Excursões',
+        'nav_entertainments' => 'Entretenimento',
         'nav_gastronomy' => 'Gastronomia',
         'nav_parameters' => 'Configurações',
         'nav_users' => 'Utilizadores',
@@ -1027,57 +1042,57 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_excursion_type' => 'Tipo de excursão',
-        'service_excursion_types' => 'Tipos de excursão',
+        'service_entertainment_type' => 'Tipo de entretenimento',
+        'service_entertainment_types' => 'Tipos de entretenimento',
 
-        'service_excursion_type_tabs' => [
+        'service_entertainment_type_tabs' => [
             'general' => 'Geral',
             'translations' => 'Traduções',
         ],
 
-        'service_excursion_type_fields' => [
+        'service_entertainment_type_fields' => [
             'code' => 'Código',
             'name' => 'Nome',
             'category' => 'Categoria',
         ],
 
-        'service_excursion_type_columns' => [
+        'service_entertainment_type_columns' => [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nome',
             'category' => 'Categoria',
         ],
 
-        'service_excursion_type_category' => 'Categoria de tipo de excursão',
-        'service_excursion_type_categories' => 'Categorias de tipo de excursão',
+        'service_entertainment_type_category' => 'Categoria de tipo de entretenimento',
+        'service_entertainment_type_categories' => 'Categorias de tipo de entretenimento',
 
-        'service_excursion_type_category_tabs' => [
+        'service_entertainment_type_category_tabs' => [
             'general' => 'Geral',
             'translations' => 'Traduções',
         ],
 
-        'service_excursion_type_category_fields' => [
+        'service_entertainment_type_category_fields' => [
             'code' => 'Código',
             'name' => 'Nome',
         ],
 
-        'service_excursion_type_category_columns' => [
+        'service_entertainment_type_category_columns' => [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nome',
         ],
 
-        'service_excursion' => 'Serviço de excursão',
-        'service_excursions' => 'Serviços de excursão',
+        'service_entertainment' => 'Serviço de entretenimento',
+        'service_entertainments' => 'Serviços de entretenimento',
 
-        'service_excursion_tabs' => [
+        'service_entertainment_tabs' => [
             'general' => 'Geral',
             'technical' => 'Técnico',
         ],
 
-        'service_excursion_fields' => [
+        'service_entertainment_fields' => [
             'service_id' => 'Serviço',
-            'service_excursion_type_id' => 'Tipo de excursão',
+            'service_entertainment_type_id' => 'Tipo de entretenimento',
             'difficulty_level' => 'Dificuldade',
             'min_age' => 'Idade mínima',
             'max_age' => 'Idade máxima',
@@ -1089,14 +1104,14 @@ return [
             'distance_km' => 'Distância (km)',
         ],
 
-        'service_excursion_columns' => [
+        'service_entertainment_columns' => [
             'id' => 'ID',
             'service' => 'Serviço',
             'type' => 'Tipo',
             'difficulty' => 'Dificuldade',
         ],
 
-        'service_excursion_difficulty' => [
+        'service_entertainment_difficulty' => [
             'easy' => 'Fácil',
             'moderate' => 'Moderada',
             'difficult' => 'Difícil',
@@ -1268,8 +1283,87 @@ return [
         'service_status' => [
             'active' => 'Ativo',
             'onhold' => 'Em espera',
+            'suspended' => 'Suspenso',
+            'discontinued' => 'Descontinuado',
             'inactive' => 'Inativo',
             'terminated' => 'Encerrado',
+        ],
+
+        'price_list' => 'Lista de preços',
+        'price_lists' => 'Listas de preços',
+
+        'price_list_owner_type' => [
+            'account' => 'Conta',
+            'user' => 'Utilizador',
+        ],
+
+        'price_list_fields' => [
+            'owner_type' => 'Tipo de proprietário',
+            'owner_id' => 'Proprietário',
+            'name' => 'Nome',
+            'currency_id' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Ativa',
+            'assignments' => 'Atribuições',
+        ],
+
+        'price_list_tabs' => [
+            'general' => 'Geral',
+            'assignments' => 'Atribuições',
+        ],
+
+        'price_list_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'owner' => 'Proprietário',
+            'currency' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Ativa',
+            'items_count' => 'Linhas',
+        ],
+
+        'price_list_item' => 'Item de lista',
+        'price_list_items' => 'Itens de listas',
+
+        'price_list_item_fields' => [
+            'price_list_id' => 'Lista',
+            'service_variant_id' => 'Variante de serviço',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo de preço',
+        ],
+
+        'price_list_item_columns' => [
+            'id' => 'ID',
+            'price_list' => 'Lista',
+            'service_variant' => 'Variante',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo',
+        ],
+
+        'price_list_item_filters' => [
+            'price_list_id' => 'Lista',
+        ],
+
+        'price_list_item_pricing_mode' => [
+            'fixed' => 'Fixo',
+        ],
+
+        'price_list_assignment_fields' => [
+            'assigned_to_id' => 'Atribuído a (conta)',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor do ajuste',
+            'valid_from' => 'Válido desde',
+            'valid_to' => 'Válido até',
+            'is_active' => 'Ativa',
+            'add' => 'Adicionar atribuição',
+        ],
+
+        'price_list_assignment_adjustment_type' => [
+            'none' => 'Sem ajuste',
+            'percentage' => 'Percentagem',
+            'fixed' => 'Montante fixo',
         ],
 
         'plan_user_price' => 'Preço por faixa de usuários',

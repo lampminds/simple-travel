@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create('account_clients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->string('name')->comment('The short name chosen by the account');
             $table->string('commercial_name')->nullable()->comment('Full name of the account\'s client');
 
@@ -29,7 +31,11 @@ return new class extends Migration
 
             $table->enum('status', ['active', 'onhold', 'inactive', 'terminated'])->default('active');
 
-            $table->foreignId('linked_account_id')->nullable()->constrained('accounts')->onDelete('set null')->comment('If this client is also an account in our system');
+            $table->foreignId('linked_account_id')
+                ->nullable()
+                ->constrained('accounts')
+                ->nullOnDelete()
+                ->comment('If this client is also an account in our system');
 
             lmpStamps($table);
         });

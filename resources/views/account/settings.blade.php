@@ -75,14 +75,14 @@
                                                     <div class="col-lg-6">
                                                         <div class="mb-3">
                                                             <label for="name"
-                                                                   class="form-label">Name<small>*</small></label>
+                                                                   class="form-label required-label">Name</label>
                                                             <input type="text" class="form-control" id="name"
                                                                    placeholder="Your Name" name="name"
                                                                    value="Greeva Navadiya"/>
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label for="email" class="form-label">Email<small>*</small></label>
+                                                            <label for="email" class="form-label required-label">Email</label>
                                                             <input type="email" class="form-control" id="email"
                                                                    placeholder="Email" name="email"
                                                                    value="greeva@coderthemes.com"/>
@@ -100,7 +100,7 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <label class="form-label">Phone<small>*</small></label>
+                                                            <label class="form-label required-label">Phone</label>
                                                             <input type="text" class="form-control" id="phone"
                                                                    name="phone" placeholder="Phone number"
                                                                    value="+1 254 024 5400"/>
@@ -217,22 +217,22 @@
                                             <!-- form start -->
                                             <form action="#" class="password-form mt-4">
                                                 <div class="mb-3">
-                                                    <label for="name" class="form-label">Current
-                                                        Password<small>*</small></label>
+                                                    <label for="name" class="form-label required-label">Current
+                                                        Password</label>
                                                     <input type="password" class="form-control" id="current_password"
                                                            aria-describedby="current_password" name="current_password"/>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label for="name" class="form-label">New
-                                                        Password<small>*</small></label>
+                                                    <label for="name" class="form-label required-label">New
+                                                        Password</label>
                                                     <input type="password" class="form-control" id="new_password"
                                                            aria-describedby="current_password" name="new_password"/>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label for="name" class="form-label">Confirm
-                                                        Password<small>*</small></label>
+                                                    <label for="name" class="form-label required-label">Confirm
+                                                        Password</label>
                                                     <input type="password" class="form-control" id="confirm_password"
                                                            aria-describedby="current_password" name="confirm_password"/>
                                                 </div>

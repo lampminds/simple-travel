@@ -83,7 +83,7 @@ final class WebsiteNavigation
         $typeId = match ($scope) {
             'provider' => AccountTypeCategoryIds::PROVIDER,
             'agency' => AccountTypeCategoryIds::AGENCY,
-            'operator' => AccountTypeCategoryIds::WHOLESALER,
+            'operator' => AccountTypeCategoryIds::OPERATOR,
             default => null,
         };
 

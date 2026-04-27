@@ -28,10 +28,10 @@
                                 {{ $serviceType->name ?: strtoupper($serviceType->code) }}
                                 — {{ $service->name !== '' ? $service->name : __('wizard.service_unnamed') }}
                             </p>
-                            @livewire(\App\Livewire\ServiceWizard\ServiceMediaStep::class, [
+                            @livewire(\App\Livewire\ServiceWizard\ServiceVariantsStep::class, [
                                 'serviceId' => $service->id,
                                 'serviceTypeId' => $serviceType->id,
-                            ], key('service-media-'.$service->id))
+                            ], key('service-variants-'.$service->id))
 
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
                                 <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
@@ -48,6 +48,10 @@
                                         href="{{ route('services.wizard.step3', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
                                         class="btn btn-outline-primary"
                                     >@lang('wizard.nav_to_step3')</a>
+                                    <a
+                                        href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                                        class="btn btn-outline-primary"
+                                    >@lang('wizard.nav_to_step5')</a>
                                 </div>
                             </div>
                         </div>

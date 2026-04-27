@@ -43,7 +43,7 @@
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <div class="mb-3">
-                                            <label for="city_search" class="form-label">Ciudad del servicio <small>*</small></label>
+                                            <label for="city_search" class="form-label required-label">Ciudad del servicio</label>
                                             <input
                                                 type="text"
                                                 id="city_search"
@@ -87,7 +87,7 @@
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label" for="name_{{ $language->id }}">Nombre <small>*</small></label>
+                                                    <label class="form-label required-label" for="name_{{ $language->id }}">Nombre</label>
                                                     <input
                                                         type="text"
                                                         id="name_{{ $language->id }}"
@@ -135,6 +135,10 @@
                                                 href="{{ route('services.wizard.step4', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
                                                 class="btn btn-outline-primary"
                                             >@lang('wizard.nav_to_step4')</a>
+                                            <a
+                                                href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                                                class="btn btn-outline-primary"
+                                            >@lang('wizard.nav_to_step5')</a>
                                         @endif
                                         <button type="submit" class="btn btn-primary">
                                             {{ $isEdit ? __('wizard.step1_submit_edit') : __('wizard.step1_submit_create') }}

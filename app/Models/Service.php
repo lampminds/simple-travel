@@ -40,10 +40,22 @@ class Service extends Model implements HasMedia
         'account_id',
         'service_type_id',
         'city_id',
+        'duration_minutes',
+        'is_bookable',
+        'is_featured',
+        'is_public',
+        'booking_mode',
+        'confirmation_time_hours',
         'status',
     ];
 
     protected $casts = [
+        'duration_minutes' => 'integer',
+        'is_bookable' => 'boolean',
+        'is_featured' => 'boolean',
+        'is_public' => 'boolean',
+        'booking_mode' => 'string',
+        'confirmation_time_hours' => 'integer',
         'status' => 'string',
     ];
 
@@ -89,11 +101,11 @@ class Service extends Model implements HasMedia
     }
 
     /**
-     * Get the excursion data for this service (1:1).
+     * Get the entertainment data for this service (1:1).
      */
-    public function excursion(): HasOne
+    public function entertainment(): HasOne
     {
-        return $this->hasOne(ServiceExcursion::class);
+        return $this->hasOne(ServiceEntertainment::class);
     }
 
     /**
@@ -228,3 +240,4 @@ class Service extends Model implements HasMedia
         return $this->getMedia(self::MEDIA_COLLECTION_GALLERY);
     }
 }
+

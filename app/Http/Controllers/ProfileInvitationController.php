@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\CurrentAccountSession;
+use App\Models\Role;
 use App\Models\UserInvitation;
 use App\Notifications\UserInvitationNotification;
 use Illuminate\Http\RedirectResponse;
@@ -75,7 +76,7 @@ class ProfileInvitationController extends Controller
         $query = UserInvitation::query()
             ->where('account_id', $accountId)
             ->where('type', $invitationType)
-            ->with('invitedBy')
+            ->with(['invitedBy', 'role', 'accountInviting'])
             ->orderByDesc('id');
 
         if ($statusFilter !== 'all') {
@@ -84,12 +85,17 @@ class ProfileInvitationController extends Controller
 
         $invitations = $query->get();
 
+        $assignableRoles = $invitationType === UserInvitation::TYPE_INTERNAL
+            ? getAccountRoles((int) $accountId, ['guest', 'admin'])
+            : null;
+
         return view('account.invitations', [
             'invitations' => $invitations,
             'invitationExpirationDays' => $this->parameterReader->invitationExpirationDays($accountId),
             'maxInvitationsRetries' => $this->parameterReader->maxInvitationsRetries($accountId),
             'statusFilter' => $statusFilter,
             'invitationType' => $invitationType,
+            'assignableRoles' => $assignableRoles,
             'indexRoute' => $invitationType === UserInvitation::TYPE_INTERNAL
                 ? 'account.invitations.employee'
                 : 'account.invitations.company',
@@ -132,15 +138,35 @@ class ProfileInvitationController extends Controller
 
         UserInvitation::syncExpiredForAccount($accountId);
 
-        $validated = $request->validate([
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email'),
-            ],
-        ]);
+        if ($invitationType === UserInvitation::TYPE_INTERNAL) {
+            $assignableRoleIds = array_keys(getAccountRoles((int) $accountId, ['guest', 'admin']));
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'required',
+                    'string',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email'),
+                ],
+                'role_id' => [
+                    'required',
+                    'integer',
+                    Rule::in($assignableRoleIds),
+                ],
+            ]);
+        } else {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => [
+                    'required',
+                    'string',
+                    'email',
+                    'max:255',
+                    Rule::unique('users', 'email'),
+                ],
+            ]);
+        }
 
         $existsPending = UserInvitation::query()
             ->where('account_id', $accountId)
@@ -156,11 +182,18 @@ class ProfileInvitationController extends Controller
             ]);
         }
 
+        $roleId = $invitationType === UserInvitation::TYPE_INTERNAL
+            ? (int) $validated['role_id']
+            : Role::platformTemplateRoleIdOrFail('owner');
+
         $expirationDays = $this->parameterReader->invitationExpirationDays($accountId);
 
         $invitation = UserInvitation::create([
             'account_id' => $accountId,
+            'account_inviting' => $accountId,
+            'name' => Str::title(trim((string) $validated['name'])),
             'email' => Str::lower($validated['email']),
+            'role_id' => $roleId,
             'token' => Str::random(64),
             'send_attempts' => 1,
             'expires_at' => now()->addDays($expirationDays),

@@ -14,28 +14,12 @@ class TodoTaskTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
-
+        
 
         \DB::table('todo_task_translations')->delete();
-
+        
         \DB::table('todo_task_translations')->insert(array (
-            0 =>
-            array (
-                'id' => 1,
-                'todo_task_id' => 1,
-                'language_id' => 2,
-                'name' => 'Completar el perfil de la empresa',
-                'description' => NULL,
-            ),
-            1 =>
-            array (
-                'id' => 2,
-                'todo_task_id' => 2,
-                'language_id' => 2,
-                'name' => 'Crear el primer servicio',
-                'description' => NULL,
-            ),
-            2 =>
+            0 => 
             array (
                 'id' => 4,
                 'todo_task_id' => 4,
@@ -43,7 +27,7 @@ class TodoTaskTranslationsTableSeeder extends Seeder
                 'name' => 'Agregar disponibilidad',
                 'description' => NULL,
             ),
-            3 =>
+            1 => 
             array (
                 'id' => 5,
                 'todo_task_id' => 5,
@@ -51,7 +35,7 @@ class TodoTaskTranslationsTableSeeder extends Seeder
                 'name' => 'Establecer precios',
                 'description' => NULL,
             ),
-            4 =>
+            2 => 
             array (
                 'id' => 6,
                 'todo_task_id' => 6,
@@ -59,16 +43,32 @@ class TodoTaskTranslationsTableSeeder extends Seeder
                 'name' => 'Cargar imágenes',
                 'description' => NULL,
             ),
-            5 =>
+            3 => 
             array (
-                'id' => 7,
+                'id' => 15,
+                'todo_task_id' => 1,
+                'language_id' => 2,
+                'name' => 'Completar el perfil de la empresa',
+                'description' => NULL,
+            ),
+            4 => 
+            array (
+                'id' => 16,
                 'todo_task_id' => 3,
                 'language_id' => 2,
                 'name' => 'Completar el perfil de usuario',
                 'description' => NULL,
             ),
+            5 => 
+            array (
+                'id' => 19,
+                'todo_task_id' => 2,
+                'language_id' => 2,
+                'name' => 'Crear el primer servicio',
+                'description' => NULL,
+            ),
         ));
-
-
+        
+        
     }
 }

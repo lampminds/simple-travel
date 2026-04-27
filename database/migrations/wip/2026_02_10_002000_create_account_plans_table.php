@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('account_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('plan_id')->constrained();
             $table->enum('status', ['active', 'trial', 'suspended', 'cancelled'])->default('active');
             $table->date('starts_at')->nullable();

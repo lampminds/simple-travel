@@ -22,9 +22,9 @@ class CatMenusTableSeeder extends Seeder
             0 => 
             array (
                 'id' => 1,
-                'slug' => 'home',
+                'slug' => 'panel',
                 'icon' => NULL,
-                'route' => 'home',
+                'route' => 'account.dashboard',
                 'parent_id' => NULL,
                 'sort_order' => 1,
                 'active' => 1,
@@ -56,7 +56,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'operations',
                 'parent_id' => NULL,
-                'sort_order' => 4,
+                'sort_order' => 5,
                 'active' => 1,
             ),
             4 => 
@@ -86,7 +86,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'availability',
                 'parent_id' => NULL,
-                'sort_order' => 5,
+                'sort_order' => 4,
                 'active' => 1,
             ),
             7 => 
@@ -146,7 +146,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'website',
                 'parent_id' => NULL,
-                'sort_order' => 11,
+                'sort_order' => 10,
                 'active' => 1,
             ),
             13 => 

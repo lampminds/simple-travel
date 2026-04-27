@@ -7,8 +7,10 @@ use App\Http\Middleware\RecordLastLogin;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\Account;
 use App\Models\AccountCategory;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\UserInvitation;
+use App\Services\ReplicateDefaultRolesToAccountService;
 use App\Support\CurrentAccountSession;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -46,7 +48,7 @@ class RegisteredUserController extends Controller
         if ($request->filled('token')) {
             $token = $request->string('token');
             $candidate = UserInvitation::query()
-                ->with('account')
+                ->with(['account', 'accountInviting', 'role', 'invitedBy'])
                 ->where('token', $token)
                 ->first();
 
@@ -157,12 +159,7 @@ class RegisteredUserController extends Controller
             $user->accounts()->attach($account->id);
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
-            /*
-             * Spatie teams: pivot user_model_has_roles stores account_id = new account.
-             * Role resolution uses `user_roles` where name matches and (account_id IS NULL OR account_id = team);
-             * see Spatie\Permission\Models\Role::findByParam. Seeded global roles (UserRolesTableSeeder:
-             * id 1=admin, 2=owner, 3=user) use account_id NULL, so assignRole('owner') attaches role_id 2 on the pivot.
-             */
+            app(ReplicateDefaultRolesToAccountService::class)->replicateTo((int) $account->id, null, (int) $user->id);
             $user->assignRole('owner');
             throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
 
@@ -184,10 +181,18 @@ class RegisteredUserController extends Controller
         $request->validate([
             'invitation_token' => 'required|string',
             'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:users',
+                Rule::in([Str::lower($invitation->email)]),
+            ],
             'password' => 'required|string|confirmed|min:8',
         ], [
             'email.unique' => __('validation.custom.email.unique_user'),
+            'email.in' => __('auth.register.invitation_email_mismatch'),
         ]);
 
         $accountId = DB::transaction(function () use ($request, $invitation) {
@@ -203,12 +208,22 @@ class RegisteredUserController extends Controller
 
             $user->accounts()->attach($account->id);
 
+            $role = Role::query()
+                ->where('account_id', $invitation->account_id)
+                ->whereKey($invitation->role_id)
+                ->firstOrFail();
+
             app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
-            $user->assignRole('user');
-            throw_unless($user->fresh()->hasRole('user'), \RuntimeException::class, 'Invitation registration must assign the user role.');
+            $user->assignRole($role);
+            throw_unless(
+                $user->fresh()->hasRole($role->name),
+                \RuntimeException::class,
+                'Invitation registration must assign the role stored on the invitation.',
+            );
 
             $invitation->forceFill([
                 'email' => $registeredEmail,
+                'name' => Str::title($request->string('name')->trim()),
                 'status' => UserInvitation::STATUS_ACCEPTED,
                 'accepted_at' => now(),
             ])->save();
@@ -231,7 +246,14 @@ class RegisteredUserController extends Controller
         $request->validate([
             'invitation_token' => 'required|string',
             'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                'unique:users',
+                Rule::in([Str::lower($invitation->email)]),
+            ],
             'password' => 'required|string|confirmed|min:8',
             'company_name' => [
                 'required',
@@ -250,6 +272,7 @@ class RegisteredUserController extends Controller
             ],
         ], [
             'email.unique' => __('validation.custom.email.unique_user'),
+            'email.in' => __('auth.register.invitation_email_mismatch'),
         ]);
 
         $companyName = $request->string('company_name')->trim();
@@ -276,11 +299,13 @@ class RegisteredUserController extends Controller
             $user->accounts()->attach($account->id);
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
+            app(ReplicateDefaultRolesToAccountService::class)->replicateTo((int) $account->id, null, (int) $user->id);
             $user->assignRole('owner');
             throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
 
             $invitation->forceFill([
                 'email' => $email,
+                'name' => Str::title($request->string('name')->trim()),
                 'status' => UserInvitation::STATUS_ACCEPTED,
                 'accepted_at' => now(),
             ])->save();

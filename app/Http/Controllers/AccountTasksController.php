@@ -32,9 +32,17 @@ final class AccountTasksController extends Controller
             ->whereHas('tasks', $taskScope)
             ->with([
                 'translations.language.locale',
-                'tasks' => function ($query) use ($taskScope): void {
+                'tasks' => function ($query) use ($taskScope, $user): void {
                     $taskScope($query);
-                    $query->with(['translations.language.locale'])->orderBy('sort_order');
+                    $query
+                        ->with(['translations.language.locale'])
+                        ->withExists([
+                            'userAssignments as completed_by_account' => fn ($assignments) => $assignments->where('status', 'completed'),
+                            'userAssignments as completed_by_user' => fn ($assignments) => $assignments
+                                ->where('status', 'completed')
+                                ->where('user_id', $user->id),
+                        ])
+                        ->orderBy('sort_order');
                 },
             ])
             ->orderBy('sort_order')

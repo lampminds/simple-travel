@@ -34,11 +34,26 @@
                                 </div>
                                 <ul class="list-group list-group-flush">
                                     @foreach ($category->tasks as $task)
+                                        @php
+                                            $isCompleted = $task->code === 'complete_user_profile'
+                                                ? (bool) ($task->completed_by_user ?? false)
+                                                : (bool) ($task->completed_by_account ?? false);
+                                        @endphp
                                         <li class="list-group-item py-3">
                                             <div class="d-flex flex-column flex-md-row align-items-md-start justify-content-md-between gap-3">
                                                 <div class="flex-grow-1 min-w-0">
                                                     <div class="d-inline-flex align-items-center gap-2 flex-wrap">
-                                                        <span class="fw-semibold">{{ $task->displayLabel() }}</span>
+                                                        @if ($isCompleted)
+                                                            <span class="text-success d-inline-flex align-items-center gap-1">
+                                                                <input class="form-check-input mt-0" type="checkbox" checked disabled aria-label="{{ __('account.tasks_completed') }}">
+                                                                <span class="fw-semibold">{{ $task->displayLabel() }}</span>
+                                                            </span>
+                                                            <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                                                {{ __('account.tasks_completed') }}
+                                                            </span>
+                                                        @else
+                                                            <span class="fw-semibold">{{ $task->displayLabel() }}</span>
+                                                        @endif
                                                         @if ($url = $task->welcomeExecutionUrl())
                                                             <a
                                                                 href="{{ $url }}"

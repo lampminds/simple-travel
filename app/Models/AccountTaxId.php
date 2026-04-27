@@ -11,7 +11,7 @@ class AccountTaxId extends Model
 {
     use HasFactory, AuditTrait;
 
-    protected $table = 'cat_account_tax_ids';
+    protected $table = 'account_tax_ids';
 
     protected $fillable = [
         'account_id',

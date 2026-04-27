@@ -101,21 +101,15 @@ final class AccountDashboardLane
     }
 
     /**
-     * Resolve operator lane category id (wholesaler or tour_operator) for the account.
+     * Resolve operator type category id for the account when that type is assigned.
      */
     public static function resolveOperatorLaneTypeId(Account $account): ?int
     {
-        $active = $account->typeCategories()
+        if ($account->typeCategories()
             ->where((new AccountCategory)->getTable().'.active', true)
-            ->pluck((new AccountCategory)->getTable().'.id')
-            ->map(fn ($id) => (int) $id);
-
-        if ($active->contains(AccountTypeCategoryIds::WHOLESALER)) {
-            return AccountTypeCategoryIds::WHOLESALER;
-        }
-
-        if ($active->contains(AccountTypeCategoryIds::TOUR_OPERATOR)) {
-            return AccountTypeCategoryIds::TOUR_OPERATOR;
+            ->where((new AccountCategory)->getTable().'.id', AccountTypeCategoryIds::OPERATOR)
+            ->exists()) {
+            return AccountTypeCategoryIds::OPERATOR;
         }
 
         return null;

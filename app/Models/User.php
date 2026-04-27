@@ -87,6 +87,21 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
     }
 
     /**
+     * Show "back to /account/dashboard" when there is a real choice: several accounts, or several
+     * business lanes (provider/operator/agency) on the current account.
+     */
+    public function shouldShowBackToAccountDashboard(): bool
+    {
+        if ($this->accounts()->count() > 1) {
+            return true;
+        }
+
+        $account = $this->currentAccount();
+
+        return $account !== null && $account->businessDashboardLaneCount() > 1;
+    }
+
+    /**
      * Whether the user may act in the given account (pivot membership).
      */
     public function belongsToAccount(int $accountId): bool

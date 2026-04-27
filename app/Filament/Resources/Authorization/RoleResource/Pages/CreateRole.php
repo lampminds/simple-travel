@@ -12,7 +12,6 @@ class CreateRole extends LmpCreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data = parent::mutateFormDataBeforeCreate($data);
-        $data['account_id'] = (int) config('permission.platform_account_id', 1);
         $data['guard_name'] = $data['guard_name'] ?? 'web';
 
         return $data;

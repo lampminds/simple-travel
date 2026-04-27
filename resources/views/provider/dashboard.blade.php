@@ -16,15 +16,19 @@
                 </div>
             </div>
 
+            <x-panel-account-summary :stats="$panelStats" class="mt-4" />
+
             <div class="row mt-4">
                 <div class="col-lg-12 col-xl-8">
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('catalog') }}" class="btn btn-primary">
                             {{ __('catalog.title') }}
                         </a>
+                        @if (auth()->user()?->shouldShowBackToAccountDashboard())
                         <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary">
                             {{ __('catalog.back_dashboard') }}
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>

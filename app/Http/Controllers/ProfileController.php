@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TodoTask;
+use App\Models\TodoTaskUserAssignment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -74,6 +76,10 @@ class ProfileController extends Controller
         }
 
         $user->save();
+        $this->registerCompleteUserProfileTaskCompletion(
+            accountId: $user->currentAccountId(),
+            userId: (int) $user->getKey()
+        );
 
         if ($emailChanged) {
             $user->sendEmailVerificationNotification();
@@ -105,5 +111,45 @@ class ProfileController extends Controller
         return redirect()
             ->route('account.profile.edit')
             ->with('status', __('profile.password_updated'));
+    }
+
+    /**
+     * Mark "complete_user_profile" as completed for the same user who updated profile.
+     */
+    private function registerCompleteUserProfileTaskCompletion(?int $accountId, int $userId): void
+    {
+        if ($accountId === null) {
+            return;
+        }
+
+        $task = TodoTask::query()
+            ->where('account_id', $accountId)
+            ->where('code', 'complete_user_profile')
+            ->first();
+
+        if (! $task) {
+            return;
+        }
+
+        $alreadyCompletedByUser = $task->userAssignments()
+            ->where('user_id', $userId)
+            ->where('status', 'completed')
+            ->exists();
+
+        if ($alreadyCompletedByUser) {
+            return;
+        }
+
+        TodoTaskUserAssignment::query()->updateOrCreate(
+            [
+                'todo_task_id' => $task->id,
+                'user_id' => $userId,
+            ],
+            [
+                'status' => 'completed',
+                'completed_at' => now(),
+                'ignored_at' => null,
+            ]
+        );
     }
 }

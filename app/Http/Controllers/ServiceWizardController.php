@@ -195,9 +195,22 @@ class ServiceWizardController extends Controller
         $this->authorizeWizardService($request, $service, $serviceType);
 
         $serviceType->load('translations.language.locale');
-        $service->load(['translations.language.locale', 'media']);
+        $service->load('translations.language.locale');
 
         return view('services.wizard.step-4', [
+            'serviceType' => $serviceType,
+            'service' => $service,
+        ]);
+    }
+
+    public function createStepFive(Request $request, ServiceType $serviceType, Service $service): View
+    {
+        $this->authorizeWizardService($request, $service, $serviceType);
+
+        $serviceType->load('translations.language.locale');
+        $service->load(['translations.language.locale', 'media']);
+
+        return view('services.wizard.step-5', [
             'serviceType' => $serviceType,
             'service' => $service,
         ]);

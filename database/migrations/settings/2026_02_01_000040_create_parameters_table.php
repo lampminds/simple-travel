@@ -50,7 +50,10 @@ return new class extends Migration
             $table->foreignId('parameter_definition_id')
                 ->constrained('cat_parameter_definitions')
                 ->cascadeOnDelete();
-            $table->foreignId('account_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->foreignId('account_id')
+                ->nullable()
+                ->constrained('accounts')
+                ->cascadeOnDelete();
             $table->text('value')->nullable();
             lmpStamps($table);
 

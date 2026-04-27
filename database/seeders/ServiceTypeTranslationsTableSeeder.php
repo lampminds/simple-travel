@@ -73,7 +73,7 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
                 'id' => 8,
                 'service_type_id' => 3,
                 'language_id' => 2,
-                'name' => 'Excursion',
+                'name' => 'Entertainment',
             ),
             8 =>
             array (
@@ -94,7 +94,7 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
                 'id' => 11,
                 'service_type_id' => 4,
                 'language_id' => 2,
-                'name' => 'Gastronomía',
+                'name' => 'GastronomÃ­a',
             ),
             11 =>
             array (
@@ -108,3 +108,4 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
 
     }
 }
+

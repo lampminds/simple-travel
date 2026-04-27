@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\AccountDashboardLane;
+use App\Support\AccountPanelStats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -10,7 +11,7 @@ use Illuminate\View\View;
 class OperatorDashboardController extends Controller
 {
     /**
-     * Wholesaler / tour operator dashboard shell (content TBD).
+     * Operator account dashboard shell (content TBD).
      */
     public function show(Request $request): View|RedirectResponse
     {
@@ -22,7 +23,7 @@ class OperatorDashboardController extends Controller
                 ->where('group', 'type')
                 ->where('active', true)
                 ->pluck('code');
-            $allowed = $codes->contains('wholesaler') || $codes->contains('tour_operator');
+            $allowed = $codes->contains('operator');
         }
 
         if (! $allowed) {
@@ -34,6 +35,8 @@ class OperatorDashboardController extends Controller
             AccountDashboardLane::set($account, $laneTypeId);
         }
 
-        return view('operator.dashboard');
+        return view('operator.dashboard', [
+            'panelStats' => AccountPanelStats::forAccount($account),
+        ]);
     }
 }

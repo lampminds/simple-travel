@@ -18,8 +18,8 @@ return [
     'dashboard_subtitle' => 'Choose the panel you have access to',
     'dashboard_panel_provider_title' => 'Provider',
     'dashboard_panel_provider_desc' => 'Access to the provider panel for <strong>:company</strong>',
-    'dashboard_panel_operator_title' => 'Operator / Wholesaler',
-    'dashboard_panel_operator_desc' => 'Access to the operator/wholesaler panel for <strong>:company</strong>',
+    'dashboard_panel_operator_title' => 'Operator',
+    'dashboard_panel_operator_desc' => 'Access to the operator panel for <strong>:company</strong>',
     'dashboard_panel_agency_title' => 'Agency',
     'dashboard_panel_agency_desc' => 'Access to the agency panel for <strong>:company</strong>',
     'dashboard_go_panel' => 'Go to panel',
@@ -33,6 +33,7 @@ return [
     'tasks_heading' => 'Tasks',
     'tasks_intro' => 'Review the task lists assigned to your account, grouped by category. Names follow your current language when a translation exists.',
     'tasks_empty' => 'There are no tasks for this account yet.',
+    'tasks_completed' => 'Completed',
     'tasks_open_link' => 'Open link',
     'tasks_open_step' => 'Open this step',
 ];

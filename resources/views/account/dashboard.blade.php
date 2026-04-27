@@ -28,7 +28,7 @@
         }
 
         $hasProvider = $typeCodes->contains('provider');
-        $hasOperator = $typeCodes->contains('wholesaler') || $typeCodes->contains('tour_operator');
+        $hasOperator = $typeCodes->contains('operator');
         $hasAgency = $typeCodes->contains('agency');
 
         $userName = auth()->user()?->name;

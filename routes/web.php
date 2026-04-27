@@ -95,10 +95,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('operator.')
         ->group(function () {
             Route::get('dashboard', [OperatorDashboardController::class, 'show'])
-                ->defaults('menu_type_id', AccountTypeCategoryIds::WHOLESALER)
+                ->defaults('menu_type_id', AccountTypeCategoryIds::OPERATOR)
                 ->name('dashboard');
             Route::get('relationships', [RelationshipsDemoController::class, 'operator'])
-                ->defaults('menu_type_id', AccountTypeCategoryIds::WHOLESALER)
+                ->defaults('menu_type_id', AccountTypeCategoryIds::OPERATOR)
                 ->name('relationships');
         });
 
@@ -134,6 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('services/wizard/{serviceType:code}/step-4/{service}', [ServiceWizardController::class, 'createStepFour'])
         ->name('services.wizard.step4');
+
+    Route::get('services/wizard/{serviceType:code}/step-5/{service}', [ServiceWizardController::class, 'createStepFive'])
+        ->name('services.wizard.step5');
 });
 
 // Website language switcher (must be before catch-all routes)

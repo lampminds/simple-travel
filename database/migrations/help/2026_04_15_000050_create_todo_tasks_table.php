@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('todo_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->string('code')->comment('Short name, in English');
             $table->foreignId('todo_category_id')->constrained('todo_categories');
             $table->foreignId('original_task_id')->nullable()->constrained('todo_tasks');

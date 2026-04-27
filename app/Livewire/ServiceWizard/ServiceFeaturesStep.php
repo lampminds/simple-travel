@@ -127,7 +127,7 @@ class ServiceFeaturesStep extends Component
 
         $serviceType = ServiceType::query()->findOrFail($this->serviceTypeId);
 
-        $this->redirectRoute('services.wizard.step3', [
+        $this->redirectRoute('services.wizard.step4', [
             'serviceType' => $serviceType->code,
             'service' => $service->id,
         ]);

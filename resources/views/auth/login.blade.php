@@ -28,15 +28,14 @@
                                             <x-form-validation-summary />
 
                                             <div class="mb-3">
-                                                <label for="email" class="form-label">{{ __('auth.login.email') }} <small>*</small></label>
+                                                <label for="email" class="form-label required-label">{{ __('auth.login.email') }}</label>
                                                 <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                        placeholder="{{ __('auth.login.placeholder_email') }}" name="email" value="{{ old('email') }}"/>
                                                 <x-form-field-error name="email" />
                                             </div>
 
                                             <div class="mb-3">
-                                                <label class="form-label" for="password">{{ __('auth.login.password') }}
-                                                    <small>*</small></label>
+                                                <label class="form-label required-label" for="password">{{ __('auth.login.password') }}</label>
                                                 <a href="{{ route('password.request') }}"
                                                    class="float-end text-muted text-unline-dashed ms-1 fs-13">{{ __('auth.login.forgot_password') }}</a>
                                                 <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"

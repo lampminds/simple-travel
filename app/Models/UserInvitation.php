@@ -26,7 +26,10 @@ class UserInvitation extends Model
 
     protected $fillable = [
         'account_id',
+        'account_inviting',
         'email',
+        'name',
+        'role_id',
         'token',
         'send_attempts',
         'expires_at',
@@ -47,6 +50,19 @@ class UserInvitation extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * The account that created/sent the invitation (e.g. operator when inviting a provider).
+     */
+    public function accountInviting(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'account_inviting');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     public function invitedBy(): BelongsTo

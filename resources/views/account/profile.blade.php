@@ -65,7 +65,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="name" class="form-label">{{ __('profile.name') }} <small>*</small></label>
+                                            <label for="name" class="form-label">{{ __('profile.name') }}</label>
                                             <input type="text" class="form-control @error('name', 'profile') is-invalid @enderror" id="name"
                                                    name="name" value="{{ old('name', $user->name) }}" required autocomplete="name"/>
                                             <x-form-field-error name="name" bag="profile" />
@@ -73,7 +73,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="email" class="form-label">{{ __('profile.email') }} <small>*</small></label>
+                                            <label for="email" class="form-label">{{ __('profile.email') }}</label>
                                             <input type="email" class="form-control @error('email', 'profile') is-invalid @enderror" id="email"
                                                    name="email" value="{{ old('email', $user->email) }}" required autocomplete="email"/>
                                             <x-form-field-error name="email" bag="profile" />
@@ -95,7 +95,7 @@
                                 <x-form-validation-summary bag="password" />
 
                                 <div class="mb-3">
-                                    <label for="current_password" class="form-label">{{ __('profile.current_password') }} <small>*</small></label>
+                                    <label for="current_password" class="form-label">{{ __('profile.current_password') }}</label>
                                     <div class="input-group">
                                         <input type="password" class="form-control @error('current_password', 'password') is-invalid @enderror" id="current_password"
                                                name="current_password" autocomplete="current-password"/>
@@ -114,7 +114,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="password" class="form-label">{{ __('profile.new_password') }} <small>*</small></label>
+                                            <label for="password" class="form-label">{{ __('profile.new_password') }}</label>
                                             <div class="input-group">
                                                 <input type="password" class="form-control @error('password', 'password') is-invalid @enderror" id="password"
                                                        name="password" autocomplete="new-password" minlength="8"/>
@@ -137,7 +137,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="password_confirmation" class="form-label">{{ __('profile.confirm_password') }} <small>*</small></label>
+                                            <label for="password_confirmation" class="form-label">{{ __('profile.confirm_password') }}</label>
                                             <input type="password" class="form-control @error('password_confirmation', 'password') is-invalid @enderror" id="password_confirmation"
                                                    name="password_confirmation" autocomplete="new-password" minlength="8"/>
                                             <x-form-field-error name="password_confirmation" bag="password" />

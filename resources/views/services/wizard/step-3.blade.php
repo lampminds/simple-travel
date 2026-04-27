@@ -28,10 +28,10 @@
                                 {{ $serviceType->name ?: strtoupper($serviceType->code) }}
                                 — {{ $service->name !== '' ? $service->name : __('wizard.service_unnamed') }}
                             </p>
-                            <livewire:service-wizard.service-variants-step
+                            <livewire:service-wizard.service-features-step
                                 :service-id="$service->id"
                                 :service-type-id="$serviceType->id"
-                                :key="'service-variants-'.$service->id"
+                                :key="'service-features-'.$service->id"
                             />
 
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
@@ -49,6 +49,10 @@
                                         href="{{ route('services.wizard.step4', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
                                         class="btn btn-outline-primary"
                                     >@lang('wizard.nav_to_step4')</a>
+                                    <a
+                                        href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                                        class="btn btn-outline-primary"
+                                    >@lang('wizard.nav_to_step5')</a>
                                 </div>
                             </div>
                         </div>

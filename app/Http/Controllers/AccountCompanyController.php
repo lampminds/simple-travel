@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\LmpCity;
+use App\Models\TodoTask;
+use App\Models\TodoTaskUserAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +23,12 @@ final class AccountCompanyController extends Controller
 
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
+        $account->loadMissing('typeCategories.translations.language');
+
+        $accountTypeLabel = $account->typeCategories
+            ->pluck('name')
+            ->filter()
+            ->implode(' / ');
 
         $cityId = old('city_id', $account->city_id);
         $currentCity = null;
@@ -33,6 +41,7 @@ final class AccountCompanyController extends Controller
         return view('account.company-edit', [
             'account' => $account,
             'currentCity' => $currentCity,
+            'accountTypeLabel' => $accountTypeLabel !== '' ? $accountTypeLabel : '—',
         ]);
     }
 
@@ -82,10 +91,47 @@ final class AccountCompanyController extends Controller
 
         $account->fill($data);
         $account->save();
+        $this->registerCompleteProfileTaskCompletion($account->id, $user->id);
 
         return redirect()
             ->route('account.dashboard')
             ->with('status', 'Los datos de la empresa se han actualizado.');
+    }
+
+    /**
+     * Mark the "complete_profile" onboarding task as completed for current user
+     * only when nobody in the same account has completed it yet.
+     */
+    private function registerCompleteProfileTaskCompletion(int $accountId, int $userId): void
+    {
+        $task = TodoTask::query()
+            ->where('account_id', $accountId)
+            ->where('code', 'complete_profile')
+            ->first();
+
+        if (! $task) {
+            return;
+        }
+
+        $alreadyCompletedByAccount = $task->userAssignments()
+            ->where('status', 'completed')
+            ->exists();
+
+        if ($alreadyCompletedByAccount) {
+            return;
+        }
+
+        TodoTaskUserAssignment::query()->updateOrCreate(
+            [
+                'todo_task_id' => $task->id,
+                'user_id' => $userId,
+            ],
+            [
+                'status' => 'completed',
+                'completed_at' => now(),
+                'ignored_at' => null,
+            ]
+        );
     }
 }
 

@@ -22,7 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserResource extends LmpResource
 {

@@ -5,7 +5,7 @@ return [
 
     // Hero
     'hero_slide1_title' => 'Boost your <span class="highlight highlight-success d-inline-block">tourism business</span>',
-    'hero_slide1_lead' => 'SimpleTravel is a modern, easy-to-use and 100% customizable system for operators, wholesalers and agencies, integrating providers for a smooth and concise dialogue and system integration between all parties.',
+    'hero_slide1_lead' => 'SimpleTravel is a modern, easy-to-use and 100% customizable system for operators and agencies, integrating providers for a smooth and concise dialogue and system integration between all parties.',
     'hero_slide2_title' => 'Management of <span class="highlight highlight-success d-inline-block">bookings and customers</span>',
     'hero_slide2_lead' => 'Centralize bookings, payments and communication with your customers on a single platform.<br><span class="highlight highlight-success d-inline-block">Reports and statistics</span> in real time to make better decisions.',
     'hero_slide3_title' => 'Your <span class="highlight highlight-success d-inline-block">online presence</span> ready in days',

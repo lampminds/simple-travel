@@ -6,10 +6,8 @@ final class AccountTypeCategoryIds
 {
     public const PROVIDER = 3;
 
-    /** Tour operator (same UI lane as wholesaler / operator dashboard). */
-    public const TOUR_OPERATOR = 4;
-
-    public const WHOLESALER = 5;
+    /** Business type `operator` in cat_account_categories (operator dashboard, catalog, relationships, menus). */
+    public const OPERATOR = 4;
 
     public const AGENCY = 6;
 
@@ -20,20 +18,17 @@ final class AccountTypeCategoryIds
     {
         return [
             self::PROVIDER,
-            self::TOUR_OPERATOR,
-            self::WHOLESALER,
+            self::OPERATOR,
             self::AGENCY,
         ];
     }
 
     /**
-     * Operator / mayorista lane: wholesaler preferred over tour_operator when both exist.
-     *
      * @return list<int>
      */
     public static function operatorLaneTypeIds(): array
     {
-        return [self::WHOLESALER, self::TOUR_OPERATOR];
+        return [self::OPERATOR];
     }
 
     public static function isOperatorLaneTypeId(int $id): bool

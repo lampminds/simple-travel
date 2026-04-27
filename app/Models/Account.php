@@ -80,10 +80,17 @@ class Account extends Model
     }
 
     /**
-     * When this account maps to exactly one frontend dashboard lane (provider, operator, or agency), return that route name.
-     * Wholesaler and tour_operator both map to the operator dashboard and count as one lane.
+     * How many of provider, operator, and agency (active "type" categories) are assigned to this account.
      */
-    public function soleDashboardRouteName(): ?string
+    public function businessDashboardLaneCount(): int
+    {
+        return $this->businessDashboardLaneInfo()['count'];
+    }
+
+    /**
+     * @return array{count: int, hasProvider: bool, hasOperator: bool, hasAgency: bool}
+     */
+    protected function businessDashboardLaneInfo(): array
     {
         $typeCodes = $this->categories()
             ->where('group', 'type')
@@ -91,20 +98,34 @@ class Account extends Model
             ->pluck('code');
 
         $hasProvider = $typeCodes->contains('provider');
-        $hasOperator = $typeCodes->contains('wholesaler') || $typeCodes->contains('tour_operator');
+        $hasOperator = $typeCodes->contains('operator');
         $hasAgency = $typeCodes->contains('agency');
 
-        $laneCount = (int) $hasProvider + (int) $hasOperator + (int) $hasAgency;
+        return [
+            'count' => (int) $hasProvider + (int) $hasOperator + (int) $hasAgency,
+            'hasProvider' => $hasProvider,
+            'hasOperator' => $hasOperator,
+            'hasAgency' => $hasAgency,
+        ];
+    }
 
-        if ($laneCount !== 1) {
+    /**
+     * When this account maps to exactly one frontend dashboard lane (provider, operator, or agency), return that route name.
+     * Operator accounts map to the operator dashboard.
+     */
+    public function soleDashboardRouteName(): ?string
+    {
+        $i = $this->businessDashboardLaneInfo();
+
+        if ($i['count'] !== 1) {
             return null;
         }
 
-        if ($hasProvider) {
+        if ($i['hasProvider']) {
             return 'provider.dashboard';
         }
 
-        if ($hasOperator) {
+        if ($i['hasOperator']) {
             return 'operator.dashboard';
         }
 

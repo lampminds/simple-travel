@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('account_contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->foreignId('contact_department_id')->constrained('cat_contact_departments');
             $table->foreignId('contact_position_id')->constrained('cat_contact_positions');

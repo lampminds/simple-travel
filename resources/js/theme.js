@@ -460,3 +460,35 @@ document.querySelectorAll('.navbar a').forEach(function (element) {
         }
     });
 });
+
+/**
+ * Add a required indicator to labels connected to required fields.
+ */
+function markRequiredLabels() {
+    const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
+
+    requiredFields.forEach(function (field) {
+        if (field.disabled || field.type === 'hidden') {
+            return;
+        }
+
+        const fieldId = field.getAttribute('id');
+        if (!fieldId) {
+            return;
+        }
+
+        const label = document.querySelector('label[for="' + fieldId + '"]');
+        if (!label) {
+            return;
+        }
+
+        label.classList.add('required-label');
+        label.setAttribute('data-required', 'true');
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', markRequiredLabels);
+} else {
+    markRequiredLabels();
+}

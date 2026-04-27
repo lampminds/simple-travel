@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'title' => 'Dashboard operador / grossista',
+    'title' => 'Dashboard operador',
 ];

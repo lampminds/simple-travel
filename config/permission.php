@@ -24,7 +24,7 @@ return [
          * `Spatie\Permission\Contracts\Role` contract.
          */
 
-        'role' => Spatie\Permission\Models\Role::class,
+        'role' => App\Models\Role::class,
 
     ],
 
@@ -138,6 +138,15 @@ return [
      * Users linked to this account in account_user can hold global (cross-tenant) roles when team is set to this id.
      */
     'platform_account_id' => (int) env('PLATFORM_ACCOUNT_ID', 1),
+
+    /*
+     * User id on the platform account whose `user_model_has_*` rows are the template
+     * when cloning a new account. If not set, the first user in `account_user` for
+     * the platform account is used.
+     */
+    'platform_template_user_id' => is_numeric(env('PLATFORM_TEMPLATE_USER_ID'))
+        ? (int) env('PLATFORM_TEMPLATE_USER_ID')
+        : null,
 
     /*
      * The class to use to resolve the permissions team id

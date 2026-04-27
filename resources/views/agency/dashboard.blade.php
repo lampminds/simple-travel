@@ -30,9 +30,11 @@
                 </div>
             </div>
 
+            @if (auth()->user()?->shouldShowBackToAccountDashboard())
             <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary mt-3">
-                Volver a la selección de panel
+                {{ __('catalog.back_dashboard') }}
             </a>
+            @endif
         </div>
     </section>
 

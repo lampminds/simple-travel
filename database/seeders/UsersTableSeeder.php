@@ -50,6 +50,21 @@ class UsersTableSeeder extends Seeder
                 'last_seen_at' => NULL,
                 'remember_token' => NULL,
             ),
+            2 =>
+                array (
+                    'id' => 2,
+                    'name' => 'Valeria Moura',
+                    'email' => 'promocao@ebgrouptravel.com',
+                    'email_verified_at' => Carbon::now(),
+                    'password' => '$2y$12$fImQef1ugSztmwnTUtaiTeDjgmd0aWeH9z4KJlIbwFaRYnhrGnkaa',
+                    'two_factor_secret' => NULL,
+                    'two_factor_recovery_codes' => NULL,
+                    'two_factor_confirmed_at' => NULL,
+                    'kicked_out' => 0,
+                    'last_login_at' => NULL,
+                    'last_seen_at' => NULL,
+                    'remember_token' => NULL,
+                ),
         ));
 
 

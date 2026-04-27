@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class RolePolicy
 {
@@ -14,8 +14,7 @@ class RolePolicy
 
     public function view(User $user, Role $role): bool
     {
-        return $user->belongsToPlatformAccount()
-            && $this->isPlatformRole($role);
+        return $user->belongsToPlatformAccount();
     }
 
     public function create(User $user): bool
@@ -25,20 +24,11 @@ class RolePolicy
 
     public function update(User $user, Role $role): bool
     {
-        return $user->belongsToPlatformAccount()
-            && $this->isPlatformRole($role);
+        return $user->belongsToPlatformAccount();
     }
 
     public function delete(User $user, Role $role): bool
     {
-        return $user->belongsToPlatformAccount()
-            && $this->isPlatformRole($role);
-    }
-
-    protected function isPlatformRole(Role $role): bool
-    {
-        $platformId = (int) config('permission.platform_account_id', 1);
-
-        return (int) $role->getAttribute('account_id') === $platformId;
+        return $user->belongsToPlatformAccount();
     }
 }

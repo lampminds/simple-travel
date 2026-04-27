@@ -1,4 +1,8 @@
-@extends('layouts.base', ['title' => __('invitations.page_title')])
+@extends('layouts.base', [
+    'title' => ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
+        ? __('invitations.page_title_company')
+        : __('invitations.page_title_employee'),
+])
 
 @section('css')
     <style>
@@ -17,7 +21,11 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
-                        <h3 class="my-0">{{ __('invitations.section_title') }}</h3>
+                        <h3 class="my-0">
+                            {{ ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
+                                ? __('invitations.section_title_company')
+                                : __('invitations.section_title_employee') }}
+                        </h3>
                         <p class="mt-1 fw-medium">
                             @if(($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
                                 {{ __('invitations.section_intro_external', ['days' => $invitationExpirationDays ?? 7]) }}
@@ -40,13 +48,31 @@
                             <form method="post" action="{{ route($storeRoute ?? 'account.invitations.store_employee') }}" class="row g-2 align-items-end mb-4">
                                 @csrf
                                 <x-form-validation-summary />
-                                <div class="col-md-8">
+                                <div class="col-md-4">
+                                    <label for="invite_name" class="form-label">{{ __('invitations.name') }}</label>
+                                    <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
+                                           value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
+                                    <x-form-field-error name="name" />
+                                </div>
+                                <div class="col-md-4">
                                     <label for="invite_email" class="form-label">{{ __('invitations.email') }}</label>
                                     <input type="email" name="email" id="invite_email" class="form-control @error('email') is-invalid @enderror"
                                            value="{{ old('email') }}" required autocomplete="off"/>
                                     <x-form-field-error name="email" />
                                 </div>
-                                <div class="col-md-4">
+                                @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL)
+                                    <div class="col-md-2">
+                                        <label for="invite_role_id" class="form-label">{{ __('invitations.role') }}</label>
+                                        <select name="role_id" id="invite_role_id" class="form-select @error('role_id') is-invalid @enderror" required>
+                                            <option value="">{{ __('invitations.role_placeholder') }}</option>
+                                            @foreach ($assignableRoles ?? [] as $id => $label)
+                                                <option value="{{ $id }}" @selected((string) old('role_id') === (string) $id)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <x-form-field-error name="role_id" />
+                                    </div>
+                                @endif
+                                <div class="col-md-{{ ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL ? '2' : '4' }}">
                                     <button type="submit" class="btn btn-primary w-100">{{ __('invitations.send') }}</button>
                                 </div>
                             </form>
@@ -84,8 +110,9 @@
                                 <table class="table table-invitations-compact align-middle mb-0">
                                     <thead>
                                         <tr>
+                                            <th>{{ __('invitations.col_name') }}</th>
                                             <th>{{ __('invitations.col_email') }}</th>
-                                            <th class="text-nowrap">{{ __('invitations.col_type') }}</th>
+                                            <th class="text-nowrap">{{ __('invitations.col_role') }}</th>
                                             <th class="text-nowrap">{{ __('invitations.col_retries') }}</th>
                                             <th class="text-nowrap">{{ __('invitations.col_status') }}</th>
                                             <th class="text-nowrap">{{ __('invitations.col_expires') }}</th>
@@ -98,8 +125,9 @@
                                                 $isSoon = $inv->status === \App\Models\UserInvitation::STATUS_PENDING && $inv->isExpiringSoon();
                                             @endphp
                                             <tr @class(['table-warning' => $isSoon])>
+                                                <td>{{ $inv->name ?? '—' }}</td>
                                                 <td>{{ $inv->email }}</td>
-                                                <td class="text-nowrap">{{ $inv->type === \App\Models\UserInvitation::TYPE_INTERNAL ? __('invitations.type_internal') : __('invitations.type_external') }}</td>
+                                                <td class="text-nowrap">{{ $inv->role?->name ?? '—' }}</td>
                                                 <td class="text-nowrap">
                                                     {{ (int) ($inv->send_attempts ?? 1) }} {{ __('invitations.retries_of') }} {{ (int) ($maxInvitationsRetries ?? 3) }}
                                                 </td>
@@ -143,7 +171,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-muted">
+                                                <td colspan="7" class="text-muted">
                                                     @if (($statusFilter ?? \App\Models\UserInvitation::STATUS_PENDING) === \App\Models\UserInvitation::STATUS_PENDING)
                                                         {{ __('invitations.empty') }}
                                                     @else

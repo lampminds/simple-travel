@@ -31,6 +31,8 @@ class DatabaseSeeder extends Seeder
         $this->call(AccountsTableSeeder::class);
         $this->call(AccountUserTableSeeder::class);
         $this->call(UserModelHasRolesTableSeeder::class);
+        $this->call(UserPermissionsTableSeeder::class);
+        $this->call(UserRoleHasPermissionsTableSeeder::class);
         // Pivot rows need existing accounts (FK to accounts.id).
         $this->call(CatContactDepartmentsTableSeeder::class);
         $this->call(CatContactDepartmentTranslationsTableSeeder::class);
@@ -40,10 +42,10 @@ class DatabaseSeeder extends Seeder
         $this->call(ServiceDetailTopicCategoryTranslationsTableSeeder::class);
         $this->call(ServiceDetailTopicsTableSeeder::class);
         $this->call(ServiceDetailTopicTranslationsTableSeeder::class);
-        $this->call(ServiceExcursionTypeCategoriesTableSeeder::class);
-        $this->call(ServiceExcursionTypeCategoryTranslationsTableSeeder::class);
-        $this->call(ServiceExcursionTypesTableSeeder::class);
-        $this->call(ServiceExcursionTypeTranslationsTableSeeder::class);
+        $this->call(ServiceEntertainmentTypeCategoriesTableSeeder::class);
+        $this->call(ServiceEntertainmentTypeCategoryTranslationsTableSeeder::class);
+        $this->call(ServiceEntertainmentTypesTableSeeder::class);
+        $this->call(ServiceEntertainmentTypeTranslationsTableSeeder::class);
         $this->call(ServiceActivityCategoriesTableSeeder::class);
         $this->call(ServiceActivityCategoryTranslationsTableSeeder::class);
         $this->call(ServiceActivitiesTableSeeder::class);
@@ -82,3 +84,4 @@ class DatabaseSeeder extends Seeder
         $this->call(TodoTaskTranslationsTableSeeder::class);
     }
 }
+

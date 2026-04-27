@@ -71,7 +71,7 @@ class RelationshipsDemoController extends Controller
 
         $rows = $isProvider
             ? $this->providerRelatedOperators()
-            : $this->wholesalerRelatedProviders();
+            : $this->operatorRelatedProviders();
 
         return view('relationships.index', [
             'isProvider' => $isProvider,
@@ -79,7 +79,7 @@ class RelationshipsDemoController extends Controller
             'heading' => 'Relaciones',
             'intro' => $isProvider
                 ? 'Empresas operadoras vinculadas a tu cuenta de prestador.'
-                : 'Prestadores vinculados a tu cuenta mayorista.',
+                : 'Prestadores vinculados a tu cuenta de operador.',
             'relatedLabel' => $isProvider ? 'Operador' : 'Prestador',
             'rows' => $rows,
         ]);
@@ -100,7 +100,7 @@ class RelationshipsDemoController extends Controller
     /**
      * @return array<int, array{company:string, services_count:int, booked_count:int, to_settle_count:int}>
      */
-    private function wholesalerRelatedProviders(): array
+    private function operatorRelatedProviders(): array
     {
         return [
             ['company' => 'Hostería del Lago', 'services_count' => 14, 'booked_count' => 37, 'to_settle_count' => 9],

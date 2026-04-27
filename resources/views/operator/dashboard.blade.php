@@ -13,11 +13,15 @@
                 </div>
             </div>
 
+            <x-panel-account-summary :stats="$panelStats" class="mt-4" />
+
+            @if (auth()->user()?->shouldShowBackToAccountDashboard())
             <div class="mt-4">
                 <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary">
                     {{ __('catalog.back_dashboard') }}
                 </a>
             </div>
+            @endif
         </div>
     </section>
 

@@ -69,7 +69,8 @@ return [
         'carousel_slide3_text' => 'Tools designed to boost your operations and sales.',
 
         'intro_internal' => 'Complete your details to join your company’s existing account.',
-        'intro_external' => 'You were invited to try the platform. Register your company and your user as usual.',
+        'intro_external' => 'You were invited to try the platform. Register your company and your user.',
+        'invitation_from' => 'Invited by :name (:company)',
         'important_text_internal' => 'This link is personal. Enter the email you want to use for your account; it must not already be registered. You will verify this address after signing up, same as a normal registration.',
         'important_text_external' => 'This link is personal. You will create a new company. Enter the email you want to use; it must not already be registered. You will verify this address after signing up.',
         'invited_company' => 'Company',

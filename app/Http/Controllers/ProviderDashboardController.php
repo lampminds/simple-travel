@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\AccountDashboardLane;
+use App\Support\AccountPanelStats;
 use App\Support\AccountTypeCategoryIds;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,8 @@ class ProviderDashboardController extends Controller
 
         AccountDashboardLane::set($account, AccountTypeCategoryIds::PROVIDER);
 
-        return view('provider.dashboard');
+        return view('provider.dashboard', [
+            'panelStats' => AccountPanelStats::forAccount($account),
+        ]);
     }
 }

@@ -5,7 +5,7 @@ return [
 
     // Hero slides (operadores/agencias)
     'hero_slide1_title' => 'Infraestructura digital para el <span class="highlight highlight-success d-inline-block">ecosistema turístico</span>',
-    'hero_slide1_lead' => 'SimpleTravel es un sistema moderno, fácil de usar y 100% personalizable que integra operadores, mayoristas y agencias con prestadores, para lograr un fluido y conciso diálogo e integración entre todas las partes.',
+    'hero_slide1_lead' => 'SimpleTravel es un sistema moderno, fácil de usar y 100% personalizable que integra operadores y agencias con prestadores, para lograr un fluido y conciso diálogo e integración entre todas las partes.',
     'hero_slide2_title' => 'Herramientas para una <span class="highlight highlight-success d-inline-block">gestión simple</span>',
     'hero_slide2_lead' => 'Centralizá tu negocio en una sola plataforma.<br><span class="highlight highlight-success d-inline-block">Reportes y estadísticas</span> en tiempo real para tomar mejores decisiones.',
     'slide2_advantage1' => 'Gestión unificada',

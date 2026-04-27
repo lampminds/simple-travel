@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'title' => 'Panel operador / mayorista',
+    'title' => 'Panel operador',
 ];

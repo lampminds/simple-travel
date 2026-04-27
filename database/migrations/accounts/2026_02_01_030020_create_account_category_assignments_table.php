@@ -16,7 +16,7 @@ return new class extends Migration
     {
         Schema::create('account_category_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('account_category_id')->constrained('cat_account_categories');
 
             lmpStamps($table);

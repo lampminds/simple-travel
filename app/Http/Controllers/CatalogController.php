@@ -14,8 +14,8 @@ use Illuminate\Http\Request;
 class CatalogController extends Controller
 {
     /**
-     * Catalog: provider sees their services (same data as former provider dashboard list);
-     * wholesaler sees approved services from linked providers (mock) plus CTA for own services (mock).
+     * Catalog: provider, operator, and agency see this account's services (wizard-backed).
+     * Operator/agency also see a placeholder control to request linked providers' services (TBD).
      */
     public function index(Request $request): View|RedirectResponse
     {
@@ -30,14 +30,17 @@ class CatalogController extends Controller
         }
 
         return match (true) {
-            $laneId === AccountTypeCategoryIds::PROVIDER => $this->providerCatalog($account),
-            AccountTypeCategoryIds::isOperatorLaneTypeId($laneId) => $this->wholesalerCatalog(),
-            $laneId === AccountTypeCategoryIds::AGENCY => $this->agencyCatalog(),
+            $laneId === AccountTypeCategoryIds::PROVIDER => $this->accountServicesCatalog($account, 'provider'),
+            AccountTypeCategoryIds::isOperatorLaneTypeId($laneId) => $this->accountServicesCatalog($account, 'operator'),
+            $laneId === AccountTypeCategoryIds::AGENCY => $this->accountServicesCatalog($account, 'agency'),
             default => redirect()->route('account.dashboard'),
         };
     }
 
-    private function providerCatalog(Account $account): View
+    /**
+     * @param  'provider'|'operator'|'agency'  $mode
+     */
+    private function accountServicesCatalog(Account $account, string $mode): View
     {
         $services = Service::query()
             ->where('account_id', $account->id)
@@ -52,59 +55,9 @@ class CatalogController extends Controller
             ->get();
 
         return view('catalog.index', [
-            'mode' => 'provider',
+            'mode' => $mode,
             'services' => $services,
             'serviceTypes' => $serviceTypes,
-            'wholesalerApprovedRows' => collect(),
         ]);
-    }
-
-    private function wholesalerCatalog(): View
-    {
-        return view('catalog.index', [
-            'mode' => 'wholesaler',
-            'services' => collect(),
-            'serviceTypes' => collect(),
-            'wholesalerApprovedRows' => $this->mockWholesalerApprovedServices(),
-        ]);
-    }
-
-    private function agencyCatalog(): View
-    {
-        return view('catalog.index', [
-            'mode' => 'agency',
-            'services' => collect(),
-            'serviceTypes' => collect(),
-            'wholesalerApprovedRows' => collect(),
-        ]);
-    }
-
-    /**
-     * Mock rows until invitation-linked approved services exist in the domain.
-     *
-     * @return array<int, array{provider:string, name:string, type:string, status:string}>
-     */
-    private function mockWholesalerApprovedServices(): array
-    {
-        return [
-            [
-                'provider' => 'Hostería del Lago',
-                'name' => 'Estadía 2 noches + desayuno',
-                'type' => 'Hotel',
-                'status' => __('catalog.wholesaler_status_approved'),
-            ],
-            [
-                'provider' => 'Nieve y Montaña',
-                'name' => 'Excursión glaciar guiada',
-                'type' => 'Excursión',
-                'status' => __('catalog.wholesaler_status_approved'),
-            ],
-            [
-                'provider' => 'Sabores Patagónicos',
-                'name' => 'Cena degustación regional',
-                'type' => 'Gastronomía',
-                'status' => __('catalog.wholesaler_status_approved'),
-            ],
-        ];
     }
 }

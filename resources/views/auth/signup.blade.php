@@ -28,6 +28,18 @@
                                                 {{ __('auth.register.intro') }}
                                             @endif
                                         </p>
+                                        @if ($inv?->invitedBy)
+                                            <p class="text-muted mb-4 small">
+                                                {{ __('auth.register.invitation_from', [
+                                                    'name' => $inv->invitedBy->name,
+                                                    'company' => $inv->accountInviting?->commercial_name
+                                                        ?? $inv->accountInviting?->name
+                                                        ?? $inv->account?->commercial_name
+                                                        ?? $inv->account?->name
+                                                        ?? '—',
+                                                ]) }}
+                                            </p>
+                                        @endif
 
                                         <div class="alert alert-warning border-0 mb-4" role="alert">
                                             <small>
@@ -59,7 +71,7 @@
 
                                             @unless ($mode === 'internal')
                                             <div class="mb-3">
-                                                <label for="company_name" class="form-label">{{ __('auth.register.company_name') }} <small>*</small></label>
+                                                <label for="company_name" class="form-label">{{ __('auth.register.company_name') }}</label>
                                                 <input type="text" class="form-control @error('company_name') is-invalid @enderror" id="company_name"
                                                        placeholder="{{ __('auth.register.placeholder_company_name') }}" name="company_name"
                                                        value="{{ old('company_name') }}" required
@@ -68,7 +80,7 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="company_type" class="form-label">{{ __('auth.register.company_type') }} <small>*</small></label>
+                                                <label for="company_type" class="form-label">{{ __('auth.register.company_type') }}</label>
                                                 <select class="form-select @error('company_type') is-invalid @enderror" id="company_type" name="company_type" @if($mode !== 'internal') required @endif>
                                                     <option value="">{{ __('auth.register.select_type') }}</option>
                                                     @foreach($companyTypes ?? [] as $id => $data)
@@ -87,15 +99,15 @@
                                             @endunless
 
                                             <div class="mb-3">
-                                                <label for="name" class="form-label">{{ __('auth.register.your_name') }} <small>*</small></label>
+                                                <label for="name" class="form-label">{{ __('auth.register.your_name') }}</label>
                                                 <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
                                                        placeholder="{{ __('auth.register.placeholder_name') }}" name="name"
-                                                       value="{{ old('name') }}" required @if($mode === 'internal') autofocus @endif/>
+                                                       value="{{ old('name', $inv?->name) }}" required @if($mode === 'internal') autofocus @endif/>
                                                 <x-form-field-error name="name" />
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="email" class="form-label">{{ __('auth.register.email') }} <small>*</small></label>
+                                                <label for="email" class="form-label">{{ __('auth.register.email') }}</label>
                                                 <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                        placeholder="{{ __('auth.register.placeholder_email') }}" name="email"
                                                        value="{{ old('email', $inv?->email) }}"
@@ -104,7 +116,7 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="password" class="form-label">{{ __('auth.register.password') }} <small>*</small></label>
+                                                <label for="password" class="form-label">{{ __('auth.register.password') }}</label>
                                                 <div class="input-group">
                                                     <input type="password" class="form-control @error('password') is-invalid @enderror" id="password"
                                                            name="password" placeholder="{{ __('auth.register.placeholder_password') }}" required
@@ -127,7 +139,7 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="password_confirmation" class="form-label">{{ __('auth.register.password_confirmation') }} <small>*</small></label>
+                                                <label for="password_confirmation" class="form-label">{{ __('auth.register.password_confirmation') }}</label>
                                                 <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation"
                                                        name="password_confirmation" placeholder="{{ __('auth.register.placeholder_password_confirmation') }}" required
                                                        autocomplete="new-password" minlength="8"/>

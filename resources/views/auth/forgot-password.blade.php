@@ -24,7 +24,7 @@
                                     <x-form-validation-summary />
 
                                     <div class="mb-3">
-                                        <label for="email" class="form-label">Email <small>*</small></label>
+                                        <label for="email" class="form-label required-label">Email</label>
                                         <input type="email" class="form-control @error('email') is-invalid @enderror" id="email"
                                                placeholder="Email" name="email" value="{{ old('email') }}" required autofocus/>
                                         <x-form-field-error name="email" />

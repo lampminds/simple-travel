@@ -89,7 +89,7 @@
 
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label">{{ __('filament.resources.service_variant_fields.sku') }} <span class="text-danger">*</span></label>
+                        <label class="form-label required-label">{{ __('filament.resources.service_variant_fields.sku') }}</label>
                         <input type="text" class="form-control @error('form.sku') is-invalid @enderror" wire:model.blur="form.sku">
                         @error('form.sku')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>

@@ -82,3 +82,36 @@ input {
       }
     }
 }
+
+// Fixed / non-editable fields (global)
+.form-control[readonly],
+.form-select[readonly] {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    font-style: italic;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: #f1f5f9;
+    border-color: #dbe2ea;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
+// Optional class to highlight fixed values more strongly
+.is-fixed-field {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #1e3a8a !important;
+    font-weight: 600;
+    font-style: italic;
+}
+
+// Required field indicator (global)
+.required-label::after {
+    content: ' *';
+    color: #dc3545;
+    font-weight: 700;
+}

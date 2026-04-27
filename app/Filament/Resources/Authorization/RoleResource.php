@@ -4,15 +4,18 @@ namespace App\Filament\Resources\Authorization;
 
 use App\Filament\Resources\Authorization\RoleResource\Pages;
 use App\Filament\Resources\BaseResource;
+use App\Models\Role;
 use BackedEnum;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Permission\Models\Role;
 
 class RoleResource extends BaseResource
 {
@@ -49,32 +52,39 @@ class RoleResource extends BaseResource
 
     public static function getEloquentQuery(): Builder
     {
-        $platformId = (int) config('permission.platform_account_id', 1);
-
         return parent::getEloquentQuery()
-            ->where('account_id', $platformId)
-            ->withCount('permissions');
+            ->withCount('permissions')
+            ->with('account');
     }
 
     /**
-     * Custom form: platform roles only (no audit stamps; Spatie Role has no LMP audit columns).
+     * Spatie roles per account (teams); no LMP audit columns on the role model.
      */
     public static function form(Schema $schema): Schema
     {
-        $platformId = (int) config('permission.platform_account_id', 1);
+        $rolesTable = (string) config('permission.table_names.roles', 'user_roles');
 
         return $schema->schema([
             Section::make('')
                 ->schema([
+                    Select::make('account_id')
+                        ->label(__('filament.resources.role_fields.account_id'))
+                        ->relationship('account', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->live(),
                     TextInput::make('name')
                         ->label(__('filament.resources.role_fields.name'))
                         ->required()
                         ->maxLength(255)
-                        ->scopedUnique(
-                            model: Role::class,
+                        ->unique(
+                            table: $rolesTable,
                             column: 'name',
                             ignoreRecord: true,
-                            modifyQueryUsing: fn (Builder $query) => $query->where('account_id', $platformId)->where('guard_name', 'web'),
+                            modifyRuleUsing: fn ($rule, callable $get) => $rule
+                                ->where('guard_name', 'web')
+                                ->where('account_id', $get('account_id')),
                         ),
                     TextInput::make('guard_name')
                         ->default('web')
@@ -109,6 +119,11 @@ class RoleResource extends BaseResource
                 TextColumn::make('id')
                     ->label(__('filament.resources.role_columns.id'))
                     ->sortable(),
+                TextColumn::make('account.name')
+                    ->label(__('filament.resources.role_columns.account'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
                 TextColumn::make('name')
                     ->label(__('filament.resources.role_columns.name'))
                     ->searchable()
@@ -117,6 +132,13 @@ class RoleResource extends BaseResource
                     ->label(__('filament.resources.role_columns.permissions_count'))
                     ->sortable(),
             ])
+            ->filters([
+                SelectFilter::make('account_id')
+                    ->label(__('filament.resources.role_filters.account_id'))
+                    ->relationship('account', 'name')
+                    ->searchable()
+                    ->preload(),
+            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('name');
     }
 

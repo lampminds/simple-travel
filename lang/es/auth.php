@@ -65,7 +65,8 @@ return [
         'carousel_slide3_text' => 'Herramientas pensadas para potenciar tu operación y tus ventas.',
 
         'intro_internal' => 'Completá tus datos para unirte a la cuenta de tu empresa.',
-        'intro_external' => 'Fuiste invitado a probar la plataforma. Registrá tu empresa y tu usuario como siempre.',
+        'intro_external' => 'Fuiste invitado a probar la plataforma. Registrá tu empresa y tu usuario.',
+        'invitation_from' => 'Te invita: :name (:company)',
         'important_text_internal' => 'Este enlace es personal. Indicá el email que usarás para tu cuenta; no puede estar ya registrado. Después tendrás que confirmarlo por email, igual que en cualquier alta.',
         'important_text_external' => 'Este enlace es personal. Vas a crear una empresa nueva. Indicá el email que usarás; no puede estar ya registrado. Después tendrás que confirmarlo por email.',
         'invited_company' => 'Empresa',
