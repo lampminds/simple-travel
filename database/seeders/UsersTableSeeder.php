@@ -52,7 +52,7 @@ class UsersTableSeeder extends Seeder
             ),
             2 =>
                 array (
-                    'id' => 2,
+                    'id' => 3,
                     'name' => 'Valeria Moura',
                     'email' => 'promocao@ebgrouptravel.com',
                     'email_verified_at' => Carbon::now(),
