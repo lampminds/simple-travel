@@ -25,7 +25,7 @@ class AccountUserTableSeeder extends Seeder
                 'account_id' => 1,
                 'user_id' => 2,
             ),
-            0 =>
+            1 =>
                 array (
                     'id' => 2,
                     'account_id' => 2,
