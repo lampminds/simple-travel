@@ -3,26 +3,26 @@
 namespace App\Console\Commands;
 
 use App\Models\Language;
-use App\Models\ServiceExcursionType;
-use App\Models\ServiceExcursionTypeCategory;
-use App\Models\ServiceExcursionTypeTranslation;
+use App\Models\ServiceEntertainmentType;
+use App\Models\ServiceEntertainmentTypeCategory;
+use App\Models\ServiceEntertainmentTypeTranslation;
 use Illuminate\Console\Command;
 
 /**
- * Seeds cat_service_excursion_types and their Spanish translations from a fixed list.
- * Section headers are the "code" of the service_excursion_type_category (e.g. general, culture).
+ * Seeds cat_service_entertainment_types and their Spanish translations from a fixed list.
+ * Section headers are the "code" of the service_entertainment_type_category (e.g. general, culture).
  * Categories must already exist with matching codes. Uses only the languages table.
  *
- * Run from project root (Debian): php artisan service-excursion-types:seed --language-id=2
+ * Run from project root (Debian): php artisan service-entertainment-types:seed --language-id=2
  * Idempotent: skips types that already exist (by code).
  */
-class SeedServiceExcursionTypesCommand extends Command
+class SeedServiceEntertainmentTypesCommand extends Command
 {
-    protected $signature = 'service-excursion-types:seed
+    protected $signature = 'service-entertainment-types:seed
                             {--language-id= : Id of the Spanish language in the languages table (required)}
                             {--dry-run : Show what would be created without writing}';
 
-    protected $description = 'Seed service excursion types and Spanish translations from the predefined list';
+    protected $description = 'Seed service entertainment types and Spanish translations from the predefined list';
 
     /** @var array<string, array<int, array{code: string, name_es: string}>> Key = category code */
     protected array $data = [
@@ -31,51 +31,51 @@ class SeedServiceExcursionTypesCommand extends Command
             ['code' => 'walking_tour', 'name_es' => 'Tour a pie'],
             ['code' => 'guided_tour', 'name_es' => 'Tour guiado'],
             ['code' => 'self_guided_tour', 'name_es' => 'Tour autoguiado'],
-            ['code' => 'panoramic_tour', 'name_es' => 'Tour panorámico'],
-            ['code' => 'day_trip', 'name_es' => 'Excursión de día completo'],
-            ['code' => 'half_day_tour', 'name_es' => 'Excursión de medio día'],
-            ['code' => 'multi_day_tour', 'name_es' => 'Tour de varios días'],
+            ['code' => 'panoramic_tour', 'name_es' => 'Tour panorÃ¡mico'],
+            ['code' => 'day_trip', 'name_es' => 'ExcursiÃ³n de dÃ­a completo'],
+            ['code' => 'half_day_tour', 'name_es' => 'ExcursiÃ³n de medio dÃ­a'],
+            ['code' => 'multi_day_tour', 'name_es' => 'Tour de varios dÃ­as'],
         ],
         'culture' => [
             ['code' => 'cultural_tour', 'name_es' => 'Tour cultural'],
-            ['code' => 'historical_tour', 'name_es' => 'Tour histórico'],
+            ['code' => 'historical_tour', 'name_es' => 'Tour histÃ³rico'],
             ['code' => 'heritage_tour', 'name_es' => 'Tour patrimonial'],
             ['code' => 'museum_tour', 'name_es' => 'Tour de museos'],
             ['code' => 'architecture_tour', 'name_es' => 'Tour de arquitectura'],
             ['code' => 'religious_tour', 'name_es' => 'Tour religioso'],
-            ['code' => 'archaeological_tour', 'name_es' => 'Tour arqueológico'],
+            ['code' => 'archaeological_tour', 'name_es' => 'Tour arqueolÃ³gico'],
             ['code' => 'local_experience', 'name_es' => 'Experiencia local'],
         ],
         'nature' => [
             ['code' => 'nature_tour', 'name_es' => 'Tour de naturaleza'],
             ['code' => 'wildlife_tour', 'name_es' => 'Tour de fauna'],
-            ['code' => 'birdwatching_tour', 'name_es' => 'Tour de observación de aves'],
+            ['code' => 'birdwatching_tour', 'name_es' => 'Tour de observaciÃ³n de aves'],
             ['code' => 'national_park_tour', 'name_es' => 'Tour de parque nacional'],
-            ['code' => 'scenic_tour', 'name_es' => 'Tour escénico'],
+            ['code' => 'scenic_tour', 'name_es' => 'Tour escÃ©nico'],
             ['code' => 'landscape_tour', 'name_es' => 'Tour de paisajes'],
         ],
         'adventure' => [
             ['code' => 'adventure_tour', 'name_es' => 'Tour de aventura'],
             ['code' => 'hiking_tour', 'name_es' => 'Tour de trekking'],
-            ['code' => 'mountain_tour', 'name_es' => 'Tour de montaña'],
+            ['code' => 'mountain_tour', 'name_es' => 'Tour de montaÃ±a'],
             ['code' => 'offroad_tour', 'name_es' => 'Tour off-road'],
             ['code' => 'extreme_adventure', 'name_es' => 'Aventura extrema'],
         ],
         'water' => [
             ['code' => 'boat_tour', 'name_es' => 'Paseo en barco'],
             ['code' => 'lake_tour', 'name_es' => 'Tour por lago'],
-            ['code' => 'river_tour', 'name_es' => 'Tour por río'],
+            ['code' => 'river_tour', 'name_es' => 'Tour por rÃ­o'],
             ['code' => 'cruise', 'name_es' => 'Crucero'],
-            ['code' => 'catamaran_tour', 'name_es' => 'Tour en catamarán'],
+            ['code' => 'catamaran_tour', 'name_es' => 'Tour en catamarÃ¡n'],
             ['code' => 'kayak_tour', 'name_es' => 'Tour en kayak'],
-            ['code' => 'rafting_trip', 'name_es' => 'Excursión de rafting'],
+            ['code' => 'rafting_trip', 'name_es' => 'ExcursiÃ³n de rafting'],
             ['code' => 'fishing_trip', 'name_es' => 'Salida de pesca'],
         ],
         'gastronomy' => [
-            ['code' => 'food_tour', 'name_es' => 'Tour gastronómico'],
+            ['code' => 'food_tour', 'name_es' => 'Tour gastronÃ³mico'],
             ['code' => 'wine_tour', 'name_es' => 'Tour del vino'],
-            ['code' => 'brewery_tour', 'name_es' => 'Tour de cervecerías'],
-            ['code' => 'distillery_tour', 'name_es' => 'Tour de destilerías'],
+            ['code' => 'brewery_tour', 'name_es' => 'Tour de cervecerÃ­as'],
+            ['code' => 'distillery_tour', 'name_es' => 'Tour de destilerÃ­as'],
             ['code' => 'culinary_tour', 'name_es' => 'Tour culinario'],
             ['code' => 'farm_visit', 'name_es' => 'Visita a granja'],
         ],
@@ -85,15 +85,15 @@ class SeedServiceExcursionTypesCommand extends Command
             ['code' => 'farm_experience', 'name_es' => 'Experiencia rural'],
         ],
         'winter' => [
-            ['code' => 'ski_tour', 'name_es' => 'Tour de esquí'],
-            ['code' => 'winter_tour', 'name_es' => 'Excursión invernal'],
+            ['code' => 'ski_tour', 'name_es' => 'Tour de esquÃ­'],
+            ['code' => 'winter_tour', 'name_es' => 'ExcursiÃ³n invernal'],
             ['code' => 'snowmobile_tour', 'name_es' => 'Tour en moto de nieve'],
             ['code' => 'dog_sled_tour', 'name_es' => 'Tour en trineo de perros'],
         ],
         'air' => [
-            ['code' => 'helicopter_tour', 'name_es' => 'Tour en helicóptero'],
-            ['code' => 'scenic_flight', 'name_es' => 'Vuelo panorámico'],
-            ['code' => 'hot_air_balloon_ride', 'name_es' => 'Paseo en globo aerostático'],
+            ['code' => 'helicopter_tour', 'name_es' => 'Tour en helicÃ³ptero'],
+            ['code' => 'scenic_flight', 'name_es' => 'Vuelo panorÃ¡mico'],
+            ['code' => 'hot_air_balloon_ride', 'name_es' => 'Paseo en globo aerostÃ¡tico'],
         ],
         'transport' => [
             ['code' => 'train_tour', 'name_es' => 'Tour en tren'],
@@ -102,11 +102,11 @@ class SeedServiceExcursionTypesCommand extends Command
             ['code' => 'atv_tour', 'name_es' => 'Tour en cuatriciclo'],
         ],
         'special' => [
-            ['code' => 'photography_tour', 'name_es' => 'Tour fotográfico'],
+            ['code' => 'photography_tour', 'name_es' => 'Tour fotogrÃ¡fico'],
             ['code' => 'sunset_tour', 'name_es' => 'Tour al atardecer'],
             ['code' => 'sunrise_tour', 'name_es' => 'Tour al amanecer'],
             ['code' => 'night_tour', 'name_es' => 'Tour nocturno'],
-            ['code' => 'stargazing_tour', 'name_es' => 'Tour de observación de estrellas'],
+            ['code' => 'stargazing_tour', 'name_es' => 'Tour de observaciÃ³n de estrellas'],
             ['code' => 'festival_tour', 'name_es' => 'Tour de festivales'],
         ],
     ];
@@ -139,7 +139,7 @@ class SeedServiceExcursionTypesCommand extends Command
         $missingCategories = [];
 
         foreach ($this->data as $categoryCode => $types) {
-            $category = ServiceExcursionTypeCategory::query()
+            $category = ServiceEntertainmentTypeCategory::query()
                 ->where('code', $categoryCode)
                 ->first();
 
@@ -153,7 +153,7 @@ class SeedServiceExcursionTypesCommand extends Command
                 $code = $item['code'];
                 $nameEs = $item['name_es'];
 
-                $exists = ServiceExcursionType::query()->where('code', $code)->exists();
+                $exists = ServiceEntertainmentType::query()->where('code', $code)->exists();
                 if ($exists) {
                     $skipped++;
 
@@ -161,15 +161,15 @@ class SeedServiceExcursionTypesCommand extends Command
                 }
 
                 if (! $dryRun) {
-                    $type = ServiceExcursionType::create([
+                    $type = ServiceEntertainmentType::create([
                         'code' => $code,
-                        'service_excursion_type_category_id' => $category->id,
+                        'service_entertainment_type_category_id' => $category->id,
                         'sort_order' => $index + 1,
                         'active' => true,
                     ]);
 
-                    ServiceExcursionTypeTranslation::create([
-                        'service_excursion_type_id' => $type->id,
+                    ServiceEntertainmentTypeTranslation::create([
+                        'service_entertainment_type_id' => $type->id,
                         'language_id' => $spanishLanguage->id,
                         'name' => $nameEs,
                     ]);
@@ -187,9 +187,10 @@ class SeedServiceExcursionTypesCommand extends Command
         }
 
         $this->info($dryRun
-            ? "Would create {$created} excursion types (skip {$skipped} existing)."
-            : "Created {$created} excursion types, skipped {$skipped} existing.");
+            ? "Would create {$created} entertainment types (skip {$skipped} existing)."
+            : "Created {$created} entertainment types, skipped {$skipped} existing.");
 
         return self::SUCCESS;
     }
 }
+

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class ServiceExcursionTypeCategoriesTableSeeder extends Seeder
+class ServiceEntertainmentTypeCategoriesTableSeeder extends Seeder
 {
 
     /**
@@ -16,9 +16,9 @@ class ServiceExcursionTypeCategoriesTableSeeder extends Seeder
     {
         
 
-        \DB::table('cat_service_excursion_type_categories')->delete();
+        \DB::table('cat_service_entertainment_type_categories')->delete();
         
-        \DB::table('cat_service_excursion_type_categories')->insert(array (
+        \DB::table('cat_service_entertainment_type_categories')->insert(array (
             0 => 
             array (
                 'id' => 1,

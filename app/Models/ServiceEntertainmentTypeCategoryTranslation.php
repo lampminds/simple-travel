@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ServiceExcursionTypeCategoryTranslation extends Model
+class ServiceEntertainmentTypeCategoryTranslation extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'cat_service_excursion_type_category_translations';
+    protected $table = 'cat_service_entertainment_type_category_translations';
 
     protected $fillable = [
-        'service_excursion_type_category_id',
+        'service_entertainment_type_category_id',
         'language_id',
         'name',
     ];
 
-    public function serviceExcursionTypeCategory(): BelongsTo
+    public function serviceEntertainmentTypeCategory(): BelongsTo
     {
-        return $this->belongsTo(ServiceExcursionTypeCategory::class);
+        return $this->belongsTo(ServiceEntertainmentTypeCategory::class);
     }
 
     public function language(): BelongsTo
@@ -27,3 +27,4 @@ class ServiceExcursionTypeCategoryTranslation extends Model
         return $this->belongsTo(Language::class);
     }
 }
+

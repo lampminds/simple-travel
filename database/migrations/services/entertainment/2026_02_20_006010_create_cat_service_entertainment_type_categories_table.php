@@ -13,24 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('cat_service_excursion_types', function (Blueprint $table) {
+        Schema::create('cat_service_entertainment_type_categories', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique()->comment('Short name, in English');
-            $table->foreignId('service_excursion_type_category_id')
-                ->constrained('cat_service_excursion_type_categories', 'id', 'service_excursion_type_fk');
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
 
             lmpStamps($table);
         });
 
-        Schema::create('cat_service_excursion_type_translations', function (Blueprint $table) {
+        Schema::create('cat_service_entertainment_type_category_translations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('service_excursion_type_id')
-                ->constrained('cat_service_excursion_types', 'id', 'service_excursion_type_translations_fk')
+            $table->foreignId('service_entertainment_type_category_id')
+                ->constrained('cat_service_entertainment_type_categories', 'id', 'setc_translations_cat_fk')
                 ->cascadeOnDelete();
             $table->unsignedTinyInteger('language_id');
-            $table->foreign('language_id')->references('id')->on('cat_languages');
+            $table->foreign('language_id', 'setc_lang_fk')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
         });
     }
@@ -42,7 +40,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cat_service_excursion_type_translations');
-        Schema::dropIfExists('cat_service_excursion_types');
+        Schema::dropIfExists('cat_service_entertainment_type_category_translations');
+        Schema::dropIfExists('cat_service_entertainment_type_categories');
     }
 };
+

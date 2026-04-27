@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\ServiceExcursionTypeCategoryResource\Pages;
+namespace App\Filament\Resources\ServiceEntertainmentTypeResource\Pages;
 
-use App\Filament\Resources\ServiceExcursionTypeCategoryResource;
+use App\Filament\Resources\ServiceEntertainmentTypeResource;
 use App\Models\Language;
-use App\Models\ServiceExcursionTypeCategory;
+use App\Models\ServiceEntertainmentType;
 use Illuminate\Support\Arr;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpEditRecord;
 
-class EditServiceExcursionTypeCategory extends LmpEditRecord
+class EditServiceEntertainmentType extends LmpEditRecord
 {
-    protected static string $resource = ServiceExcursionTypeCategoryResource::class;
+    protected static string $resource = ServiceEntertainmentTypeResource::class;
 
     protected function getRedirectUrl(): ?string
     {
@@ -43,7 +43,7 @@ class EditServiceExcursionTypeCategory extends LmpEditRecord
         $this->syncTranslations($this->getRecord(), $this->form->getState()['translations'] ?? []);
     }
 
-    protected function syncTranslations(ServiceExcursionTypeCategory $record, array $translations): void
+    protected function syncTranslations(ServiceEntertainmentType $record, array $translations): void
     {
         $record->translations()->delete();
         foreach ($translations as $languageId => $row) {
@@ -57,3 +57,4 @@ class EditServiceExcursionTypeCategory extends LmpEditRecord
         }
     }
 }
+

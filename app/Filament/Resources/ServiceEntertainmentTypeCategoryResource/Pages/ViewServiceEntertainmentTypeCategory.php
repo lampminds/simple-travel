@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\ServiceExcursionTypeResource\Pages;
+namespace App\Filament\Resources\ServiceEntertainmentTypeCategoryResource\Pages;
 
-use App\Filament\Resources\ServiceExcursionTypeResource;
+use App\Filament\Resources\ServiceEntertainmentTypeCategoryResource;
 use App\Models\Language;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpViewRecord;
 
-class ViewServiceExcursionType extends LmpViewRecord
+class ViewServiceEntertainmentTypeCategory extends LmpViewRecord
 {
-    protected static string $resource = ServiceExcursionTypeResource::class;
+    protected static string $resource = ServiceEntertainmentTypeCategoryResource::class;
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
@@ -26,3 +26,4 @@ class ViewServiceExcursionType extends LmpViewRecord
         return $data;
     }
 }
+

@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
-class ServiceExcursionTypeCategory extends Model
+class ServiceEntertainmentType extends Model
 {
     use HasFactory, AuditTrait;
 
-    protected $table = 'cat_service_excursion_type_categories';
+    protected $table = 'cat_service_entertainment_types';
 
     protected $fillable = [
         'code',
+        'service_entertainment_type_category_id',
         'sort_order',
         'active',
     ];
@@ -25,19 +27,19 @@ class ServiceExcursionTypeCategory extends Model
     ];
 
     /**
-     * Get the translations for this category (one per language).
+     * Get the category this entertainment type belongs to.
      */
-    public function translations(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(ServiceExcursionTypeCategoryTranslation::class);
+        return $this->belongsTo(ServiceEntertainmentTypeCategory::class, 'service_entertainment_type_category_id');
     }
 
     /**
-     * Get the excursion types in this category.
+     * Get the translations for this entertainment type (one per language).
      */
-    public function excursionTypes(): HasMany
+    public function translations(): HasMany
     {
-        return $this->hasMany(ServiceExcursionType::class, 'service_excursion_type_category_id');
+        return $this->hasMany(ServiceEntertainmentTypeTranslation::class);
     }
 
     /**
@@ -51,7 +53,7 @@ class ServiceExcursionTypeCategory extends Model
     /**
      * Translation to use for display. Prefers current app locale when available.
      */
-    protected function getTranslationForDisplay(): ?ServiceExcursionTypeCategoryTranslation
+    protected function getTranslationForDisplay(): ?ServiceEntertainmentTypeTranslation
     {
         if (! $this->relationLoaded('translations')) {
             $this->load('translations');
@@ -86,3 +88,4 @@ class ServiceExcursionTypeCategory extends Model
         return $query->orderBy('sort_order');
     }
 }
+

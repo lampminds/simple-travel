@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('service_excursions', function (Blueprint $table) {
+        Schema::create('service_entertainment', function (Blueprint $table) {
 
             $table->id();
             $table->foreignId('service_id')->unique()->constrained();
-            $table->foreignId('service_excursion_type_id')->nullable()->constrained('cat_service_excursion_types');
+            $table->foreignId('service_entertainment_type_id')->nullable()->constrained('cat_service_entertainment_types');
             $table->unsignedSmallInteger('difficulty_level')->nullable()
                 ->comment('1 easy, 2 moderate, 3 difficult');
             $table->unsignedSmallInteger('min_age')->nullable();
@@ -40,6 +40,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('service_excursions');
+        Schema::dropIfExists('service_entertainment');
     }
 };
+

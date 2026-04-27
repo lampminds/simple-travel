@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('wholesaler_catalog_items', function (Blueprint $table) {
+        Schema::create('operator_catalog_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('provider_id')
                 ->constrained('accounts', 'id', 'fkp2_account_id');
-            $table->foreignId('wholesaler_id')
-                ->constrained('accounts', 'id', 'fkw2_account_id');
+            $table->foreignId('operator_id')
+                ->constrained('accounts', 'id', 'fko2_account_id');
 
             $table->foreignId('service_id')
                 ->nullable()
@@ -33,13 +33,13 @@ return new class extends Migration
                 ->comment('The offer that this item is based on - optional');
 
             $table->enum('status', ['pending', 'active', 'hidden', 'suspended', 'discontinued'])
-                ->comment('Status according to the wholesaler')
+                ->comment('Status according to the operator account')
                 ->default('pending');
 
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('removed_at')->nullable();
 
-            $table->unique(['wholesaler_id', 'service_id', 'service_variant_id'], 'unique_catalog_item');
+            $table->unique(['operator_id', 'service_id', 'service_variant_id'], 'unique_operator_catalog_item');
 
             lmpStamps($table);
         });
@@ -52,6 +52,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('wholesaler_catalog_items');
+        Schema::dropIfExists('operator_catalog_items');
     }
 };

@@ -9,13 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * @return void
+     * Pivot: tax IDs per account, keyed by account category (group tax_id in cat_account_categories).
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('cat_account_tax_ids', function (Blueprint $table) {
+        Schema::create('account_tax_ids', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('account_category_id')->constrained('cat_account_categories');
             $table->string('value');
 
@@ -25,11 +25,9 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('cat_account_tax_ids');
+        Schema::dropIfExists('account_tax_ids');
     }
 };

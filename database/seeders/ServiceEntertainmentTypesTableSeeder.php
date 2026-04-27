@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class ServiceExcursionTypesTableSeeder extends Seeder
+class ServiceEntertainmentTypesTableSeeder extends Seeder
 {
 
     /**
@@ -16,14 +16,14 @@ class ServiceExcursionTypesTableSeeder extends Seeder
     {
         
 
-        \DB::table('cat_service_excursion_types')->delete();
+        \DB::table('cat_service_entertainment_types')->delete();
         
-        \DB::table('cat_service_excursion_types')->insert(array (
+        \DB::table('cat_service_entertainment_types')->insert(array (
             0 => 
             array (
                 'id' => 1,
                 'code' => 'city_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -31,7 +31,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 2,
                 'code' => 'walking_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -39,7 +39,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 3,
                 'code' => 'guided_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -47,7 +47,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 4,
                 'code' => 'self_guided_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -55,7 +55,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 5,
                 'code' => 'panoramic_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -63,7 +63,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 6,
                 'code' => 'day_trip',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 6,
                 'active' => 1,
             ),
@@ -71,7 +71,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 7,
                 'code' => 'half_day_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 7,
                 'active' => 1,
             ),
@@ -79,7 +79,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 8,
                 'code' => 'multi_day_tour',
-                'service_excursion_type_category_id' => 1,
+                'service_entertainment_type_category_id' => 1,
                 'sort_order' => 8,
                 'active' => 1,
             ),
@@ -87,7 +87,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 9,
                 'code' => 'cultural_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -95,7 +95,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 10,
                 'code' => 'historical_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -103,7 +103,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 11,
                 'code' => 'heritage_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -111,7 +111,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 12,
                 'code' => 'museum_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -119,7 +119,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 13,
                 'code' => 'architecture_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -127,7 +127,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 14,
                 'code' => 'religious_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 6,
                 'active' => 1,
             ),
@@ -135,7 +135,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 15,
                 'code' => 'archaeological_tour',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 7,
                 'active' => 1,
             ),
@@ -143,7 +143,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 16,
                 'code' => 'local_experience',
-                'service_excursion_type_category_id' => 2,
+                'service_entertainment_type_category_id' => 2,
                 'sort_order' => 8,
                 'active' => 1,
             ),
@@ -151,7 +151,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 17,
                 'code' => 'nature_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -159,7 +159,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 18,
                 'code' => 'wildlife_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -167,7 +167,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 19,
                 'code' => 'birdwatching_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -175,7 +175,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 20,
                 'code' => 'national_park_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -183,7 +183,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 21,
                 'code' => 'scenic_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -191,7 +191,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 22,
                 'code' => 'landscape_tour',
-                'service_excursion_type_category_id' => 3,
+                'service_entertainment_type_category_id' => 3,
                 'sort_order' => 6,
                 'active' => 1,
             ),
@@ -199,7 +199,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 23,
                 'code' => 'adventure_tour',
-                'service_excursion_type_category_id' => 4,
+                'service_entertainment_type_category_id' => 4,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -207,7 +207,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 24,
                 'code' => 'hiking_tour',
-                'service_excursion_type_category_id' => 4,
+                'service_entertainment_type_category_id' => 4,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -215,7 +215,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 25,
                 'code' => 'mountain_tour',
-                'service_excursion_type_category_id' => 4,
+                'service_entertainment_type_category_id' => 4,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -223,7 +223,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 26,
                 'code' => 'offroad_tour',
-                'service_excursion_type_category_id' => 4,
+                'service_entertainment_type_category_id' => 4,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -231,7 +231,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 27,
                 'code' => 'extreme_adventure',
-                'service_excursion_type_category_id' => 4,
+                'service_entertainment_type_category_id' => 4,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -239,7 +239,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 28,
                 'code' => 'boat_tour',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -247,7 +247,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 29,
                 'code' => 'lake_tour',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -255,7 +255,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 30,
                 'code' => 'river_tour',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -263,7 +263,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 31,
                 'code' => 'cruise',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -271,7 +271,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 32,
                 'code' => 'catamaran_tour',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -279,7 +279,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 33,
                 'code' => 'kayak_tour',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 6,
                 'active' => 1,
             ),
@@ -287,7 +287,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 34,
                 'code' => 'rafting_trip',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 7,
                 'active' => 1,
             ),
@@ -295,7 +295,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 35,
                 'code' => 'fishing_trip',
-                'service_excursion_type_category_id' => 5,
+                'service_entertainment_type_category_id' => 5,
                 'sort_order' => 8,
                 'active' => 1,
             ),
@@ -303,7 +303,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 36,
                 'code' => 'food_tour',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -311,7 +311,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 37,
                 'code' => 'wine_tour',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -319,7 +319,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 38,
                 'code' => 'brewery_tour',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -327,7 +327,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 39,
                 'code' => 'distillery_tour',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -335,7 +335,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 40,
                 'code' => 'culinary_tour',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -343,7 +343,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 41,
                 'code' => 'farm_visit',
-                'service_excursion_type_category_id' => 6,
+                'service_entertainment_type_category_id' => 6,
                 'sort_order' => 6,
                 'active' => 1,
             ),
@@ -351,7 +351,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 42,
                 'code' => 'ranch_experience',
-                'service_excursion_type_category_id' => 10,
+                'service_entertainment_type_category_id' => 10,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -359,7 +359,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 43,
                 'code' => 'agrotourism',
-                'service_excursion_type_category_id' => 10,
+                'service_entertainment_type_category_id' => 10,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -367,7 +367,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 44,
                 'code' => 'farm_experience',
-                'service_excursion_type_category_id' => 10,
+                'service_entertainment_type_category_id' => 10,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -375,7 +375,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 45,
                 'code' => 'ski_tour',
-                'service_excursion_type_category_id' => 7,
+                'service_entertainment_type_category_id' => 7,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -383,7 +383,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 46,
                 'code' => 'winter_tour',
-                'service_excursion_type_category_id' => 7,
+                'service_entertainment_type_category_id' => 7,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -391,7 +391,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 47,
                 'code' => 'snowmobile_tour',
-                'service_excursion_type_category_id' => 7,
+                'service_entertainment_type_category_id' => 7,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -399,7 +399,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 48,
                 'code' => 'dog_sled_tour',
-                'service_excursion_type_category_id' => 7,
+                'service_entertainment_type_category_id' => 7,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -407,7 +407,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 49,
                 'code' => 'helicopter_tour',
-                'service_excursion_type_category_id' => 8,
+                'service_entertainment_type_category_id' => 8,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -415,7 +415,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 50,
                 'code' => 'scenic_flight',
-                'service_excursion_type_category_id' => 8,
+                'service_entertainment_type_category_id' => 8,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -423,7 +423,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 51,
                 'code' => 'hot_air_balloon_ride',
-                'service_excursion_type_category_id' => 8,
+                'service_entertainment_type_category_id' => 8,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -431,7 +431,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 52,
                 'code' => 'train_tour',
-                'service_excursion_type_category_id' => 9,
+                'service_entertainment_type_category_id' => 9,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -439,7 +439,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 53,
                 'code' => 'bike_tour',
-                'service_excursion_type_category_id' => 9,
+                'service_entertainment_type_category_id' => 9,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -447,7 +447,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 54,
                 'code' => 'horseback_tour',
-                'service_excursion_type_category_id' => 9,
+                'service_entertainment_type_category_id' => 9,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -455,7 +455,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 55,
                 'code' => 'atv_tour',
-                'service_excursion_type_category_id' => 9,
+                'service_entertainment_type_category_id' => 9,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -463,7 +463,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 56,
                 'code' => 'photography_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 1,
                 'active' => 1,
             ),
@@ -471,7 +471,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 57,
                 'code' => 'sunset_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 2,
                 'active' => 1,
             ),
@@ -479,7 +479,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 58,
                 'code' => 'sunrise_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 3,
                 'active' => 1,
             ),
@@ -487,7 +487,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 59,
                 'code' => 'night_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 4,
                 'active' => 1,
             ),
@@ -495,7 +495,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 60,
                 'code' => 'stargazing_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 5,
                 'active' => 1,
             ),
@@ -503,7 +503,7 @@ class ServiceExcursionTypesTableSeeder extends Seeder
             array (
                 'id' => 61,
                 'code' => 'festival_tour',
-                'service_excursion_type_category_id' => 11,
+                'service_entertainment_type_category_id' => 11,
                 'sort_order' => 6,
                 'active' => 1,
             ),
