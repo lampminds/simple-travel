@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class ServiceTypeTranslationsTableSeeder extends Seeder
+class CatServiceTypeTranslationsTableSeeder extends Seeder
 {
 
     /**
@@ -18,7 +18,7 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
 
         \DB::table('cat_service_type_translations')->delete();
 
-        \DB::table('cat_service_type_translations')->insert($this->normalizeMojibake(array (
+        \DB::table('cat_service_type_translations')->insert(array (
             0 =>
             array (
                 'id' => 1,
@@ -103,25 +103,8 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
                 'language_id' => 3,
                 'name' => 'Gastronomia',
             ),
-        )));
+        ));
 
 
-    }
-    private function normalizeMojibake(mixed $value): mixed
-    {
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                $value[$key] = $this->normalizeMojibake($item);
-            }
-
-            return $value;
-        }
-
-        if (! is_string($value)) {
-            return $value;
-        }
-
-        return $value;
     }
 }
-

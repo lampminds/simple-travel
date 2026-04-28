@@ -693,93 +693,591 @@ class CatServiceFeatureScopesTableSeeder extends Seeder
             ),
             112 => 
             array (
-                'id' => 127,
-                'service_type_id' => 2,
-                'service_feature_id' => 1,
-            ),
-            113 => 
-            array (
-                'id' => 128,
-                'service_type_id' => 2,
-                'service_feature_id' => 2,
-            ),
-            114 => 
-            array (
-                'id' => 129,
-                'service_type_id' => 2,
-                'service_feature_id' => 3,
-            ),
-            115 => 
-            array (
-                'id' => 130,
-                'service_type_id' => 2,
-                'service_feature_id' => 4,
-            ),
-            116 => 
-            array (
-                'id' => 131,
-                'service_type_id' => 2,
-                'service_feature_id' => 91,
-            ),
-            117 => 
-            array (
-                'id' => 132,
-                'service_type_id' => 2,
-                'service_feature_id' => 92,
-            ),
-            118 => 
-            array (
-                'id' => 133,
-                'service_type_id' => 2,
-                'service_feature_id' => 93,
-            ),
-            119 => 
-            array (
-                'id' => 134,
-                'service_type_id' => 2,
-                'service_feature_id' => 94,
-            ),
-            120 => 
-            array (
-                'id' => 135,
-                'service_type_id' => 2,
-                'service_feature_id' => 95,
-            ),
-            121 => 
-            array (
-                'id' => 136,
-                'service_type_id' => 2,
-                'service_feature_id' => 96,
-            ),
-            122 => 
-            array (
-                'id' => 137,
-                'service_type_id' => 2,
-                'service_feature_id' => 97,
-            ),
-            123 => 
-            array (
-                'id' => 138,
-                'service_type_id' => 2,
-                'service_feature_id' => 123,
-            ),
-            124 => 
-            array (
                 'id' => 139,
                 'service_type_id' => 1,
                 'service_feature_id' => 18,
             ),
-            125 => 
+            113 => 
             array (
                 'id' => 140,
                 'service_type_id' => 1,
                 'service_feature_id' => 29,
             ),
-            126 => 
+            114 => 
             array (
                 'id' => 141,
                 'service_type_id' => 1,
                 'service_feature_id' => 51,
+            ),
+            115 => 
+            array (
+                'id' => 149,
+                'service_type_id' => 4,
+                'service_feature_id' => 1,
+            ),
+            116 => 
+            array (
+                'id' => 150,
+                'service_type_id' => 4,
+                'service_feature_id' => 2,
+            ),
+            117 => 
+            array (
+                'id' => 151,
+                'service_type_id' => 4,
+                'service_feature_id' => 3,
+            ),
+            118 => 
+            array (
+                'id' => 152,
+                'service_type_id' => 4,
+                'service_feature_id' => 4,
+            ),
+            119 => 
+            array (
+                'id' => 153,
+                'service_type_id' => 4,
+                'service_feature_id' => 5,
+            ),
+            120 => 
+            array (
+                'id' => 154,
+                'service_type_id' => 4,
+                'service_feature_id' => 6,
+            ),
+            121 => 
+            array (
+                'id' => 155,
+                'service_type_id' => 4,
+                'service_feature_id' => 7,
+            ),
+            122 => 
+            array (
+                'id' => 156,
+                'service_type_id' => 4,
+                'service_feature_id' => 8,
+            ),
+            123 => 
+            array (
+                'id' => 157,
+                'service_type_id' => 4,
+                'service_feature_id' => 9,
+            ),
+            124 => 
+            array (
+                'id' => 158,
+                'service_type_id' => 4,
+                'service_feature_id' => 10,
+            ),
+            125 => 
+            array (
+                'id' => 159,
+                'service_type_id' => 4,
+                'service_feature_id' => 11,
+            ),
+            126 => 
+            array (
+                'id' => 160,
+                'service_type_id' => 4,
+                'service_feature_id' => 12,
+            ),
+            127 => 
+            array (
+                'id' => 161,
+                'service_type_id' => 4,
+                'service_feature_id' => 13,
+            ),
+            128 => 
+            array (
+                'id' => 162,
+                'service_type_id' => 4,
+                'service_feature_id' => 14,
+            ),
+            129 => 
+            array (
+                'id' => 163,
+                'service_type_id' => 4,
+                'service_feature_id' => 15,
+            ),
+            130 => 
+            array (
+                'id' => 164,
+                'service_type_id' => 4,
+                'service_feature_id' => 16,
+            ),
+            131 => 
+            array (
+                'id' => 165,
+                'service_type_id' => 4,
+                'service_feature_id' => 17,
+            ),
+            132 => 
+            array (
+                'id' => 166,
+                'service_type_id' => 4,
+                'service_feature_id' => 18,
+            ),
+            133 => 
+            array (
+                'id' => 167,
+                'service_type_id' => 4,
+                'service_feature_id' => 19,
+            ),
+            134 => 
+            array (
+                'id' => 168,
+                'service_type_id' => 4,
+                'service_feature_id' => 21,
+            ),
+            135 => 
+            array (
+                'id' => 169,
+                'service_type_id' => 4,
+                'service_feature_id' => 22,
+            ),
+            136 => 
+            array (
+                'id' => 170,
+                'service_type_id' => 4,
+                'service_feature_id' => 23,
+            ),
+            137 => 
+            array (
+                'id' => 171,
+                'service_type_id' => 4,
+                'service_feature_id' => 24,
+            ),
+            138 => 
+            array (
+                'id' => 172,
+                'service_type_id' => 4,
+                'service_feature_id' => 25,
+            ),
+            139 => 
+            array (
+                'id' => 173,
+                'service_type_id' => 4,
+                'service_feature_id' => 26,
+            ),
+            140 => 
+            array (
+                'id' => 174,
+                'service_type_id' => 4,
+                'service_feature_id' => 27,
+            ),
+            141 => 
+            array (
+                'id' => 175,
+                'service_type_id' => 4,
+                'service_feature_id' => 28,
+            ),
+            142 => 
+            array (
+                'id' => 176,
+                'service_type_id' => 4,
+                'service_feature_id' => 29,
+            ),
+            143 => 
+            array (
+                'id' => 177,
+                'service_type_id' => 4,
+                'service_feature_id' => 30,
+            ),
+            144 => 
+            array (
+                'id' => 178,
+                'service_type_id' => 4,
+                'service_feature_id' => 31,
+            ),
+            145 => 
+            array (
+                'id' => 179,
+                'service_type_id' => 4,
+                'service_feature_id' => 32,
+            ),
+            146 => 
+            array (
+                'id' => 180,
+                'service_type_id' => 4,
+                'service_feature_id' => 33,
+            ),
+            147 => 
+            array (
+                'id' => 181,
+                'service_type_id' => 4,
+                'service_feature_id' => 34,
+            ),
+            148 => 
+            array (
+                'id' => 182,
+                'service_type_id' => 4,
+                'service_feature_id' => 35,
+            ),
+            149 => 
+            array (
+                'id' => 183,
+                'service_type_id' => 4,
+                'service_feature_id' => 36,
+            ),
+            150 => 
+            array (
+                'id' => 184,
+                'service_type_id' => 4,
+                'service_feature_id' => 37,
+            ),
+            151 => 
+            array (
+                'id' => 185,
+                'service_type_id' => 4,
+                'service_feature_id' => 38,
+            ),
+            152 => 
+            array (
+                'id' => 186,
+                'service_type_id' => 4,
+                'service_feature_id' => 39,
+            ),
+            153 => 
+            array (
+                'id' => 187,
+                'service_type_id' => 4,
+                'service_feature_id' => 40,
+            ),
+            154 => 
+            array (
+                'id' => 188,
+                'service_type_id' => 4,
+                'service_feature_id' => 41,
+            ),
+            155 => 
+            array (
+                'id' => 189,
+                'service_type_id' => 4,
+                'service_feature_id' => 42,
+            ),
+            156 => 
+            array (
+                'id' => 190,
+                'service_type_id' => 4,
+                'service_feature_id' => 43,
+            ),
+            157 => 
+            array (
+                'id' => 191,
+                'service_type_id' => 4,
+                'service_feature_id' => 44,
+            ),
+            158 => 
+            array (
+                'id' => 192,
+                'service_type_id' => 4,
+                'service_feature_id' => 73,
+            ),
+            159 => 
+            array (
+                'id' => 193,
+                'service_type_id' => 4,
+                'service_feature_id' => 76,
+            ),
+            160 => 
+            array (
+                'id' => 194,
+                'service_type_id' => 4,
+                'service_feature_id' => 77,
+            ),
+            161 => 
+            array (
+                'id' => 195,
+                'service_type_id' => 4,
+                'service_feature_id' => 78,
+            ),
+            162 => 
+            array (
+                'id' => 196,
+                'service_type_id' => 4,
+                'service_feature_id' => 79,
+            ),
+            163 => 
+            array (
+                'id' => 197,
+                'service_type_id' => 4,
+                'service_feature_id' => 103,
+            ),
+            164 => 
+            array (
+                'id' => 198,
+                'service_type_id' => 4,
+                'service_feature_id' => 105,
+            ),
+            165 => 
+            array (
+                'id' => 199,
+                'service_type_id' => 3,
+                'service_feature_id' => 19,
+            ),
+            166 => 
+            array (
+                'id' => 200,
+                'service_type_id' => 3,
+                'service_feature_id' => 20,
+            ),
+            167 => 
+            array (
+                'id' => 201,
+                'service_type_id' => 3,
+                'service_feature_id' => 21,
+            ),
+            168 => 
+            array (
+                'id' => 202,
+                'service_type_id' => 3,
+                'service_feature_id' => 22,
+            ),
+            169 => 
+            array (
+                'id' => 203,
+                'service_type_id' => 3,
+                'service_feature_id' => 23,
+            ),
+            170 => 
+            array (
+                'id' => 204,
+                'service_type_id' => 3,
+                'service_feature_id' => 24,
+            ),
+            171 => 
+            array (
+                'id' => 205,
+                'service_type_id' => 3,
+                'service_feature_id' => 25,
+            ),
+            172 => 
+            array (
+                'id' => 206,
+                'service_type_id' => 3,
+                'service_feature_id' => 26,
+            ),
+            173 => 
+            array (
+                'id' => 207,
+                'service_type_id' => 3,
+                'service_feature_id' => 27,
+            ),
+            174 => 
+            array (
+                'id' => 208,
+                'service_type_id' => 3,
+                'service_feature_id' => 28,
+            ),
+            175 => 
+            array (
+                'id' => 209,
+                'service_type_id' => 3,
+                'service_feature_id' => 29,
+            ),
+            176 => 
+            array (
+                'id' => 210,
+                'service_type_id' => 3,
+                'service_feature_id' => 30,
+            ),
+            177 => 
+            array (
+                'id' => 211,
+                'service_type_id' => 3,
+                'service_feature_id' => 31,
+            ),
+            178 => 
+            array (
+                'id' => 212,
+                'service_type_id' => 3,
+                'service_feature_id' => 32,
+            ),
+            179 => 
+            array (
+                'id' => 213,
+                'service_type_id' => 3,
+                'service_feature_id' => 33,
+            ),
+            180 => 
+            array (
+                'id' => 214,
+                'service_type_id' => 3,
+                'service_feature_id' => 34,
+            ),
+            181 => 
+            array (
+                'id' => 215,
+                'service_type_id' => 3,
+                'service_feature_id' => 35,
+            ),
+            182 => 
+            array (
+                'id' => 216,
+                'service_type_id' => 3,
+                'service_feature_id' => 36,
+            ),
+            183 => 
+            array (
+                'id' => 217,
+                'service_type_id' => 3,
+                'service_feature_id' => 37,
+            ),
+            184 => 
+            array (
+                'id' => 218,
+                'service_type_id' => 3,
+                'service_feature_id' => 38,
+            ),
+            185 => 
+            array (
+                'id' => 219,
+                'service_type_id' => 3,
+                'service_feature_id' => 39,
+            ),
+            186 => 
+            array (
+                'id' => 220,
+                'service_type_id' => 3,
+                'service_feature_id' => 40,
+            ),
+            187 => 
+            array (
+                'id' => 221,
+                'service_type_id' => 3,
+                'service_feature_id' => 45,
+            ),
+            188 => 
+            array (
+                'id' => 222,
+                'service_type_id' => 3,
+                'service_feature_id' => 46,
+            ),
+            189 => 
+            array (
+                'id' => 223,
+                'service_type_id' => 3,
+                'service_feature_id' => 47,
+            ),
+            190 => 
+            array (
+                'id' => 224,
+                'service_type_id' => 3,
+                'service_feature_id' => 77,
+            ),
+            191 => 
+            array (
+                'id' => 225,
+                'service_type_id' => 3,
+                'service_feature_id' => 78,
+            ),
+            192 => 
+            array (
+                'id' => 226,
+                'service_type_id' => 3,
+                'service_feature_id' => 79,
+            ),
+            193 => 
+            array (
+                'id' => 227,
+                'service_type_id' => 3,
+                'service_feature_id' => 80,
+            ),
+            194 => 
+            array (
+                'id' => 228,
+                'service_type_id' => 3,
+                'service_feature_id' => 91,
+            ),
+            195 => 
+            array (
+                'id' => 229,
+                'service_type_id' => 3,
+                'service_feature_id' => 92,
+            ),
+            196 => 
+            array (
+                'id' => 230,
+                'service_type_id' => 3,
+                'service_feature_id' => 114,
+            ),
+            197 => 
+            array (
+                'id' => 231,
+                'service_type_id' => 3,
+                'service_feature_id' => 115,
+            ),
+            198 => 
+            array (
+                'id' => 232,
+                'service_type_id' => 3,
+                'service_feature_id' => 116,
+            ),
+            199 => 
+            array (
+                'id' => 233,
+                'service_type_id' => 3,
+                'service_feature_id' => 117,
+            ),
+            200 => 
+            array (
+                'id' => 234,
+                'service_type_id' => 3,
+                'service_feature_id' => 118,
+            ),
+            201 => 
+            array (
+                'id' => 235,
+                'service_type_id' => 3,
+                'service_feature_id' => 119,
+            ),
+            202 => 
+            array (
+                'id' => 236,
+                'service_type_id' => 2,
+                'service_feature_id' => 34,
+            ),
+            203 => 
+            array (
+                'id' => 237,
+                'service_type_id' => 2,
+                'service_feature_id' => 35,
+            ),
+            204 => 
+            array (
+                'id' => 238,
+                'service_type_id' => 2,
+                'service_feature_id' => 36,
+            ),
+            205 => 
+            array (
+                'id' => 239,
+                'service_type_id' => 2,
+                'service_feature_id' => 37,
+            ),
+            206 => 
+            array (
+                'id' => 240,
+                'service_type_id' => 2,
+                'service_feature_id' => 81,
+            ),
+            207 => 
+            array (
+                'id' => 241,
+                'service_type_id' => 2,
+                'service_feature_id' => 82,
+            ),
+            208 => 
+            array (
+                'id' => 242,
+                'service_type_id' => 2,
+                'service_feature_id' => 83,
+            ),
+            209 => 
+            array (
+                'id' => 243,
+                'service_type_id' => 2,
+                'service_feature_id' => 84,
             ),
         ));
         

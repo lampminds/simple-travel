@@ -18,7 +18,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
 
         \DB::table('cat_service_feature_translations')->delete();
         
-        \DB::table('cat_service_feature_translations')->insert(array (
+        \DB::table('cat_service_feature_translations')->insert($this->normalizeMojibake(array (
             0 => 
             array (
                 'id' => 1,
@@ -960,7 +960,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 120,
                 'service_feature_id' => 1,
                 'language_id' => 2,
-                'name' => 'Comida orgÃ¡nica',
+                'name' => 'Comida orgánica',
                 'description' => NULL,
             ),
             118 => 
@@ -984,7 +984,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 123,
                 'service_feature_id' => 4,
                 'language_id' => 2,
-                'name' => 'MenÃº de temporada',
+                'name' => 'Menú de temporada',
                 'description' => NULL,
             ),
             121 => 
@@ -992,7 +992,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 124,
                 'service_feature_id' => 5,
                 'language_id' => 2,
-                'name' => 'Buena selecciÃ³n de vinos',
+                'name' => 'Buena selección de vinos',
                 'description' => NULL,
             ),
             122 => 
@@ -1008,7 +1008,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 126,
                 'service_feature_id' => 7,
                 'language_id' => 2,
-                'name' => 'CÃ³cteles',
+                'name' => 'Cócteles',
                 'description' => NULL,
             ),
             124 => 
@@ -1016,7 +1016,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 127,
                 'service_feature_id' => 8,
                 'language_id' => 2,
-                'name' => 'CafÃ© de especialidad',
+                'name' => 'Café de especialidad',
                 'description' => NULL,
             ),
             125 => 
@@ -1096,7 +1096,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 137,
                 'service_feature_id' => 18,
                 'language_id' => 2,
-                'name' => 'Personal multilingÃ¼e',
+                'name' => 'Personal multilingüe',
                 'description' => NULL,
             ),
             135 => 
@@ -1104,7 +1104,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 138,
                 'service_feature_id' => 19,
                 'language_id' => 2,
-                'name' => 'MÃºsica en vivo',
+                'name' => 'Música en vivo',
                 'description' => NULL,
             ),
             136 => 
@@ -1120,7 +1120,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 140,
                 'service_feature_id' => 21,
                 'language_id' => 2,
-                'name' => 'Ambiente romÃ¡ntico',
+                'name' => 'Ambiente romántico',
                 'description' => NULL,
             ),
             138 => 
@@ -1144,7 +1144,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 143,
                 'service_feature_id' => 24,
                 'language_id' => 2,
-                'name' => 'Vista panorÃ¡mica',
+                'name' => 'Vista panorámica',
                 'description' => NULL,
             ),
             141 => 
@@ -1200,7 +1200,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 150,
                 'service_feature_id' => 31,
                 'language_id' => 2,
-                'name' => 'CalefacciÃ³n',
+                'name' => 'Calefacción',
                 'description' => NULL,
             ),
             148 => 
@@ -1216,7 +1216,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 152,
                 'service_feature_id' => 33,
                 'language_id' => 2,
-                'name' => 'BaÃ±o accesible',
+                'name' => 'Baño accesible',
                 'description' => NULL,
             ),
             150 => 
@@ -1224,7 +1224,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 153,
                 'service_feature_id' => 34,
                 'language_id' => 2,
-                'name' => 'Tarjetas de crÃ©dito',
+                'name' => 'Tarjetas de crédito',
                 'description' => NULL,
             ),
             151 => 
@@ -1232,7 +1232,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 154,
                 'service_feature_id' => 35,
                 'language_id' => 2,
-                'name' => 'Tarjetas de dÃ©bito',
+                'name' => 'Tarjetas de débito',
                 'description' => NULL,
             ),
             152 => 
@@ -1296,7 +1296,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 162,
                 'service_feature_id' => 43,
                 'language_id' => 2,
-                'name' => 'Vista a la montaÃ±a',
+                'name' => 'Vista a la montaña',
                 'description' => NULL,
             ),
             160 => 
@@ -1328,7 +1328,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 166,
                 'service_feature_id' => 47,
                 'language_id' => 2,
-                'name' => 'Incluye espectÃ¡culo',
+                'name' => 'Incluye espectáculo',
                 'description' => NULL,
             ),
             164 => 
@@ -1368,7 +1368,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 171,
                 'service_feature_id' => 52,
                 'language_id' => 2,
-                'name' => 'LavanderÃ­a',
+                'name' => 'Lavandería',
                 'description' => NULL,
             ),
             169 => 
@@ -1408,7 +1408,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 176,
                 'service_feature_id' => 57,
                 'language_id' => 2,
-                'name' => 'Cajero automÃ¡tico en el establecimiento',
+                'name' => 'Cajero automático en el establecimiento',
                 'description' => NULL,
             ),
             174 => 
@@ -1424,7 +1424,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 178,
                 'service_feature_id' => 59,
                 'language_id' => 2,
-                'name' => 'SalÃ³n de belleza',
+                'name' => 'Salón de belleza',
                 'description' => NULL,
             ),
             176 => 
@@ -1432,7 +1432,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 179,
                 'service_feature_id' => 60,
                 'language_id' => 2,
-                'name' => 'Minibar en la habitaciÃ³n',
+                'name' => 'Minibar en la habitación',
                 'description' => NULL,
             ),
             177 => 
@@ -1512,7 +1512,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 189,
                 'service_feature_id' => 70,
                 'language_id' => 2,
-                'name' => 'JardÃ­n',
+                'name' => 'Jardín',
                 'description' => NULL,
             ),
             187 => 
@@ -1544,7 +1544,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 193,
                 'service_feature_id' => 74,
                 'language_id' => 2,
-                'name' => 'Servicio de niÃ±era',
+                'name' => 'Servicio de niñera',
                 'description' => NULL,
             ),
             191 => 
@@ -1560,7 +1560,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 195,
                 'service_feature_id' => 76,
                 'language_id' => 2,
-                'name' => 'Apto para niÃ±os',
+                'name' => 'Apto para niños',
                 'description' => NULL,
             ),
             193 => 
@@ -1592,7 +1592,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 199,
                 'service_feature_id' => 80,
                 'language_id' => 2,
-                'name' => 'EstaciÃ³n de carga elÃ©ctrica',
+                'name' => 'Estación de carga eléctrica',
                 'description' => NULL,
             ),
             197 => 
@@ -1632,7 +1632,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 204,
                 'service_feature_id' => 85,
                 'language_id' => 2,
-                'name' => 'RecepciÃ³n 24h',
+                'name' => 'Recepción 24h',
                 'description' => NULL,
             ),
             202 => 
@@ -1640,7 +1640,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 205,
                 'service_feature_id' => 86,
                 'language_id' => 2,
-                'name' => 'ConserjerÃ­a',
+                'name' => 'Conserjería',
                 'description' => NULL,
             ),
             203 => 
@@ -1648,7 +1648,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 206,
                 'service_feature_id' => 87,
                 'language_id' => 2,
-                'name' => 'Check-in exprÃ©s',
+                'name' => 'Check-in exprés',
                 'description' => NULL,
             ),
             204 => 
@@ -1656,7 +1656,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 207,
                 'service_feature_id' => 88,
                 'language_id' => 2,
-                'name' => 'Salida exprÃ©s',
+                'name' => 'Salida exprés',
                 'description' => NULL,
             ),
             205 => 
@@ -1704,7 +1704,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 213,
                 'service_feature_id' => 94,
                 'language_id' => 2,
-                'name' => 'CafeterÃ­a',
+                'name' => 'Cafetería',
                 'description' => NULL,
             ),
             211 => 
@@ -1752,7 +1752,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 219,
                 'service_feature_id' => 100,
                 'language_id' => 2,
-                'name' => 'SalÃ³n de banquetes',
+                'name' => 'Salón de banquetes',
                 'description' => NULL,
             ),
             217 => 
@@ -1760,7 +1760,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 220,
                 'service_feature_id' => 101,
                 'language_id' => 2,
-                'name' => 'OrganizaciÃ³n de eventos',
+                'name' => 'Organización de eventos',
                 'description' => NULL,
             ),
             218 => 
@@ -1808,7 +1808,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 228,
                 'service_feature_id' => 109,
                 'language_id' => 2,
-                'name' => 'Caja fuerte en recepciÃ³n',
+                'name' => 'Caja fuerte en recepción',
                 'description' => NULL,
             ),
             224 => 
@@ -1816,7 +1816,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 229,
                 'service_feature_id' => 110,
                 'language_id' => 2,
-                'name' => 'Caja fuerte en la habitaciÃ³n',
+                'name' => 'Caja fuerte en la habitación',
                 'description' => NULL,
             ),
             225 => 
@@ -1856,7 +1856,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 234,
                 'service_feature_id' => 115,
                 'language_id' => 2,
-                'name' => 'GuardaesquÃ­s',
+                'name' => 'Guardaesquís',
                 'description' => NULL,
             ),
             230 => 
@@ -1864,7 +1864,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 235,
                 'service_feature_id' => 116,
                 'language_id' => 2,
-                'name' => 'Alquiler de esquÃ­es',
+                'name' => 'Alquiler de esquíes',
                 'description' => NULL,
             ),
             231 => 
@@ -1872,7 +1872,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 236,
                 'service_feature_id' => 117,
                 'language_id' => 2,
-                'name' => 'Escuela de esquÃ­',
+                'name' => 'Escuela de esquí',
                 'description' => NULL,
             ),
             232 => 
@@ -1888,7 +1888,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 238,
                 'service_feature_id' => 119,
                 'language_id' => 2,
-                'name' => 'Deportes acuÃ¡ticos',
+                'name' => 'Deportes acuáticos',
                 'description' => NULL,
             ),
             234 => 
@@ -1944,7 +1944,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 245,
                 'service_feature_id' => 7,
                 'language_id' => 3,
-                'name' => 'CoquetÃ©is',
+                'name' => 'Coquetéis',
                 'description' => NULL,
             ),
             241 => 
@@ -1952,7 +1952,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 246,
                 'service_feature_id' => 8,
                 'language_id' => 3,
-                'name' => 'CafÃ© de especialidade',
+                'name' => 'Café de especialidade',
                 'description' => NULL,
             ),
             242 => 
@@ -1976,7 +1976,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 249,
                 'service_feature_id' => 11,
                 'language_id' => 3,
-                'name' => 'OpÃ§Ãµes sem glÃºten',
+                'name' => 'OpÃ§Ãµes sem glúten',
                 'description' => NULL,
             ),
             245 => 
@@ -2032,7 +2032,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 256,
                 'service_feature_id' => 18,
                 'language_id' => 3,
-                'name' => 'Equipe multilÃ­ngue',
+                'name' => 'Equipe multilíngue',
                 'description' => NULL,
             ),
             252 => 
@@ -2040,7 +2040,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 257,
                 'service_feature_id' => 19,
                 'language_id' => 3,
-                'name' => 'MÃºsica ao vivo',
+                'name' => 'Música ao vivo',
                 'description' => NULL,
             ),
             253 => 
@@ -2152,7 +2152,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 271,
                 'service_feature_id' => 33,
                 'language_id' => 3,
-                'name' => 'Banheiro acessÃ­vel',
+                'name' => 'Banheiro acessível',
                 'description' => NULL,
             ),
             267 => 
@@ -2160,7 +2160,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 272,
                 'service_feature_id' => 34,
                 'language_id' => 3,
-                'name' => 'CartÃµes de crÃ©dito',
+                'name' => 'CartÃµes de crédito',
                 'description' => NULL,
             ),
             268 => 
@@ -2168,7 +2168,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 273,
                 'service_feature_id' => 35,
                 'language_id' => 3,
-                'name' => 'CartÃµes de dÃ©bito',
+                'name' => 'CartÃµes de débito',
                 'description' => NULL,
             ),
             269 => 
@@ -2280,7 +2280,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 287,
                 'service_feature_id' => 49,
                 'language_id' => 3,
-                'name' => 'Wi-Fi nas Ã¡reas comuns',
+                'name' => 'Wi-Fi nas áreas comuns',
                 'description' => NULL,
             ),
             283 => 
@@ -2296,7 +2296,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 289,
                 'service_feature_id' => 51,
                 'language_id' => 3,
-                'name' => 'Centro de negÃ³cios',
+                'name' => 'Centro de negócios',
                 'description' => NULL,
             ),
             285 => 
@@ -2328,7 +2328,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 293,
                 'service_feature_id' => 55,
                 'language_id' => 3,
-                'name' => 'Limpeza diÃ¡ria',
+                'name' => 'Limpeza diária',
                 'description' => NULL,
             ),
             289 => 
@@ -2480,7 +2480,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 312,
                 'service_feature_id' => 74,
                 'language_id' => 3,
-                'name' => 'ServiÃ§o de babÃ¡',
+                'name' => 'ServiÃ§o de babá',
                 'description' => NULL,
             ),
             308 => 
@@ -2496,7 +2496,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 314,
                 'service_feature_id' => 76,
                 'language_id' => 3,
-                'name' => 'AmigÃ¡vel para crianÃ§as',
+                'name' => 'Amigável para crianÃ§as',
                 'description' => NULL,
             ),
             310 => 
@@ -2528,7 +2528,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 318,
                 'service_feature_id' => 80,
                 'language_id' => 3,
-                'name' => 'EstaÃ§Ã£o de recarga elÃ©trica',
+                'name' => 'EstaÃ§Ã£o de recarga elétrica',
                 'description' => NULL,
             ),
             314 => 
@@ -2552,7 +2552,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 321,
                 'service_feature_id' => 83,
                 'language_id' => 3,
-                'name' => 'Bicicleta grÃ¡tis',
+                'name' => 'Bicicleta grátis',
                 'description' => NULL,
             ),
             317 => 
@@ -2600,7 +2600,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 327,
                 'service_feature_id' => 89,
                 'language_id' => 3,
-                'name' => 'DepÃ³sito de bagagens',
+                'name' => 'Depósito de bagagens',
                 'description' => NULL,
             ),
             323 => 
@@ -2616,7 +2616,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 329,
                 'service_feature_id' => 91,
                 'language_id' => 3,
-                'name' => 'CafÃ© da manhÃ£ disponÃ­vel',
+                'name' => 'Café da manhÃ£ disponível',
                 'description' => NULL,
             ),
             325 => 
@@ -2656,7 +2656,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 334,
                 'service_feature_id' => 96,
                 'language_id' => 3,
-                'name' => 'CafÃ© da manhÃ£ buffet',
+                'name' => 'Café da manhÃ£ buffet',
                 'description' => NULL,
             ),
             330 => 
@@ -2664,7 +2664,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 335,
                 'service_feature_id' => 97,
                 'language_id' => 3,
-                'name' => 'CafÃ© da manhÃ£ continental',
+                'name' => 'Café da manhÃ£ continental',
                 'description' => NULL,
             ),
             331 => 
@@ -2712,7 +2712,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 342,
                 'service_feature_id' => 104,
                 'language_id' => 3,
-                'name' => 'Quartos acessÃ­veis',
+                'name' => 'Quartos acessíveis',
                 'description' => NULL,
             ),
             337 => 
@@ -2824,7 +2824,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 357,
                 'service_feature_id' => 119,
                 'language_id' => 3,
-                'name' => 'Esportes aquÃ¡ticos',
+                'name' => 'Esportes aquáticos',
                 'description' => NULL,
             ),
             351 => 
@@ -2888,7 +2888,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 365,
                 'service_feature_id' => 105,
                 'language_id' => 2,
-                'name' => 'BaÃ±o accesible',
+                'name' => 'Baño accesible',
                 'description' => NULL,
             ),
             359 => 
@@ -2896,11 +2896,27 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 366,
                 'service_feature_id' => 105,
                 'language_id' => 3,
-                'name' => 'Banheiro acessÃ­vel',
+                'name' => 'Banheiro acessível',
                 'description' => NULL,
             ),
-        ));
+        )));
         
         
+    }
+    private function normalizeMojibake(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->normalizeMojibake($item);
+            }
+
+            return $value;
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return $value;
     }
 }

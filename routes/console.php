@@ -13,6 +13,28 @@ use App\Models\ServiceFeature;
 use App\Models\ServiceFeatureCategory;
 use App\Models\ServiceType;
 
+if (! function_exists('normalize_mojibake')) {
+    /**
+     * Normalize mojibake strings like "Gastronomía" back to UTF-8.
+     */
+    function normalize_mojibake(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = normalize_mojibake($item);
+            }
+
+            return $value;
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return $value;
+    }
+}
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
@@ -41,22 +63,22 @@ Artisan::command('service-gastronomy-menus:import {--language-id= : Id of the Sp
     $updated = 0;
     $sortOrder = 0;
 
-    $rows = [
+    $rows = normalize_mojibake([
         ['code' => 'a_la_carte', 'name' => 'A la carta'],
-        ['code' => 'fixed_menu', 'name' => 'MenÃº fijo'],
-        ['code' => 'tasting_menu', 'name' => 'MenÃº degustaciÃ³n'],
-        ['code' => 'set_menu', 'name' => 'MenÃº del dÃ­a'],
-        ['code' => 'group_menu', 'name' => 'MenÃº para grupos'],
-        ['code' => 'event_menu', 'name' => 'MenÃº de evento'],
-        ['code' => 'kids_menu', 'name' => 'MenÃº infantil'],
+        ['code' => 'fixed_menu', 'name' => 'Menú fijo'],
+        ['code' => 'tasting_menu', 'name' => 'Menú degustación'],
+        ['code' => 'set_menu', 'name' => 'Menú del día'],
+        ['code' => 'group_menu', 'name' => 'Menú para grupos'],
+        ['code' => 'event_menu', 'name' => 'Menú de evento'],
+        ['code' => 'kids_menu', 'name' => 'Menú infantil'],
         ['code' => 'beverage_menu', 'name' => 'Carta de bebidas'],
         ['code' => 'wine_list', 'name' => 'Carta de vinos'],
-        ['code' => 'brunch_menu', 'name' => 'MenÃº brunch'],
+        ['code' => 'brunch_menu', 'name' => 'Menú brunch'],
         ['code' => 'breakfast_menu', 'name' => 'Desayuno'],
         ['code' => 'lunch_menu', 'name' => 'Almuerzo'],
         ['code' => 'dinner_menu', 'name' => 'Cena'],
-        ['code' => 'seasonal_menu', 'name' => 'MenÃº de temporada'],
-    ];
+        ['code' => 'seasonal_menu', 'name' => 'Menú de temporada'],
+    ]);
 
     foreach ($rows as $row) {
         $menu = ServiceGastronomyMenu::where('code', $row['code'])->first();
@@ -70,7 +92,7 @@ Artisan::command('service-gastronomy-menus:import {--language-id= : Id of the Sp
             }
 
             $updated++;
-            $this->line("  Update: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Update: {$row['code']} → {$row['name']}");
         } else {
             if (! $dryRun) {
                 $menu = ServiceGastronomyMenu::create([
@@ -88,7 +110,7 @@ Artisan::command('service-gastronomy-menus:import {--language-id= : Id of the Sp
             }
 
             $created++;
-            $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Create: {$row['code']} → {$row['name']}");
         }
 
         $sortOrder++;
@@ -122,7 +144,7 @@ Artisan::command('service-gastronomy-menu-categories:import {--language-id= : Id
     $updated = 0;
     $sortOrder = 0;
 
-    $rows = [
+    $rows = normalize_mojibake([
         ['code' => 'appetizers', 'name' => 'Aperitivos'],
         ['code' => 'soups', 'name' => 'Sopas'],
         ['code' => 'salads', 'name' => 'Ensaladas'],
@@ -134,23 +156,23 @@ Artisan::command('service-gastronomy-menu-categories:import {--language-id= : Id
         ['code' => 'vegan', 'name' => 'Veganos'],
         ['code' => 'sides', 'name' => 'Guarniciones'],
         ['code' => 'snacks', 'name' => 'Snacks'],
-        ['code' => 'sandwiches', 'name' => 'SÃ¡ndwiches'],
+        ['code' => 'sandwiches', 'name' => 'Sándwiches'],
         ['code' => 'pizza', 'name' => 'Pizza'],
         ['code' => 'grill', 'name' => 'Parrilla'],
-        ['code' => 'bakery', 'name' => 'PanaderÃ­a'],
-        ['code' => 'pastries', 'name' => 'PastelerÃ­a'],
+        ['code' => 'bakery', 'name' => 'Panadería'],
+        ['code' => 'pastries', 'name' => 'Pastelería'],
         ['code' => 'breakfast', 'name' => 'Desayuno'],
         ['code' => 'brunch', 'name' => 'Brunch'],
         ['code' => 'kids', 'name' => 'Infantil'],
-        ['code' => 'tasting_courses', 'name' => 'Pasos degustaciÃ³n'],
-        ['code' => 'drinks_alcoholic', 'name' => 'Bebidas alcohÃ³licas'],
+        ['code' => 'tasting_courses', 'name' => 'Pasos degustación'],
+        ['code' => 'drinks_alcoholic', 'name' => 'Bebidas alcohólicas'],
         ['code' => 'drinks_non_alcoholic', 'name' => 'Bebidas sin alcohol'],
         ['code' => 'wines', 'name' => 'Vinos'],
         ['code' => 'beers', 'name' => 'Cervezas'],
-        ['code' => 'cocktails', 'name' => 'CÃ³cteles'],
+        ['code' => 'cocktails', 'name' => 'Cócteles'],
         ['code' => 'hot_drinks', 'name' => 'Bebidas calientes'],
-        ['code' => 'cold_drinks', 'name' => 'Bebidas frÃ­as'],
-    ];
+        ['code' => 'cold_drinks', 'name' => 'Bebidas frías'],
+    ]);
 
     foreach ($rows as $row) {
         $category = ServiceGastronomyMenuCategory::where('code', $row['code'])->first();
@@ -163,7 +185,7 @@ Artisan::command('service-gastronomy-menu-categories:import {--language-id= : Id
             }
 
             $updated++;
-            $this->line("  Update: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Update: {$row['code']} → {$row['name']}");
         } else {
             if (! $dryRun) {
                 $category = ServiceGastronomyMenuCategory::create([
@@ -179,7 +201,7 @@ Artisan::command('service-gastronomy-menu-categories:import {--language-id= : Id
             }
 
             $created++;
-            $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Create: {$row['code']} → {$row['name']}");
         }
 
         $sortOrder++;
@@ -213,7 +235,7 @@ Artisan::command('service-gastronomy-feature-categories:import {--language-id= :
     $updated = 0;
     $sortOrder = 0;
 
-    $rows = [
+    $rows = normalize_mojibake([
         ['code' => 'food', 'name' => 'Comida'],
         ['code' => 'drinks', 'name' => 'Bebidas'],
         ['code' => 'dietary', 'name' => 'Dietas'],
@@ -221,11 +243,11 @@ Artisan::command('service-gastronomy-feature-categories:import {--language-id= :
         ['code' => 'ambiance', 'name' => 'Ambiente'],
         ['code' => 'facilities', 'name' => 'Instalaciones'],
         ['code' => 'accessibility', 'name' => 'Accesibilidad'],
-        ['code' => 'payment', 'name' => 'MÃ©todos de pago'],
+        ['code' => 'payment', 'name' => 'Métodos de pago'],
         ['code' => 'reservation', 'name' => 'Reservas'],
-        ['code' => 'location', 'name' => 'UbicaciÃ³n'],
+        ['code' => 'location', 'name' => 'Ubicación'],
         ['code' => 'experience', 'name' => 'Experiencia'],
-    ];
+    ]);
 
     foreach ($rows as $row) {
         $category = ServiceGastronomyFeatureCategory::where('code', $row['code'])->first();
@@ -238,7 +260,7 @@ Artisan::command('service-gastronomy-feature-categories:import {--language-id= :
             }
 
             $updated++;
-            $this->line("  Update: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Update: {$row['code']} → {$row['name']}");
         } else {
             if (! $dryRun) {
                 $category = ServiceGastronomyFeatureCategory::create([
@@ -254,7 +276,7 @@ Artisan::command('service-gastronomy-feature-categories:import {--language-id= :
             }
 
             $created++;
-            $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Create: {$row['code']} → {$row['name']}");
         }
 
         $sortOrder++;
@@ -288,15 +310,15 @@ Artisan::command('service-gastronomy-features:import {--language-id= : Id of the
     $updated = 0;
     $sortOrder = 0;
 
-    $rows = [
-        ['category_code' => 'food', 'code' => 'organic_food', 'name' => 'Comida orgÃ¡nica'],
+    $rows = normalize_mojibake([
+        ['category_code' => 'food', 'code' => 'organic_food', 'name' => 'Comida orgánica'],
         ['category_code' => 'food', 'code' => 'locally_sourced', 'name' => 'Ingredientes locales'],
         ['category_code' => 'food', 'code' => 'homemade', 'name' => 'Comida casera'],
-        ['category_code' => 'food', 'code' => 'seasonal_menu', 'name' => 'MenÃº de temporada'],
-        ['category_code' => 'drinks', 'code' => 'wine_selection', 'name' => 'Buena selecciÃ³n de vinos'],
+        ['category_code' => 'food', 'code' => 'seasonal_menu', 'name' => 'Menú de temporada'],
+        ['category_code' => 'drinks', 'code' => 'wine_selection', 'name' => 'Buena selección de vinos'],
         ['category_code' => 'drinks', 'code' => 'craft_beer', 'name' => 'Cerveza artesanal'],
-        ['category_code' => 'drinks', 'code' => 'cocktails', 'name' => 'CÃ³cteles'],
-        ['category_code' => 'drinks', 'code' => 'specialty_coffee', 'name' => 'CafÃ© de especialidad'],
+        ['category_code' => 'drinks', 'code' => 'cocktails', 'name' => 'Cócteles'],
+        ['category_code' => 'drinks', 'code' => 'specialty_coffee', 'name' => 'Café de especialidad'],
         ['category_code' => 'dietary', 'code' => 'vegetarian_options', 'name' => 'Opciones vegetarianas'],
         ['category_code' => 'dietary', 'code' => 'vegan_options', 'name' => 'Opciones veganas'],
         ['category_code' => 'dietary', 'code' => 'gluten_free_options', 'name' => 'Opciones sin gluten'],
@@ -306,24 +328,24 @@ Artisan::command('service-gastronomy-features:import {--language-id= : Id of the
         ['category_code' => 'service', 'code' => 'takeaway', 'name' => 'Para llevar'],
         ['category_code' => 'service', 'code' => 'delivery', 'name' => 'Delivery'],
         ['category_code' => 'service', 'code' => 'sommelier', 'name' => 'Sommelier'],
-        ['category_code' => 'service', 'code' => 'multilingual_staff', 'name' => 'Personal multilingÃ¼e'],
-        ['category_code' => 'ambiance', 'code' => 'live_music', 'name' => 'MÃºsica en vivo'],
+        ['category_code' => 'service', 'code' => 'multilingual_staff', 'name' => 'Personal multilingüe'],
+        ['category_code' => 'ambiance', 'code' => 'live_music', 'name' => 'Música en vivo'],
         ['category_code' => 'ambiance', 'code' => 'dj', 'name' => 'DJ'],
-        ['category_code' => 'ambiance', 'code' => 'romantic', 'name' => 'Ambiente romÃ¡ntico'],
+        ['category_code' => 'ambiance', 'code' => 'romantic', 'name' => 'Ambiente romántico'],
         ['category_code' => 'ambiance', 'code' => 'family_friendly', 'name' => 'Familiar'],
         ['category_code' => 'ambiance', 'code' => 'adults_only', 'name' => 'Solo adultos'],
-        ['category_code' => 'ambiance', 'code' => 'panoramic_view', 'name' => 'Vista panorÃ¡mica'],
+        ['category_code' => 'ambiance', 'code' => 'panoramic_view', 'name' => 'Vista panorámica'],
         ['category_code' => 'facilities', 'code' => 'outdoor_seating', 'name' => 'Mesas al aire libre'],
         ['category_code' => 'facilities', 'code' => 'indoor_seating', 'name' => 'Interior'],
         ['category_code' => 'facilities', 'code' => 'terrace', 'name' => 'Terraza'],
         ['category_code' => 'facilities', 'code' => 'parking', 'name' => 'Estacionamiento'],
         ['category_code' => 'facilities', 'code' => 'wifi', 'name' => 'WiFi'],
         ['category_code' => 'facilities', 'code' => 'air_conditioning', 'name' => 'Aire acondicionado'],
-        ['category_code' => 'facilities', 'code' => 'heating', 'name' => 'CalefacciÃ³n'],
+        ['category_code' => 'facilities', 'code' => 'heating', 'name' => 'Calefacción'],
         ['category_code' => 'accessibility', 'code' => 'wheelchair_access', 'name' => 'Acceso para sillas de ruedas'],
-        ['category_code' => 'accessibility', 'code' => 'accessible_restroom', 'name' => 'BaÃ±o accesible'],
-        ['category_code' => 'payment', 'code' => 'credit_cards', 'name' => 'Tarjetas de crÃ©dito'],
-        ['category_code' => 'payment', 'code' => 'debit_cards', 'name' => 'Tarjetas de dÃ©bito'],
+        ['category_code' => 'accessibility', 'code' => 'accessible_restroom', 'name' => 'Baño accesible'],
+        ['category_code' => 'payment', 'code' => 'credit_cards', 'name' => 'Tarjetas de crédito'],
+        ['category_code' => 'payment', 'code' => 'debit_cards', 'name' => 'Tarjetas de débito'],
         ['category_code' => 'payment', 'code' => 'cash', 'name' => 'Efectivo'],
         ['category_code' => 'payment', 'code' => 'digital_payments', 'name' => 'Pagos digitales'],
         ['category_code' => 'reservation', 'code' => 'reservation_required', 'name' => 'Requiere reserva'],
@@ -331,12 +353,12 @@ Artisan::command('service-gastronomy-features:import {--language-id= : Id of the
         ['category_code' => 'reservation', 'code' => 'walk_ins_allowed', 'name' => 'Sin reserva'],
         ['category_code' => 'location', 'code' => 'beachfront', 'name' => 'Frente a la playa'],
         ['category_code' => 'location', 'code' => 'city_center', 'name' => 'Centro'],
-        ['category_code' => 'location', 'code' => 'mountain_view', 'name' => 'Vista a la montaÃ±a'],
+        ['category_code' => 'location', 'code' => 'mountain_view', 'name' => 'Vista a la montaña'],
         ['category_code' => 'location', 'code' => 'lake_view', 'name' => 'Vista al lago'],
         ['category_code' => 'experience', 'code' => 'guided_experience', 'name' => 'Experiencia guiada'],
         ['category_code' => 'experience', 'code' => 'interactive', 'name' => 'Interactiva'],
-        ['category_code' => 'experience', 'code' => 'show_included', 'name' => 'Incluye espectÃ¡culo'],
-    ];
+        ['category_code' => 'experience', 'code' => 'show_included', 'name' => 'Incluye espectáculo'],
+    ]);
 
     foreach ($rows as $row) {
         $category = ServiceGastronomyFeatureCategory::where('code', $row['category_code'])->first();
@@ -359,7 +381,7 @@ Artisan::command('service-gastronomy-features:import {--language-id= : Id of the
             }
 
             $updated++;
-            $this->line("  Update: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Update: {$row['code']} → {$row['name']}");
         } else {
             if (! $dryRun) {
                 $feature = ServiceGastronomyFeature::create([
@@ -376,7 +398,7 @@ Artisan::command('service-gastronomy-features:import {--language-id= : Id of the
             }
 
             $created++;
-            $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+            $this->line("  Create: {$row['code']} → {$row['name']}");
         }
 
         $sortOrder++;
@@ -409,7 +431,7 @@ Artisan::command('service-feature-categories:import {--language-id= : Id of the 
     $created = 0;
     $sortOrder = 0;
 
-    $rows = [
+    $rows = normalize_mojibake([
         ['code' => 'connectivity', 'name' => 'Conectividad'],
         ['code' => 'facilities', 'name' => 'Instalaciones'],
         ['code' => 'services', 'name' => 'Servicios'],
@@ -417,9 +439,9 @@ Artisan::command('service-feature-categories:import {--language-id= : Id of the 
         ['code' => 'experience', 'name' => 'Experiencia'],
         ['code' => 'accessibility', 'name' => 'Accesibilidad'],
         ['code' => 'ambiance', 'name' => 'Ambiente'],
-        ['code' => 'location', 'name' => 'UbicaciÃ³n'],
-        ['code' => 'policies', 'name' => 'PolÃ­ticas'],
-    ];
+        ['code' => 'location', 'name' => 'Ubicación'],
+        ['code' => 'policies', 'name' => 'Políticas'],
+    ]);
 
     if (! $dryRun) {
         // Reset the full feature catalog so old values are discarded.
@@ -445,7 +467,7 @@ Artisan::command('service-feature-categories:import {--language-id= : Id of the 
         }
 
         $created++;
-        $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+        $this->line("  Create: {$row['code']} → {$row['name']}");
         $sortOrder++;
     }
 
@@ -476,24 +498,24 @@ Artisan::command('service-features:import {--language-id= : Id of the Spanish la
     $created = 0;
     $sortOrder = 0;
 
-    $rows = [
+    $rows = normalize_mojibake([
         // CONNECTIVITY
         ['category_code' => 'connectivity', 'code' => 'wifi', 'name' => 'WiFi'],
-        ['category_code' => 'connectivity', 'code' => 'charging_station', 'name' => 'EstaciÃ³n de carga'],
+        ['category_code' => 'connectivity', 'code' => 'charging_station', 'name' => 'Estación de carga'],
 
         // FACILITIES
         ['category_code' => 'facilities', 'code' => 'parking', 'name' => 'Estacionamiento'],
         ['category_code' => 'facilities', 'code' => 'indoor', 'name' => 'Interior'],
         ['category_code' => 'facilities', 'code' => 'outdoor', 'name' => 'Exterior'],
         ['category_code' => 'facilities', 'code' => 'terrace', 'name' => 'Terraza'],
-        ['category_code' => 'facilities', 'code' => 'garden', 'name' => 'JardÃ­n'],
+        ['category_code' => 'facilities', 'code' => 'garden', 'name' => 'Jardín'],
         ['category_code' => 'facilities', 'code' => 'pool', 'name' => 'Piscina'],
         ['category_code' => 'facilities', 'code' => 'spa', 'name' => 'Spa'],
         ['category_code' => 'facilities', 'code' => 'gym', 'name' => 'Gimnasio'],
-        ['category_code' => 'facilities', 'code' => 'restroom', 'name' => 'BaÃ±os'],
+        ['category_code' => 'facilities', 'code' => 'restroom', 'name' => 'Baños'],
 
         // SERVICES
-        ['category_code' => 'services', 'code' => 'reception_24h', 'name' => 'RecepciÃ³n 24h'],
+        ['category_code' => 'services', 'code' => 'reception_24h', 'name' => 'Recepción 24h'],
         ['category_code' => 'services', 'code' => 'housekeeping', 'name' => 'Limpieza'],
         ['category_code' => 'services', 'code' => 'room_service', 'name' => 'Room service'],
         ['category_code' => 'services', 'code' => 'car_rental', 'name' => 'Alquiler de autos'],
@@ -502,7 +524,7 @@ Artisan::command('service-features:import {--language-id= : Id of the Spanish la
         ['category_code' => 'services', 'code' => 'delivery', 'name' => 'Delivery'],
         ['category_code' => 'services', 'code' => 'table_service', 'name' => 'Servicio a la mesa'],
         ['category_code' => 'services', 'code' => 'self_service', 'name' => 'Autoservicio'],
-        ['category_code' => 'services', 'code' => 'multilingual_staff', 'name' => 'Personal multilingÃ¼e'],
+        ['category_code' => 'services', 'code' => 'multilingual_staff', 'name' => 'Personal multilingüe'],
 
         // FOOD & DRINK
         ['category_code' => 'food_drink', 'code' => 'breakfast_included', 'name' => 'Desayuno incluido'],
@@ -523,16 +545,16 @@ Artisan::command('service-features:import {--language-id= : Id of the Spanish la
         ['category_code' => 'experience', 'code' => 'adventure', 'name' => 'Aventura'],
         ['category_code' => 'experience', 'code' => 'cultural', 'name' => 'Cultural'],
         ['category_code' => 'experience', 'code' => 'relaxing', 'name' => 'Relax'],
-        ['category_code' => 'experience', 'code' => 'live_music', 'name' => 'MÃºsica en vivo'],
-        ['category_code' => 'experience', 'code' => 'show_included', 'name' => 'Incluye espectÃ¡culo'],
+        ['category_code' => 'experience', 'code' => 'live_music', 'name' => 'Música en vivo'],
+        ['category_code' => 'experience', 'code' => 'show_included', 'name' => 'Incluye espectáculo'],
 
         // ACCESSIBILITY
         ['category_code' => 'accessibility', 'code' => 'wheelchair_access', 'name' => 'Acceso silla de ruedas'],
-        ['category_code' => 'accessibility', 'code' => 'accessible_restroom', 'name' => 'BaÃ±o accesible'],
+        ['category_code' => 'accessibility', 'code' => 'accessible_restroom', 'name' => 'Baño accesible'],
         ['category_code' => 'accessibility', 'code' => 'elevator', 'name' => 'Ascensor'],
 
         // AMBIANCE
-        ['category_code' => 'ambiance', 'code' => 'romantic', 'name' => 'RomÃ¡ntico'],
+        ['category_code' => 'ambiance', 'code' => 'romantic', 'name' => 'Romántico'],
         ['category_code' => 'ambiance', 'code' => 'family_friendly', 'name' => 'Familiar'],
         ['category_code' => 'ambiance', 'code' => 'adults_only', 'name' => 'Solo adultos'],
         ['category_code' => 'ambiance', 'code' => 'quiet', 'name' => 'Tranquilo'],
@@ -542,15 +564,15 @@ Artisan::command('service-features:import {--language-id= : Id of the Spanish la
         ['category_code' => 'location', 'code' => 'city_center', 'name' => 'Centro'],
         ['category_code' => 'location', 'code' => 'beachfront', 'name' => 'Frente a la playa'],
         ['category_code' => 'location', 'code' => 'lakeside', 'name' => 'Frente al lago'],
-        ['category_code' => 'location', 'code' => 'mountain_area', 'name' => 'Zona de montaÃ±a'],
+        ['category_code' => 'location', 'code' => 'mountain_area', 'name' => 'Zona de montaña'],
         ['category_code' => 'location', 'code' => 'rural_area', 'name' => 'Zona rural'],
-        ['category_code' => 'location', 'code' => 'panoramic_view', 'name' => 'Vista panorÃ¡mica'],
+        ['category_code' => 'location', 'code' => 'panoramic_view', 'name' => 'Vista panorámica'],
 
         // POLICIES
         ['category_code' => 'policies', 'code' => 'reservation_required', 'name' => 'Requiere reserva'],
-        ['category_code' => 'policies', 'code' => 'free_cancellation', 'name' => 'CancelaciÃ³n gratuita'],
-        ['category_code' => 'policies', 'code' => 'instant_confirmation', 'name' => 'ConfirmaciÃ³n inmediata'],
-    ];
+        ['category_code' => 'policies', 'code' => 'free_cancellation', 'name' => 'Cancelación gratuita'],
+        ['category_code' => 'policies', 'code' => 'instant_confirmation', 'name' => 'Confirmación inmediata'],
+    ]);
 
     if (! $dryRun) {
         DB::table('cat_service_feature_scopes')->delete();
@@ -582,7 +604,7 @@ Artisan::command('service-features:import {--language-id= : Id of the Spanish la
         }
 
         $created++;
-        $this->line("  Create: {$row['code']} â†’ {$row['name']}");
+        $this->line("  Create: {$row['code']} → {$row['name']}");
         $sortOrder++;
     }
 
@@ -642,17 +664,17 @@ Artisan::command('service-feature-translations:fill-missing
     // Canonical ES labels from the current service-features import dataset.
     $spanishNamesByCode = [
         'wifi' => 'WiFi',
-        'charging_station' => 'EstaciÃ³n de carga',
+        'charging_station' => 'Estación de carga',
         'parking' => 'Estacionamiento',
         'indoor' => 'Interior',
         'outdoor' => 'Exterior',
         'terrace' => 'Terraza',
-        'garden' => 'JardÃ­n',
+        'garden' => 'Jardín',
         'pool' => 'Piscina',
         'spa' => 'Spa',
         'gym' => 'Gimnasio',
-        'restroom' => 'BaÃ±os',
-        'reception_24h' => 'RecepciÃ³n 24h',
+        'restroom' => 'Baños',
+        'reception_24h' => 'Recepción 24h',
         'housekeeping' => 'Limpieza',
         'room_service' => 'Room service',
         'car_rental' => 'Alquiler de autos',
@@ -661,7 +683,7 @@ Artisan::command('service-feature-translations:fill-missing
         'delivery' => 'Delivery',
         'table_service' => 'Servicio a la mesa',
         'self_service' => 'Autoservicio',
-        'multilingual_staff' => 'Personal multilingÃ¼e',
+        'multilingual_staff' => 'Personal multilingüe',
         'breakfast_included' => 'Desayuno incluido',
         'restaurant_on_site' => 'Restaurante en el lugar',
         'bar_on_site' => 'Bar en el lugar',
@@ -678,12 +700,12 @@ Artisan::command('service-feature-translations:fill-missing
         'adventure' => 'Aventura',
         'cultural' => 'Cultural',
         'relaxing' => 'Relax',
-        'live_music' => 'MÃºsica en vivo',
-        'show_included' => 'Incluye espectÃ¡culo',
+        'live_music' => 'Música en vivo',
+        'show_included' => 'Incluye espectáculo',
         'wheelchair_access' => 'Acceso silla de ruedas',
-        'accessible_restroom' => 'BaÃ±o accesible',
+        'accessible_restroom' => 'Baño accesible',
         'elevator' => 'Ascensor',
-        'romantic' => 'RomÃ¡ntico',
+        'romantic' => 'Romántico',
         'family_friendly' => 'Familiar',
         'adults_only' => 'Solo adultos',
         'quiet' => 'Tranquilo',
@@ -691,12 +713,12 @@ Artisan::command('service-feature-translations:fill-missing
         'city_center' => 'Centro',
         'beachfront' => 'Frente a la playa',
         'lakeside' => 'Frente al lago',
-        'mountain_area' => 'Zona de montaÃ±a',
+        'mountain_area' => 'Zona de montaña',
         'rural_area' => 'Zona rural',
-        'panoramic_view' => 'Vista panorÃ¡mica',
+        'panoramic_view' => 'Vista panorámica',
         'reservation_required' => 'Requiere reserva',
-        'free_cancellation' => 'CancelaciÃ³n gratuita',
-        'instant_confirmation' => 'ConfirmaciÃ³n inmediata',
+        'free_cancellation' => 'Cancelación gratuita',
+        'instant_confirmation' => 'Confirmación inmediata',
     ];
 
     foreach ($features as $feature) {
@@ -797,7 +819,7 @@ Artisan::command('service-feature-scopes:import {--dry-run : Show what would be 
 
     $typeIdsByCode = ServiceType::query()->pluck('id', 'code')->all();
 
-    $rows = [
+    $rows = normalize_mojibake([
         ['code' => 'wifi', 'scopes' => $allScopeCodes],
         ['code' => 'charging_station', 'scopes' => ['hotel', 'gastronomy', 'transport']],
         ['code' => 'parking', 'scopes' => ['hotel', 'gastronomy', 'transport']],
@@ -854,7 +876,7 @@ Artisan::command('service-feature-scopes:import {--dry-run : Show what would be 
         ['code' => 'reservation_required', 'scopes' => ['gastronomy', 'entertainment']],
         ['code' => 'free_cancellation', 'scopes' => $allScopeCodes],
         ['code' => 'instant_confirmation', 'scopes' => $allScopeCodes],
-    ];
+    ]);
 
     if (! $dryRun) {
         DB::table('cat_service_feature_scopes')->delete();
@@ -890,7 +912,7 @@ Artisan::command('service-feature-scopes:import {--dry-run : Show what would be 
             }
 
             $created++;
-            $this->line("  Create scope: {$row['code']} â†’ service_type_id={$serviceTypeId}");
+            $this->line("  Create scope: {$row['code']} → service_type_id={$serviceTypeId}");
         }
     }
 

@@ -31,51 +31,51 @@ class SeedServiceEntertainmentTypesCommand extends Command
             ['code' => 'walking_tour', 'name_es' => 'Tour a pie'],
             ['code' => 'guided_tour', 'name_es' => 'Tour guiado'],
             ['code' => 'self_guided_tour', 'name_es' => 'Tour autoguiado'],
-            ['code' => 'panoramic_tour', 'name_es' => 'Tour panorÃ¡mico'],
-            ['code' => 'day_trip', 'name_es' => 'ExcursiÃ³n de dÃ­a completo'],
-            ['code' => 'half_day_tour', 'name_es' => 'ExcursiÃ³n de medio dÃ­a'],
-            ['code' => 'multi_day_tour', 'name_es' => 'Tour de varios dÃ­as'],
+            ['code' => 'panoramic_tour', 'name_es' => 'Tour panorámico'],
+            ['code' => 'day_trip', 'name_es' => 'Excursión de día completo'],
+            ['code' => 'half_day_tour', 'name_es' => 'Excursión de medio día'],
+            ['code' => 'multi_day_tour', 'name_es' => 'Tour de varios días'],
         ],
         'culture' => [
             ['code' => 'cultural_tour', 'name_es' => 'Tour cultural'],
-            ['code' => 'historical_tour', 'name_es' => 'Tour histÃ³rico'],
+            ['code' => 'historical_tour', 'name_es' => 'Tour histórico'],
             ['code' => 'heritage_tour', 'name_es' => 'Tour patrimonial'],
             ['code' => 'museum_tour', 'name_es' => 'Tour de museos'],
             ['code' => 'architecture_tour', 'name_es' => 'Tour de arquitectura'],
             ['code' => 'religious_tour', 'name_es' => 'Tour religioso'],
-            ['code' => 'archaeological_tour', 'name_es' => 'Tour arqueolÃ³gico'],
+            ['code' => 'archaeological_tour', 'name_es' => 'Tour arqueológico'],
             ['code' => 'local_experience', 'name_es' => 'Experiencia local'],
         ],
         'nature' => [
             ['code' => 'nature_tour', 'name_es' => 'Tour de naturaleza'],
             ['code' => 'wildlife_tour', 'name_es' => 'Tour de fauna'],
-            ['code' => 'birdwatching_tour', 'name_es' => 'Tour de observaciÃ³n de aves'],
+            ['code' => 'birdwatching_tour', 'name_es' => 'Tour de observación de aves'],
             ['code' => 'national_park_tour', 'name_es' => 'Tour de parque nacional'],
-            ['code' => 'scenic_tour', 'name_es' => 'Tour escÃ©nico'],
+            ['code' => 'scenic_tour', 'name_es' => 'Tour escénico'],
             ['code' => 'landscape_tour', 'name_es' => 'Tour de paisajes'],
         ],
         'adventure' => [
             ['code' => 'adventure_tour', 'name_es' => 'Tour de aventura'],
             ['code' => 'hiking_tour', 'name_es' => 'Tour de trekking'],
-            ['code' => 'mountain_tour', 'name_es' => 'Tour de montaÃ±a'],
+            ['code' => 'mountain_tour', 'name_es' => 'Tour de montaña'],
             ['code' => 'offroad_tour', 'name_es' => 'Tour off-road'],
             ['code' => 'extreme_adventure', 'name_es' => 'Aventura extrema'],
         ],
         'water' => [
             ['code' => 'boat_tour', 'name_es' => 'Paseo en barco'],
             ['code' => 'lake_tour', 'name_es' => 'Tour por lago'],
-            ['code' => 'river_tour', 'name_es' => 'Tour por rÃ­o'],
+            ['code' => 'river_tour', 'name_es' => 'Tour por río'],
             ['code' => 'cruise', 'name_es' => 'Crucero'],
-            ['code' => 'catamaran_tour', 'name_es' => 'Tour en catamarÃ¡n'],
+            ['code' => 'catamaran_tour', 'name_es' => 'Tour en catamarán'],
             ['code' => 'kayak_tour', 'name_es' => 'Tour en kayak'],
-            ['code' => 'rafting_trip', 'name_es' => 'ExcursiÃ³n de rafting'],
+            ['code' => 'rafting_trip', 'name_es' => 'Excursión de rafting'],
             ['code' => 'fishing_trip', 'name_es' => 'Salida de pesca'],
         ],
         'gastronomy' => [
-            ['code' => 'food_tour', 'name_es' => 'Tour gastronÃ³mico'],
+            ['code' => 'food_tour', 'name_es' => 'Tour gastronómico'],
             ['code' => 'wine_tour', 'name_es' => 'Tour del vino'],
-            ['code' => 'brewery_tour', 'name_es' => 'Tour de cervecerÃ­as'],
-            ['code' => 'distillery_tour', 'name_es' => 'Tour de destilerÃ­as'],
+            ['code' => 'brewery_tour', 'name_es' => 'Tour de cervecerías'],
+            ['code' => 'distillery_tour', 'name_es' => 'Tour de destilerías'],
             ['code' => 'culinary_tour', 'name_es' => 'Tour culinario'],
             ['code' => 'farm_visit', 'name_es' => 'Visita a granja'],
         ],
@@ -85,15 +85,15 @@ class SeedServiceEntertainmentTypesCommand extends Command
             ['code' => 'farm_experience', 'name_es' => 'Experiencia rural'],
         ],
         'winter' => [
-            ['code' => 'ski_tour', 'name_es' => 'Tour de esquÃ­'],
-            ['code' => 'winter_tour', 'name_es' => 'ExcursiÃ³n invernal'],
+            ['code' => 'ski_tour', 'name_es' => 'Tour de esquí'],
+            ['code' => 'winter_tour', 'name_es' => 'Excursión invernal'],
             ['code' => 'snowmobile_tour', 'name_es' => 'Tour en moto de nieve'],
             ['code' => 'dog_sled_tour', 'name_es' => 'Tour en trineo de perros'],
         ],
         'air' => [
-            ['code' => 'helicopter_tour', 'name_es' => 'Tour en helicÃ³ptero'],
-            ['code' => 'scenic_flight', 'name_es' => 'Vuelo panorÃ¡mico'],
-            ['code' => 'hot_air_balloon_ride', 'name_es' => 'Paseo en globo aerostÃ¡tico'],
+            ['code' => 'helicopter_tour', 'name_es' => 'Tour en helicóptero'],
+            ['code' => 'scenic_flight', 'name_es' => 'Vuelo panorámico'],
+            ['code' => 'hot_air_balloon_ride', 'name_es' => 'Paseo en globo aerostático'],
         ],
         'transport' => [
             ['code' => 'train_tour', 'name_es' => 'Tour en tren'],
@@ -102,11 +102,11 @@ class SeedServiceEntertainmentTypesCommand extends Command
             ['code' => 'atv_tour', 'name_es' => 'Tour en cuatriciclo'],
         ],
         'special' => [
-            ['code' => 'photography_tour', 'name_es' => 'Tour fotogrÃ¡fico'],
+            ['code' => 'photography_tour', 'name_es' => 'Tour fotográfico'],
             ['code' => 'sunset_tour', 'name_es' => 'Tour al atardecer'],
             ['code' => 'sunrise_tour', 'name_es' => 'Tour al amanecer'],
             ['code' => 'night_tour', 'name_es' => 'Tour nocturno'],
-            ['code' => 'stargazing_tour', 'name_es' => 'Tour de observaciÃ³n de estrellas'],
+            ['code' => 'stargazing_tour', 'name_es' => 'Tour de observación de estrellas'],
             ['code' => 'festival_tour', 'name_es' => 'Tour de festivales'],
         ],
     ];
@@ -151,7 +151,7 @@ class SeedServiceEntertainmentTypesCommand extends Command
 
             foreach ($types as $index => $item) {
                 $code = $item['code'];
-                $nameEs = $item['name_es'];
+                $nameEs = $this->normalizeMojibakeString($item['name_es']);
 
                 $exists = ServiceEntertainmentType::query()->where('code', $code)->exists();
                 if ($exists) {
@@ -191,6 +191,11 @@ class SeedServiceEntertainmentTypesCommand extends Command
             : "Created {$created} entertainment types, skipped {$skipped} existing.");
 
         return self::SUCCESS;
+    }
+
+    private function normalizeMojibakeString(string $value): string
+    {
+        return $value;
     }
 }
 

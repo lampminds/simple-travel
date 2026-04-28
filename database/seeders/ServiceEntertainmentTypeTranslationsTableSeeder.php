@@ -18,7 +18,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
 
         \DB::table('cat_service_entertainment_type_translations')->delete();
         
-        \DB::table('cat_service_entertainment_type_translations')->insert(array (
+        \DB::table('cat_service_entertainment_type_translations')->insert($this->normalizeMojibake(array (
             0 => 
             array (
                 'id' => 1,
@@ -52,28 +52,28 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 5,
                 'service_entertainment_type_id' => 5,
                 'language_id' => 2,
-                'name' => 'Tour panorÃ¡mico',
+                'name' => 'Tour panorámico',
             ),
             5 => 
             array (
                 'id' => 6,
                 'service_entertainment_type_id' => 6,
                 'language_id' => 2,
-                'name' => 'ExcursiÃ³n de dÃ­a completo',
+                'name' => 'Excursión de día completo',
             ),
             6 => 
             array (
                 'id' => 7,
                 'service_entertainment_type_id' => 7,
                 'language_id' => 2,
-                'name' => 'ExcursiÃ³n de medio dÃ­a',
+                'name' => 'Excursión de medio día',
             ),
             7 => 
             array (
                 'id' => 8,
                 'service_entertainment_type_id' => 8,
                 'language_id' => 2,
-                'name' => 'Tour de varios dÃ­as',
+                'name' => 'Tour de varios días',
             ),
             8 => 
             array (
@@ -87,7 +87,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 10,
                 'service_entertainment_type_id' => 10,
                 'language_id' => 2,
-                'name' => 'Tour histÃ³rico',
+                'name' => 'Tour histórico',
             ),
             10 => 
             array (
@@ -122,7 +122,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 15,
                 'service_entertainment_type_id' => 15,
                 'language_id' => 2,
-                'name' => 'Tour arqueolÃ³gico',
+                'name' => 'Tour arqueológico',
             ),
             15 => 
             array (
@@ -150,7 +150,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 19,
                 'service_entertainment_type_id' => 19,
                 'language_id' => 2,
-                'name' => 'Tour de observaciÃ³n de aves',
+                'name' => 'Tour de observación de aves',
             ),
             19 => 
             array (
@@ -164,7 +164,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 21,
                 'service_entertainment_type_id' => 21,
                 'language_id' => 2,
-                'name' => 'Tour escÃ©nico',
+                'name' => 'Tour escénico',
             ),
             21 => 
             array (
@@ -192,7 +192,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 25,
                 'service_entertainment_type_id' => 25,
                 'language_id' => 2,
-                'name' => 'Tour de montaÃ±a',
+                'name' => 'Tour de montaña',
             ),
             25 => 
             array (
@@ -227,7 +227,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 30,
                 'service_entertainment_type_id' => 30,
                 'language_id' => 2,
-                'name' => 'Tour por rÃ­o',
+                'name' => 'Tour por río',
             ),
             30 => 
             array (
@@ -241,7 +241,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 32,
                 'service_entertainment_type_id' => 32,
                 'language_id' => 2,
-                'name' => 'Tour en catamarÃ¡n',
+                'name' => 'Tour en catamarán',
             ),
             32 => 
             array (
@@ -255,7 +255,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 34,
                 'service_entertainment_type_id' => 34,
                 'language_id' => 2,
-                'name' => 'ExcursiÃ³n de rafting',
+                'name' => 'Excursión de rafting',
             ),
             34 => 
             array (
@@ -269,7 +269,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 36,
                 'service_entertainment_type_id' => 36,
                 'language_id' => 2,
-                'name' => 'Tour gastronÃ³mico',
+                'name' => 'Tour gastronómico',
             ),
             36 => 
             array (
@@ -283,14 +283,14 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 38,
                 'service_entertainment_type_id' => 38,
                 'language_id' => 2,
-                'name' => 'Tour de cervecerÃ­as',
+                'name' => 'Tour de cervecerías',
             ),
             38 => 
             array (
                 'id' => 39,
                 'service_entertainment_type_id' => 39,
                 'language_id' => 2,
-                'name' => 'Tour de destilerÃ­as',
+                'name' => 'Tour de destilerías',
             ),
             39 => 
             array (
@@ -332,14 +332,14 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 45,
                 'service_entertainment_type_id' => 45,
                 'language_id' => 2,
-                'name' => 'Tour de esquÃ­',
+                'name' => 'Tour de esquí',
             ),
             45 => 
             array (
                 'id' => 46,
                 'service_entertainment_type_id' => 46,
                 'language_id' => 2,
-                'name' => 'ExcursiÃ³n invernal',
+                'name' => 'Excursión invernal',
             ),
             46 => 
             array (
@@ -360,21 +360,21 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 49,
                 'service_entertainment_type_id' => 49,
                 'language_id' => 2,
-                'name' => 'Tour en helicÃ³ptero',
+                'name' => 'Tour en helicóptero',
             ),
             49 => 
             array (
                 'id' => 50,
                 'service_entertainment_type_id' => 50,
                 'language_id' => 2,
-                'name' => 'Vuelo panorÃ¡mico',
+                'name' => 'Vuelo panorámico',
             ),
             50 => 
             array (
                 'id' => 51,
                 'service_entertainment_type_id' => 51,
                 'language_id' => 2,
-                'name' => 'Paseo en globo aerostÃ¡tico',
+                'name' => 'Paseo en globo aerostático',
             ),
             51 => 
             array (
@@ -409,7 +409,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 56,
                 'service_entertainment_type_id' => 56,
                 'language_id' => 2,
-                'name' => 'Tour fotogrÃ¡fico',
+                'name' => 'Tour fotográfico',
             ),
             56 => 
             array (
@@ -437,7 +437,7 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'id' => 60,
                 'service_entertainment_type_id' => 60,
                 'language_id' => 2,
-                'name' => 'Tour de observaciÃ³n de estrellas',
+                'name' => 'Tour de observación de estrellas',
             ),
             60 => 
             array (
@@ -446,8 +446,24 @@ class ServiceEntertainmentTypeTranslationsTableSeeder extends Seeder
                 'language_id' => 2,
                 'name' => 'Tour de festivales',
             ),
-        ));
+        )));
         
         
+    }
+    private function normalizeMojibake(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->normalizeMojibake($item);
+            }
+
+            return $value;
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return $value;
     }
 }

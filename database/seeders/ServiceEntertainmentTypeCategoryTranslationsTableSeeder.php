@@ -18,7 +18,7 @@ class ServiceEntertainmentTypeCategoryTranslationsTableSeeder extends Seeder
 
         \DB::table('cat_service_entertainment_type_category_translations')->delete();
         
-        \DB::table('cat_service_entertainment_type_category_translations')->insert(array (
+        \DB::table('cat_service_entertainment_type_category_translations')->insert($this->normalizeMojibake(array (
             0 => 
             array (
                 'id' => 1,
@@ -52,14 +52,14 @@ class ServiceEntertainmentTypeCategoryTranslationsTableSeeder extends Seeder
                 'id' => 5,
                 'service_entertainment_type_category_id' => 5,
                 'language_id' => 2,
-                'name' => 'Actividades acuÃ¡ticas',
+                'name' => 'Actividades acuáticas',
             ),
             5 => 
             array (
                 'id' => 6,
                 'service_entertainment_type_category_id' => 6,
                 'language_id' => 2,
-                'name' => 'GastronomÃ­a',
+                'name' => 'Gastronomía',
             ),
             6 => 
             array (
@@ -73,14 +73,14 @@ class ServiceEntertainmentTypeCategoryTranslationsTableSeeder extends Seeder
                 'id' => 8,
                 'service_entertainment_type_category_id' => 8,
                 'language_id' => 2,
-                'name' => 'Experiencias aÃ©reas',
+                'name' => 'Experiencias aéreas',
             ),
             8 => 
             array (
                 'id' => 9,
                 'service_entertainment_type_category_id' => 9,
                 'language_id' => 2,
-                'name' => 'Transporte turÃ­stico',
+                'name' => 'Transporte turístico',
             ),
             9 => 
             array (
@@ -96,8 +96,24 @@ class ServiceEntertainmentTypeCategoryTranslationsTableSeeder extends Seeder
                 'language_id' => 2,
                 'name' => 'Experiencias especiales',
             ),
-        ));
+        )));
         
         
+    }
+    private function normalizeMojibake(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->normalizeMojibake($item);
+            }
+
+            return $value;
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return $value;
     }
 }
