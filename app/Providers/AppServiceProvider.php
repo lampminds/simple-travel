@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\AccountNotification;
 use App\Models\Language;
+use App\Models\User;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\File;
@@ -40,6 +42,42 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer(['layouts.partials.navbar', 'layouts.partials.dashboard-navbar'], function ($view) {
             $view->with('languages', Language::with('locale')->orderBy('id')->get());
+        });
+
+        View::composer(['layouts.partials.dashboard-navbar'], function ($view): void {
+            /** @var User|null $user */
+            $user = auth()->user();
+            if (! $user instanceof User) {
+                $view->with('accountNavbarNotifications', collect());
+                $view->with('accountNavbarUnreadNotificationsCount', 0);
+
+                return;
+            }
+
+            $accountId = $user->currentAccountId();
+            if ($accountId === null) {
+                $view->with('accountNavbarNotifications', collect());
+                $view->with('accountNavbarUnreadNotificationsCount', 0);
+
+                return;
+            }
+
+            $items = AccountNotification::query()
+                ->forAccount($accountId)
+                ->visibleToUser($user)
+                ->latest()
+                ->with('createdByUser')
+                ->limit(7)
+                ->get();
+
+            $unreadCount = AccountNotification::query()
+                ->forAccount($accountId)
+                ->visibleToUser($user)
+                ->unread()
+                ->count();
+
+            $view->with('accountNavbarNotifications', $items);
+            $view->with('accountNavbarUnreadNotificationsCount', $unreadCount);
         });
     }
 }

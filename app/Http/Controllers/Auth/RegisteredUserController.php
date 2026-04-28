@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserInvitation;
 use App\Services\ReplicateDefaultRolesToAccountService;
+use App\Services\AccountNotificationService;
 use App\Support\CurrentAccountSession;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -163,6 +164,8 @@ class RegisteredUserController extends Controller
             $user->assignRole('owner');
             throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
 
+            app(AccountNotificationService::class)->createWelcomeForNewAccount((int) $account->id, $user);
+
             event(new Registered($user));
 
             Auth::login($user);
@@ -302,6 +305,8 @@ class RegisteredUserController extends Controller
             app(ReplicateDefaultRolesToAccountService::class)->replicateTo((int) $account->id, null, (int) $user->id);
             $user->assignRole('owner');
             throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
+
+            app(AccountNotificationService::class)->createWelcomeForNewAccount((int) $account->id, $user);
 
             $invitation->forceFill([
                 'email' => $email,

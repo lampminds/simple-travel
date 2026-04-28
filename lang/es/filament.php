@@ -11,6 +11,9 @@ return [
 
     'common' => [
         'active' => 'Activo',
+        'view' => 'Ver',
+        'close' => 'Cerrar',
+        'copy' => 'Copiar',
         'navigation_badge_tooltip' => 'Total de registros',
         'select_option' => 'Seleccione una opción',
     ],
@@ -70,6 +73,16 @@ return [
             'commercial_name' => 'Razón social',
             'email' => 'Correo electrónico',
             'account_category' => 'Categoría de cuenta',
+        ],
+
+        'user_actions' => [
+            'open_website_impersonation' => 'Enlace de acceso al sitio',
+            'open_website_impersonation_tooltip' => 'Genera un enlace de un solo uso para abrir el sitio en otro navegador como este usuario.',
+            'impersonation_modal_heading' => 'Enlace de acceso al sitio (un solo uso)',
+            'impersonation_modal_help' => 'Copiá el enlace y abrilo en otro navegador (o ventana privada). Vence en unos minutos y solo funciona una vez.',
+            'impersonation_forbidden' => 'No tenés permiso para generar este enlace.',
+            'impersonation_invalid_target' => 'Este usuario no puede usarse para este enlace.',
+            'impersonation_link_aria' => 'Enlace de acceso de un solo uso',
         ],
 
         'account_category' => 'Categoría de cuenta',

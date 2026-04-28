@@ -80,6 +80,14 @@ class Account extends Model
     }
 
     /**
+     * Notifications shared at account level (read once for all account members).
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(AccountNotification::class);
+    }
+
+    /**
      * How many of provider, operator, and agency (active "type" categories) are assigned to this account.
      */
     public function businessDashboardLaneCount(): int

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Account;
 use App\Models\User;
+use App\Services\WebsiteImpersonationTokenService;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
@@ -12,13 +13,19 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
@@ -223,7 +230,66 @@ class UserResource extends LmpResource
                     ->getStateUsing(fn (User $record) => $record->roleNamesAcrossTeams() ?: '—')
                     ->badge(),
             ])
-            ->defaultSort('id');
+            ->defaultSort('id')
+            ->recordActions([
+                ActionGroup::make([
+                    Action::make('view')
+                        ->label(__('filament.common.view'))
+                        ->icon('heroicon-o-eye')
+                        ->url(fn (User $record): string => static::getUrl('view', ['record' => $record])),
+                    EditAction::make(),
+                    Action::make('openWebsiteImpersonation')
+                        ->label(__('filament.resources.user_actions.open_website_impersonation'))
+                        ->tooltip(__('filament.resources.user_actions.open_website_impersonation_tooltip'))
+                        ->icon('heroicon-o-link')
+                        ->modalHeading(__('filament.resources.user_actions.impersonation_modal_heading'))
+                        ->modalWidth('2xl')
+                        ->fillForm(function (Action $action): array {
+                            $record = $action->getRecord();
+                            if (! $record instanceof User) {
+                                return ['error' => __('filament.resources.user_actions.impersonation_forbidden'), 'url' => ''];
+                            }
+                            $admin = Filament::auth()->user();
+                            if (! $admin instanceof User || ! $admin->belongsToPlatformAccount()) {
+                                return ['error' => __('filament.resources.user_actions.impersonation_forbidden'), 'url' => ''];
+                            }
+                            if ((int) $admin->id === (int) $record->id || $record->belongsToPlatformAccount()) {
+                                return ['error' => __('filament.resources.user_actions.impersonation_invalid_target'), 'url' => ''];
+                            }
+                            try {
+                                $svc = app(WebsiteImpersonationTokenService::class);
+                                $plain = $svc->createToken($record, $admin);
+                                $url = $svc->urlForPlainToken($plain);
+
+                                return ['error' => null, 'url' => $url];
+                            } catch (\InvalidArgumentException $e) {
+                                return ['error' => $e->getMessage(), 'url' => ''];
+                            }
+                        })
+                        ->schema(fn (): array => [
+                            Text::make(fn (Get $get): string => (string) $get('error'))
+                                ->color('danger')
+                                ->visible(fn (Get $get): bool => filled($get('error'))),
+                            Text::make(__('filament.resources.user_actions.impersonation_modal_help'))
+                                ->color('gray')
+                                ->size(TextSize::Small)
+                                ->visible(fn (Get $get): bool => blank($get('error'))),
+                            TextInput::make('url')
+                                ->hiddenLabel()
+                                ->readOnly()
+                                ->copyable()
+                                ->extraInputAttributes([
+                                    'aria-label' => __('filament.resources.user_actions.impersonation_link_aria'),
+                                ])
+                                ->visible(fn (Get $get): bool => blank($get('error'))),
+                        ])
+                        ->modalCancelActionLabel(__('filament.common.close'))
+                        ->modalSubmitAction(false)
+                        ->action(fn () => null)
+                        ->visible(fn (): bool => Filament::auth()->user() instanceof User
+                            && Filament::auth()->user()->belongsToPlatformAccount()),
+                ]),
+            ], position: RecordActionsPosition::BeforeColumns);
     }
 
     public static function getNavigationBadge(): ?string

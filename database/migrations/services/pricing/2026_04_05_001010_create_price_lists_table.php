@@ -29,8 +29,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             lmpStamps($table);
-
-            $table->unique(['owner_id', 'owner_type']);
         });
 
         Schema::create('price_list_items', function (Blueprint $table) {
@@ -40,7 +38,10 @@ return new class extends Migration
             $table->foreignId('service_variant_id')->constrained();
 
             $table->decimal('price', 10, 2);
-            $table->enum('pricing_mode', ['fixed'])->default('fixed')->comment('fixed, percentage');
+            $table->enum('pricing_mode', ['fixed', 'percentage'])->default('fixed');
+            $table->enum('application_mode', ['compose', 'final'])
+                ->default('compose')
+                ->comment('Compose: price is composed of the base price + the percentage');
         });
 
         Schema::create('price_list_assignments', function (Blueprint $table) {
@@ -54,9 +55,6 @@ return new class extends Migration
                 ->default('none')
                 ->comment('Global adjustment over list');
 
-            // Ej:
-            // percentage: -10 = 10% descuento, +15 = markup
-            // fixed: monto absoluto
             $table->decimal('adjustment_value', 12, 2)
                 ->nullable()
                 ->comment('-10 = discount, +15 = markup');

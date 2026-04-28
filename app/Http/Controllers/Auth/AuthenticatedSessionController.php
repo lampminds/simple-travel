@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Middleware\RecordLastLogin;
-use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
-use App\Support\CurrentAccountSession;
+use App\Services\AuthLoginRedirectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\PermissionRegistrar;
@@ -32,30 +29,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-
         $request->authenticate();
-
         $request->session()->regenerate();
-
-        if (! $request->session()->has('locale')) {
-            $request->session()->put('locale', config('app.locale'));
-        }
-
-        $request->session()->put(RecordLastLogin::SESSION_KEY, true);
-
-        $accountIds = $request->user()->accounts()->orderBy('accounts.id')->pluck('accounts.id')->map(fn ($id) => (int) $id);
-        if ($accountIds->count() === 1) {
-            CurrentAccountSession::put($request, $request->user(), (int) $accountIds->first());
-        } elseif ($accountIds->count() > 1) {
-            $request->session()->forget(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID);
-            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_NAME);
-            $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_TYPE_IDS);
-            $request->session()->put(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION, true);
-
-            return redirect()->route('account.select');
-        }
-
-        return redirect()->intended(RouteServiceProvider::HOME);
+        return app(AuthLoginRedirectService::class)->handle($request, $request->user());
     }
 
     /**

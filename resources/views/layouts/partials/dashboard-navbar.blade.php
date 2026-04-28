@@ -1,4 +1,5 @@
 <header>
+    @include('layouts.partials.support-token-header-notice')
     <nav class="navbar navbar-expand-lg topnav-menu {{$classList}} {{$sticky === true ? 'sticky' : ''}}">
         <div class="container {{$fixedWidth !== true ? '-fluid' : ''}}">
             <x-site-logo class="navbar-brand me-lg-3 me-auto" />
@@ -73,72 +74,53 @@
                             <span class="icon-xs">
                                 @svg('/duotone-icons/general/Notification#2')
                             </span>
+                            @if(($accountNavbarUnreadNotificationsCount ?? 0) > 0)
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ min((int) $accountNavbarUnreadNotificationsCount, 99) }}
+                                </span>
+                            @endif
                         </a>
                         <div class="dropdown-menu p-2" aria-labelledby="notifications">
-                            <!-- notification item start -->
-                            <a class="dropdown-item p-2" href="#">
-                                <div class="d-flex align-items-center">
-                                    <span
-                                        class="bg-soft-primary avatar avatar-xs rounded icon icon-with-bg icon-xxs text-primary me-3 flex-shrink-0">
-                                        @svg('/duotone-icons/communication/Add-user')
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-medium my-0 fs-13">New User Registered</h6>
-                                        <span class="text-muted"><small>2 min ago</small></span>
-                                    </div>
+                            @if(($accountNavbarNotifications ?? collect())->isEmpty())
+                                <div class="dropdown-item p-2 text-muted fs-13">
+                                    {{ __('account.notifications.empty_short') }}
                                 </div>
-                            </a>
-                            <!-- notification item end -->
-
-                            <!-- notification item start -->
-                            <a class="dropdown-item p-2" href="#">
-                                <div class="d-flex align-items-center">
-                                    <span
-                                        class="bg-soft-orange avatar avatar-xs rounded icon icon-with-bg icon-xxs text-orange me-3 flex-shrink-0">
-                                        @svg('/duotone-icons/communication/Chat-check')
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-medium my-0 fs-13">A new comment on your post</h6>
-                                        <span class="text-muted"><small>3 min ago</small></span>
+                            @else
+                                @foreach($accountNavbarNotifications as $notification)
+                                    <div class="dropdown-item p-2">
+                                        <div class="d-flex align-items-start">
+                                            @php
+                                                $isRead = $notification->read_at !== null;
+                                            @endphp
+                                            <span class="avatar avatar-xs rounded icon icon-with-bg icon-xxs me-3 flex-shrink-0 {{ $isRead ? 'bg-soft-warning text-warning' : 'bg-soft-success text-success' }}">
+                                                @svg('/duotone-icons/general/Notification#2')
+                                            </span>
+                                            <div class="flex-grow-1 min-w-0">
+                                                <h6 class="fw-medium my-0 fs-13 text-wrap">{{ $notification->title }}</h6>
+                                                @if($notification->authorName())
+                                                    <span class="text-muted d-block"><small>{{ __('account.notifications.by_author', ['name' => $notification->authorName()]) }}</small></span>
+                                                @endif
+                                                <span class="text-muted d-block"><small>{{ $notification->created_at?->diffForHumans() }}</small></span>
+                                                @if(! $notification->read_at)
+                                                    <form method="POST" action="{{ route('account.notifications.read', $notification) }}" class="mt-1">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-link p-0 fs-12 text-decoration-none">
+                                                            {{ __('account.notifications.mark_as_read') }}
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                            <!-- notification item end -->
+                                    @if (! $loop->last)
+                                        <div class="dropdown-divider my-1"></div>
+                                    @endif
+                                @endforeach
+                            @endif
 
-                            <!-- notification item start -->
-                            <a class="dropdown-item p-2" href="#">
-                                <div class="d-flex align-items-center">
-                                    <span
-                                        class="bg-soft-success avatar avatar-xs rounded icon icon-with-bg icon-xxs text-success me-3 flex-shrink-0">
-                                        @svg('/duotone-icons/communication/Mail-attachment')
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-medium my-0 fs-13">A new message from</h6>
-                                        <span class="text-muted"><small>10 min ago</small></span>
-                                    </div>
-                                </div>
+                            <a href="{{ route('account.notifications.index') }}" class="mt-2 text-center bg-light fs-13 btn btn-light btn-sm d-block">
+                                {{ __('account.notifications.view_all') }}
                             </a>
-                            <!-- notification item end -->
-
-                            <!-- notification item start -->
-                            <a class="dropdown-item p-2" href="#">
-                                <div class="d-flex align-items-center">
-                                    <span
-                                        class="bg-soft-danger avatar avatar-xs rounded icon icon-with-bg icon-xxs text-danger me-3 flex-shrink-0">
-                                        @svg('/duotone-icons/general/Like')
-                                    </span>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-medium my-0 fs-13">A new like on your comment</h6>
-                                        <span class="text-muted"><small>14 min ago</small></span>
-                                    </div>
-                                </div>
-                            </a>
-                            <!-- notification item end -->
-
-                            <!-- view all start -->
-                            <a href="#" class="mt-2 text-center bg-light fs-13 btn btn-light btn-sm d-block">View
-                                All</a>
-                            <!-- view all end -->
                         </div>
                     </li>
                     <!-- notification end -->

@@ -9,6 +9,9 @@ return [
 
     'common' => [
         'active' => 'Active',
+        'view' => 'View',
+        'close' => 'Close',
+        'copy' => 'Copy',
         'navigation_badge_tooltip' => 'Total records',
         'select_option' => 'Select an option',
     ],
@@ -68,6 +71,16 @@ return [
             'commercial_name' => 'Commercial name',
             'email' => 'Email',
             'account_category' => 'Account category',
+        ],
+
+        'user_actions' => [
+            'open_website_impersonation' => 'Website access link',
+            'open_website_impersonation_tooltip' => 'Generate a one-time link to open the website in another browser as this user.',
+            'impersonation_modal_heading' => 'One-time website access link',
+            'impersonation_modal_help' => 'Copy the link and open it in another browser (or a private window). The link expires in a few minutes and works once.',
+            'impersonation_forbidden' => 'You are not allowed to generate this link.',
+            'impersonation_invalid_target' => 'This user cannot be used for this link.',
+            'impersonation_link_aria' => 'One-time access link',
         ],
 
         'account_category' => 'Account category',

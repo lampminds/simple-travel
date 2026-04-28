@@ -15,9 +15,11 @@ use App\Http\Controllers\SelectDashboardLaneController;
 use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
+use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\WelcomeCompanyController;
 use App\Http\Controllers\AccountTasksController;
 use App\Http\Controllers\TenantSite\HomeController;
+use App\Http\Controllers\WebsiteImpersonationController;
 use App\Support\AccountTypeCategoryIds;
 
 /*
@@ -56,7 +58,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('account.invitations.resend');
     Route::post('account/invitations/{invitation}/revoke', [ProfileInvitationController::class, 'revoke'])
         ->name('account.invitations.revoke');
+
 });
+
+// One-time support link: open in another browser; no prior session required to redeem.
+Route::get('impersonate/enter/{token}', [WebsiteImpersonationController::class, 'enter'])
+    ->middleware('throttle:20,1')
+    ->where('token', '[A-Za-z0-9]+')
+    ->name('impersonate.website.enter');
 
 // Auth-protected account routes (must be before catch-alls so they take precedence).
 // 'verified' ensures users who registered via /register must confirm email before accessing.
@@ -76,6 +85,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
     Route::get('account/tasks', [AccountTasksController::class, 'index'])->name('account.tasks.index');
+    Route::get('account/notifications', [AccountNotificationsController::class, 'index'])->name('account.notifications.index');
+    Route::post('account/notifications', [AccountNotificationsController::class, 'store'])->name('account.notifications.store');
+    Route::post('account/notifications/{notification}/read', [AccountNotificationsController::class, 'markAsRead'])
+        ->name('account.notifications.read');
     Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 

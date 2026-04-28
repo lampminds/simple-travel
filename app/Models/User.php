@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,14 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
     public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class)->withTimestamps();
+    }
+
+    /**
+     * Linked OAuth identities (Google, Facebook, etc.) for this user.
+     */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(UserSocialAccount::class);
     }
 
     /**

@@ -21,6 +21,9 @@
                                         @if (session('status'))
                                             <div class="alert alert-warning mb-3" role="alert">{{ session('status') }}</div>
                                         @endif
+                                        @if (session('error'))
+                                            <div class="alert alert-danger mb-3" role="alert">{{ session('error') }}</div>
+                                        @endif
                                         <!--form start-->
                                         <form method="POST" action="{{ route('login') }}" class="authentication-form">
 
@@ -57,10 +60,15 @@
                                         <div class="py-3 text-center"><span
                                                 class="fs-13 fw-bold">{{ __('auth.login.or') }}</span>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-12 text-center">
-                                                <a href="" class="btn btn-white w-100">
-                                                    <i data-feather="github" class='icon icon-xs me-2'></i>{{ __('auth.login.github') }}
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-6 text-center">
+                                                <a href="{{ route('social.redirect', ['provider' => 'google']) }}" class="btn btn-white w-100">
+                                                    <i data-feather="chrome" class='icon icon-xs me-2'></i>{{ __('auth.login.google') }}
+                                                </a>
+                                            </div>
+                                            <div class="col-12 col-md-6 text-center">
+                                                <a href="{{ route('social.redirect', ['provider' => 'facebook']) }}" class="btn btn-white w-100">
+                                                    <i data-feather="facebook" class='icon icon-xs me-2'></i>{{ __('auth.login.facebook') }}
                                                 </a>
                                             </div>
                                         </div>
