@@ -40,6 +40,9 @@
                                                 ]) }}
                                             </p>
                                         @endif
+                                        @if (session('error'))
+                                            <div class="alert alert-danger mb-3" role="alert">{{ session('error') }}</div>
+                                        @endif
 
                                         <div class="alert alert-warning border-0 mb-4" role="alert">
                                             <small>
@@ -153,12 +156,24 @@
                                         <div class="py-3 text-center"><span
                                                 class="fs-13 fw-bold">{{ __('auth.register.or') }}</span>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-12 text-center">
-                                                <a href="" class="btn btn-white w-100">
-                                                    <i data-feather="github" class='icon icon-xs me-2'></i>{{ __('auth.register.signup_github') }}</a>
+                                        @if ($mode === 'internal' && $inv)
+                                            <div class="row g-2">
+                                                <div class="col-12 col-md-6 text-center">
+                                                    <a href="{{ route('social.redirect', ['provider' => 'google', 'invitation_token' => $inv->token]) }}" class="btn btn-white w-100">
+                                                        <i data-feather="chrome" class='icon icon-xs me-2'></i>{{ __('auth.register.signup_google') }}
+                                                    </a>
+                                                </div>
+                                                <div class="col-12 col-md-6 text-center">
+                                                    <a href="{{ route('social.redirect', ['provider' => 'facebook', 'invitation_token' => $inv->token]) }}" class="btn btn-white w-100">
+                                                        <i data-feather="facebook" class='icon icon-xs me-2'></i>{{ __('auth.register.signup_facebook') }}
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
+                                        @else
+                                            <div class="text-center text-muted small">
+                                                {{ __('auth.register.social_not_available_for_company_signup') }}
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="col-md-5 offset-md-1 d-none d-md-inline-block">

@@ -57,20 +57,8 @@
                                         </form>
                                         <!--/.form end-->
 
-                                        <div class="py-3 text-center"><span
-                                                class="fs-13 fw-bold">{{ __('auth.login.or') }}</span>
-                                        </div>
-                                        <div class="row g-2">
-                                            <div class="col-12 col-md-6 text-center">
-                                                <a href="{{ route('social.redirect', ['provider' => 'google']) }}" class="btn btn-white w-100">
-                                                    <i data-feather="chrome" class='icon icon-xs me-2'></i>{{ __('auth.login.google') }}
-                                                </a>
-                                            </div>
-                                            <div class="col-12 col-md-6 text-center">
-                                                <a href="{{ route('social.redirect', ['provider' => 'facebook']) }}" class="btn btn-white w-100">
-                                                    <i data-feather="facebook" class='icon icon-xs me-2'></i>{{ __('auth.login.facebook') }}
-                                                </a>
-                                            </div>
+                                        <div class="text-center text-muted small">
+                                            {{ __('auth.login.social_invitation_only_help') }}
                                         </div>
                                     </div>
                                 </div>
