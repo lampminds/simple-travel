@@ -25,6 +25,14 @@ return new class extends Migration
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('declined_at')->nullable();
             $table->foreignId('invited_by')->nullable()->constrained('users');
+            $table->foreignId('invited_user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->foreignId('invited_person_id')
+                ->nullable()
+                ->constrained('persons')
+                ->nullOnDelete();
             $table->foreignId('account_inviting')->nullable()->constrained('accounts');
             $table->enum('type', ['internal', 'external'])->default('internal');
             $table->enum('status', ['pending', 'accepted', 'declined', 'expired', 'revoked'])->default('pending');

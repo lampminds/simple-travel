@@ -33,11 +33,11 @@ class ContactDepartment extends Model
     }
 
     /**
-     * Get the contacts in this department.
+     * Account–person rows using this department on the account_person pivot.
      */
-    public function contacts(): HasMany
+    public function accountPersons(): HasMany
     {
-        return $this->hasMany(Contact::class);
+        return $this->hasMany(AccountPerson::class, 'contact_department_id');
     }
 
     /**

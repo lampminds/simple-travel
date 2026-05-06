@@ -36,7 +36,7 @@ class UserInvitationNotification extends Notification
             ? max(0, (int) ceil(now(config('app.timezone'))->floatDiffInDays($expiresAt, false)))
             : 0;
 
-        $url = route('register', ['token' => $invitation->token], true);
+        $url = route('invitations.accept', ['token' => $invitation->token], true);
 
         $isInternal = $invitation->type === UserInvitation::TYPE_INTERNAL;
         $mailMessage = (new MailMessage)

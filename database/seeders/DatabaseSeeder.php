@@ -16,45 +16,58 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UsersTableSeeder::class);
         $this->call(UserRolesTableSeeder::class);
+        $this->call(UserModelHasRolesTableSeeder::class);
+        $this->call(UserPermissionsTableSeeder::class);
+        $this->call(UserRoleHasPermissionsTableSeeder::class);
+
+
         $this->call(CatLocalesTableSeeder::class);
         $this->call(LanguagesTableSeeder::class);
+        $this->call(CatCurrenciesTableSeeder::class);
+
         $this->call(CatContactTypesTableSeeder::class);
+
         $this->call(CatAccountCategoriesTableSeeder::class);
         $this->call(CatAccountCategoryTranslationsTableSeeder::class);
+
         $this->call(PlansTableSeeder::class);
         $this->call(PlanItemsTableSeeder::class);
         $this->call(PlanItemTranslationsTableSeeder::class);
         $this->call(PlanUserPricesTableSeeder::class);
         $this->call(PlanUserPriceTranslationsTableSeeder::class);
-        $this->call(ServiceTypesTableSeeder::class);
-        $this->call(ServiceTypeTranslationsTableSeeder::class);
+
+        $this->call(CatServiceTypesTableSeeder::class);
+        $this->call(CatServiceTypeTranslationsTableSeeder::class);
+
         $this->call(AccountsTableSeeder::class);
         $this->call(AccountUserTableSeeder::class);
-        $this->call(UserModelHasRolesTableSeeder::class);
-        $this->call(UserPermissionsTableSeeder::class);
-        $this->call(UserRoleHasPermissionsTableSeeder::class);
+
         // Pivot rows need existing accounts (FK to accounts.id).
         $this->call(CatContactDepartmentsTableSeeder::class);
         $this->call(CatContactDepartmentTranslationsTableSeeder::class);
         $this->call(CatContactPositionsTableSeeder::class);
         $this->call(CatContactPositionTranslationsTableSeeder::class);
+
         $this->call(ServiceDetailTopicCategoriesTableSeeder::class);
         $this->call(ServiceDetailTopicCategoryTranslationsTableSeeder::class);
         $this->call(ServiceDetailTopicsTableSeeder::class);
         $this->call(ServiceDetailTopicTranslationsTableSeeder::class);
+
         $this->call(ServiceEntertainmentTypeCategoriesTableSeeder::class);
         $this->call(ServiceEntertainmentTypeCategoryTranslationsTableSeeder::class);
         $this->call(ServiceEntertainmentTypesTableSeeder::class);
         $this->call(ServiceEntertainmentTypeTranslationsTableSeeder::class);
+
         $this->call(ServiceActivityCategoriesTableSeeder::class);
         $this->call(ServiceActivityCategoryTranslationsTableSeeder::class);
         $this->call(ServiceActivitiesTableSeeder::class);
         $this->call(ServiceActivityTranslationsTableSeeder::class);
-        $this->call(CatCurrenciesTableSeeder::class);
+
         $this->call(ServiceHotelTypeCategoriesTableSeeder::class);
         $this->call(ServiceHotelTypeCategoryTranslationsTableSeeder::class);
         $this->call(ServiceHotelTypesTableSeeder::class);
         $this->call(ServiceHotelTypeTranslationsTableSeeder::class);
+
         $this->call(ServiceGastronomyTypesTableSeeder::class);
         $this->call(ServiceGastronomyTypeTranslationsTableSeeder::class);
         $this->call(ServiceGastronomyVenuesTableSeeder::class);
@@ -65,24 +78,32 @@ class DatabaseSeeder extends Seeder
         $this->call(ServiceGastronomyMenuCategoryTranslationsTableSeeder::class);
         $this->call(ServiceGastronomyMenusTableSeeder::class);
         $this->call(ServiceGastronomyMenuTranslationsTableSeeder::class);
+
         $this->call(ServiceFeatureCategoriesTableSeeder::class);
         $this->call(ServiceFeatureCategoryTranslationsTableSeeder::class);
         $this->call(CatServiceFeaturesTableSeeder::class);
         $this->call(CatServiceFeatureScopesTableSeeder::class);
         $this->call(CatServiceFeatureTranslationsTableSeeder::class);
+
         $this->call(CatMenusTableSeeder::class);
         $this->call(CatMenuTranslationsTableSeeder::class);
         $this->call(CatMenuAccountTypeAssignmentsTableSeeder::class);
+
         $this->call(CatParameterDefinitionsTableSeeder::class);
         $this->call(CatParameterDefinitionTranslationsTableSeeder::class);
         $this->call(ParameterValuesTableSeeder::class);
         $this->call(CatParameterOptionsTableSeeder::class);
         $this->call(CatParameterOptionTranslationsTableSeeder::class);
+
         $this->call(TodoCategoriesTableSeeder::class);
         $this->call(TodoCategoryTranslationsTableSeeder::class);
         $this->call(TodoTasksTableSeeder::class);
         $this->call(TodoTaskTranslationsTableSeeder::class);
-        $this->call(CatServiceTypeTranslationsTableSeeder::class);
+
+        $this->call(UserInvitationsTableSeeder::class);
+        $this->call(AccountCategoryAssignmentsTableSeeder::class);
+        $this->call(AccountRelationshipsTableSeeder::class);
+        $this->call(CatContactTypeTranslationsTableSeeder::class);
     }
 }
 

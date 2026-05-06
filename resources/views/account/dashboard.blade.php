@@ -5,8 +5,10 @@
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
 
     @php
+        use App\Models\AccountRelationship;
         use App\Models\Service;
         use App\Models\ServiceVariant;
+        use App\Models\UserInvitation;
 
         $account = auth()->user()?->currentAccount();
 
@@ -30,6 +32,29 @@
         $hasProvider = $typeCodes->contains('provider');
         $hasOperator = $typeCodes->contains('operator');
         $hasAgency = $typeCodes->contains('agency');
+
+        $activeRelationshipCount = 0;
+        $pendingRelationshipCount = 0;
+        if ($account) {
+            $activeRelationshipCount = AccountRelationship::query()
+                ->where(function ($query) use ($account): void {
+                    $query->where('operator_account_id', $account->id)
+                        ->orWhere('provider_account_id', $account->id);
+                })
+                ->where('status', AccountRelationship::STATUS_APPROVED)
+                ->count();
+
+            $pendingRelationshipCount = UserInvitation::query()
+                ->where('type', UserInvitation::TYPE_EXTERNAL)
+                ->where('status', UserInvitation::STATUS_PENDING)
+                ->where(function ($query) use ($account): void {
+                    $query->where('account_id', $account->id)
+                        ->orWhere('account_inviting', $account->id);
+                })
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '>', now())
+                ->count();
+        }
 
         $userName = auth()->user()?->name;
         $companyName = $account
@@ -120,6 +145,23 @@
                                         <button type="button" class="btn btn-outline-primary w-100">{{ __('account.dashboard_request_access') }}</button>
                                     </div>
                                 @endif
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2">{{ __('account.dashboard_panel_relationships_title') }}</h5>
+                                <p class="text-muted mb-3">{!! __('account.dashboard_panel_relationships_desc', ['company' => e($companyLabel)]) !!}</p>
+
+                                <p class="small text-muted mb-3 mt-3">
+                                    <span class="fw-semibold text-body">{{ $activeRelationshipCount }}</span>
+                                    {{ __('account.dashboard_relationships_active_label') }}
+                                    <span class="mx-1">·</span>
+                                    <span class="fw-semibold text-body">{{ $pendingRelationshipCount }}</span>
+                                    {{ __('account.dashboard_relationships_pending_label') }}
+                                </p>
+
+                                <a class="btn btn-primary w-100 mt-auto" href="{{ route('account.relationships.index') }}">{{ __('account.dashboard_relationships_button') }}</a>
                             </div>
                         </div>
                     </div>

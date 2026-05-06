@@ -22,13 +22,34 @@
                 </div>
             </div>
 
+            @if (session('status'))
+                <div class="row">
+                    <div class="col-lg-12 mt-2">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('status') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('catalog.dismiss_alert') }}"></button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if ($mode === 'provider')
                 @include('catalog.partials.provider-services', [
                     'services' => $services,
                     'serviceTypes' => $serviceTypes,
                     'showRequestFromProviders' => false,
                 ])
-            @elseif (in_array($mode, ['operator', 'agency'], true))
+            @elseif ($mode === 'operator')
+                @include('catalog.partials.provider-services', [
+                    'services' => $services,
+                    'serviceTypes' => $serviceTypes,
+                    'showRequestFromProviders' => true,
+                    'servicesSectionTitle' => __('catalog.operator_own_heading'),
+                ])
+                @if (isset($linkedCatalog) && $linkedCatalog->isNotEmpty())
+                    @include('catalog.partials.operator-linked-catalog', ['linkedCatalog' => $linkedCatalog])
+                @endif
+            @elseif ($mode === 'agency')
                 @include('catalog.partials.provider-services', [
                     'services' => $services,
                     'serviceTypes' => $serviceTypes,

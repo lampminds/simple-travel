@@ -16,7 +16,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-
 class ParameterValueResource extends BaseResource
 {
     protected static ?string $model = ParameterValue::class;
@@ -46,6 +45,23 @@ class ParameterValueResource extends BaseResource
         $group = static::$navigationGroup;
 
         return $group instanceof \UnitEnum ? $group->value : ($group !== null ? (string) __($group) : null);
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        if (property_exists(static::getModel(), 'dont_use_audit')) {
+            return $schema->schema(
+                array_map(
+                    fn ($c) => $c->columnSpanFull(),
+                    static::getMainFormSchema($schema),
+                ),
+            );
+        }
+
+        $main = array_map(fn ($c) => $c->columnSpanFull(), static::getMainFormSchema($schema));
+        $audit = array_map(fn ($c) => $c->columnSpanFull(), static::getAuditFooterSchema());
+
+        return $schema->schema(array_merge($main, $audit));
     }
 
     /**
@@ -133,11 +149,9 @@ class ParameterValueResource extends BaseResource
                         ->label(__('filament.resources.parameter_value_fields.value'))
                         ->rows(6)
                         ->nullable()
-                        ->columnSpanFull()
                         ->visible(fn (Get $get): bool => ! ParameterDefinition::queryUsesOptionBackedValue((int) $get('parameter_definition_id')))
                         ->helperText(__('filament.resources.parameter_value_fields.value_help')),
-                ])
-                ->columns(2),
+                ]),
         ];
     }
 
@@ -155,7 +169,10 @@ class ParameterValueResource extends BaseResource
                 TextColumn::make('parameterDefinition.code')
                     ->label(__('filament.resources.parameter_definition_columns.code'))
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->httpSafeCopyableUsing(
+                        fn (ParameterValue $record): string => (string) ($record->parameterDefinition?->code ?? ''),
+                    ),
                 TextColumn::make('parameterDefinition.scope')
                     ->label(__('filament.resources.parameter_definition_columns.scope'))
                     ->sortable(),

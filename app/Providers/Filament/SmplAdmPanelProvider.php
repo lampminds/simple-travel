@@ -76,6 +76,9 @@ class SmplAdmPanelProvider extends PanelProvider
                 Route::get('locale/{language}', SetPanelLocaleController::class)
                     ->name('locale');
             })
+            ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): string => view(
+                'filament.scripts.copy-text-to-clipboard',
+            )->render())
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, function (): string {
                 $languages = Language::with('locale')->orderBy('id')->get();
 

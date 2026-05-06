@@ -44,6 +44,23 @@ return new class extends Migration
 
             lmpStamps($table);
         });
+
+        Schema::create('service_variant_translations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('service_variant_id')
+                ->constrained('service_variants')
+                ->cascadeOnDelete();
+            $table->unsignedTinyInteger('language_id');
+            $table->foreign('language_id')->references('id')->on('cat_languages');
+            $table->string('name');
+            $table->text('description')->nullable();
+
+            lmpStamps($table);
+
+            $table->unique(
+                ['service_variant_id', 'language_id'], 'u_service_variant_language');
+
+        });
     }
 
     /**
@@ -53,6 +70,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('service_variant_translations');
         Schema::dropIfExists('service_variants');
     }
 };

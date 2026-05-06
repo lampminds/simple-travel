@@ -56,7 +56,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'operations',
                 'parent_id' => NULL,
-                'sort_order' => 5,
+                'sort_order' => 6,
                 'active' => 1,
             ),
             4 => 
@@ -66,7 +66,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'finances',
                 'parent_id' => NULL,
-                'sort_order' => 8,
+                'sort_order' => 9,
                 'active' => 1,
             ),
             5 => 
@@ -76,7 +76,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'integrations',
                 'parent_id' => NULL,
-                'sort_order' => 9,
+                'sort_order' => 10,
                 'active' => 1,
             ),
             6 => 
@@ -84,7 +84,7 @@ class CatMenusTableSeeder extends Seeder
                 'id' => 7,
                 'slug' => 'availability',
                 'icon' => NULL,
-                'route' => 'availability',
+                'route' => 'account.service-offers.index',
                 'parent_id' => NULL,
                 'sort_order' => 4,
                 'active' => 1,
@@ -96,7 +96,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'reservations',
                 'parent_id' => NULL,
-                'sort_order' => 6,
+                'sort_order' => 7,
                 'active' => 1,
             ),
             8 => 
@@ -106,7 +106,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'clients',
                 'parent_id' => NULL,
-                'sort_order' => 7,
+                'sort_order' => 8,
                 'active' => 1,
             ),
             9 => 
@@ -116,7 +116,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.invitations.employee',
                 'parent_id' => 2,
-                'sort_order' => 1,
+                'sort_order' => 2,
                 'active' => 1,
             ),
             10 => 
@@ -126,7 +126,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.invitations.company',
                 'parent_id' => 2,
-                'sort_order' => 2,
+                'sort_order' => 3,
                 'active' => 1,
             ),
             11 => 
@@ -136,7 +136,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.invitations.index',
                 'parent_id' => 2,
-                'sort_order' => 3,
+                'sort_order' => 4,
                 'active' => 1,
             ),
             12 => 
@@ -146,7 +146,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'website',
                 'parent_id' => NULL,
-                'sort_order' => 10,
+                'sort_order' => 11,
                 'active' => 1,
             ),
             13 => 
@@ -167,6 +167,26 @@ class CatMenusTableSeeder extends Seeder
                 'route' => 'browse_website',
                 'parent_id' => 14,
                 'sort_order' => 2,
+                'active' => 1,
+            ),
+            15 => 
+            array (
+                'id' => 17,
+                'slug' => 'prices',
+                'icon' => NULL,
+                'route' => 'account.price-lists.index',
+                'parent_id' => NULL,
+                'sort_order' => 5,
+                'active' => 1,
+            ),
+            16 => 
+            array (
+                'id' => 18,
+                'slug' => 'relationships',
+                'icon' => NULL,
+                'route' => 'account.relationships.index',
+                'parent_id' => 2,
+                'sort_order' => 1,
                 'active' => 1,
             ),
         ));

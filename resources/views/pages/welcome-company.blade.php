@@ -83,7 +83,7 @@
             @endif
 
             <div class="row align-items-center gy-5">
-                <div class="col-lg-6 order-2 order-lg-1">
+                <div class="col-lg-6 order-2 order-lg-2">
                     <h1 class="display-6 fw-semibold mb-3">{{ __('welcome_company.headline') }}</h1>
                     <p class="text-muted fs-16 mb-4">{{ __('welcome_company.intro') }}</p>
 
@@ -127,7 +127,7 @@
                     </a>
                 </div>
 
-                <div class="col-lg-6 order-1 order-lg-2 text-center text-lg-end">
+                <div class="col-lg-6 order-1 order-lg-1 text-center text-lg-start">
                     <div class="welcome-company-hero d-inline-block">
                         <div class="welcome-company-hero__wrap">
                             <img

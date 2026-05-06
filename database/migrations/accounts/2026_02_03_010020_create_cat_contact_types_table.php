@@ -16,6 +16,9 @@ return new class extends Migration
         Schema::create('cat_contact_types', function (Blueprint $table) {
             $table->id();
             $table->string('code');
+            $table->boolean('is_unique_per_person')->default(true);
+            $table->string('mask')->nullable()->comment('Mask for formatting the value');
+            $table->string('validation')->nullable()->comment('Validation for the value');
             $table->boolean('active')->default(true);
             $table->smallInteger('sort_order')->default(9999)->comment('Order for listing');
 
@@ -28,8 +31,6 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name');
-            $table->string('mask')->nullable()->comment('Mask for formatting the value');
-            $table->string('validation')->nullable()->comment('Validation for the value');
 
             lmpStamps($table);
         });

@@ -217,6 +217,42 @@ class CatMenuAccountTypeAssignmentsTableSeeder extends Seeder
                 'menu_id' => 13,
                 'type_id' => 6,
             ),
+            33 => 
+            array (
+                'id' => 51,
+                'menu_id' => 17,
+                'type_id' => 3,
+            ),
+            34 => 
+            array (
+                'id' => 52,
+                'menu_id' => 17,
+                'type_id' => 4,
+            ),
+            35 => 
+            array (
+                'id' => 53,
+                'menu_id' => 17,
+                'type_id' => 6,
+            ),
+            36 => 
+            array (
+                'id' => 54,
+                'menu_id' => 18,
+                'type_id' => 4,
+            ),
+            37 => 
+            array (
+                'id' => 55,
+                'menu_id' => 18,
+                'type_id' => 3,
+            ),
+            38 => 
+            array (
+                'id' => 56,
+                'menu_id' => 18,
+                'type_id' => 6,
+            ),
         ));
         
         

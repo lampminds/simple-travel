@@ -14,6 +14,9 @@ return [
         'view' => 'Ver',
         'close' => 'Cerrar',
         'copy' => 'Copiar',
+        'code_copied' => 'Código copiado al portapapeles',
+        'code_copy_failed' => 'No se pudo copiar (navegador bloqueó o no compatible).',
+        'click_to_copy_code' => 'Clic para copiar este código',
         'navigation_badge_tooltip' => 'Total de registros',
         'select_option' => 'Seleccione una opción',
     ],
@@ -83,6 +86,11 @@ return [
             'impersonation_forbidden' => 'No tenés permiso para generar este enlace.',
             'impersonation_invalid_target' => 'Este usuario no puede usarse para este enlace.',
             'impersonation_link_aria' => 'Enlace de acceso de un solo uso',
+            'impersonation_link_label' => 'Enlace',
+            'impersonation_copy_button' => 'Copiar',
+            'impersonation_copied' => 'Copiado',
+            'impersonation_copy_failed' => 'No se pudo copiar',
+            'impersonation_copy_hint' => 'Tip: también podés hacer triple clic en el recuadro y Ctrl+C (Cmd+C en Mac).',
         ],
 
         'account_category' => 'Categoría de cuenta',
@@ -138,6 +146,9 @@ return [
             'email' => 'Correo electrónico',
             'roles' => 'Roles',
         ],
+        'user_filters' => [
+            'account' => 'Empresa',
+        ],
 
         'user_invitation' => 'Invitación',
         'user_invitations' => 'Invitaciones',
@@ -176,6 +187,47 @@ return [
         'user_invitation_filters' => [
             'type' => 'Tipo',
             'status' => 'Estado',
+        ],
+
+        'account_relationship' => 'Relación comercial',
+        'account_relationships' => 'Relaciones comerciales',
+
+        'account_relationship_columns' => [
+            'id' => 'ID',
+            'operator_account' => 'Operador',
+            'provider_account' => 'Prestador',
+            'status' => 'Estado',
+            'created_via' => 'Origen',
+            'approved_at' => 'Aprobada en',
+        ],
+
+        'account_relationship_fields' => [
+            'operator_account_id' => 'Cuenta operador',
+            'provider_account_id' => 'Cuenta prestador',
+            'status' => 'Estado',
+            'created_via' => 'Origen',
+            'source_invitation_id' => 'Invitación de origen',
+            'approved_by_user_id' => 'Aprobada por',
+            'approved_at' => 'Aprobada en',
+            'suspended_at' => 'Suspendida en',
+            'terminated_at' => 'Terminada en',
+        ],
+
+        'account_relationship_filters' => [
+            'status' => 'Estado',
+            'created_via' => 'Origen',
+        ],
+
+        'account_relationship_status' => [
+            'approved' => 'Aprobada',
+            'suspended' => 'Suspendida',
+            'terminated' => 'Terminada',
+        ],
+
+        'account_relationship_created_via' => [
+            'invitation' => 'Invitación',
+            'manual' => 'Manual',
+            'system' => 'Sistema',
         ],
 
         'role' => 'Rol',
@@ -270,6 +322,7 @@ return [
         'contact_type_fields' => [
             'code' => 'Código',
             'name' => 'Nombre',
+            'is_unique_per_person' => 'Único por persona',
             'mask' => 'Máscara',
             'mask_help' => 'Máscara para formatear el valor (ej. teléfono, documento).',
             'validation' => 'Validación',
@@ -300,6 +353,54 @@ return [
             'name' => 'Nombre',
             'department' => 'Departamento',
             'position' => 'Cargo',
+        ],
+
+        'person' => 'Persona',
+        'persons' => 'Personas',
+
+        'person_tabs' => [
+            'general' => 'General',
+            'users' => 'Usuarios vinculados',
+            'account_memberships' => 'Cuentas vinculadas',
+            'contact_methods' => 'Medios de contacto',
+            'contact_links' => 'Vínculos entre cuentas',
+        ],
+
+        'person_fields' => [
+            'name' => 'Nombre',
+            'user_id' => 'Usuario',
+            'add_user_link' => 'Vincular usuario',
+            'account_id' => 'Cuenta',
+            'contact_department_id' => 'Departamento',
+            'contact_position_id' => 'Cargo',
+            'is_primary' => 'Contacto principal de la cuenta',
+            'is_public_contact' => 'Contacto público',
+            'is_preferred_contact_mode' => 'Modo de contacto preferido',
+            'add_account_membership' => 'Añadir cuenta vinculada',
+            'contact_type_id' => 'Tipo de canal',
+            'contact_method_value' => 'Valor',
+            'contact_method_is_primary' => 'Principal para este canal',
+            'is_verified' => 'Verificado',
+            'add_contact_method' => 'Añadir medio de contacto',
+            'link_account_id' => 'Cuenta (dueña del vínculo)',
+            'link_source_account_id' => 'Cuenta origen del contacto',
+            'is_favorite' => 'Favorito',
+            'visibility' => 'Visibilidad',
+            'add_contact_link' => 'Añadir vínculo entre cuentas',
+        ],
+
+        'person_columns' => [
+            'id' => 'ID',
+            'name' => 'Nombre',
+            'users_count' => 'Usuarios',
+            'account_memberships_count' => 'Cuentas vinculadas',
+            'contact_methods_count' => 'Medios',
+            'contact_links_count' => 'Vínculos',
+        ],
+
+        'person_visibility' => [
+            'private' => 'Privado',
+            'shared' => 'Compartido',
         ],
 
         'provider' => 'Prestador',
@@ -1007,6 +1108,7 @@ return [
         'service_type_fields' => [
             'code' => 'Código',
             'name' => 'Nombre',
+            'description' => 'Descripción',
             'sort_order' => 'Orden',
         ],
 
@@ -1014,6 +1116,7 @@ return [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nombre',
+            'description' => 'Descripción',
             'sort_order' => 'Orden',
         ],
 

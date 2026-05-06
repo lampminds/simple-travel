@@ -16,6 +16,14 @@ use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\AccountNotificationsController;
+use App\Http\Controllers\AccountPriceListController;
+use App\Http\Controllers\AccountSettingsController;
+use App\Http\Controllers\AccountOperatorServiceOfferController;
+use App\Http\Controllers\AccountProviderServiceOfferController;
+use App\Http\Controllers\AccountRelationshipController;
+use App\Http\Controllers\AccountServiceOfferHubController;
+use App\Models\Account;
+use Illuminate\Http\Request;
 use App\Http\Controllers\WelcomeCompanyController;
 use App\Http\Controllers\AccountTasksController;
 use App\Http\Controllers\TenantSite\HomeController;
@@ -43,9 +51,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('account/switch', AccountSwitchController::class)->name('account.switch');
     Route::get('account/select', AccountSelectionController::class)->name('account.select');
 
-    Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
-    Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
-    Route::put('account/profile/password', [ProfileController::class, 'updatePassword'])->name('account.profile.password');
+    Route::get('account/access', [ProfileController::class, 'editAccess'])->name('account.access.edit');
+    Route::put('account/access', [ProfileController::class, 'updateAccess'])->name('account.access.update');
+    Route::put('account/access/password', [ProfileController::class, 'updateAccessPassword'])->name('account.access.password');
+
+    Route::get('account/profile', [ProfileController::class, 'editProfile'])->name('account.profile.edit');
+    Route::put('account/profile', [ProfileController::class, 'updateProfile'])->name('account.profile.update');
+    Route::get('account/contact', [ProfileController::class, 'editContact'])->name('account.contact.edit');
+    Route::put('account/contact', [ProfileController::class, 'updateContact'])->name('account.contact.update');
     Route::post('account/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('account.profile.avatar');
     Route::delete('account/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('account.profile.avatar.destroy');
 
@@ -80,7 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/dashboard/lane/{lane}', SelectDashboardLaneController::class)
         ->name('account.dashboard.lane')
         ->where('lane', 'provider|operator|agency');
-    Route::get('account/settings', [RoutingController::class, 'secondLevel'])->name('account.settings')->defaults('first', 'account')->defaults('second', 'settings');
+    Route::get('account/settings', [AccountSettingsController::class, 'edit'])->name('account.settings');
+    Route::put('account/settings', [AccountSettingsController::class, 'update'])->name('account.settings.update');
     Route::get('account/company', [AccountCompanyController::class, 'edit'])->name('account.company.edit');
     Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
@@ -89,6 +103,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/notifications', [AccountNotificationsController::class, 'store'])->name('account.notifications.store');
     Route::post('account/notifications/{notification}/read', [AccountNotificationsController::class, 'markAsRead'])
         ->name('account.notifications.read');
+    Route::get('account/relationships', [AccountRelationshipController::class, 'index'])->name('account.relationships.index');
+
+    Route::get('account/service-offers', [AccountServiceOfferHubController::class, 'index'])
+        ->name('account.service-offers.index');
+
+    Route::get('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'edit'])
+        ->name('account.service-offers.operators.edit');
+    Route::put('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'update'])
+        ->name('account.service-offers.operators.update');
+
+    Route::post('account/service-offers/{offer}/accept', [AccountOperatorServiceOfferController::class, 'accept'])
+        ->name('account.service-offers.accept');
+    Route::post('account/service-offers/{offer}/reject', [AccountOperatorServiceOfferController::class, 'reject'])
+        ->name('account.service-offers.reject');
+    Route::post('account/service-offers/{offer}/availability', [AccountOperatorServiceOfferController::class, 'updateLinkedAvailability'])
+        ->name('account.service-offers.linked-availability');
+
+    Route::get('account/provider/service-offers', function (Request $request) {
+        return redirect()->route('account.service-offers.index', array_merge($request->query(), ['as' => 'provider']));
+    });
+    Route::get('account/provider/service-offers/{operator}', function (Request $request, Account $operator) {
+        return redirect()->route('account.service-offers.operators.edit', array_merge($request->query(), ['operator' => $operator]));
+    });
+
+    Route::get('account/operator/service-offers', function (Request $request) {
+        return redirect()->route('account.service-offers.index', array_merge($request->query(), ['as' => 'operator']));
+    });
+    Route::post('account/operator/service-offers/{offer}/accept', [AccountOperatorServiceOfferController::class, 'accept']);
+    Route::post('account/operator/service-offers/{offer}/reject', [AccountOperatorServiceOfferController::class, 'reject']);
+    Route::post('account/operator/service-offers/{offer}/availability', [AccountOperatorServiceOfferController::class, 'updateLinkedAvailability']);
+    Route::get('account/price-lists', [AccountPriceListController::class, 'index'])->name('account.price-lists.index');
+    Route::get('account/price-lists/create', [AccountPriceListController::class, 'create'])->name('account.price-lists.create');
+    Route::post('account/price-lists', [AccountPriceListController::class, 'store'])->name('account.price-lists.store');
+    Route::get('account/price-lists/{priceList}/assignments', [AccountPriceListController::class, 'editAssignments'])
+        ->name('account.price-lists.assignments.edit');
+    Route::put('account/price-lists/{priceList}/assignments', [AccountPriceListController::class, 'updateAssignments'])
+        ->name('account.price-lists.assignments.update');
+    Route::get('account/price-lists/{priceList}/edit', [AccountPriceListController::class, 'edit'])->name('account.price-lists.edit');
+    Route::put('account/price-lists/{priceList}', [AccountPriceListController::class, 'update'])->name('account.price-lists.update');
+    Route::delete('account/price-lists/{priceList}', [AccountPriceListController::class, 'destroy'])->name('account.price-lists.destroy');
     Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 

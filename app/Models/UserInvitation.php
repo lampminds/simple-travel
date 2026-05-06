@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Services\PendingInvitationUserCleanup;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class UserInvitation extends Model
@@ -38,6 +39,8 @@ class UserInvitation extends Model
         'invited_by',
         'type',
         'status',
+        'invited_user_id',
+        'invited_person_id',
     ];
 
     protected $casts = [
@@ -70,6 +73,16 @@ class UserInvitation extends Model
         return $this->belongsTo(User::class, 'invited_by');
     }
 
+    public function invitedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'invited_user_id');
+    }
+
+    public function invitedPerson(): BelongsTo
+    {
+        return $this->belongsTo(Person::class, 'invited_person_id');
+    }
+
     /**
      * Pending and not past expires_at (status may still say pending until sync runs).
      */
@@ -100,16 +113,22 @@ class UserInvitation extends Model
      */
     public static function syncExpiredForAccount(?int $accountId = null): void
     {
-        $q = static::query()
+        $base = static::query()
             ->where('status', self::STATUS_PENDING)
             ->whereNotNull('expires_at')
             ->where('expires_at', '<=', now());
 
         if ($accountId !== null) {
-            $q->where('account_id', $accountId);
+            $base->where('account_id', $accountId);
         }
 
-        $q->update(['status' => self::STATUS_EXPIRED]);
+        $expired = (clone $base)->get();
+
+        foreach ($expired as $invitation) {
+            app(PendingInvitationUserCleanup::class)->deleteStubForInvitation($invitation);
+        }
+
+        $base->update(['status' => self::STATUS_EXPIRED]);
     }
 
     public function markRevoked(): void

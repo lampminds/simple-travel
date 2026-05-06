@@ -7,6 +7,10 @@ use App\Http\Middleware\RecordLastLogin;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\Account;
 use App\Models\AccountCategory;
+use App\Models\AccountPerson;
+use App\Models\ContactDepartment;
+use App\Models\ContactPosition;
+use App\Models\Person;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserInvitation;
@@ -22,11 +26,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
 
 class RegisteredUserController extends Controller
 {
     private const SESSION_STARTUP_ACCOUNT_ID_AFTER_VERIFY = 'startup_account_id_after_verify';
+
+    private const SESSION_STARTUP_EXTERNAL_INVITATION_ID_AFTER_VERIFY = 'startup_external_invitation_id_after_verify';
+
+    /** Business types (cat_account_categories.id, group=type) chosen at signup; reapplied on email verify if needed. */
+    private const SESSION_STARTUP_COMPANY_TYPE_CATEGORY_IDS_AFTER_VERIFY = 'startup_company_type_category_ids_after_verify';
 
     /**
      * Display the registration view.
@@ -73,10 +83,24 @@ class RegisteredUserController extends Controller
             $invitationMode = $candidate->type;
         }
 
+        $contactDepartments = ContactDepartment::query()
+            ->where('active', true)
+            ->orderBy('sort_order')
+            ->with(['translations.language.locale'])
+            ->get();
+
+        $contactPositions = ContactPosition::query()
+            ->where('active', true)
+            ->orderBy('sort_order')
+            ->with(['translations.language.locale'])
+            ->get();
+
         return view('auth.signup', [
             'companyTypes' => $companyTypes,
             'invitation' => $invitation,
             'invitationMode' => $invitationMode,
+            'contactDepartments' => $contactDepartments,
+            'contactPositions' => $contactPositions,
         ]);
     }
 
@@ -115,7 +139,7 @@ class RegisteredUserController extends Controller
      */
     private function storeNewCompany(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|confirmed|min:8',
@@ -130,9 +154,21 @@ class RegisteredUserController extends Controller
                     }
                 },
             ],
-            'company_type' => [
+            'company_types' => ['required', 'array', 'min:1'],
+            'company_types.*' => [
                 'required',
+                'integer',
                 Rule::exists('cat_account_categories', 'id')->where('group', 'type'),
+            ],
+            'contact_department_id' => [
+                'required',
+                'integer',
+                Rule::exists('cat_contact_departments', 'id')->where('active', true),
+            ],
+            'contact_position_id' => [
+                'required',
+                'integer',
+                Rule::exists('cat_contact_positions', 'id')->where('active', true),
             ],
         ], [
             'email.unique' => __('validation.custom.email.unique_user'),
@@ -140,40 +176,36 @@ class RegisteredUserController extends Controller
 
         $companyName = $request->string('company_name')->trim();
         $nick = $this->uniqueNickFromCompanyName($companyName);
+        $companyTypeCategoryIds = collect($validated['company_types'])
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+        $ownerDisplayName = Str::title($request->string('name')->trim());
+        $email = Str::lower($request->string('email')->trim());
 
-        $newAccountId = DB::transaction(function () use ($request, $companyName, $nick) {
-            $account = Account::create([
-                'nick' => $nick,
-                'name' => $companyName,
-                'commercial_name' => $companyName,
-                'email' => $request->email,
-            ]);
+        $bundle = $this->registerNewCompanyWithOwnerPerson(
+            companyName: $companyName,
+            nick: $nick,
+            companyTypeCategoryIds: $companyTypeCategoryIds,
+            email: $email,
+            passwordPlain: $request->string('password')->value(),
+            ownerDisplayName: $ownerDisplayName,
+            contactDepartmentId: (int) $validated['contact_department_id'],
+            contactPositionId: (int) $validated['contact_position_id'],
+            invitationToComplete: null,
+        );
 
-            $account->categories()->attach($request->company_type);
+        $newAccountId = $bundle['account']->id;
 
-            $user = User::create([
-                'name' => Str::title($request->string('name')->trim()),
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-
-            $user->accounts()->attach($account->id);
-
-            app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
-            app(ReplicateDefaultRolesToAccountService::class)->replicateTo((int) $account->id, null, (int) $user->id);
-            $user->assignRole('owner');
-            throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
-
-            app(AccountNotificationService::class)->createWelcomeForNewAccount((int) $account->id, $user);
-
-            event(new Registered($user));
-
-            Auth::login($user);
-
-            return $account->id;
-        });
-
-        return $this->finishRegistrationSession($request, $newAccountId, welcomeCompanyAfterVerify: true);
+        return $this->finishRegistrationSession(
+            $request,
+            $newAccountId,
+            welcomeCompanyAfterVerify: true,
+            externalInvitationIdAfterVerify: null,
+            companyTypeCategoryIdsAfterVerify: $companyTypeCategoryIds
+        );
     }
 
     /**
@@ -189,12 +221,10 @@ class RegisteredUserController extends Controller
                 'string',
                 'email',
                 'max:255',
-                'unique:users',
                 Rule::in([Str::lower($invitation->email)]),
             ],
             'password' => 'required|string|confirmed|min:8',
         ], [
-            'email.unique' => __('validation.custom.email.unique_user'),
             'email.in' => __('auth.register.invitation_email_mismatch'),
         ]);
 
@@ -202,36 +232,82 @@ class RegisteredUserController extends Controller
             $account = Account::query()->findOrFail($invitation->account_id);
 
             $registeredEmail = Str::lower($request->string('email')->trim());
-
-            $user = User::create([
-                'name' => Str::title($request->string('name')->trim()),
-                'email' => $registeredEmail,
-                'password' => Hash::make($request->password),
-            ]);
-
-            $user->accounts()->attach($account->id);
+            $registeredName = Str::title($request->string('name')->trim());
 
             $role = Role::query()
                 ->where('account_id', $invitation->account_id)
                 ->whereKey($invitation->role_id)
                 ->firstOrFail();
 
-            app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
-            $user->assignRole($role);
-            throw_unless(
-                $user->fresh()->hasRole($role->name),
-                \RuntimeException::class,
-                'Invitation registration must assign the role stored on the invitation.',
-            );
+            $dispatchRegisteredEvent = true;
+
+            if ($invitation->invited_user_id !== null) {
+                $user = User::query()->findOrFail($invitation->invited_user_id);
+
+                if (Str::lower((string) $user->email) !== $registeredEmail) {
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.register.invitation_email_mismatch'),
+                    ]);
+                }
+
+                if ($user->isPendingInvitation()) {
+                    $user->forceFill([
+                        'name' => $registeredName,
+                        'password' => Hash::make($request->password),
+                        'activation_state' => User::ACTIVATION_ACTIVE,
+                    ])->save();
+
+                    $person = $user->persons()->orderBy('persons.id')->first();
+                    if ($person !== null) {
+                        $person->forceFill(['name' => $registeredName])->save();
+                    }
+                } elseif ($user->activation_state === User::ACTIVATION_ACTIVE) {
+                    $user->forceFill([
+                        'name' => $registeredName,
+                    ])->save();
+
+                    $dispatchRegisteredEvent = false;
+                } else {
+                    throw ValidationException::withMessages([
+                        'email' => __('invitations.invitation_already_used'),
+                    ]);
+                }
+
+                app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
+                throw_unless(
+                    $user->fresh()->hasRole($role->name),
+                    \RuntimeException::class,
+                    'Invitation registration must preserve the role stored on the invitation.',
+                );
+            } else {
+                $user = User::query()->create([
+                    'name' => $registeredName,
+                    'email' => $registeredEmail,
+                    'password' => Hash::make($request->password),
+                    'activation_state' => User::ACTIVATION_ACTIVE,
+                ]);
+
+                $user->accounts()->attach($account->id);
+
+                app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
+                $user->assignRole($role);
+                throw_unless(
+                    $user->fresh()->hasRole($role->name),
+                    \RuntimeException::class,
+                    'Invitation registration must assign the role stored on the invitation.',
+                );
+            }
 
             $invitation->forceFill([
                 'email' => $registeredEmail,
-                'name' => Str::title($request->string('name')->trim()),
+                'name' => $registeredName,
                 'status' => UserInvitation::STATUS_ACCEPTED,
                 'accepted_at' => now(),
             ])->save();
 
-            event(new Registered($user));
+            if ($dispatchRegisteredEvent) {
+                event(new Registered($user));
+            }
 
             Auth::login($user);
 
@@ -246,7 +322,7 @@ class RegisteredUserController extends Controller
      */
     private function storeExternalInvitation(Request $request, UserInvitation $invitation): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'invitation_token' => 'required|string',
             'name' => 'required|string|max:255',
             'email' => [
@@ -269,9 +345,21 @@ class RegisteredUserController extends Controller
                     }
                 },
             ],
-            'company_type' => [
+            'company_types' => ['required', 'array', 'min:1'],
+            'company_types.*' => [
                 'required',
+                'integer',
                 Rule::exists('cat_account_categories', 'id')->where('group', 'type'),
+            ],
+            'contact_department_id' => [
+                'required',
+                'integer',
+                Rule::exists('cat_contact_departments', 'id')->where('active', true),
+            ],
+            'contact_position_id' => [
+                'required',
+                'integer',
+                Rule::exists('cat_contact_positions', 'id')->where('active', true),
             ],
         ], [
             'email.unique' => __('validation.custom.email.unique_user'),
@@ -280,9 +368,76 @@ class RegisteredUserController extends Controller
 
         $companyName = $request->string('company_name')->trim();
         $nick = $this->uniqueNickFromCompanyName($companyName);
+        $companyTypeCategoryIds = collect($validated['company_types'])
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+        $ownerDisplayName = Str::title($request->string('name')->trim());
+        $email = Str::lower($request->string('email')->trim());
 
-        $newAccountId = DB::transaction(function () use ($request, $companyName, $nick, $invitation) {
-            $email = Str::lower($request->string('email')->trim());
+        $bundle = $this->registerNewCompanyWithOwnerPerson(
+            companyName: $companyName,
+            nick: $nick,
+            companyTypeCategoryIds: $companyTypeCategoryIds,
+            email: $email,
+            passwordPlain: $request->string('password')->value(),
+            ownerDisplayName: $ownerDisplayName,
+            contactDepartmentId: (int) $validated['contact_department_id'],
+            contactPositionId: (int) $validated['contact_position_id'],
+            invitationToComplete: $invitation,
+        );
+
+        $newAccountId = $bundle['account']->id;
+
+        return $this->finishRegistrationSession(
+            $request,
+            $newAccountId,
+            welcomeCompanyAfterVerify: true,
+            externalInvitationIdAfterVerify: (int) $invitation->id,
+            companyTypeCategoryIdsAfterVerify: $companyTypeCategoryIds
+        );
+    }
+
+    /**
+     * Create person, user, user_person, account, account_user, default roles, and account_person (owner).
+     *
+     * @return array{user: User, account: Account, person: Person}
+     */
+    private function registerNewCompanyWithOwnerPerson(
+        string $companyName,
+        string $nick,
+        array $companyTypeCategoryIds,
+        string $email,
+        string $passwordPlain,
+        string $ownerDisplayName,
+        int $contactDepartmentId,
+        int $contactPositionId,
+        ?UserInvitation $invitationToComplete,
+    ): array {
+        return DB::transaction(function () use (
+            $companyName,
+            $nick,
+            $companyTypeCategoryIds,
+            $email,
+            $passwordPlain,
+            $ownerDisplayName,
+            $contactDepartmentId,
+            $contactPositionId,
+            $invitationToComplete,
+        ) {
+            $person = Person::create([
+                'name' => $ownerDisplayName,
+            ]);
+
+            $user = User::create([
+                'name' => $ownerDisplayName,
+                'email' => $email,
+                'password' => Hash::make($passwordPlain),
+            ]);
+
+            $user->persons()->attach($person->id);
 
             $account = Account::create([
                 'nick' => $nick,
@@ -291,38 +446,51 @@ class RegisteredUserController extends Controller
                 'email' => $email,
             ]);
 
-            $account->categories()->attach($request->company_type);
-
-            $user = User::create([
-                'name' => Str::title($request->string('name')->trim()),
-                'email' => $email,
-                'password' => Hash::make($request->password),
-            ]);
-
             $user->accounts()->attach($account->id);
 
             app(PermissionRegistrar::class)->setPermissionsTeamId($account->id);
             app(ReplicateDefaultRolesToAccountService::class)->replicateTo((int) $account->id, null, (int) $user->id);
             $user->assignRole('owner');
-            throw_unless($user->fresh()->hasRole('owner'), \RuntimeException::class, 'Registration must assign the owner role for the new account.');
+            throw_unless(
+                $user->fresh()->hasRole('owner'),
+                \RuntimeException::class,
+                'Registration must assign the owner role for the new account.',
+            );
+
+            AccountPerson::create([
+                'account_id' => $account->id,
+                'person_id' => $person->id,
+                'contact_department_id' => $contactDepartmentId,
+                'contact_position_id' => $contactPositionId,
+                'is_primary' => true,
+                'is_active' => true,
+                'is_public_contact' => false,
+                'is_preferred_contact_mode' => false,
+            ]);
+
+            $account->categories()->attach($companyTypeCategoryIds);
+
+            if ($invitationToComplete !== null) {
+                $invitationToComplete->forceFill([
+                    'email' => $email,
+                    'name' => $ownerDisplayName,
+                    'status' => UserInvitation::STATUS_ACCEPTED,
+                    'accepted_at' => now(),
+                ])->save();
+            }
 
             app(AccountNotificationService::class)->createWelcomeForNewAccount((int) $account->id, $user);
-
-            $invitation->forceFill([
-                'email' => $email,
-                'name' => Str::title($request->string('name')->trim()),
-                'status' => UserInvitation::STATUS_ACCEPTED,
-                'accepted_at' => now(),
-            ])->save();
 
             event(new Registered($user));
 
             Auth::login($user);
 
-            return $account->id;
+            return [
+                'user' => $user,
+                'account' => $account,
+                'person' => $person,
+            ];
         });
-
-        return $this->finishRegistrationSession($request, $newAccountId, welcomeCompanyAfterVerify: true);
     }
 
     /**
@@ -340,7 +508,13 @@ class RegisteredUserController extends Controller
         };
     }
 
-    private function finishRegistrationSession(Request $request, int $newAccountId, bool $welcomeCompanyAfterVerify = false): RedirectResponse
+    private function finishRegistrationSession(
+        Request $request,
+        int $newAccountId,
+        bool $welcomeCompanyAfterVerify = false,
+        ?int $externalInvitationIdAfterVerify = null,
+        ?array $companyTypeCategoryIdsAfterVerify = null
+    ): RedirectResponse
     {
         $request->session()->put(RecordLastLogin::SESSION_KEY, true);
         CurrentAccountSession::put($request, $request->user(), $newAccountId);
@@ -349,6 +523,20 @@ class RegisteredUserController extends Controller
         if ($welcomeCompanyAfterVerify) {
             $request->session()->put('welcome_company_after_verify', true);
             $request->session()->put(self::SESSION_STARTUP_ACCOUNT_ID_AFTER_VERIFY, $newAccountId);
+
+            if ($externalInvitationIdAfterVerify !== null && $externalInvitationIdAfterVerify > 0) {
+                $request->session()->put(
+                    self::SESSION_STARTUP_EXTERNAL_INVITATION_ID_AFTER_VERIFY,
+                    $externalInvitationIdAfterVerify
+                );
+            }
+
+            if (is_array($companyTypeCategoryIdsAfterVerify) && $companyTypeCategoryIdsAfterVerify !== []) {
+                $request->session()->put(
+                    self::SESSION_STARTUP_COMPANY_TYPE_CATEGORY_IDS_AFTER_VERIFY,
+                    array_values(array_unique(array_map(fn ($id): int => (int) $id, $companyTypeCategoryIdsAfterVerify)))
+                );
+            }
         }
 
         if (! $request->session()->has('locale')) {

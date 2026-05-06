@@ -16,8 +16,6 @@ class ContactTypeTranslation extends Model
         'contact_type_id',
         'language_id',
         'name',
-        'mask',
-        'validation',
     ];
 
     public function contactType(): BelongsTo

@@ -18,6 +18,9 @@ class CatContactTypesTableSeeder extends Seeder
             array (
                 'id' => 1,
                 'code' => 'email',
+                'is_unique_per_person' => 1,
+                'mask' => null,
+                'validation' => null,
                 'active' => 1,
                 'sort_order' => 9999,
             ),
@@ -25,6 +28,9 @@ class CatContactTypesTableSeeder extends Seeder
             array (
                 'id' => 2,
                 'code' => 'phone',
+                'is_unique_per_person' => 1,
+                'mask' => null,
+                'validation' => null,
                 'active' => 1,
                 'sort_order' => 9999,
             ),
@@ -32,6 +38,9 @@ class CatContactTypesTableSeeder extends Seeder
             array (
                 'id' => 3,
                 'code' => 'whatsapp',
+                'is_unique_per_person' => 1,
+                'mask' => null,
+                'validation' => null,
                 'active' => 1,
                 'sort_order' => 9999,
             ),

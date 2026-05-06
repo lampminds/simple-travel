@@ -26,6 +26,7 @@ use Filament\Support\Enums\TextSize;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
@@ -230,6 +231,44 @@ class UserResource extends LmpResource
                     ->getStateUsing(fn (User $record) => $record->roleNamesAcrossTeams() ?: '—')
                     ->badge(),
             ])
+            ->filters([
+                SelectFilter::make('account_id')
+                    ->label(__('filament.resources.user_filters.account'))
+                    ->options(function (): array {
+                        $query = Account::query()
+                            ->orderBy('commercial_name')
+                            ->orderBy('name')
+                            ->orderBy('id');
+
+                        $user = Filament::auth()->user();
+                        if ($user instanceof User && ! $user->belongsToPlatformAccount()) {
+                            $accountId = $user->currentAccountId();
+                            if ($accountId !== null) {
+                                $query->where('accounts.id', $accountId);
+                            }
+                        }
+
+                        return $query
+                            ->get()
+                            ->mapWithKeys(
+                                fn (Account $a): array => [
+                                    $a->id => $a->commercial_name
+                                        ?: $a->name
+                                        ?: $a->code
+                                        ?: (string) $a->id,
+                                ]
+                            )
+                            ->all();
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        $accountId = (int) ($data['value'] ?? 0);
+                        if ($accountId < 1) {
+                            return $query;
+                        }
+
+                        return $query->whereHas('accounts', fn (Builder $q) => $q->where('accounts.id', $accountId));
+                    }),
+            ])
             ->defaultSort('id')
             ->recordActions([
                 ActionGroup::make([
@@ -281,6 +320,10 @@ class UserResource extends LmpResource
                                 ->extraInputAttributes([
                                     'aria-label' => __('filament.resources.user_actions.impersonation_link_aria'),
                                 ])
+                                ->visible(fn (Get $get): bool => blank($get('error'))),
+                            Text::make(__('filament.resources.user_actions.impersonation_copy_hint'))
+                                ->color('gray')
+                                ->size(TextSize::Small)
                                 ->visible(fn (Get $get): bool => blank($get('error'))),
                         ])
                         ->modalCancelActionLabel(__('filament.common.close'))

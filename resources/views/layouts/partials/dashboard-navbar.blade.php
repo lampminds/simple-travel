@@ -169,20 +169,28 @@
                                 <div class="dropdown-divider"></div>
                             @endif
                             <!-- item start -->
+                            <a class="dropdown-item p-2" href="{{ route('account.access.edit') }}">
+                                <i class="icon icon-xxs me-1 icon-dual" data-feather="shield"></i>
+                                {{ __('profile.menu_access') }}
+                            </a>
                             <a class="dropdown-item p-2" href="{{ route('account.profile.edit') }}">
                                 <i class="icon icon-xxs me-1 icon-dual" data-feather="user"></i>
                                 {{ __('profile.menu_profile') }}
                             </a>
+                            <a class="dropdown-item p-2" href="{{ route('account.contact.edit') }}">
+                                <i class="icon icon-xxs me-1 icon-dual" data-feather="at-sign"></i>
+                                {{ __('profile.menu_contact') }}
+                            </a>
+                            <!-- item end -->
+
+                            <!-- item start -->
+                            <a class="dropdown-item p-2" href="{{ route('account.company.edit') }}">
+                                <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
+                                {{ __('profile.menu_company') }}
+                            </a>
                             <!-- item end -->
 
                             @if(auth()->user()->hasRoleForCurrentAccount('owner'))
-                                <!-- item start -->
-                                <a class="dropdown-item p-2" href="{{ route('account.company.edit') }}">
-                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
-                                    Empresa
-                                </a>
-                                <!-- item end -->
-
                                 <!-- item start -->
                                 <a class="dropdown-item p-2" href="{{ route('account.invitations.index') }}">
                                     <i class="icon icon-xxs me-1 icon-dual" data-feather="mail"></i>
@@ -199,7 +207,7 @@
                             <!-- item end -->
 
                             <!-- item start -->
-                            <a class="dropdown-item p-2" href="#">
+                            <a class="dropdown-item p-2 disabled text-muted" href="#" aria-disabled="true" tabindex="-1" onclick="return false;">
                                 <i class="icon icon-xxs me-1 icon-dual" data-feather="aperture"></i>
                                 Support
                             </a>

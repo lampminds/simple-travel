@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class ContactType extends Model
@@ -16,11 +15,15 @@ class ContactType extends Model
 
     protected $fillable = [
         'code',
+        'is_unique_per_person',
+        'mask',
+        'validation',
         'active',
         'sort_order',
     ];
 
     protected $casts = [
+        'is_unique_per_person' => 'boolean',
         'active' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -34,18 +37,11 @@ class ContactType extends Model
     }
 
     /**
-     * Contacts that have at least one assignment row for this catalog type.
+     * Values stored on persons for this channel type (email, phone, etc.).
      */
-    public function contacts(): HasManyThrough
+    public function personContactMethods(): HasMany
     {
-        return $this->hasManyThrough(
-            Contact::class,
-            ContactTypeAssignment::class,
-            'contact_type_id',
-            'id',
-            'id',
-            'contact_id'
-        );
+        return $this->hasMany(PersonContactMethod::class, 'contact_type_id');
     }
 
     /**
@@ -56,22 +52,6 @@ class ContactType extends Model
         $trans = $this->getTranslationForDisplay();
 
         return $trans?->name ?? $this->attributes['code'] ?? null;
-    }
-
-    /**
-     * Get mask for display (from translations).
-     */
-    public function getMaskAttribute(): ?string
-    {
-        return $this->getTranslationForDisplay()?->mask;
-    }
-
-    /**
-     * Get validation for display (from translations).
-     */
-    public function getValidationAttribute(): ?string
-    {
-        return $this->getTranslationForDisplay()?->validation;
     }
 
     /**

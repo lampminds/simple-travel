@@ -41,6 +41,14 @@ class ServiceType extends Model
     }
 
     /**
+     * Get description for display (from translations).
+     */
+    public function getDescriptionAttribute(): string
+    {
+        return $this->getTranslationForDisplay()?->description ?? '';
+    }
+
+    /**
      * Translation to use for display (e.g. in tables and dropdowns).
      * Prefers the translation for the current app locale when available.
      */

@@ -22,7 +22,7 @@ class CreateServiceType extends LmpCreateRecord
         parent::fillForm();
         $translations = [];
         foreach (Language::query()->orderBy('id')->get() as $lang) {
-            $translations[$lang->id] = ['name' => ''];
+            $translations[$lang->id] = ['name' => '', 'description' => ''];
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
@@ -43,12 +43,16 @@ class CreateServiceType extends LmpCreateRecord
     protected function syncTranslations(ServiceType $record, array $translations): void
     {
         foreach ($translations as $languageId => $row) {
-            if (empty($row['name'] ?? '')) {
+            if (empty($row['name'] ?? '') && empty(trim((string) ($row['description'] ?? '')))) {
                 continue;
             }
+
+            $description = trim((string) ($row['description'] ?? ''));
+
             $record->translations()->create([
                 'language_id' => $languageId,
                 'name' => $row['name'] ?? '',
+                'description' => $description !== '' ? $description : null,
             ]);
         }
     }

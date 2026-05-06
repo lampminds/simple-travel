@@ -19,9 +19,7 @@ class ViewContactType extends LmpViewRecord
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
                 'name' => $trans->name,
-                'mask' => $trans->mask,
-                'validation' => $trans->validation,
-            ] : ['name' => '', 'mask' => null, 'validation' => null];
+            ] : ['name' => ''];
         }
 
         return $data;

@@ -15,13 +15,16 @@
 
             <x-panel-account-summary :stats="$panelStats" class="mt-4" />
 
-            @if (auth()->user()?->shouldShowBackToAccountDashboard())
-            <div class="mt-4">
-                <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary">
-                    {{ __('catalog.back_dashboard') }}
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <a href="{{ route('account.service-offers.index') }}" class="btn btn-outline-primary">
+                    {{ __('account.service_offers_nav') }}
                 </a>
+                @if (auth()->user()?->shouldShowBackToAccountDashboard())
+                    <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-secondary">
+                        {{ __('catalog.back_dashboard') }}
+                    </a>
+                @endif
             </div>
-            @endif
         </div>
     </section>
 

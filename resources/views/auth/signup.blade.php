@@ -83,21 +83,55 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="company_type" class="form-label">{{ __('auth.register.company_type') }}</label>
-                                                <select class="form-select @error('company_type') is-invalid @enderror" id="company_type" name="company_type" @if($mode !== 'internal') required @endif>
-                                                    <option value="">{{ __('auth.register.select_type') }}</option>
+                                                <label class="form-label">{{ __('auth.register.company_type') }}</label>
+                                                <div class="border rounded p-2 @error('company_types') border-danger @enderror">
                                                     @foreach($companyTypes ?? [] as $id => $data)
                                                         @php
                                                             $name = is_array($data) ? ($data['name'] ?? '') : $data;
-                                                            $description = is_array($data) ? ($data['description'] ?? '') : '';
+                                                            $description = trim((string) (is_array($data) ? ($data['description'] ?? '') : ''));
+                                                            $label = $description !== '' ? "{$name} ({$description})" : $name;
+                                                            $checked = in_array((string) $id, array_map('strval', old('company_types', [])), true);
                                                         @endphp
-                                                        <option value="{{ $id }}" {{ old('company_type') == $id ? 'selected' : '' }}
-                                                                title="{{ e($description) }}"
-                                                                data-description="{{ e($description) }}">{{ $name }}</option>
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input @error('company_types') is-invalid @enderror"
+                                                                   type="checkbox"
+                                                                   id="company_type_{{ $id }}"
+                                                                   name="company_types[]"
+                                                                   value="{{ $id }}"
+                                                                   @checked($checked)>
+                                                            <label class="form-check-label" for="company_type_{{ $id }}">{{ $label }}</label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <x-form-field-error name="company_types" />
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="contact_department_id" class="form-label">{{ __('auth.register.contact_department') }}</label>
+                                                <select class="form-select @error('contact_department_id') is-invalid @enderror"
+                                                        id="contact_department_id" name="contact_department_id" required>
+                                                    <option value="">{{ __('auth.register.select_contact_department') }}</option>
+                                                    @foreach ($contactDepartments ?? [] as $dept)
+                                                        <option value="{{ $dept->id }}" {{ (string) old('contact_department_id') === (string) $dept->id ? 'selected' : '' }}>
+                                                            {{ $dept->code }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
-                                                <x-form-field-error name="company_type" />
-                                                <div id="company_type_description" class="small text-muted mt-2" style="min-height: 1.5em;" aria-live="polite"></div>
+                                                <x-form-field-error name="contact_department_id" />
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="contact_position_id" class="form-label">{{ __('auth.register.contact_position') }}</label>
+                                                <select class="form-select @error('contact_position_id') is-invalid @enderror"
+                                                        id="contact_position_id" name="contact_position_id" required>
+                                                    <option value="">{{ __('auth.register.select_contact_position') }}</option>
+                                                    @foreach ($contactPositions ?? [] as $pos)
+                                                        <option value="{{ $pos->id }}" {{ (string) old('contact_position_id') === (string) $pos->id ? 'selected' : '' }}>
+                                                            {{ $pos->code }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <x-form-field-error name="contact_position_id" />
                                             </div>
                                             @endunless
 
@@ -246,7 +280,7 @@
 
                     <div class="row mt-3">
                         <div class="col-12 text-center">
-                            <p class="text-muted">{{ __('auth.register.already_have_account') }} <a href="{{ route('login') }}"
+                            <p class="text-muted">{{ __('auth.register.already_have_account') }} <a href="{{ route('login', ($invitation ?? null) ? ['invitation_token' => $invitation->token] : []) }}"
                                     class="text-primary fw-semibold ms-1">{{ __('auth.register.login') }}</a></p>
                         </div> <!-- end col -->
                     </div>
@@ -333,19 +367,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    @if (($invitationMode ?? null) !== 'internal')
-    const select = document.getElementById('company_type');
-    const descEl = document.getElementById('company_type_description');
-    if (select && descEl) {
-        function updateCompanyTypeDescription() {
-            const opt = select.options[select.selectedIndex];
-            const desc = opt && opt.dataset ? (opt.dataset.description || '') : '';
-            descEl.textContent = desc;
-        }
-        select.addEventListener('change', updateCompanyTypeDescription);
-        updateCompanyTypeDescription();
-    }
-    @endif
 });
 </script>
 @endsection

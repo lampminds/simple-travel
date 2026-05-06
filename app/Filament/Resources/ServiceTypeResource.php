@@ -6,6 +6,7 @@ use App\Filament\Resources\ServiceTypeResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceType;
 use BackedEnum;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -66,6 +67,10 @@ class ServiceTypeResource extends LmpResource
                     TextInput::make("translations.{$lang->id}.name")
                         ->label(__('filament.resources.service_type_fields.name'))
                         ->maxLength(255),
+                    Textarea::make("translations.{$lang->id}.description")
+                        ->label(__('filament.resources.service_type_fields.description'))
+                        ->rows(3)
+                        ->columnSpanFull(),
                 ])
                 ->columns(2)
                 ->collapsible();
@@ -113,6 +118,15 @@ class ServiceTypeResource extends LmpResource
                     ->searchable(query: function ($query, $search): void {
                         $query->whereHas('translations', function ($q) use ($search): void {
                             $q->where('name', 'like', '%' . $search . '%');
+                        });
+                    }),
+                TextColumn::make('description')
+                    ->label(__('filament.resources.service_type_columns.description'))
+                    ->wrap()
+                    ->limit(80)
+                    ->searchable(query: function ($query, $search): void {
+                        $query->whereHas('translations', function ($q) use ($search): void {
+                            $q->where('description', 'like', '%' . $search . '%');
                         });
                     }),
             ])

@@ -19,6 +19,7 @@ class PriceListItem extends Model
         'service_variant_id',
         'price',
         'pricing_mode',
+        'application_mode',
     ];
 
     protected $casts = [

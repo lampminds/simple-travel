@@ -20,7 +20,8 @@ class ViewServiceType extends LmpViewRecord
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
                 'name' => $trans->name,
-            ] : ['name' => ''];
+                'description' => $trans->description ?? '',
+            ] : ['name' => '', 'description' => ''];
         }
 
         return $data;

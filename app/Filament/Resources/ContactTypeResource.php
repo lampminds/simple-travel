@@ -71,16 +71,7 @@ class ContactTypeResource extends LmpResource
                     TextInput::make("translations.{$lang->id}.name")
                         ->label(__('filament.resources.contact_type_fields.name'))
                         ->maxLength(255),
-                    TextInput::make("translations.{$lang->id}.mask")
-                        ->label(__('filament.resources.contact_type_fields.mask'))
-                        ->maxLength(255)
-                        ->helperText(__('filament.resources.contact_type_fields.mask_help')),
-                    TextInput::make("translations.{$lang->id}.validation")
-                        ->label(__('filament.resources.contact_type_fields.validation'))
-                        ->maxLength(255)
-                        ->helperText(__('filament.resources.contact_type_fields.validation_help')),
                 ])
-                ->columns(3)
                 ->collapsible();
         })->all();
 
@@ -94,6 +85,17 @@ class ContactTypeResource extends LmpResource
                                     ->label(__('filament.resources.contact_type_fields.code'))
                                     ->placeholder(__('filament.resources.contact_type_fields.code'))
                                     ->maxLength(255),
+                                Toggle::make('is_unique_per_person')
+                                    ->label(__('filament.resources.contact_type_fields.is_unique_per_person'))
+                                    ->default(true),
+                                TextInput::make('mask')
+                                    ->label(__('filament.resources.contact_type_fields.mask'))
+                                    ->maxLength(255)
+                                    ->helperText(__('filament.resources.contact_type_fields.mask_help')),
+                                TextInput::make('validation')
+                                    ->label(__('filament.resources.contact_type_fields.validation'))
+                                    ->maxLength(255)
+                                    ->helperText(__('filament.resources.contact_type_fields.validation_help')),
                                 Toggle::make('active')
                                     ->label(__('filament.common.active'))
                                     ->default(true),

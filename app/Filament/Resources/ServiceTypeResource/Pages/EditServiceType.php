@@ -27,7 +27,8 @@ class EditServiceType extends LmpEditRecord
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
                 'name' => $trans->name,
-            ] : ['name' => ''];
+                'description' => $trans->description ?? '',
+            ] : ['name' => '', 'description' => ''];
         }
 
         return $data;
@@ -47,12 +48,16 @@ class EditServiceType extends LmpEditRecord
     {
         $record->translations()->delete();
         foreach ($translations as $languageId => $row) {
-            if (empty($row['name'] ?? '')) {
+            if (empty($row['name'] ?? '') && empty(trim((string) ($row['description'] ?? '')))) {
                 continue;
             }
+
+            $description = trim((string) ($row['description'] ?? ''));
+
             $record->translations()->create([
                 'language_id' => $languageId,
                 'name' => $row['name'] ?? '',
+                'description' => $description !== '' ? $description : null,
             ]);
         }
     }

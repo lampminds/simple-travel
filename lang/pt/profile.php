@@ -1,9 +1,15 @@
 <?php
 
 return [
-    'title' => 'O meu perfil',
+    'title' => 'A minha conta',
     'heading' => 'Perfil',
-    'subtitle' => 'Atualize a sua foto, nome, e-mail e palavra-passe.',
+    'subtitle' => 'Atualize os seus dados.',
+    'access_title' => 'Acesso',
+    'access_heading' => 'Acesso',
+    'access_subtitle' => 'Gira o e-mail de acesso e a palavra-passe.',
+    'profile_title' => 'Perfil',
+    'profile_heading' => 'Perfil',
+    'profile_subtitle' => 'Gira a sua foto e dados pessoais.',
 
     'avatar_heading' => 'Foto de perfil',
     'avatar_help' => 'Carregue uma imagem (máx. 2 MB, JPEG, PNG, GIF ou WebP). Se não carregar, mostramos um avatar gerado (DiceBear).',
@@ -16,11 +22,17 @@ return [
 
     'name' => 'Nome',
     'email' => 'E-mail',
+    'department' => 'Departamento',
+    'position' => 'Cargo',
+    'not_assigned' => 'Não atribuído',
+    'select_department' => 'Selecione um departamento',
+    'select_position' => 'Selecione um cargo',
     'save' => 'Guardar alterações',
     'updated' => 'O seu perfil foi atualizado.',
 
     'email_changed_verify' => 'O seu e-mail foi alterado. Confirme o novo endereço através da ligação que lhe enviámos.',
 
+    'profile_updated' => 'O seu perfil pessoal foi atualizado.',
     'password_heading' => 'Alterar palavra-passe',
     'current_password' => 'Palavra-passe atual',
     'new_password' => 'Nova palavra-passe',
@@ -28,7 +40,27 @@ return [
     'update_password' => 'Atualizar palavra-passe',
     'password_updated' => 'A sua palavra-passe foi atualizada.',
 
+    'menu_access' => 'Acesso',
     'menu_profile' => 'Perfil',
+    'menu_contact' => 'Contacto',
+    'menu_company' => 'Empresa',
     'menu_subtitle' => 'Conta',
+    'contact_title' => 'Os meus dados de contacto',
+    'contact_heading' => 'Contacto',
+    'contact_subtitle' => 'Gira os seus meios de contacto (e-mail, telefone e outros).',
+    'contact_type' => 'Tipo de contacto',
+    'contact_select_type' => 'Selecione um tipo',
+    'contact_value' => 'Valor',
+    'contact_value_placeholder' => 'Introduza o dado de contacto',
+    'contact_type_required' => 'Selecione um tipo de contacto.',
+    'contact_value_required' => 'Introduza o valor do contacto.',
+    'contact_delete' => 'Eliminar',
+    'contact_add_row' => 'Adicionar contacto',
+    'contact_remove_row' => 'Remover',
+    'contact_save' => 'Guardar contacto',
+    'contact_updated' => 'Os seus dados de contacto foram atualizados.',
+    'contact_empty' => 'Ainda não tem meios de contacto registados.',
+    'contact_person_missing' => 'Não foi encontrada uma pessoa vinculada para editar contacto.',
+    'contact_unique_type_error' => 'Já existe um contacto do tipo :type para esta pessoa.',
     'sign_out' => 'Terminar sessão',
 ];

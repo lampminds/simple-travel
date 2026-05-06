@@ -26,9 +26,7 @@ class EditContactType extends LmpEditRecord
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
                 'name' => $trans->name,
-                'mask' => $trans->mask,
-                'validation' => $trans->validation,
-            ] : ['name' => '', 'mask' => null, 'validation' => null];
+            ] : ['name' => ''];
         }
 
         return $data;
@@ -54,8 +52,6 @@ class EditContactType extends LmpEditRecord
             $record->translations()->create([
                 'language_id' => $languageId,
                 'name' => $row['name'] ?? '',
-                'mask' => $row['mask'] ?? null,
-                'validation' => $row['validation'] ?? null,
             ]);
         }
     }

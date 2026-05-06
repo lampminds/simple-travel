@@ -12,6 +12,9 @@ return [
         'view' => 'View',
         'close' => 'Close',
         'copy' => 'Copy',
+        'code_copied' => 'Code copied to clipboard',
+        'code_copy_failed' => 'Could not copy (browser blocked or unsupported).',
+        'click_to_copy_code' => 'Click to copy this code',
         'navigation_badge_tooltip' => 'Total records',
         'select_option' => 'Select an option',
     ],
@@ -81,6 +84,11 @@ return [
             'impersonation_forbidden' => 'You are not allowed to generate this link.',
             'impersonation_invalid_target' => 'This user cannot be used for this link.',
             'impersonation_link_aria' => 'One-time access link',
+            'impersonation_link_label' => 'Link',
+            'impersonation_copy_button' => 'Copy',
+            'impersonation_copied' => 'Copied',
+            'impersonation_copy_failed' => 'Copy failed',
+            'impersonation_copy_hint' => 'Tip: you can also triple-click the box and press Ctrl+C (Cmd+C on Mac).',
         ],
 
         'account_category' => 'Account category',
@@ -136,6 +144,9 @@ return [
             'email' => 'Email',
             'roles' => 'Roles',
         ],
+        'user_filters' => [
+            'account' => 'Company',
+        ],
 
         'user_invitation' => 'Invitation',
         'user_invitations' => 'Invitations',
@@ -174,6 +185,47 @@ return [
         'user_invitation_filters' => [
             'type' => 'Type',
             'status' => 'Status',
+        ],
+
+        'account_relationship' => 'Commercial relationship',
+        'account_relationships' => 'Commercial relationships',
+
+        'account_relationship_columns' => [
+            'id' => 'ID',
+            'operator_account' => 'Operator',
+            'provider_account' => 'Provider',
+            'status' => 'Status',
+            'created_via' => 'Origin',
+            'approved_at' => 'Approved at',
+        ],
+
+        'account_relationship_fields' => [
+            'operator_account_id' => 'Operator account',
+            'provider_account_id' => 'Provider account',
+            'status' => 'Status',
+            'created_via' => 'Origin',
+            'source_invitation_id' => 'Source invitation',
+            'approved_by_user_id' => 'Approved by',
+            'approved_at' => 'Approved at',
+            'suspended_at' => 'Suspended at',
+            'terminated_at' => 'Terminated at',
+        ],
+
+        'account_relationship_filters' => [
+            'status' => 'Status',
+            'created_via' => 'Origin',
+        ],
+
+        'account_relationship_status' => [
+            'approved' => 'Approved',
+            'suspended' => 'Suspended',
+            'terminated' => 'Terminated',
+        ],
+
+        'account_relationship_created_via' => [
+            'invitation' => 'Invitation',
+            'manual' => 'Manual',
+            'system' => 'System',
         ],
 
         'role' => 'Role',
@@ -268,6 +320,7 @@ return [
         'contact_type_fields' => [
             'code' => 'Code',
             'name' => 'Name',
+            'is_unique_per_person' => 'Unique per person',
             'mask' => 'Mask',
             'mask_help' => 'Mask for formatting the value (e.g. phone, document).',
             'validation' => 'Validation',
@@ -298,6 +351,54 @@ return [
             'name' => 'Name',
             'department' => 'Department',
             'position' => 'Position',
+        ],
+
+        'person' => 'Person',
+        'persons' => 'Persons',
+
+        'person_tabs' => [
+            'general' => 'General',
+            'users' => 'Linked users',
+            'account_memberships' => 'Linked accounts',
+            'contact_methods' => 'Contact methods',
+            'contact_links' => 'Cross-account links',
+        ],
+
+        'person_fields' => [
+            'name' => 'Name',
+            'user_id' => 'User',
+            'add_user_link' => 'Link user',
+            'account_id' => 'Account',
+            'contact_department_id' => 'Department',
+            'contact_position_id' => 'Position',
+            'is_primary' => 'Primary contact for account',
+            'is_public_contact' => 'Public contact',
+            'is_preferred_contact_mode' => 'Preferred contact mode',
+            'add_account_membership' => 'Add linked account',
+            'contact_type_id' => 'Channel type',
+            'contact_method_value' => 'Value',
+            'contact_method_is_primary' => 'Primary for this channel',
+            'is_verified' => 'Verified',
+            'add_contact_method' => 'Add contact method',
+            'link_account_id' => 'Account (owns link)',
+            'link_source_account_id' => 'Source account (contact origin)',
+            'is_favorite' => 'Favorite',
+            'visibility' => 'Visibility',
+            'add_contact_link' => 'Add cross-account link',
+        ],
+
+        'person_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'users_count' => 'Users',
+            'account_memberships_count' => 'Linked accounts',
+            'contact_methods_count' => 'Methods',
+            'contact_links_count' => 'Links',
+        ],
+
+        'person_visibility' => [
+            'private' => 'Private',
+            'shared' => 'Shared',
         ],
 
         'provider' => 'Provider',
@@ -1005,6 +1106,7 @@ return [
         'service_type_fields' => [
             'code' => 'Code',
             'name' => 'Name',
+            'description' => 'Description',
             'sort_order' => 'Sort order',
         ],
 
@@ -1012,6 +1114,7 @@ return [
             'id' => 'ID',
             'code' => 'Code',
             'name' => 'Name',
+            'description' => 'Description',
             'sort_order' => 'Sort order',
         ],
 

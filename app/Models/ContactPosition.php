@@ -33,11 +33,11 @@ class ContactPosition extends Model
     }
 
     /**
-     * Get the contacts with this position.
+     * Account–person rows using this position on the account_person pivot.
      */
-    public function contacts(): HasMany
+    public function accountPersons(): HasMany
     {
-        return $this->hasMany(Contact::class);
+        return $this->hasMany(AccountPerson::class, 'contact_position_id');
     }
 
     /**

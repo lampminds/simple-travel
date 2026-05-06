@@ -16,6 +16,7 @@ class ServiceTypeTranslation extends Model
         'service_type_id',
         'language_id',
         'name',
+        'description',
     ];
 
     public function serviceType(): BelongsTo

@@ -3,6 +3,7 @@
 namespace App\Livewire\ServiceWizard;
 
 use App\Models\Currency;
+use App\Models\Language;
 use App\Models\Service;
 use App\Models\ServiceVariant;
 use Illuminate\Contracts\View\View;
@@ -11,10 +12,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ServiceVariantsStep extends Component
 {
+    use WithFileUploads;
+
     public const MODE_LIST = 'list';
 
     public const MODE_FORM = 'form';
@@ -36,6 +41,22 @@ class ServiceVariantsStep extends Component
 
     public bool $isCopy = false;
 
+    /** Bootstrap tab id: general | pricing | descriptions | images */
+    public string $variantFormTab = 'general';
+
+    /**
+     * Tabs that had validation errors on the last failed save (for nav highlighting).
+     *
+     * @var list<string>
+     */
+    public array $variantTabsWithErrors = [];
+
+    /** @var mixed */
+    public $mainImage = null;
+
+    /** @var array<int, mixed> */
+    public array $galleryImages = [];
+
     public function mount(int $serviceId, int $serviceTypeId): void
     {
         $this->serviceId = $serviceId;
@@ -44,6 +65,19 @@ class ServiceVariantsStep extends Component
         $this->form = [];
         $this->editingVariantId = null;
         $this->isCopy = false;
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
+    }
+
+    public function updatedMainImage(): void
+    {
+        $this->resetValidation('mainImage');
+    }
+
+    public function updatedGalleryImages(): void
+    {
+        $this->resetValidation('galleryImages');
     }
 
     public function startCreate(): void
@@ -52,6 +86,9 @@ class ServiceVariantsStep extends Component
         $this->mode = self::MODE_FORM;
         $this->editingVariantId = null;
         $this->isCopy = false;
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
         $this->form = $this->defaultVariantRow();
     }
 
@@ -62,11 +99,15 @@ class ServiceVariantsStep extends Component
         $variant = ServiceVariant::query()
             ->where('service_id', $service->id)
             ->whereKey($variantId)
+            ->with(['translations', 'media'])
             ->firstOrFail();
 
         $this->mode = self::MODE_FORM;
         $this->editingVariantId = $variant->id;
         $this->isCopy = false;
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
         $this->form = $this->variantToRow($variant);
     }
 
@@ -80,6 +121,7 @@ class ServiceVariantsStep extends Component
         $variant = ServiceVariant::query()
             ->where('service_id', $service->id)
             ->whereKey($variantId)
+            ->with('translations')
             ->firstOrFail();
 
         $row = $this->variantToRow($variant);
@@ -89,6 +131,9 @@ class ServiceVariantsStep extends Component
         $this->mode = self::MODE_FORM;
         $this->editingVariantId = null;
         $this->isCopy = true;
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
         $this->form = $row;
     }
 
@@ -101,7 +146,7 @@ class ServiceVariantsStep extends Component
         $counter = 0;
 
         while ($counter < 1000) {
-            $suffix = $counter === 0 ? '-copy' : '-copy-' . $counter;
+            $suffix = $counter === 0 ? '-copy' : '-copy-'.$counter;
             $candidate = $originalSku.$suffix;
             if (mb_strlen($candidate) > 255) {
                 $candidate = mb_substr($originalSku, 0, max(0, 255 - mb_strlen($suffix))).$suffix;
@@ -129,6 +174,9 @@ class ServiceVariantsStep extends Component
         $this->editingVariantId = null;
         $this->isCopy = false;
         $this->form = [];
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
     }
 
     public function deleteVariant(int $variantId): void
@@ -144,19 +192,82 @@ class ServiceVariantsStep extends Component
         $this->mode = self::MODE_LIST;
     }
 
+    public function removeVariantMainImage(): void
+    {
+        if (! $this->editingVariantId) {
+            return;
+        }
+
+        $service = $this->authorizedService();
+        $variant = ServiceVariant::query()
+            ->where('service_id', $service->id)
+            ->whereKey($this->editingVariantId)
+            ->firstOrFail();
+
+        $variant->clearMediaCollection(ServiceVariant::MEDIA_COLLECTION_MAIN);
+        $this->flashMessage = __('wizard.variant_media_main_removed');
+    }
+
+    public function removeVariantGalleryMedia(int $mediaId): void
+    {
+        if (! $this->editingVariantId) {
+            return;
+        }
+
+        $service = $this->authorizedService();
+        $variant = ServiceVariant::query()
+            ->where('service_id', $service->id)
+            ->whereKey($this->editingVariantId)
+            ->firstOrFail();
+
+        $media = $variant
+            ->media()
+            ->where('collection_name', ServiceVariant::MEDIA_COLLECTION_GALLERY)
+            ->whereKey($mediaId)
+            ->first();
+
+        if ($media !== null) {
+            $media->delete();
+            $this->flashMessage = __('wizard.variant_media_gallery_removed');
+        }
+    }
+
     public function save(): void
     {
         $this->clearFlash();
         $service = $this->authorizedService();
 
+        $languages = $this->wizardLanguages();
+
         $validator = Validator::make(
-            ['form' => $this->form],
-            $this->validationRulesForSingle($service),
+            [
+                'form' => $this->form,
+                'mainImage' => $this->mainImage,
+                'galleryImages' => $this->galleryImages,
+            ],
+            array_merge(
+                $this->validationRulesForSingle($service),
+                [
+                    'mainImage' => ['nullable', 'image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
+                    'galleryImages' => ['nullable', 'array'],
+                    'galleryImages.*' => ['image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
+                ]
+            ),
             [],
-            ['form.sku' => 'SKU']
+            $this->validationAttributeNames($languages)
         );
 
-        $validator->validate();
+        if ($validator->fails()) {
+            $errorKeys = $validator->errors()->keys();
+            $this->variantTabsWithErrors = array_values(array_unique(array_map(
+                fn (string $key): string => $this->mapValidationKeyToTab($key),
+                $errorKeys
+            )));
+            $this->variantFormTab = $this->firstTabForErrorKeys($errorKeys);
+            throw new ValidationException($validator);
+        }
+
+        $this->variantTabsWithErrors = [];
 
         $row = $this->form;
 
@@ -172,7 +283,10 @@ class ServiceVariantsStep extends Component
 
         $payload = $this->rowToPayload((int) $service->id, $row, $sortOrder);
 
-        DB::transaction(function () use ($service, $payload): void {
+        $mainImage = $this->mainImage;
+        $galleryImages = $this->galleryImages;
+
+        DB::transaction(function () use ($service, $payload, $row, $mainImage, $galleryImages): void {
             $id = $this->editingVariantId;
 
             if ($id) {
@@ -182,15 +296,56 @@ class ServiceVariantsStep extends Component
                     ->firstOrFail();
                 $variant->update($payload);
             } else {
-                ServiceVariant::query()->create($payload);
+                $variant = ServiceVariant::query()->create($payload);
+            }
+
+            $this->syncVariantTranslations($variant, $row);
+
+            if ($mainImage !== null) {
+                $variant
+                    ->addMedia($mainImage)
+                    ->toMediaCollection(ServiceVariant::MEDIA_COLLECTION_MAIN);
+            }
+
+            foreach ($galleryImages as $file) {
+                $variant
+                    ->addMedia($file)
+                    ->toMediaCollection(ServiceVariant::MEDIA_COLLECTION_GALLERY);
             }
         });
+
+        $this->resetImageUploads();
 
         $this->flashMessage = __('wizard.variants_saved');
         $this->mode = self::MODE_LIST;
         $this->editingVariantId = null;
         $this->isCopy = false;
         $this->form = [];
+        $this->variantFormTab = 'general';
+    }
+
+    protected function resetImageUploads(): void
+    {
+        $this->mainImage = null;
+        $this->galleryImages = [];
+    }
+
+    protected function syncVariantTranslations(ServiceVariant $variant, array $row): void
+    {
+        $translations = $row['translations'] ?? [];
+        foreach (Language::query()->get(['id']) as $language) {
+            $langId = (int) $language->id;
+            $data = $translations[$langId] ?? $translations[(string) $langId] ?? [];
+            $variant->translations()->updateOrCreate(
+                ['language_id' => $langId],
+                [
+                    'name' => trim((string) ($data['name'] ?? '')),
+                    'description' => isset($data['description']) && $data['description'] !== ''
+                        ? (string) $data['description']
+                        : null,
+                ]
+            );
+        }
     }
 
     protected function clearFlash(): void
@@ -203,6 +358,18 @@ class ServiceVariantsStep extends Component
      */
     protected function variantToRow(ServiceVariant $v): array
     {
+        $v->loadMissing('translations');
+
+        $translations = [];
+        foreach (Language::query()->get(['id']) as $language) {
+            $langId = (int) $language->id;
+            $t = $v->translations->firstWhere('language_id', $langId);
+            $translations[$langId] = [
+                'name' => $t->name ?? '',
+                'description' => $t->description ?? '',
+            ];
+        }
+
         return [
             'id' => $v->id,
             'sku' => $v->sku,
@@ -218,6 +385,7 @@ class ServiceVariantsStep extends Component
             'max_advance_booking_days' => $v->max_advance_booking_days !== null ? (string) $v->max_advance_booking_days : '',
             'start_time' => $this->formatTimeForInput($v->start_time),
             'end_time' => $this->formatTimeForInput($v->end_time),
+            'translations' => $translations,
         ];
     }
 
@@ -243,6 +411,14 @@ class ServiceVariantsStep extends Component
     {
         $currencyId = Currency::query()->orderBy('id')->value('id');
 
+        $translations = [];
+        foreach (Language::query()->get(['id']) as $language) {
+            $translations[(int) $language->id] = [
+                'name' => '',
+                'description' => '',
+            ];
+        }
+
         return [
             'sku' => '',
             'status' => 'active',
@@ -257,6 +433,7 @@ class ServiceVariantsStep extends Component
             'max_advance_booking_days' => '',
             'start_time' => '',
             'end_time' => '',
+            'translations' => $translations,
         ];
     }
 
@@ -309,13 +486,13 @@ class ServiceVariantsStep extends Component
      */
     protected function validationRulesForSingle(Service $service): array
     {
-        $statuses = ['active', 'inactive', 'hidden'];
+        $statuses = ['active', 'suspended', 'discontinued', 'inactive', 'hidden'];
         $pricing = ['per_person', 'per_unit', 'per_room', 'per_vehicle', 'per_group'];
         $inventory = ['unlimited', 'per_day', 'per_timeslot', 'per_departure'];
 
         $ignoreId = $this->editingVariantId;
 
-        return [
+        $rules = [
             'form.sku' => [
                 'required',
                 'string',
@@ -336,7 +513,99 @@ class ServiceVariantsStep extends Component
             'form.max_advance_booking_days' => ['nullable', 'integer', 'min:0'],
             'form.start_time' => ['nullable', 'date_format:H:i'],
             'form.end_time' => ['nullable', 'date_format:H:i'],
+            'form.translations' => ['required', 'array'],
         ];
+
+        foreach (Language::query()->get(['id']) as $language) {
+            $id = $language->id;
+            $rules["form.translations.{$id}.name"] = ['required', 'string', 'max:255'];
+            $rules["form.translations.{$id}.description"] = ['nullable', 'string'];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Human-readable :attribute names for validation messages.
+     *
+     * @return array<string, string>
+     */
+    protected function validationAttributeNames(Collection $languages): array
+    {
+        $f = 'filament.resources.service_variant_fields';
+
+        $attrs = [
+            'form.sku' => __($f.'.sku'),
+            'form.status' => __($f.'.status'),
+            'form.pricing_type' => __($f.'.pricing_type'),
+            'form.base_price' => __($f.'.base_price'),
+            'form.currency_id' => __($f.'.currency'),
+            'form.inventory_type' => __($f.'.inventory_type'),
+            'form.inventory_total' => __($f.'.inventory_total'),
+            'form.capacity_min' => __($f.'.capacity_min'),
+            'form.capacity_max' => __($f.'.capacity_max'),
+            'form.min_advance_booking_hours' => __($f.'.min_advance_booking_hours'),
+            'form.max_advance_booking_days' => __($f.'.max_advance_booking_days'),
+            'form.start_time' => __($f.'.start_time'),
+            'form.end_time' => __($f.'.end_time'),
+            'form.translations' => __('wizard.variants_tab_descriptions'),
+            'mainImage' => __('wizard.variant_media_main_heading'),
+            'galleryImages' => __('wizard.variant_media_gallery_heading'),
+            'galleryImages.*' => __('wizard.variant_media_gallery_image'),
+        ];
+
+        foreach ($languages as $language) {
+            $id = (int) $language->id;
+            $label = $language->display_name;
+            $attrs["form.translations.{$id}.name"] = __('wizard.variants_translation_name_for_locale', ['locale' => $label]);
+            $attrs["form.translations.{$id}.description"] = __('wizard.variants_translation_description_for_locale', ['locale' => $label]);
+        }
+
+        return $attrs;
+    }
+
+    /**
+     * Map a dot-notation validation key to a form tab id.
+     */
+    protected function mapValidationKeyToTab(string $key): string
+    {
+        if (str_starts_with($key, 'form.translations')) {
+            return 'descriptions';
+        }
+        if ($key === 'mainImage' || str_starts_with($key, 'galleryImages')) {
+            return 'images';
+        }
+        if (in_array($key, ['form.pricing_type', 'form.base_price', 'form.currency_id'], true)) {
+            return 'pricing';
+        }
+
+        return 'general';
+    }
+
+    /**
+     * First tab (fixed order) that contains at least one validation error.
+     *
+     * @param  list<string>  $errorKeys
+     */
+    protected function firstTabForErrorKeys(array $errorKeys): string
+    {
+        $order = ['general', 'pricing', 'descriptions', 'images'];
+        $seen = [];
+        foreach ($errorKeys as $key) {
+            $seen[$this->mapValidationKeyToTab($key)] = true;
+        }
+        foreach ($order as $tab) {
+            if (! empty($seen[$tab])) {
+                return $tab;
+            }
+        }
+
+        return 'general';
+    }
+
+    public function variantTabHasError(string $tab): bool
+    {
+        return in_array($tab, $this->variantTabsWithErrors, true);
     }
 
     protected function authorizedService(): Service
@@ -356,10 +625,24 @@ class ServiceVariantsStep extends Component
 
         return ServiceVariant::query()
             ->where('service_id', $service->id)
-            ->with('currency.lmpCurrency')
+            ->with(['currency.lmpCurrency', 'translations.language.locale', 'media'])
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
+    }
+
+    /**
+     * Languages for translation fields (sorted like step 1).
+     *
+     * @return Collection<int, Language>
+     */
+    protected function wizardLanguages(): Collection
+    {
+        return Language::query()
+            ->with('locale')
+            ->get()
+            ->sortBy(fn (Language $language) => $language->display_name)
+            ->values();
     }
 
     public function render(): View
@@ -369,9 +652,28 @@ class ServiceVariantsStep extends Component
             ->orderBy('id')
             ->get();
 
+        $languages = $this->wizardLanguages();
+
+        $mainMedia = null;
+        $galleryMedia = collect();
+        if ($this->mode === self::MODE_FORM && $this->editingVariantId) {
+            $variant = ServiceVariant::query()
+                ->where('service_id', $this->authorizedService()->id)
+                ->whereKey($this->editingVariantId)
+                ->with('media')
+                ->first();
+            if ($variant) {
+                $mainMedia = $variant->getFirstMedia(ServiceVariant::MEDIA_COLLECTION_MAIN);
+                $galleryMedia = $variant->getMedia(ServiceVariant::MEDIA_COLLECTION_GALLERY);
+            }
+        }
+
         return view('livewire.service-wizard.service-variants-step', [
             'currencies' => $currencies,
             'variants' => $this->variantsForList(),
+            'languages' => $languages,
+            'variantMainMedia' => $mainMedia,
+            'variantGalleryMedia' => $galleryMedia,
         ]);
     }
 }

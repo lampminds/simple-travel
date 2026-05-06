@@ -1,357 +1,173 @@
-@extends('layouts.base', ['title' => 'Prompt - Account Settings'])
+@extends('layouts.base', ['title' => 'Configuración'])
 
 @section('content')
 
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
 
-    <!-- page-content start -->
     <section class="position-relative p-3 bg-gradient2">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
-                        <h3 class="my-0">Account Settings</h3>
-                        <p class="mt-1 fw-medium">Change your account settings</p>
+                        <h3 class="my-0">Configuración</h3>
+                        <p class="mt-1 fw-medium">Parámetros de tu cuenta</p>
                     </div>
                 </div>
             </div>
+
+            @if (session('status'))
+                <div class="alert alert-success mb-3" role="alert">{{ session('status') }}</div>
+            @endif
+
+            @php
+                $categories = $definitionsByCategory->keys()->values();
+                $errorKeys = $errors->keys();
+                $firstCategoryWithErrors = null;
+                foreach ($categories as $categoryName) {
+                    $defs = $definitionsByCategory->get($categoryName, collect());
+                    $hasError = $defs->contains(function ($definition) use ($errorKeys): bool {
+                        return collect($errorKeys)->contains('values.'.$definition->id);
+                    });
+                    if ($hasError) {
+                        $firstCategoryWithErrors = $categoryName;
+                        break;
+                    }
+                }
+                $activeCategory = $firstCategoryWithErrors ?: ($categories->first() ?? null);
+            @endphp
+
+            @if ($errors->any())
+                <div class="alert alert-danger" role="alert">
+                    Revisá los parámetros. Hay errores en una o más secciones.
+                </div>
+            @endif
+
             <div class="row mt-2">
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-lg-3">
-                                    <!-- menu start -->
-                                    <ul class="nav navtab-bg nav-pills flex-column">
-                                        <li class="nav-item">
-                                            <a href="#account" data-bs-toggle="tab" aria-expanded="false"
-                                               class="nav-link active">
-                                                <span>Account</span>
-                                            </a>
+                            <form method="POST" action="{{ route('account.settings.update') }}" novalidate>
+                                @csrf
+                                @method('PUT')
+
+                                <ul class="nav nav-tabs mb-3" id="tenant-settings-tabs" role="tablist">
+                                    @foreach($categories as $categoryName)
+                                        @php
+                                            $defs = $definitionsByCategory->get($categoryName, collect());
+                                            $categorySlug = \Illuminate\Support\Str::slug((string) $categoryName, '-');
+                                            $hasCategoryErrors = $defs->contains(function ($definition) use ($errorKeys): bool {
+                                                return collect($errorKeys)->contains('values.'.$definition->id);
+                                            });
+                                        @endphp
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link @if($activeCategory === $categoryName) active @endif @if($hasCategoryErrors) text-danger @endif"
+                                                    id="tab-{{ $categorySlug }}"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#pane-{{ $categorySlug }}"
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-controls="pane-{{ $categorySlug }}"
+                                                    aria-selected="{{ $activeCategory === $categoryName ? 'true' : 'false' }}">
+                                                {{ $categoryName }}
+                                            </button>
                                         </li>
-                                        <li class="nav-item my-2">
-                                            <a href="#password" data-bs-toggle="tab" aria-expanded="true"
-                                               class="nav-link">
-                                                <span>Password</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="#notifications-form" data-bs-toggle="tab" aria-expanded="false"
-                                               class="nav-link">
-                                                <span>Notifications</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <!-- menu end -->
+                                    @endforeach
+                                </ul>
+
+                                <div class="tab-content">
+                                    @foreach($categories as $categoryName)
+                                        @php
+                                            $defs = $definitionsByCategory->get($categoryName, collect());
+                                            $categorySlug = \Illuminate\Support\Str::slug((string) $categoryName, '-');
+                                            $defsBySubcategory = $defs->groupBy(fn ($definition) => $definition->subcategory ?: 'General');
+                                        @endphp
+                                        <div class="tab-pane fade @if($activeCategory === $categoryName) show active @endif"
+                                             id="pane-{{ $categorySlug }}"
+                                             role="tabpanel"
+                                             aria-labelledby="tab-{{ $categorySlug }}"
+                                             tabindex="0">
+                                            @foreach($defsBySubcategory as $subcategory => $subDefs)
+                                                <div class="border rounded p-3 mb-3">
+                                                    <h6 class="mb-3">{{ $subcategory }}</h6>
+                                                    <div class="row">
+                                                        @foreach($subDefs as $definition)
+                                                            @php
+                                                                $stored = $valuesByDefinitionId->get($definition->id)?->value;
+                                                                $default = $definition->has_default ? $definition->default_value : null;
+                                                                $currentValue = old('values.'.$definition->id, $stored ?? $default);
+                                                                $usesOptions = \App\Models\ParameterDefinition::uiComponentRequiresOptions($definition->ui_component) && $definition->parameterOptions->count() >= 2;
+                                                                $inputType = 'text';
+                                                                if ($definition->type === 'integer' || $definition->type === 'decimal') {
+                                                                    $inputType = 'number';
+                                                                } elseif ($definition->type === 'date') {
+                                                                    $inputType = 'date';
+                                                                } elseif ($definition->type === 'time') {
+                                                                    $inputType = 'time';
+                                                                } elseif ($definition->type === 'datetime') {
+                                                                    $inputType = 'datetime-local';
+                                                                }
+                                                            @endphp
+                                                            <div class="col-lg-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">{{ $definition->name !== '' ? $definition->name : $definition->code }}</label>
+
+                                                                    @if($usesOptions)
+                                                                        <select name="values[{{ $definition->id }}]" class="form-select @error('values.'.$definition->id) is-invalid @enderror">
+                                                                            <option value="">—</option>
+                                                                            @foreach($definition->parameterOptions as $option)
+                                                                                <option value="{{ $option->value }}" @selected((string) $currentValue === (string) $option->value)>
+                                                                                    {{ $option->labelForDisplay() }}
+                                                                                </option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                    @elseif(in_array($definition->ui_component, ['textarea', 'editor'], true))
+                                                                        <textarea name="values[{{ $definition->id }}]" rows="3" class="form-control @error('values.'.$definition->id) is-invalid @enderror">{{ (string) $currentValue }}</textarea>
+                                                                    @elseif(in_array($definition->ui_component, ['checkbox', 'switch'], true) || $definition->type === 'boolean')
+                                                                        <input type="hidden" name="values[{{ $definition->id }}]" value="0">
+                                                                        <div class="form-check form-switch">
+                                                                            <input class="form-check-input @error('values.'.$definition->id) is-invalid @enderror"
+                                                                                   type="checkbox"
+                                                                                   id="param-{{ $definition->id }}"
+                                                                                   name="values[{{ $definition->id }}]"
+                                                                                   value="1"
+                                                                                   @checked((string) $currentValue === '1' || $currentValue === true || $currentValue === 1)>
+                                                                            <label class="form-check-label" for="param-{{ $definition->id }}">Activado</label>
+                                                                        </div>
+                                                                    @else
+                                                                        <input type="{{ $inputType }}"
+                                                                               name="values[{{ $definition->id }}]"
+                                                                               class="form-control @error('values.'.$definition->id) is-invalid @enderror"
+                                                                               value="{{ (string) $currentValue }}">
+                                                                    @endif
+
+                                                                    @if($definition->help)
+                                                                        <small class="text-muted d-block mt-1">{{ $definition->help }}</small>
+                                                                    @endif
+
+                                                                    @error('values.'.$definition->id)
+                                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                                    @enderror
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endforeach
                                 </div>
-                                <div class="col-lg-9">
-                                    <div class="tab-content p-0">
-                                        <!-- account form start -->
-                                        <div class="tab-pane fade show active px-3" id="account">
-                                            <h4 class="mt-0">Account Information</h4>
 
-                                            <form action="#" class="account-form">
-
-                                                <!-- avatar start -->
-                                                <h6 class="mt-4">Your Avatar</h6>
-                                                <div class="row align-items-center">
-                                                    <div class="col-auto">
-                                                        <img src="/images/avatars/img-8.jpg"
-                                                             class="img-fluid avatar-md rounded-circle shadow"
-                                                             alt="..."/>
-                                                    </div>
-                                                    <div class="col">
-                                                        <a href="#" class="btn btn-outline-primary btn-sm">Upload</a>
-                                                        <a href="#"
-                                                           class="btn btn-outline-danger btn-sm ms-2">Remove</a>
-                                                    </div>
-                                                </div>
-                                                <!-- avatar end -->
-
-                                                <hr class="my-4"/>
-
-                                                <!-- basic info start -->
-                                                <div class="row align-items-center">
-                                                    <div class="col-lg-6">
-                                                        <div class="mb-3">
-                                                            <label for="name"
-                                                                   class="form-label required-label">Name</label>
-                                                            <input type="text" class="form-control" id="name"
-                                                                   placeholder="Your Name" name="name"
-                                                                   value="Greeva Navadiya"/>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label for="email" class="form-label required-label">Email</label>
-                                                            <input type="email" class="form-control" id="email"
-                                                                   placeholder="Email" name="email"
-                                                                   value="greeva@coderthemes.com"/>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-lg-6">
-                                                        <div class="mb-3">
-                                                            <label for="display_name" class="form-label">Display
-                                                                name</label>
-                                                            <input type="text" class="form-control" id="display_name"
-                                                                   aria-describedby="display_name"
-                                                                   placeholder="Display Name" name="display_name"
-                                                                   value="Greeva N"/>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <label class="form-label required-label">Phone</label>
-                                                            <input type="text" class="form-control" id="phone"
-                                                                   name="phone" placeholder="Phone number"
-                                                                   value="+1 254 024 5400"/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- basic info end -->
-
-                                                <hr class="my-2"/>
-
-                                                <!-- privacy settings start -->
-                                                <div class="row my-3">
-                                                    <div class="col-lg-12">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Profile Visibility</label>
-
-                                                            <div class="mt-1">
-                                                                <div class="form-check form-check-inline">
-                                                                    <input type="radio" class="form-check-input"
-                                                                           id="visibilityPublic" name="visibility"
-                                                                           checked>
-                                                                    <label class="form-check-label"
-                                                                           for="visibilityPublic">Public</label>
-                                                                </div>
-
-                                                                <div class="form-check form-check-inline ms-3">
-                                                                    <input type="radio" class="form-check-input"
-                                                                           name="visibility" id="visibilityPrivate">
-                                                                    <label class="form-check-label"
-                                                                           for="visibilityPrivate">Private</label>
-                                                                </div>
-                                                            </div>
-
-                                                            <small class="form-text text-muted mt-2">
-                                                                Making your profile public means anyone can see your
-                                                                information
-                                                            </small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12 mt-2">
-                                                        <div class="mb-3 mb-0">
-                                                            <label class="form-label">Contact Info
-                                                                Visibility</label>
-
-                                                            <div class="mt-1">
-                                                                <div class="form-check form-check-inline">
-                                                                    <input type="radio" class="form-check-input"
-                                                                           id="visibilityPublic1" name="visibility1"
-                                                                           checked>
-                                                                    <label class="form-check-label"
-                                                                           for="visibilityPublic1">Public</label>
-                                                                </div>
-
-                                                                <div class="form-check form-check-inline ms-3">
-                                                                    <input type="radio" class="form-check-input"
-                                                                           name="visibility1" id="visibilityPrivate1">
-                                                                    <label class="form-check-label"
-                                                                           for="visibilityPrivate1">Private</label>
-                                                                </div>
-                                                            </div>
-
-                                                            <small class="form-text text-muted mt-2">
-                                                                Making your contact info public means anyone can see
-                                                                your email and phone number
-                                                            </small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- privacy settings end -->
-
-                                                <hr class="mb-2"/>
-
-                                                <!-- account removal start -->
-                                                <div class="row">
-                                                    <div class="col-lg-12">
-                                                        <div class="row align-items-center my-2">
-                                                            <div class="col">
-                                                                <label class="form-label mb-0">
-                                                                    Remove account
-                                                                </label>
-                                                                <small class="form-text text-muted">
-                                                                    By removing your account you will lose all your data
-                                                                </small>
-                                                            </div>
-                                                            <div class="col-lg-auto text-end">
-                                                                <button type="button"
-                                                                        class="btn btn-outline-danger btn-sm">Remove
-                                                                    Account
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- account removal end -->
-
-                                                <hr class="my-4"/>
-
-                                                <!-- save start -->
-                                                <div class="row mt-2">
-                                                    <div class="col-lg-12">
-                                                        <button type="submit" class="btn btn-primary">Save Changes
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <!-- save end -->
-                                            </form>
-                                        </div>
-                                        <!-- account form end -->
-
-                                        <!-- password start -->
-                                        <div class="tab-pane fade px-3" id="password" style="min-height: 600px;">
-                                            <h4 class="mt-0">Password</h4>
-
-                                            <!-- form start -->
-                                            <form action="#" class="password-form mt-4">
-                                                <div class="mb-3">
-                                                    <label for="name" class="form-label required-label">Current
-                                                        Password</label>
-                                                    <input type="password" class="form-control" id="current_password"
-                                                           aria-describedby="current_password" name="current_password"/>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="name" class="form-label required-label">New
-                                                        Password</label>
-                                                    <input type="password" class="form-control" id="new_password"
-                                                           aria-describedby="current_password" name="new_password"/>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="name" class="form-label required-label">Confirm
-                                                        Password</label>
-                                                    <input type="password" class="form-control" id="confirm_password"
-                                                           aria-describedby="current_password" name="confirm_password"/>
-                                                </div>
-
-                                                <hr class="my-4"/>
-
-                                                <!-- save start -->
-                                                <div class="row mt-3">
-                                                    <div class="col-lg-12">
-                                                        <button type="submit" class="btn btn-primary">Update Password
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <!-- save end -->
-                                            </form>
-                                            <!-- form end -->
-                                        </div>
-                                        <!-- password end -->
-
-                                        <!-- notifications start -->
-                                        <div class="tab-pane fade px-3" id="notifications-form"
-                                             style="min-height: 600px;">
-                                            <h4 class="mt-0">Notifications</h4>
-
-                                            <!-- form start -->
-                                            <form action="#" class="password-form mt-4">
-                                                <div class="mb-3">
-                                                    <label for="name">Send me an email, when</label>
-                                                    <ul class="list-unstyled">
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="mention" checked>
-                                                                <label class="form-check-label" for="mention">Someone
-                                                                    mentions me</label>
-                                                            </div>
-                                                        </li>
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="replies">
-                                                                <label class="form-check-label" for="replies">Someone
-                                                                    replies to me</label>
-                                                            </div>
-                                                        </li>
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="share-content" checked>
-                                                                <label class="form-check-label" for="share-content">Someone
-                                                                    shares the content</label>
-                                                            </div>
-                                                        </li>
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="new-content">
-                                                                <label class="form-check-label" for="new-content">There
-                                                                    is a new published content</label>
-                                                            </div>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-
-                                                <hr class="my-4"/>
-                                                <div class="mb-3">
-                                                    <label for="name">Other Subscriptions</label>
-                                                    <ul class="list-unstyled">
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="newsletter" checked>
-                                                                <label class="form-check-label" for="newsletter">Weekly
-                                                                    newsletter</label>
-                                                            </div>
-                                                        </li>
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="weekly-jobs">
-                                                                <label class="form-check-label" for="weekly-jobs">Weekly
-                                                                    jobs</label>
-                                                            </div>
-                                                        </li>
-                                                        <li class="mt-2">
-                                                            <div class="form-check form-switch">
-                                                                <input type="checkbox" class="form-check-input"
-                                                                       id="events" checked>
-                                                                <label class="form-check-label" for="events">Events new
-                                                                    me</label>
-                                                            </div>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                                <hr class="my-4"/>
-
-                                                <!-- save start -->
-                                                <div class="row mt-3">
-                                                    <div class="col-lg-12">
-                                                        <button type="submit" class="btn btn-primary">Update
-                                                            Preferences
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <!-- save end -->
-                                            </form>
-                                            <!-- form end -->
-                                        </div>
-                                        <!-- notifications end -->
-                                    </div>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-light" href="{{ route('account.dashboard') }}">Volver</a>
+                                    <button type="submit" class="btn btn-primary">Guardar</button>
                                 </div>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- page-content end -->
 
     <x-site-footer-simple />
 

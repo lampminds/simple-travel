@@ -12,6 +12,9 @@ return [
         'view' => 'Ver',
         'close' => 'Fechar',
         'copy' => 'Copiar',
+        'code_copied' => 'Código copiado para a área de transferência',
+        'code_copy_failed' => 'Não foi possível copiar (bloqueio do navegador ou não suportado).',
+        'click_to_copy_code' => 'Clique para copiar este código',
         'navigation_badge_tooltip' => 'Total de registros',
         'select_option' => 'Selecione uma opção',
     ],
@@ -81,6 +84,11 @@ return [
             'impersonation_forbidden' => 'Não tem permissão para gerar esta ligação.',
             'impersonation_invalid_target' => 'Este utilizador não pode ser usado nesta ligação.',
             'impersonation_link_aria' => 'Ligação de acesso de utilização única',
+            'impersonation_link_label' => 'Ligação',
+            'impersonation_copy_button' => 'Copiar',
+            'impersonation_copied' => 'Copiado',
+            'impersonation_copy_failed' => 'Falhou ao copiar',
+            'impersonation_copy_hint' => 'Dica: também pode fazer triplo clique na caixa e Ctrl+C (Cmd+C no Mac).',
         ],
 
         'account_category' => 'Categoria de conta',
@@ -135,6 +143,9 @@ return [
             'name' => 'Nome',
             'email' => 'E-mail',
             'roles' => 'Funções',
+        ],
+        'user_filters' => [
+            'account' => 'Empresa',
         ],
 
         'user_invitation' => 'Convite',
@@ -268,6 +279,7 @@ return [
         'contact_type_fields' => [
             'code' => 'Código',
             'name' => 'Nome',
+            'is_unique_per_person' => 'Único por pessoa',
             'mask' => 'Máscara',
             'mask_help' => 'Máscara para formatar o valor (ex.: telefone, documento).',
             'validation' => 'Validação',
@@ -298,6 +310,54 @@ return [
             'name' => 'Nome',
             'department' => 'Departamento',
             'position' => 'Cargo',
+        ],
+
+        'person' => 'Pessoa',
+        'persons' => 'Pessoas',
+
+        'person_tabs' => [
+            'general' => 'Geral',
+            'users' => 'Utilizadores ligados',
+            'account_memberships' => 'Contas vinculadas',
+            'contact_methods' => 'Meios de contacto',
+            'contact_links' => 'Ligações entre contas',
+        ],
+
+        'person_fields' => [
+            'name' => 'Nome',
+            'user_id' => 'Utilizador',
+            'add_user_link' => 'Ligar utilizador',
+            'account_id' => 'Conta',
+            'contact_department_id' => 'Departamento',
+            'contact_position_id' => 'Cargo',
+            'is_primary' => 'Contacto principal da conta',
+            'is_public_contact' => 'Contacto público',
+            'is_preferred_contact_mode' => 'Modo de contacto preferido',
+            'add_account_membership' => 'Adicionar conta vinculada',
+            'contact_type_id' => 'Tipo de canal',
+            'contact_method_value' => 'Valor',
+            'contact_method_is_primary' => 'Principal neste canal',
+            'is_verified' => 'Verificado',
+            'add_contact_method' => 'Adicionar meio de contacto',
+            'link_account_id' => 'Conta (dona da ligação)',
+            'link_source_account_id' => 'Conta de origem do contacto',
+            'is_favorite' => 'Favorito',
+            'visibility' => 'Visibilidade',
+            'add_contact_link' => 'Adicionar ligação entre contas',
+        ],
+
+        'person_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'users_count' => 'Utilizadores',
+            'account_memberships_count' => 'Contas vinculadas',
+            'contact_methods_count' => 'Meios',
+            'contact_links_count' => 'Ligações',
+        ],
+
+        'person_visibility' => [
+            'private' => 'Privado',
+            'shared' => 'Partilhado',
         ],
 
         'provider' => 'Prestador',
@@ -1005,6 +1065,7 @@ return [
         'service_type_fields' => [
             'code' => 'Código',
             'name' => 'Nome',
+            'description' => 'Descrição',
             'sort_order' => 'Ordem',
         ],
 
@@ -1012,6 +1073,7 @@ return [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nome',
+            'description' => 'Descrição',
             'sort_order' => 'Ordem',
         ],
 

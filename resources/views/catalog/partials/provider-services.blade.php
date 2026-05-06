@@ -5,84 +5,115 @@
 --}}
 @php
     $showRequestFromProviders = $showRequestFromProviders ?? false;
+    $servicesSectionTitle = $servicesSectionTitle ?? null;
 @endphp
 <div class="row mt-4">
     <div class="col-lg-12">
-        <h4 class="h5 mb-3">{{ __('wizard.provider_services_title') }}</h4>
+        <h4 class="h5 mb-3">{{ $servicesSectionTitle ?? __('wizard.provider_services_title') }}</h4>
 
         @if ($services->isEmpty())
             <div class="alert alert-light border mb-3" role="status">
                 {{ __('wizard.provider_services_empty') }}
             </div>
         @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle bg-white rounded border">
-                    <thead class="table-light">
+            <table class="table table-hover align-middle bg-white rounded border">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="text-center" style="width: 76px;">{{ __('wizard.provider_services_col_thumb') }}</th>
+                        <th scope="col">{{ __('wizard.provider_services_col_name') }}</th>
+                        <th scope="col">{{ __('wizard.provider_services_col_type') }}</th>
+                        <th scope="col">{{ __('wizard.provider_services_col_status') }}</th>
+                        <th scope="col" class="text-center">{{ __('wizard.provider_services_col_variants') }}</th>
+                        <th scope="col" class="text-end">{{ __('wizard.provider_services_col_actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($services as $svc)
                         <tr>
-                            <th scope="col" class="text-center" style="width: 76px;">{{ __('wizard.provider_services_col_thumb') }}</th>
-                            <th scope="col">{{ __('wizard.provider_services_col_name') }}</th>
-                            <th scope="col">{{ __('wizard.provider_services_col_type') }}</th>
-                            <th scope="col">{{ __('wizard.provider_services_col_status') }}</th>
-                            <th scope="col" class="text-end">{{ __('wizard.provider_services_col_actions') }}</th>
+                            <td class="text-center align-middle">
+                                @if ($url = $svc->mainImageUrl(\App\Models\Service::MEDIA_CONVERSION_THUMBNAIL))
+                                    <img src="{{ $url }}" alt="" class="rounded border" style="width: 56px; height: 56px; object-fit: cover;">
+                                @else
+                                    <span class="text-muted small">—</span>
+                                @endif
+                            </td>
+                            <td>{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
+                            <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
+                            <td>
+                                @php $st = $svc->status ?? ''; @endphp
+                                {{ $st !== '' ? __('filament.resources.service_status.'.$st) : '—' }}
+                            </td>
+                            <td class="text-center">
+                                {{ (int) ($svc->service_variants_count ?? 0) }}
+                            </td>
+                            <td class="text-end text-nowrap">
+                                @if ($svc->serviceType)
+                                    <div class="dropdown">
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="{{ __('wizard.provider_services_actions_menu') }}"
+                                        >
+                                            <i class="icon icon-xs text-primary" data-feather="more-horizontal" aria-hidden="true"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step1.edit', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-primary" data-feather="edit-3" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step1') }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step2', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-success" data-feather="toggle-right" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step2') }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step3', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-info" data-feather="sliders" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step3') }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step4', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-warning" data-feather="layers" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step4') }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step5', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-danger" data-feather="image" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step5') }}
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                @else
+                                    <span class="text-muted small">—</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($services as $svc)
-                            <tr>
-                                <td class="text-center align-middle">
-                                    @if ($url = $svc->mainImageUrl(\App\Models\Service::MEDIA_CONVERSION_THUMBNAIL))
-                                        <img src="{{ $url }}" alt="" class="rounded border" style="width: 56px; height: 56px; object-fit: cover;">
-                                    @else
-                                        <span class="text-muted small">—</span>
-                                    @endif
-                                </td>
-                                <td>{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
-                                <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
-                                <td>
-                                    @php $st = $svc->status ?? ''; @endphp
-                                    {{ $st !== '' ? __('filament.resources.service_status.'.$st) : '—' }}
-                                </td>
-                                <td class="text-end text-nowrap">
-                                    @if ($svc->serviceType)
-                                        <a
-                                            href="{{ route('services.wizard.step1.edit', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
-                                            class="btn btn-sm btn-outline-primary me-1"
-                                        >
-                                            {{ __('wizard.provider_services_action_step1') }}
-                                        </a>
-                                        <a
-                                            href="{{ route('services.wizard.step2', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
-                                            class="btn btn-sm btn-outline-secondary"
-                                        >
-                                            {{ __('wizard.provider_services_action_step2') }}
-                                        </a>
-                                        <a
-                                            href="{{ route('services.wizard.step3', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
-                                            class="btn btn-sm btn-outline-secondary me-1"
-                                        >
-                                            {{ __('wizard.provider_services_action_step3') }}
-                                        </a>
-                                        <a
-                                            href="{{ route('services.wizard.step4', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
-                                            class="btn btn-sm btn-outline-secondary"
-                                        >
-                                            {{ __('wizard.provider_services_action_step4') }}
-                                        </a>
-                                        <a
-                                            href="{{ route('services.wizard.step5', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
-                                            class="btn btn-sm btn-outline-secondary ms-1"
-                                        >
-                                            {{ __('wizard.provider_services_action_step5') }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted small">—</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         @endif
     </div>
 </div>

@@ -8,6 +8,17 @@
                     <div class="card">
                         <div class="card-body p-0">
                             <div class="row g-0">
+                                <div class="col-md-5 offset-md-1 d-none d-md-flex align-items-center justify-content-center">
+                                    <div class="py-2 py-xl-3 text-center w-100">
+                                        <img
+                                            src="{{ asset('images/robots/login-sm.png') }}"
+                                            alt=""
+                                            class="img-fluid"
+                                            style="max-height: 520px; width: auto;"
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                </div>
                                 <div class="col-md-5 shadow">
                                     <div class="p-xl-5 p-3">
                                         <div class="mx-auto mb-5">
@@ -28,6 +39,9 @@
                                         <form method="POST" action="{{ route('login') }}" class="authentication-form">
 
                                             @csrf
+                                            @if (filled(request('invitation_token')))
+                                                <input type="hidden" name="invitation_token" value="{{ request('invitation_token') }}">
+                                            @endif
                                             <x-form-validation-summary />
 
                                             <div class="mb-3">
@@ -60,17 +74,6 @@
                                         <div class="text-center text-muted small">
                                             {{ __('auth.login.social_invitation_only_help') }}
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-5 offset-md-1 d-none d-md-flex align-items-center justify-content-center">
-                                    <div class="py-2 py-xl-3 text-center w-100">
-                                        <img
-                                            src="{{ asset('images/robots/login-sm.png') }}"
-                                            alt=""
-                                            class="img-fluid"
-                                            style="max-height: 520px; width: auto;"
-                                            loading="lazy"
-                                        />
                                     </div>
                                 </div>
                             </div>

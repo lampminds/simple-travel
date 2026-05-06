@@ -43,40 +43,96 @@
 
             <div class="row mt-2">
                 <div class="col-lg-12">
-                    <div class="card mb-4 border-primary border-opacity-25">
+                    <div class="card mb-3 border-primary border-opacity-25 shadow-sm">
                         <div class="card-body">
-                            <form method="post" action="{{ route($storeRoute ?? 'account.invitations.store_employee') }}" class="row g-2 align-items-end mb-4">
+                            <h2 class="h6 fw-semibold text-body-secondary mb-3 pb-2 border-bottom border-light">
+                                {{ __('invitations.card_form_heading') }}
+                            </h2>
+                            <form method="post" action="{{ route($storeRoute ?? 'account.invitations.store_employee') }}" class="mb-0">
                                 @csrf
                                 <x-form-validation-summary />
-                                <div class="col-md-4">
-                                    <label for="invite_name" class="form-label">{{ __('invitations.name') }}</label>
-                                    <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
-                                           value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
-                                    <x-form-field-error name="name" />
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="invite_email" class="form-label">{{ __('invitations.email') }}</label>
-                                    <input type="email" name="email" id="invite_email" class="form-control @error('email') is-invalid @enderror"
-                                           value="{{ old('email') }}" required autocomplete="off"/>
-                                    <x-form-field-error name="email" />
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                        <label for="invite_name" class="form-label">{{ __('invitations.name') }}</label>
+                                        <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
+                                               value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
+                                        <x-form-field-error name="name" />
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                        <label for="invite_email" class="form-label">{{ __('invitations.email') }}</label>
+                                        <input type="email" name="email" id="invite_email" class="form-control @error('email') is-invalid @enderror"
+                                               value="{{ old('email') }}" required autocomplete="off"/>
+                                        <x-form-field-error name="email" />
+                                    </div>
+                                    @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL)
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_role_id" class="form-label">{{ __('invitations.role') }}</label>
+                                            <select name="role_id" id="invite_role_id" class="form-select @error('role_id') is-invalid @enderror" required>
+                                                <option value="">{{ __('invitations.role_placeholder') }}</option>
+                                                @foreach ($assignableRoles ?? [] as $id => $label)
+                                                    <option value="{{ $id }}" @selected((string) old('role_id') === (string) $id)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="role_id" />
+                                        </div>
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 d-grid d-lg-none">
+                                            <label class="form-label d-md-none">&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary">{{ __('invitations.send') }}</button>
+                                        </div>
+                                    @else
+                                        <div class="col-md-4">
+                                            <label class="form-label d-none d-md-block">&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary w-100">{{ __('invitations.send') }}</button>
+                                        </div>
+                                    @endif
                                 </div>
                                 @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL)
-                                    <div class="col-md-2">
-                                        <label for="invite_role_id" class="form-label">{{ __('invitations.role') }}</label>
-                                        <select name="role_id" id="invite_role_id" class="form-select @error('role_id') is-invalid @enderror" required>
-                                            <option value="">{{ __('invitations.role_placeholder') }}</option>
-                                            @foreach ($assignableRoles ?? [] as $id => $label)
-                                                <option value="{{ $id }}" @selected((string) old('role_id') === (string) $id)>{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        <x-form-field-error name="role_id" />
+                                    <div class="row g-2 align-items-end mt-2 mt-lg-3">
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_contact_department_id" class="form-label">{{ __('invitations.invitee_department') }}</label>
+                                            <select name="contact_department_id" id="invite_contact_department_id"
+                                                    class="form-select @error('contact_department_id') is-invalid @enderror" required>
+                                                <option value="">{{ __('invitations.invitee_department_placeholder') }}</option>
+                                                @foreach ($contactDepartments ?? [] as $dept)
+                                                    <option value="{{ $dept->id }}" @selected((string) old('contact_department_id') === (string) $dept->id)>
+                                                        {{ $dept->code }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="contact_department_id" />
+                                        </div>
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_contact_position_id" class="form-label">{{ __('invitations.invitee_position') }}</label>
+                                            <select name="contact_position_id" id="invite_contact_position_id"
+                                                    class="form-select @error('contact_position_id') is-invalid @enderror" required>
+                                                <option value="">{{ __('invitations.invitee_position_placeholder') }}</option>
+                                                @foreach ($contactPositions ?? [] as $pos)
+                                                    <option value="{{ $pos->id }}" @selected((string) old('contact_position_id') === (string) $pos->id)>
+                                                        {{ $pos->code }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="contact_position_id" />
+                                        </div>
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 d-none d-lg-grid">
+                                            <label class="form-label d-none d-lg-block">&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary">{{ __('invitations.send') }}</button>
+                                        </div>
                                     </div>
                                 @endif
-                                <div class="col-md-{{ ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL ? '2' : '4' }}">
-                                    <button type="submit" class="btn btn-primary w-100">{{ __('invitations.send') }}</button>
-                                </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card mb-4 border-primary border-opacity-25 shadow-sm">
+                        <div class="card-body">
+                            <h2 class="h6 fw-semibold text-body-secondary mb-3 pb-2 border-bottom border-light">
+                                {{ __('invitations.card_list_heading') }}
+                            </h2>
                             <form method="get" action="{{ route($indexRoute ?? 'account.invitations.employee') }}" class="row g-2 align-items-end mb-3">
                                 <div class="col-auto">
                                     <label for="invitations_status_filter" class="form-label mb-0">{{ __('invitations.filter_status') }}</label>

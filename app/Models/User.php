@@ -16,17 +16,18 @@ use Illuminate\Support\Facades\DB;
 use Lampminds\Customization\Models\User as BaseUser;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Application User model. Account access is only via the account_user pivot (Spatie teams).
  */
-class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
+class User extends BaseUser implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, InteractsWithMedia, LogsActivity;
+    use HasFactory, LogsActivity;
+
+    public const ACTIVATION_ACTIVE = 'active';
+
+    public const ACTIVATION_PENDING_INVITATION = 'pending_invitation';
 
     /**
      * Send the email verification notification (custom welcome + verification link).
@@ -48,8 +49,13 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
 
     public function __construct(array $attributes = [])
     {
-        $this->fillable = array_merge(BaseUser::getFillableAttributes(), ['password']);
+        $this->fillable = array_merge(BaseUser::getFillableAttributes(), ['password', 'activation_state']);
         parent::__construct($attributes);
+    }
+
+    public function isPendingInvitation(): bool
+    {
+        return (string) $this->activation_state === self::ACTIVATION_PENDING_INVITATION;
     }
 
     /**
@@ -66,6 +72,16 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
     public function socialAccounts(): HasMany
     {
         return $this->hasMany(UserSocialAccount::class);
+    }
+
+    /**
+     * Persons linked to this login (user_person).
+     */
+    public function persons(): BelongsToMany
+    {
+        return $this->belongsToMany(Person::class, 'user_person')
+            ->using(UserPerson::class)
+            ->withTimestamps();
     }
 
     /**
@@ -306,36 +322,9 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
         return $this->accounts()->orderBy('commercial_name')->orderBy('name')->orderBy('nick')->get();
     }
 
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('avatar')
-            ->useDisk('avatars')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-    }
-
-    /**
-     * Thumbnail for navbars; preview for profile page. Generated on upload (sync, no queue worker required).
-     */
-    public function registerMediaConversions(?MediaModel $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->width(80)
-            ->height(80)
-            ->nonQueued();
-
-        $this->addMediaConversion('preview')
-            ->width(256)
-            ->height(256)
-            ->nonQueued();
-    }
-
-    /**
-     * True when the user uploaded a file; false when only the DiceBear fallback applies.
-     */
     public function hasUploadedAvatar(): bool
     {
-        return $this->getFirstMedia('avatar') !== null;
+        return $this->resolveAvatarPerson()?->hasUploadedAvatar() ?? false;
     }
 
     /**
@@ -343,9 +332,9 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
      */
     public function avatarThumbUrl(): string
     {
-        $media = $this->getFirstMedia('avatar');
-        if ($media !== null) {
-            return $media->getUrl('thumb');
+        $person = $this->resolveAvatarPerson();
+        if ($person instanceof Person) {
+            return $person->avatarThumbUrl();
         }
 
         return $this->dicebearAvatarUrl(80);
@@ -356,12 +345,35 @@ class User extends BaseUser implements FilamentUser, HasMedia, MustVerifyEmail
      */
     public function avatarDisplayUrl(): string
     {
-        $media = $this->getFirstMedia('avatar');
-        if ($media !== null) {
-            return $media->getUrl('preview');
+        $person = $this->resolveAvatarPerson();
+        if ($person instanceof Person) {
+            return $person->avatarDisplayUrl();
         }
 
         return $this->dicebearAvatarUrl(256);
+    }
+
+    public function resolveAvatarPerson(): ?Person
+    {
+        $personIds = $this->persons()->pluck('persons.id');
+        if ($personIds->isEmpty()) {
+            return null;
+        }
+
+        $currentAccountId = $this->currentAccountId();
+        if ($currentAccountId !== null) {
+            $accountPerson = AccountPerson::query()
+                ->where('account_id', $currentAccountId)
+                ->whereIn('person_id', $personIds->all())
+                ->orderByDesc('is_primary')
+                ->orderBy('id')
+                ->first();
+            if ($accountPerson !== null) {
+                return $accountPerson->person()->first();
+            }
+        }
+
+        return Person::query()->whereIn('id', $personIds->all())->orderBy('id')->first();
     }
 
     /**

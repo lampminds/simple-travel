@@ -1,9 +1,15 @@
 <?php
 
 return [
-    'title' => 'My profile',
+    'title' => 'My account',
     'heading' => 'Profile',
-    'subtitle' => 'Update your photo, name, email, and password.',
+    'subtitle' => 'Update your details.',
+    'access_title' => 'Access',
+    'access_heading' => 'Access',
+    'access_subtitle' => 'Manage your login email and password.',
+    'profile_title' => 'Profile',
+    'profile_heading' => 'Profile',
+    'profile_subtitle' => 'Manage your photo and personal details.',
 
     'avatar_heading' => 'Profile photo',
     'avatar_help' => 'Upload an image (max 2 MB, JPEG, PNG, GIF or WebP). If you do not upload one, we show a generated avatar (DiceBear).',
@@ -16,11 +22,17 @@ return [
 
     'name' => 'Name',
     'email' => 'Email',
+    'department' => 'Department',
+    'position' => 'Position',
+    'not_assigned' => 'Not assigned',
+    'select_department' => 'Select a department',
+    'select_position' => 'Select a position',
     'save' => 'Save changes',
     'updated' => 'Your profile was updated.',
 
     'email_changed_verify' => 'Your email was changed. Please confirm the new address using the link we sent you.',
 
+    'profile_updated' => 'Your personal profile was updated.',
     'password_heading' => 'Change password',
     'current_password' => 'Current password',
     'new_password' => 'New password',
@@ -28,7 +40,27 @@ return [
     'update_password' => 'Update password',
     'password_updated' => 'Your password was updated.',
 
+    'menu_access' => 'Access',
     'menu_profile' => 'Profile',
+    'menu_contact' => 'Contact',
+    'menu_company' => 'Company',
     'menu_subtitle' => 'Account',
+    'contact_title' => 'My contact details',
+    'contact_heading' => 'Contact',
+    'contact_subtitle' => 'Manage your contact methods (email, phone, and others).',
+    'contact_type' => 'Contact type',
+    'contact_select_type' => 'Select a type',
+    'contact_value' => 'Value',
+    'contact_value_placeholder' => 'Enter contact value',
+    'contact_type_required' => 'Please select a contact type.',
+    'contact_value_required' => 'Please enter a contact value.',
+    'contact_delete' => 'Delete',
+    'contact_add_row' => 'Add contact',
+    'contact_remove_row' => 'Remove',
+    'contact_save' => 'Save contact',
+    'contact_updated' => 'Your contact details were updated.',
+    'contact_empty' => 'You do not have contact methods yet.',
+    'contact_person_missing' => 'No linked person was found to edit contact methods.',
+    'contact_unique_type_error' => 'A contact method with type :type already exists for this person.',
     'sign_out' => 'Sign out',
 ];

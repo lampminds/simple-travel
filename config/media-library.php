@@ -98,6 +98,7 @@ return [
      */
     'custom_path_generators' => [
         \App\Models\Service::class => \App\Support\MediaLibrary\ServicePathGenerator::class,
+        \App\Models\ServiceVariant::class => \App\Support\MediaLibrary\ServiceVariantPathGenerator::class,
     ],
 
     /*

@@ -43,7 +43,12 @@ class Account extends Model
      */
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(AccountCategory::class, 'account_category_assignments');
+        return $this->belongsToMany(
+            AccountCategory::class,
+            'account_category_assignments',
+            'account_id',
+            'account_category_id'
+        );
     }
 
     /**
@@ -51,8 +56,12 @@ class Account extends Model
      */
     public function typeCategories(): BelongsToMany
     {
-        return $this->belongsToMany(AccountCategory::class, 'account_category_assignments')
-            ->where((new AccountCategory)->getTable().'.group', 'type');
+        return $this->belongsToMany(
+            AccountCategory::class,
+            'account_category_assignments',
+            'account_id',
+            'account_category_id'
+        )->where((new AccountCategory)->getTable().'.group', 'type');
     }
 
     /**
@@ -85,6 +94,36 @@ class Account extends Model
     public function notifications(): HasMany
     {
         return $this->hasMany(AccountNotification::class);
+    }
+
+    /**
+     * Persons linked to this account with department/position (account_person).
+     */
+    public function accountPersons(): HasMany
+    {
+        return $this->hasMany(AccountPerson::class);
+    }
+
+    public function persons(): BelongsToMany
+    {
+        return $this->belongsToMany(Person::class, 'account_person')
+            ->withPivot([
+                'contact_department_id',
+                'contact_position_id',
+                'is_primary',
+                'is_active',
+                'is_public_contact',
+                'is_preferred_contact_mode',
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * Contact links this account stores (person from another account).
+     */
+    public function accountContactLinks(): HasMany
+    {
+        return $this->hasMany(AccountContactLink::class);
     }
 
     /**

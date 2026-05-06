@@ -23,14 +23,14 @@ class AccountUserTableSeeder extends Seeder
             array (
                 'id' => 1,
                 'account_id' => 1,
-                'user_id' => 2,
+                'user_id' => 1,
             ),
             1 =>
-                array (
-                    'id' => 2,
-                    'account_id' => 2,
-                    'user_id' => 3,
-                ),
+            array (
+                'id' => 2,
+                'account_id' => 1,
+                'user_id' => 2,
+            ),
         ));
 
 

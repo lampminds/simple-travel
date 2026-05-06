@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     @include('layouts.partials/head', ['title' => $title])
@@ -23,6 +23,7 @@
                                                                                  data-feather="arrow-up"></i></a>
 
 @yield('script')
+@include('layouts.partials.html5-validation')
 @vite(['resources/js/theme.js','resources/js/swiper.js'])
 @livewireScripts
 @yield('script-bottom')

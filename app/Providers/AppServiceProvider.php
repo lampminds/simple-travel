@@ -2,12 +2,18 @@
 
 namespace App\Providers;
 
+use App\Filament\Forms\Components\Actions\HttpSafeCopyAction;
 use App\Models\AccountNotification;
 use App\Models\Language;
 use App\Models\User;
+use App\Support\Filament\CopyableTextCell;
+use Closure;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
             $view->with('languages', Language::with('locale')->orderBy('id')->get());
         });
 
+        $this->registerFilamentCopyMacros();
+
         View::composer(['layouts.partials.dashboard-navbar'], function ($view): void {
             /** @var User|null $user */
             $user = auth()->user();
@@ -79,5 +87,42 @@ class AppServiceProvider extends ServiceProvider
             $view->with('accountNavbarNotifications', $items);
             $view->with('accountNavbarUnreadNotificationsCount', $unreadCount);
         });
+    }
+
+    /**
+     * Prototype helpers: HTTP-safe copy (same idea as Filament's copyable(), without requiring HTTPS).
+     */
+    protected function registerFilamentCopyMacros(): void
+    {
+        if (! class_exists(TextInput::class) || ! class_exists(TextColumn::class)) {
+            return;
+        }
+
+        if (! TextInput::hasMacro('copyableWithHttpFallback')) {
+            TextInput::macro('copyableWithHttpFallback', function (
+                bool | Closure $condition = true,
+                string | Closure | null $copyMessage = null,
+                int | Closure | null $copyMessageDuration = null,
+            ): TextInput {
+                /** @var TextInput $this */
+                $this->suffixAction(
+                    HttpSafeCopyAction::make()
+                        ->copyMessage($copyMessage)
+                        ->copyMessageDuration($copyMessageDuration)
+                        ->visible($condition),
+                );
+
+                return $this;
+            });
+        }
+
+        if (! TextColumn::hasMacro('httpSafeCopyableUsing')) {
+            TextColumn::macro('httpSafeCopyableUsing', function (Closure $resolveCopyText): TextColumn {
+                /** @var TextColumn $this */
+                return $this->formatStateUsing(function ($state, $record) use ($resolveCopyText): HtmlString {
+                    return CopyableTextCell::span((string) $resolveCopyText($record, $state));
+                });
+            });
+        }
     }
 }

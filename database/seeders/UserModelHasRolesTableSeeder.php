@@ -18,11 +18,6 @@ class UserModelHasRolesTableSeeder extends Seeder
 
         \DB::table('user_model_has_roles')->delete();
 
-        \DB::table('account_user')->updateOrInsert(
-            ['account_id' => 1, 'user_id' => 2],
-            ['created_at' => now(), 'updated_at' => now()]
-        );
-
         \DB::table('user_model_has_roles')->insert(array (
             0 =>
             array (

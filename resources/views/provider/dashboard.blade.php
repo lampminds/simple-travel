@@ -21,6 +21,9 @@
             <div class="row mt-4">
                 <div class="col-lg-12 col-xl-8">
                     <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ route('account.service-offers.index') }}" class="btn btn-outline-primary">
+                            {{ __('account.service_offers_nav') }}
+                        </a>
                         <a href="{{ route('catalog') }}" class="btn btn-primary">
                             {{ __('catalog.title') }}
                         </a>
