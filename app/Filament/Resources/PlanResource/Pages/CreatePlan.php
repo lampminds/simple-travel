@@ -22,7 +22,7 @@ class CreatePlan extends LmpCreateRecord
         parent::fillForm();
         $translations = [];
         foreach (Language::query()->orderBy('id')->get() as $lang) {
-            $translations[$lang->id] = ['price' => null, 'name' => '', 'description' => null];
+            $translations[$lang->id] = ['name' => '', 'description' => null];
         }
         $state = $this->form->getRawState() ?? [];
         $state['translations'] = $translations;
@@ -47,11 +47,9 @@ class CreatePlan extends LmpCreateRecord
         foreach ($translations as $languageId => $row) {
             $name = $row['name'] ?? '';
             $description = $row['description'] ?? null;
-            $price = isset($row['price']) && $row['price'] !== '' && $row['price'] !== null ? $row['price'] : null;
-            if ($name !== '' || $description !== null || $price !== null) {
+            if ($name !== '' || $description !== null) {
                 $record->translations()->create([
                     'language_id' => $languageId,
-                    'price' => $price,
                     'name' => $name,
                     'description' => $description,
                 ]);

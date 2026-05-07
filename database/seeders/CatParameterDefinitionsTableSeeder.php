@@ -99,6 +99,24 @@ class CatParameterDefinitionsTableSeeder extends Seeder
                 'validation_rules' => '[]',
                 'comments' => NULL,
             ),
+            5 => 
+            array (
+                'id' => 6,
+                'category' => 'system',
+                'subcategory' => 'plans',
+                'code' => 'rounding_price_decimals',
+                'type' => 'integer',
+                'scope' => 'system',
+                'has_default' => 0,
+                'ui_component' => 'input',
+                'ui_options' => '[]',
+                'sort_order' => 0,
+                'default_value' => '-3',
+                'validation_rules' => '[]',
+                'comments' => '0: rounds $35.123,10 to $35.123
+-2: rounds $35.123,10 to $35.100
+-3: rounds $35.123,10 to $35.000',
+            ),
         ));
         
         

@@ -14,12 +14,12 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
-        
+
 
         \DB::table('cat_service_type_translations')->delete();
-        
+
         \DB::table('cat_service_type_translations')->insert(array (
-            0 => 
+            0 =>
             array (
                 'id' => 13,
                 'service_type_id' => 1,
@@ -27,7 +27,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Hotel',
                 'description' => 'Hotels, hostels, cabins',
             ),
-            1 => 
+            1 =>
             array (
                 'id' => 14,
                 'service_type_id' => 1,
@@ -35,7 +35,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Hotel',
                 'description' => 'Hotel, hostel, cabaña, apart',
             ),
-            2 => 
+            2 =>
             array (
                 'id' => 15,
                 'service_type_id' => 1,
@@ -43,7 +43,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Hotel',
                 'description' => NULL,
             ),
-            3 => 
+            3 =>
             array (
                 'id' => 16,
                 'service_type_id' => 2,
@@ -51,7 +51,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Transfer',
                 'description' => NULL,
             ),
-            4 => 
+            4 =>
             array (
                 'id' => 17,
                 'service_type_id' => 2,
@@ -59,7 +59,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Traslado',
                 'description' => 'Traslados punto a punto',
             ),
-            5 => 
+            5 =>
             array (
                 'id' => 18,
                 'service_type_id' => 2,
@@ -67,7 +67,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Transfer',
                 'description' => NULL,
             ),
-            6 => 
+            6 =>
             array (
                 'id' => 19,
                 'service_type_id' => 4,
@@ -75,7 +75,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Gastronomy',
                 'description' => 'Restaurant, meals, experiences',
             ),
-            7 => 
+            7 =>
             array (
                 'id' => 20,
                 'service_type_id' => 4,
@@ -83,7 +83,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Gastronomía',
                 'description' => 'Restaurants, comidas, experiencias',
             ),
-            8 => 
+            8 =>
             array (
                 'id' => 21,
                 'service_type_id' => 4,
@@ -91,7 +91,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Gastronomia',
                 'description' => NULL,
             ),
-            9 => 
+            9 =>
             array (
                 'id' => 22,
                 'service_type_id' => 3,
@@ -99,15 +99,15 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Tour',
                 'description' => 'Tours, excursions, experiences',
             ),
-            10 => 
+            10 =>
             array (
                 'id' => 23,
                 'service_type_id' => 3,
                 'language_id' => 2,
-                'name' => 'Entertainment',
+                'name' => 'Excursiones',
                 'description' => 'Tours, excursiones, experiencias',
             ),
-            11 => 
+            11 =>
             array (
                 'id' => 24,
                 'service_type_id' => 3,
@@ -115,7 +115,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Tour',
                 'description' => NULL,
             ),
-            12 => 
+            12 =>
             array (
                 'id' => 25,
                 'service_type_id' => 5,
@@ -123,7 +123,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Transport',
                 'description' => 'Tickets: flights, bus, train',
             ),
-            13 => 
+            13 =>
             array (
                 'id' => 26,
                 'service_type_id' => 5,
@@ -131,7 +131,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Transportes',
                 'description' => 'Tickets: vuelos, micros, trenes',
             ),
-            14 => 
+            14 =>
             array (
                 'id' => 27,
                 'service_type_id' => 6,
@@ -139,7 +139,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Rental',
                 'description' => 'Car rental, equipment',
             ),
-            15 => 
+            15 =>
             array (
                 'id' => 28,
                 'service_type_id' => 6,
@@ -147,7 +147,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Rental',
                 'description' => 'Autos de alquiler, equipamiento',
             ),
-            16 => 
+            16 =>
             array (
                 'id' => 29,
                 'service_type_id' => 6,
@@ -155,7 +155,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Rental',
                 'description' => NULL,
             ),
-            17 => 
+            17 =>
             array (
                 'id' => 30,
                 'service_type_id' => 7,
@@ -163,7 +163,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Event',
                 'description' => 'Shows, tickets',
             ),
-            18 => 
+            18 =>
             array (
                 'id' => 31,
                 'service_type_id' => 7,
@@ -171,7 +171,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Eventos',
                 'description' => 'Shows, tickets locales',
             ),
-            19 => 
+            19 =>
             array (
                 'id' => 32,
                 'service_type_id' => 7,
@@ -179,7 +179,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Eventos',
                 'description' => NULL,
             ),
-            20 => 
+            20 =>
             array (
                 'id' => 33,
                 'service_type_id' => 8,
@@ -187,7 +187,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Packages',
                 'description' => 'Bundles / combos',
             ),
-            21 => 
+            21 =>
             array (
                 'id' => 34,
                 'service_type_id' => 8,
@@ -195,7 +195,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Paquetes',
                 'description' => 'Bundles / combos',
             ),
-            22 => 
+            22 =>
             array (
                 'id' => 35,
                 'service_type_id' => 8,
@@ -203,7 +203,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Paquetes',
                 'description' => 'Bundles / paquetes',
             ),
-            23 => 
+            23 =>
             array (
                 'id' => 36,
                 'service_type_id' => 9,
@@ -211,7 +211,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Other',
                 'description' => 'Others',
             ),
-            24 => 
+            24 =>
             array (
                 'id' => 37,
                 'service_type_id' => 9,
@@ -219,7 +219,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Otros',
                 'description' => 'Otros',
             ),
-            25 => 
+            25 =>
             array (
                 'id' => 38,
                 'service_type_id' => 9,
@@ -228,7 +228,7 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'description' => NULL,
             ),
         ));
-        
-        
+
+
     }
 }

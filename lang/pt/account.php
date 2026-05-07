@@ -239,5 +239,9 @@ return [
         'status_marked_as_read' => 'Notificação marcada como lida.',
         'welcome_title' => 'Bem-vindo à sua conta',
         'welcome_message' => 'Olá :name. A sua conta já está pronta. Comece por rever o seu painel e as tarefas pendentes.',
+        'external_invitation_existing_customer_title' => 'A empresa convidada já aderiu',
+        'external_invitation_existing_customer_message' => ':company aceitou o convite e aderiu. Esta empresa já era cliente da Simple Travel.',
+        'external_invitation_new_customer_title' => 'A empresa convidada registou-se',
+        'external_invitation_new_customer_message' => ':company aceitou o convite e registou-se na Simple Travel.',
     ],
 ];

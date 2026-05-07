@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\AccountNotification;
 use App\Models\User;
+use App\Models\UserInvitation;
 
 final class AccountNotificationService
 {
@@ -45,6 +47,44 @@ final class AccountNotificationService
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
+            ],
+        );
+    }
+
+    /**
+     * Notify inviter account/user when an external invitation is accepted.
+     */
+    public function createForExternalInvitationAccepted(
+        UserInvitation $invitation,
+        Account $providerAccount,
+        bool $providerAlreadyExisted,
+    ): AccountNotification {
+        $operatorAccountId = (int) ($invitation->account_inviting ?: $invitation->account_id);
+
+        return $this->createForAccount(
+            accountId: $operatorAccountId,
+            type: $providerAlreadyExisted
+                ? 'external_invitation_accepted_existing_customer'
+                : 'external_invitation_accepted_new_customer',
+            title: (string) __(
+                $providerAlreadyExisted
+                    ? 'account.notifications.external_invitation_existing_customer_title'
+                    : 'account.notifications.external_invitation_new_customer_title'
+            ),
+            message: (string) __(
+                $providerAlreadyExisted
+                    ? 'account.notifications.external_invitation_existing_customer_message'
+                    : 'account.notifications.external_invitation_new_customer_message',
+                [
+                    'company' => $providerAccount->commercial_name ?: $providerAccount->name,
+                ]
+            ),
+            recipientUserId: $invitation->invited_by !== null ? (int) $invitation->invited_by : null,
+            data: [
+                'invitation_id' => (int) $invitation->id,
+                'provider_account_id' => (int) $providerAccount->id,
+                'provider_account_name' => $providerAccount->commercial_name ?: $providerAccount->name,
+                'provider_already_existed' => $providerAlreadyExisted,
             ],
         );
     }

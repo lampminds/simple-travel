@@ -662,7 +662,7 @@ return [
         'plan_fields' => [
             'code' => 'Code',
             'active' => 'Active',
-            'price' => 'Price',
+            'usd_price' => 'USD price',
             'name' => 'Name',
             'description' => 'Description',
         ],
@@ -671,7 +671,7 @@ return [
             'id' => 'ID',
             'code' => 'Code',
             'name' => 'Name',
-            'price' => 'Price',
+            'usd_price' => 'USD price',
             'active' => 'Active',
         ],
 

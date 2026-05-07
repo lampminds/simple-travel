@@ -265,5 +265,9 @@ return [
         'status_marked_as_read' => 'Notificación marcada como leída.',
         'welcome_title' => 'Bienvenido a tu cuenta',
         'welcome_message' => 'Hola :name. Tu cuenta ya está lista. Comienza revisando tu panel y las tareas pendientes.',
+        'external_invitation_existing_customer_title' => 'La empresa invitada ya se vinculó',
+        'external_invitation_existing_customer_message' => ':company aceptó la invitación y se vinculó. Esta empresa ya era cliente de Simple Travel.',
+        'external_invitation_new_customer_title' => 'La empresa invitada se registró',
+        'external_invitation_new_customer_message' => ':company aceptó la invitación y se registró en Simple Travel.',
     ],
 ];

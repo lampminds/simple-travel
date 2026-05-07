@@ -19,10 +19,9 @@ class ViewPlan extends LmpViewRecord
         foreach ($languages as $lang) {
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
-                'price' => $trans->price,
                 'name' => $trans->name ?? '',
                 'description' => $trans->description,
-            ] : ['price' => null, 'name' => '', 'description' => null];
+            ] : ['name' => '', 'description' => null];
         }
 
         return $data;

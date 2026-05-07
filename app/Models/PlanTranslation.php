@@ -15,13 +15,8 @@ class PlanTranslation extends Model
     protected $fillable = [
         'plan_id',
         'language_id',
-        'price',
         'name',
         'description',
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
     ];
 
     public function plan(): BelongsTo

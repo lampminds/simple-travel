@@ -31,7 +31,7 @@ class PricingController extends Controller
      */
     public function getModulePriceForUserRange(Plan $plan, int $upTo): string
     {
-        $price = $plan->price;
+        $price = $plan->usd_price;
 
         return $price !== null && $price !== '' ? (string) $price : '';
     }

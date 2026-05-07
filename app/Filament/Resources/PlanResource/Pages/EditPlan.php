@@ -26,10 +26,9 @@ class EditPlan extends LmpEditRecord
         foreach ($languages as $lang) {
             $trans = $record->translations->firstWhere('language_id', $lang->id);
             $data['translations'][$lang->id] = $trans ? [
-                'price' => $trans->price,
                 'name' => $trans->name ?? '',
                 'description' => $trans->description,
-            ] : ['price' => null, 'name' => '', 'description' => null];
+            ] : ['name' => '', 'description' => null];
         }
 
         $record->load(['allItems.translations']);
@@ -74,11 +73,9 @@ class EditPlan extends LmpEditRecord
         foreach ($translations as $languageId => $row) {
             $name = $row['name'] ?? '';
             $description = $row['description'] ?? null;
-            $price = isset($row['price']) && $row['price'] !== '' && $row['price'] !== null ? $row['price'] : null;
-            if ($name !== '' || $description !== null || $price !== null) {
+            if ($name !== '' || $description !== null) {
                 $record->translations()->create([
                     'language_id' => $languageId,
-                    'price' => $price,
                     'name' => $name,
                     'description' => $description,
                 ]);

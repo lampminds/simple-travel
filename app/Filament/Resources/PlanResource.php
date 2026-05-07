@@ -276,11 +276,6 @@ class PlanResource extends LmpResource
         $translationSections = $languages->map(function (Language $lang) {
             return Section::make($lang->display_name)
                 ->schema([
-                    TextInput::make("translations.{$lang->id}.price")
-                        ->label(__('filament.resources.plan_fields.price'))
-                        ->numeric()
-                        ->minValue(0)
-                        ->step(0.01),
                     TextInput::make("translations.{$lang->id}.name")
                         ->label(__('filament.resources.plan_fields.name'))
                         ->maxLength(255),
@@ -303,6 +298,11 @@ class PlanResource extends LmpResource
                                     ->required()
                                     ->maxLength(255)
                                     ->unique(ignoreRecord: true),
+                                TextInput::make('usd_price')
+                                    ->label(__('filament.resources.plan_fields.usd_price'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01),
                                 Toggle::make('active')
                                     ->label(__('filament.resources.plan_fields.active'))
                                     ->default(true),
@@ -346,7 +346,7 @@ class PlanResource extends LmpResource
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('price')
-                    ->label(__('filament.resources.plan_columns.price'))
+                    ->label(__('filament.resources.plan_columns.usd_price'))
                     ->sortable(),
                 IconColumn::make('active')
                     ->label(__('filament.resources.plan_columns.active'))

@@ -477,6 +477,14 @@ class RegisteredUserController extends Controller
                     'status' => UserInvitation::STATUS_ACCEPTED,
                     'accepted_at' => now(),
                 ])->save();
+
+                if ($invitationToComplete->type === UserInvitation::TYPE_EXTERNAL) {
+                    app(AccountNotificationService::class)->createForExternalInvitationAccepted(
+                        invitation: $invitationToComplete,
+                        providerAccount: $account,
+                        providerAlreadyExisted: false,
+                    );
+                }
             }
 
             app(AccountNotificationService::class)->createWelcomeForNewAccount((int) $account->id, $user);

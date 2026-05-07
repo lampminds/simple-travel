@@ -91,6 +91,17 @@ class CatParameterDefinitionTranslationsTableSeeder extends Seeder
                 'description' => NULL,
                 'help' => NULL,
             ),
+            8 => 
+            array (
+                'id' => 17,
+                'parameter_definition_id' => 6,
+                'language_id' => 2,
+                'name' => 'Redondeo de decimales en precio de planes',
+                'description' => NULL,
+                'help' => '0: redondea $35.123,10 a $35.123
+-2: redondea $35.123,10 a $35.100
+-3: redondea $35.123,10 a $35.000',
+            ),
         ));
         
         

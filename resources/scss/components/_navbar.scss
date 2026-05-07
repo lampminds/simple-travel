@@ -48,8 +48,12 @@
         }
         // Compact horizontal spacing and provide button-like hover feedback for website menu items.
         .navbar-nav.mx-auto.website-center-nav {
-            max-width: min(760px, 78%);
-            width: 100%;
+            // Keep center menu inside the real free space (between logo and right controls),
+            // so it can wrap to a second line instead of forcing horizontal overflow.
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: min(760px, 64%);
+            width: auto;
             justify-content: center;
             align-content: center;
             gap: 0.2rem 0;
@@ -74,6 +78,9 @@
                     color: $primary;
                 }
             }
+        }
+        .navbar-nav.align-items-center {
+            flex-shrink: 0;
         }
     }
     &.navbar-sticky {

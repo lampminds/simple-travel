@@ -80,6 +80,15 @@ final class UserInvitationAcceptanceService
             approvedByUserId: (int) $user->id
         );
 
+        $providerAccount = Account::query()->find($providerAccountId);
+        if ($providerAccount !== null) {
+            app(AccountNotificationService::class)->createForExternalInvitationAccepted(
+                invitation: $invitation,
+                providerAccount: $providerAccount,
+                providerAlreadyExisted: true,
+            );
+        }
+
         return true;
     }
 

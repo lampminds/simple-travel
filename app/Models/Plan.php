@@ -15,12 +15,14 @@ class Plan extends Model
     protected $fillable = [
         'code',
         'sort_order',
+        'usd_price',
         'active',
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'sort_order' => 'integer',
+        'usd_price' => 'decimal:2',
     ];
 
     public function translations(): HasMany
@@ -50,13 +52,11 @@ class Plan extends Model
     }
 
     /**
-     * Price for display (from translations).
+     * Price for display in USD (stored in plans table).
      */
     public function getPriceAttribute(): ?string
     {
-        $t = $this->getTranslationForDisplay();
-
-        return $t !== null && $t->price !== null ? (string) $t->price : null;
+        return $this->usd_price !== null ? (string) $this->usd_price : null;
     }
 
     /**

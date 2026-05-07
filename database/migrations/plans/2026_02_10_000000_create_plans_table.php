@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique()->comment('Short name, in English');
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
+            $table->decimal('usd_price', 10, 2)->nullable();
             $table->boolean('active')->default(true);
 
             lmpStamps($table);
@@ -27,7 +28,6 @@ return new class extends Migration
             $table->foreignId('plan_id')->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
-            $table->decimal('price', 10, 2)->nullable();
             $table->string('name')->nullable();
             $table->string('description')->nullable();
 

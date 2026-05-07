@@ -265,5 +265,9 @@ return [
         'status_marked_as_read' => 'Notification marked as read.',
         'welcome_title' => 'Welcome to your account',
         'welcome_message' => 'Hi :name! Your account is ready. Start by reviewing your dashboard and pending tasks.',
+        'external_invitation_existing_customer_title' => 'The invited company has joined',
+        'external_invitation_existing_customer_message' => ':company accepted the invitation and joined. This company was already a Simple Travel customer.',
+        'external_invitation_new_customer_title' => 'The invited company registered',
+        'external_invitation_new_customer_message' => ':company accepted the invitation and registered in Simple Travel.',
     ],
 ];
