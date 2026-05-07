@@ -250,7 +250,7 @@
                     <p class="text-muted small mb-3">{{ __('wizard.variants_descriptions_help') }}</p>
                     <div class="row g-3">
                         @foreach ($languages as $language)
-                            <div class="col-lg-6" wire:key="variant-lang-{{ $language->id }}">
+                            <div class="col-12 col-md-6 col-lg-4" wire:key="variant-lang-{{ $language->id }}">
                                 <div class="border rounded p-3 bg-white h-100">
                                     <h6 class="mb-3">{{ $language->display_name }}</h6>
                                     <div class="mb-3">

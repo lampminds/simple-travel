@@ -38,12 +38,13 @@ class SmplAdmPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->navigationGroups([
-                NavigationGroup::make(__('filament.resources.nav_contacts')),
-                NavigationGroup::make(__('filament.resources.nav_plans')),
                 NavigationGroup::make(__('filament.resources.nav_services')),
                 NavigationGroup::make(__('filament.resources.nav_hotels')),
                 NavigationGroup::make(__('filament.resources.nav_entertainments')),
                 NavigationGroup::make(__('filament.resources.nav_gastronomy')),
+                NavigationGroup::make(__('filament.resources.nav_contacts')),
+                NavigationGroup::make(__('filament.resources.nav_plans')),
+                NavigationGroup::make(__('filament.resources.nav_onboarding')),
                 NavigationGroup::make(__('filament.resources.nav_parameters')),
                 NavigationGroup::make(__('filament.resources.nav_users')),
                 NavigationGroup::make(__('filament.resources.nav_authorization')),

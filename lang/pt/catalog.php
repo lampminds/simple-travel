@@ -2,6 +2,8 @@
 
 return [
     'title' => 'Catálogo',
+    'filter_by_status' => 'Estado do serviço',
+    'filter_status_all' => 'Todos',
     'provider_intro' => 'Serviços definidos para a sua conta de prestador.',
     'agency_intro' => 'Serviços da sua conta de agência. O pedido de acesso ao catálogo de prestadores convidados será acrescentado em seguida.',
     'operator_intro' => 'Os seus serviços e variantes aceites de prestadores ligados aparecem abaixo.',

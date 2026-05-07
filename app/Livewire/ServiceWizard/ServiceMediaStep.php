@@ -42,9 +42,15 @@ class ServiceMediaStep extends Component
 
     public function saveMain(): void
     {
-        $this->validate([
-            'mainPhoto' => ['required', 'image', 'max:'.Service::MEDIA_MAX_FILE_SIZE_KB],
-        ]);
+        $this->validate(
+            [
+                'mainPhoto' => ['required', 'image', 'max:'.Service::MEDIA_MAX_FILE_SIZE_KB],
+            ],
+            [],
+            [
+                'mainPhoto' => __('wizard.media_main_heading'),
+            ]
+        );
 
         $service = $this->authorizedService();
 
@@ -64,10 +70,17 @@ class ServiceMediaStep extends Component
 
     public function addGallery(): void
     {
-        $this->validate([
-            'galleryPhotos' => ['required', 'array', 'min:1'],
-            'galleryPhotos.*' => ['image', 'max:'.Service::MEDIA_MAX_FILE_SIZE_KB],
-        ]);
+        $this->validate(
+            [
+                'galleryPhotos' => ['required', 'array', 'min:1'],
+                'galleryPhotos.*' => ['image', 'max:'.Service::MEDIA_MAX_FILE_SIZE_KB],
+            ],
+            [],
+            [
+                'galleryPhotos' => __('wizard.media_gallery_heading'),
+                'galleryPhotos.*' => __('wizard.variant_media_gallery_image'),
+            ]
+        );
 
         $service = $this->authorizedService();
 

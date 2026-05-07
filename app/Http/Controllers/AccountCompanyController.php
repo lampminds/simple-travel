@@ -27,10 +27,21 @@ final class AccountCompanyController extends Controller
         abort_unless($account instanceof Account, 404);
         $account->loadMissing('typeCategories.translations.language');
 
-        $accountTypeLabel = $account->typeCategories
-            ->pluck('name')
-            ->filter()
-            ->implode(' / ');
+        $companyTypes = AccountCategory::query()
+            ->byGroup('type')
+            ->with('translations')
+            ->where('active', true)
+            ->ordered()
+            ->get()
+            ->mapWithKeys(fn ($cat) => [
+                $cat->id => ['name' => $cat->name, 'description' => $cat->description ?? ''],
+            ]);
+
+        $selectedCompanyTypeIds = $account->typeCategories
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
 
         $cityId = old('city_id', $account->city_id);
         $currentCity = null;
@@ -43,7 +54,8 @@ final class AccountCompanyController extends Controller
         return view('account.company-edit', [
             'account' => $account,
             'currentCity' => $currentCity,
-            'accountTypeLabel' => $accountTypeLabel !== '' ? $accountTypeLabel : '—',
+            'companyTypes' => $companyTypes,
+            'selectedCompanyTypeIds' => $selectedCompanyTypeIds,
             'taxIdCategories' => AccountCategory::query()
                 ->byGroup('tax_id')
                 ->where('active', true)

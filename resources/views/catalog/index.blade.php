@@ -33,6 +33,26 @@
                 </div>
             @endif
 
+            <div class="row mt-3">
+                <div class="col-md-6 col-lg-4">
+                    <form method="get" action="{{ route('catalog') }}" id="catalog-status-filter-form">
+                        <label for="catalog-status-filter" class="form-label mb-1">{{ __('catalog.filter_by_status') }}</label>
+                        <select
+                            name="status"
+                            id="catalog-status-filter"
+                            class="form-select"
+                            aria-label="{{ __('catalog.filter_by_status') }}"
+                            onchange="document.getElementById('catalog-status-filter-form').submit()"
+                        >
+                            <option value="all" @selected(($catalogStatusFilter ?? null) === null)>{{ __('catalog.filter_status_all') }}</option>
+                            @foreach ($catalogServiceStatusOptions ?? [] as $value => $label)
+                                <option value="{{ $value }}" @selected(($catalogStatusFilter ?? null) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+            </div>
+
             @if ($mode === 'provider')
                 @include('catalog.partials.provider-services', [
                     'services' => $services,

@@ -14,6 +14,16 @@ use Illuminate\Http\Request;
 
 class CatalogController extends Controller
 {
+    /** Service `status` values exposed in the catalog filter (aligned with Filament labels). */
+    private const SERVICE_STATUSES_FOR_FILTER = [
+        'active',
+        'onhold',
+        'suspended',
+        'discontinued',
+        'inactive',
+        'terminated',
+    ];
+
     /**
      * Catalog: provider, operator, and agency see this account's services (wizard-backed).
      * Operator/agency also see a placeholder control to request linked providers' services (TBD).
@@ -30,21 +40,59 @@ class CatalogController extends Controller
             return redirect()->route('account.dashboard');
         }
 
+        $statusFilter = $this->resolveCatalogStatusFilter($request);
+        $catalogFilterView = [
+            'catalogStatusFilter' => $statusFilter,
+            'catalogServiceStatusOptions' => $this->catalogServiceStatusOptions(),
+        ];
+
         return match (true) {
-            $laneId === AccountTypeCategoryIds::PROVIDER => $this->accountServicesCatalog($account, 'provider'),
-            AccountTypeCategoryIds::isOperatorLaneTypeId($laneId) => $this->operatorCatalog($account),
-            $laneId === AccountTypeCategoryIds::AGENCY => $this->accountServicesCatalog($account, 'agency'),
+            $laneId === AccountTypeCategoryIds::PROVIDER => $this->accountServicesCatalog($account, 'provider', $statusFilter, $catalogFilterView),
+            AccountTypeCategoryIds::isOperatorLaneTypeId($laneId) => $this->operatorCatalog($account, $statusFilter, $catalogFilterView),
+            $laneId === AccountTypeCategoryIds::AGENCY => $this->accountServicesCatalog($account, 'agency', $statusFilter, $catalogFilterView),
             default => redirect()->route('account.dashboard'),
         };
     }
 
     /**
-     * @param  'provider'|'operator'|'agency'  $mode
+     * Validated catalog list filter: null means "all statuses".
      */
-    private function accountServicesCatalog(Account $account, string $mode): View
+    private function resolveCatalogStatusFilter(Request $request): ?string
+    {
+        $raw = (string) $request->query('status', '');
+        if ($raw === '' || strcasecmp($raw, 'all') === 0) {
+            return null;
+        }
+
+        if (in_array($raw, self::SERVICE_STATUSES_FOR_FILTER, true)) {
+            return $raw;
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function catalogServiceStatusOptions(): array
+    {
+        $out = [];
+        foreach (self::SERVICE_STATUSES_FOR_FILTER as $status) {
+            $out[$status] = __('filament.resources.service_status.'.$status);
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  'provider'|'agency'  $mode
+     * @param  array<string, mixed>  $catalogFilterView
+     */
+    private function accountServicesCatalog(Account $account, string $mode, ?string $statusFilter, array $catalogFilterView): View
     {
         $services = Service::query()
             ->where('account_id', $account->id)
+            ->when($statusFilter !== null, fn ($query) => $query->where('status', $statusFilter))
             ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
             ->withCount('serviceVariants')
             ->orderByDesc('id')
@@ -56,21 +104,24 @@ class CatalogController extends Controller
             ->with('translations.language.locale')
             ->get();
 
-        return view('catalog.index', [
+        return view('catalog.index', array_merge($catalogFilterView, [
             'mode' => $mode,
             'services' => $services,
             'serviceTypes' => $serviceTypes,
             'linkedCatalog' => null,
-        ]);
+        ]));
     }
 
     /**
      * Operator catalog: own services plus accepted variant offers from linked providers.
+     *
+     * @param  array<string, mixed>  $catalogFilterView
      */
-    private function operatorCatalog(Account $account): View
+    private function operatorCatalog(Account $account, ?string $statusFilter, array $catalogFilterView): View
     {
         $services = Service::query()
             ->where('account_id', $account->id)
+            ->when($statusFilter !== null, fn ($query) => $query->where('status', $statusFilter))
             ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
             ->withCount('serviceVariants')
             ->orderByDesc('id')
@@ -84,12 +135,12 @@ class CatalogController extends Controller
 
         $linkedCatalog = $this->linkedAcceptedCatalogForOperator($account);
 
-        return view('catalog.index', [
+        return view('catalog.index', array_merge($catalogFilterView, [
             'mode' => 'operator',
             'services' => $services,
             'serviceTypes' => $serviceTypes,
             'linkedCatalog' => $linkedCatalog,
-        ]);
+        ]));
     }
 
     /**

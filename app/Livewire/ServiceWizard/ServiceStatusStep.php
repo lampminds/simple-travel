@@ -40,7 +40,7 @@ class ServiceStatusStep extends Component
 
     public function save(): void
     {
-        $validated = $this->validate($this->rules());
+        $validated = $this->validate($this->rules(), [], $this->validationAttributes());
 
         $service = $this->authorizedService();
         $service->update([
@@ -78,6 +78,24 @@ class ServiceStatusStep extends Component
             'form.is_public' => ['required', 'boolean'],
             'form.booking_mode' => ['nullable', Rule::in(['instant', 'request', 'external', 'quote'])],
             'form.confirmation_time_hours' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function validationAttributes(): array
+    {
+        $f = 'wizard.step2_fields';
+
+        return [
+            'form.status' => __($f.'.status'),
+            'form.duration_minutes' => __($f.'.duration_minutes'),
+            'form.is_bookable' => __($f.'.is_bookable'),
+            'form.is_featured' => __($f.'.is_featured'),
+            'form.is_public' => __($f.'.is_public'),
+            'form.booking_mode' => __($f.'.booking_mode'),
+            'form.confirmation_time_hours' => __($f.'.confirmation_time_hours'),
         ];
     }
 

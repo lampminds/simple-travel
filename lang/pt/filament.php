@@ -444,6 +444,31 @@ return [
             'name' => 'Nome',
         ],
 
+        'currency_cat_catalog_label' => 'Moeda #:id (ref #:ref)',
+
+        'currency_rate' => 'Taxa de câmbio',
+        'currency_rates' => 'Taxas de câmbio',
+
+        'currency_rate_fields' => [
+            'currency_id' => 'Moeda',
+            'units_per_usd' => 'Unidades por 1 USD',
+            'units_per_usd_help' => 'Quantas unidades desta moeda equivalem a 1 dólar americano. Para USD é sempre 1.',
+            'starting_at' => 'Válido a partir de',
+            'starting_at_help' => 'Esta taxa vale a partir desta data (início do dia) até existir um registro mais recente para a mesma moeda.',
+        ],
+
+        'currency_rate_columns' => [
+            'id' => 'ID',
+            'currency' => 'Moeda',
+            'units_per_usd' => 'Unid. / USD',
+            'starting_at' => 'Válido a partir de',
+        ],
+
+        'currency_rate_validation' => [
+            'duplicate_starting_at' => 'Já existe uma taxa para esta moeda com a mesma data de vigência.',
+            'units_must_be_positive' => 'O valor deve ser maior que zero.',
+        ],
+
         'menu' => 'Item de menu',
         'menus' => 'Menus do site',
 
@@ -1316,6 +1341,8 @@ return [
             'active' => 'Ativo',
             'inactive' => 'Inativo',
             'hidden' => 'Oculto',
+            'suspended' => 'Suspenso',
+            'discontinued' => 'Descontinuado',
         ],
 
         'service_variant_pricing_type' => [

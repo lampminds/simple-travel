@@ -19,6 +19,8 @@ class CurrencyResource extends BaseResource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $modelLabel = 'filament.resources.currency';
 
     protected static ?string $pluralModelLabel = 'filament.resources.currencies';

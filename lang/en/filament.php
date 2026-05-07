@@ -485,6 +485,31 @@ return [
             'name' => 'Name',
         ],
 
+        'currency_cat_catalog_label' => 'Currency #:id (ref #:ref)',
+
+        'currency_rate' => 'Exchange rate',
+        'currency_rates' => 'Exchange rates',
+
+        'currency_rate_fields' => [
+            'currency_id' => 'Currency',
+            'units_per_usd' => 'Units per 1 USD',
+            'units_per_usd_help' => 'How many units of this currency equal 1 US dollar. For USD this is always 1.',
+            'starting_at' => 'Effective from',
+            'starting_at_help' => 'This rate applies from this date (start of day) until a newer row exists for the same currency.',
+        ],
+
+        'currency_rate_columns' => [
+            'id' => 'ID',
+            'currency' => 'Currency',
+            'units_per_usd' => 'Units / USD',
+            'starting_at' => 'Effective from',
+        ],
+
+        'currency_rate_validation' => [
+            'duplicate_starting_at' => 'A rate for this currency with the same effective date already exists.',
+            'units_must_be_positive' => 'The value must be greater than zero.',
+        ],
+
         'menu' => 'Menu item',
         'menus' => 'Website menus',
 
@@ -1357,6 +1382,8 @@ return [
             'active' => 'Active',
             'inactive' => 'Inactive',
             'hidden' => 'Hidden',
+            'suspended' => 'Suspended',
+            'discontinued' => 'Discontinued',
         ],
 
         'service_variant_pricing_type' => [

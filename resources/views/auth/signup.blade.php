@@ -18,7 +18,7 @@
                                             $inv = $invitation ?? null;
                                             $mode = $invitationMode ?? null;
                                         @endphp
-                                        <h6 class="h5 mb-0 mt-3">{{ __('auth.register.heading') }}</h6>
+                                        <h6 class="h3 mb-0 mt-3">{{ __('auth.register.heading') }}</h6>
                                         <p class="text-muted mt-1 mb-4">
                                             @if ($mode === 'internal')
                                                 {{ __('auth.register.intro_internal') }}

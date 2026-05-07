@@ -1,5 +1,43 @@
 @extends('layouts.base', ['title' => 'Prompt - Empresa'])
 
+@section('css')
+    <style>
+        /* Stronger active state for account company tabs (Bootstrap nav-tabs on white cards blends poorly). */
+        .company-tabs-wrap {
+            background-color: var(--bs-tertiary-bg);
+            border-radius: var(--bs-border-radius);
+            padding: 0.5rem 0.5rem 0;
+        }
+        .company-tabs-wrap .nav-tabs {
+            border-bottom: none;
+            gap: 0.25rem;
+        }
+        .company-tabs-wrap .nav-tabs .nav-link {
+            border: 1px solid transparent;
+            border-radius: 0.375rem 0.375rem 0 0;
+            color: var(--bs-secondary-color);
+            background-color: rgba(var(--bs-emphasis-color-rgb), 0.06);
+            margin-bottom: 0;
+        }
+        .company-tabs-wrap .nav-tabs .nav-link:hover:not(.active) {
+            color: var(--bs-body-color);
+            background-color: rgba(var(--bs-emphasis-color-rgb), 0.09);
+        }
+        .company-tabs-wrap .nav-tabs .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+            background-color: var(--bs-body-bg);
+            border-color: var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg);
+            border-bottom-color: var(--bs-body-bg);
+            box-shadow: 0 -0.2rem 0 0 var(--bs-primary);
+        }
+        .company-tabs-wrap .nav-tabs .nav-link.active.text-danger {
+            color: var(--bs-danger) !important;
+            box-shadow: 0 -0.2rem 0 0 var(--bs-danger);
+        }
+    </style>
+@endsection
+
 @section('content')
 
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
@@ -47,31 +85,49 @@
                                 @csrf
                                 @method('PUT')
 
-                                <ul class="nav nav-tabs mb-3" id="company-tabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link @if ($activeCompanyTab === 'general') active @endif @if ($hasGeneralErrors) text-danger @endif" id="tab-general" data-bs-toggle="tab" data-bs-target="#tab-pane-general" type="button" role="tab" aria-controls="tab-pane-general" aria-selected="{{ $activeCompanyTab === 'general' ? 'true' : 'false' }}">
-                                            General
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button class="nav-link @if ($activeCompanyTab === 'tax_ids') active @endif @if ($hasTaxErrors) text-danger @endif" id="tab-tax-ids" data-bs-toggle="tab" data-bs-target="#tab-pane-tax-ids" type="button" role="tab" aria-controls="tab-pane-tax-ids" aria-selected="{{ $activeCompanyTab === 'tax_ids' ? 'true' : 'false' }}">
-                                            Datos fiscales
-                                        </button>
-                                    </li>
-                                </ul>
+                                <div class="company-tabs-wrap mb-3">
+                                    <ul class="nav nav-tabs" id="company-tabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link @if ($activeCompanyTab === 'general') active @endif @if ($hasGeneralErrors) text-danger @endif" id="tab-general" data-bs-toggle="tab" data-bs-target="#tab-pane-general" type="button" role="tab" aria-controls="tab-pane-general" aria-selected="{{ $activeCompanyTab === 'general' ? 'true' : 'false' }}">
+                                                General
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link @if ($activeCompanyTab === 'tax_ids') active @endif @if ($hasTaxErrors) text-danger @endif" id="tab-tax-ids" data-bs-toggle="tab" data-bs-target="#tab-pane-tax-ids" type="button" role="tab" aria-controls="tab-pane-tax-ids" aria-selected="{{ $activeCompanyTab === 'tax_ids' ? 'true' : 'false' }}">
+                                                Datos fiscales
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
 
                                 <div class="tab-content">
                                     <div class="tab-pane fade @if ($activeCompanyTab === 'general') show active @endif" id="tab-pane-general" role="tabpanel" aria-labelledby="tab-general" tabindex="0">
                                         <div class="row">
-                                            <div class="col-lg-6">
+                                            <div class="col-lg-12">
                                                 <div class="mb-3">
-                                                    <label class="form-label">Tipo de empresa</label>
-                                                    <input
-                                                        type="text"
-                                                        class="form-control"
-                                                        value="{{ $accountTypeLabel ?? '—' }}"
-                                                        readonly
-                                                    >
+                                                    <label class="form-label">{{ __('auth.register.company_type') }}</label>
+                                                    <div class="border rounded p-2 bg-body-secondary">
+                                                        @forelse ($companyTypes ?? [] as $id => $data)
+                                                            @php
+                                                                $name = is_array($data) ? ($data['name'] ?? '') : $data;
+                                                                $description = trim((string) (is_array($data) ? ($data['description'] ?? '') : ''));
+                                                                $label = $description !== '' ? "{$name} ({$description})" : $name;
+                                                                $checked = in_array((int) $id, $selectedCompanyTypeIds ?? [], true);
+                                                            @endphp
+                                                            <div class="form-check mb-1">
+                                                                <input
+                                                                    class="form-check-input"
+                                                                    type="checkbox"
+                                                                    id="company_type_display_{{ $id }}"
+                                                                    @checked($checked)
+                                                                    disabled
+                                                                >
+                                                                <label class="form-check-label" for="company_type_display_{{ $id }}">{{ $label }}</label>
+                                                            </div>
+                                                        @empty
+                                                            <div class="text-muted small">—</div>
+                                                        @endforelse
+                                                    </div>
                                                 </div>
                                             </div>
 

@@ -9,7 +9,7 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 /**
  * Project currency row in cat_currencies; links to master data (lmp_currencies on addons).
- * Exchange rates are stored in currency_rates and filled by an external process.
+ * Exchange rates vs USD live in currency_rates (Filament + optional currency:fetch-rates).
  */
 class Currency extends Model
 {
@@ -30,11 +30,45 @@ class Currency extends Model
     }
 
     /**
-     * Exchange rates vs USD (managed by external process; read-only in admin).
+     * Exchange rates vs USD (1 USD = units_per_usd in this currency; USD = 1).
      */
     public function currencyRates(): HasMany
     {
         return $this->hasMany(CurrencyRate::class);
+    }
+
+    /**
+     * True when this cat_currencies row points to master currency code USD (addons DB).
+     *
+     * Avoids whereHas across connections: that generates SQL on the project DB and fails
+     * when lmp_currencies only exists on the addons connection.
+     */
+    public static function isUsdProjectCurrency(?int $catCurrencyId): bool
+    {
+        if ($catCurrencyId === null) {
+            return false;
+        }
+
+        $masterCurrencyId = static::query()->whereKey($catCurrencyId)->value('currency_id');
+        if ($masterCurrencyId === null) {
+            return false;
+        }
+
+        return LmpCurrency::query()
+            ->whereKey($masterCurrencyId)
+            ->whereRaw('UPPER(code) = ?', ['USD'])
+            ->exists();
+    }
+
+    /**
+     * Label for selects/lists using only cat_currencies columns (no join to lmp_currencies).
+     */
+    public function getCatCatalogLabelAttribute(): string
+    {
+        return __('filament.resources.currency_cat_catalog_label', [
+            'id' => $this->id,
+            'ref' => $this->currency_id,
+        ]);
     }
 
     /**

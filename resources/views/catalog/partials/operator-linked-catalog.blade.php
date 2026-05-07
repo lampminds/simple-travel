@@ -41,8 +41,9 @@
                                         <td class="fw-medium">{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
                                         <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
                                         <td>
-                                            @php $sst = $svc->status ?? ''; @endphp
-                                            {{ $sst !== '' ? __('filament.resources.service_status.'.$sst) : '—' }}
+                                            @include('catalog.partials.catalog-status-badge', [
+                                                'presentation' => \App\Support\ServiceCatalogStatus::forService($svc->status ?? null),
+                                            ])
                                         </td>
                                         <td>
                                             @if ($v->name !== '')
@@ -56,11 +57,21 @@
                                         </td>
                                         <td>
                                             @if ($vst !== '' && in_array($vst, ['active', 'inactive', 'hidden', 'suspended', 'discontinued'], true))
-                                                {{ __('filament.resources.service_variant_status.'.$vst) }}
+                                                @include('catalog.partials.catalog-status-badge', [
+                                                    'presentation' => \App\Support\ServiceCatalogStatus::forVariant($vst),
+                                                ])
                                             @elseif ($vst !== '')
-                                                {{ $vst }}
+                                                @include('catalog.partials.catalog-status-badge', [
+                                                    'presentation' => [
+                                                        'badge' => 'secondary',
+                                                        'icon' => 'help-circle',
+                                                        'label' => $vst,
+                                                    ],
+                                                ])
                                             @else
-                                                —
+                                                @include('catalog.partials.catalog-status-badge', [
+                                                    'presentation' => \App\Support\ServiceCatalogStatus::forVariant(null),
+                                                ])
                                             @endif
                                         </td>
                                         <td>

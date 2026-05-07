@@ -18,10 +18,13 @@ return new class extends Migration
             $table->unsignedTinyInteger('currency_id');
             $table->foreign('currency_id')->references('id')->on('cat_currencies');
 
-            $table->decimal('rate', 10, 3);
+            $table->decimal('units_per_usd', 18, 8);
             $table->timestamp('starting_at');
 
             lmpStamps($table);
+
+            $table->unique(['currency_id', 'starting_at']);
+            $table->index(['currency_id', 'starting_at']);
         });
     }
 

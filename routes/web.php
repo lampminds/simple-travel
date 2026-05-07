@@ -204,6 +204,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('services/wizard/{serviceType:code}/step-5/{service}', [ServiceWizardController::class, 'createStepFive'])
         ->name('services.wizard.step5');
+
+    Route::get('services/wizard/{serviceType:code}/step-6/{service}', [ServiceWizardController::class, 'createStepSix'])
+        ->name('services.wizard.step6');
 });
 
 // Website language switcher (must be before catch-all routes)

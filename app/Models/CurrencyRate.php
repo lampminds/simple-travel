@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 /**
- * Exchange rate of a project currency vs USD.
- * Populated by an external process; not edited via Filament.
+ * Exchange rate of a project currency vs USD (1 USD = units_per_usd in that currency).
+ * USD is always 1. Rows apply from starting_at forward until superseded by a later row.
  */
 class CurrencyRate extends Model
 {
@@ -18,12 +18,12 @@ class CurrencyRate extends Model
 
     protected $fillable = [
         'currency_id',
-        'rate',
+        'units_per_usd',
         'starting_at',
     ];
 
     protected $casts = [
-        'rate' => 'decimal:3',
+        'units_per_usd' => 'decimal:8',
         'starting_at' => 'datetime',
     ];
 

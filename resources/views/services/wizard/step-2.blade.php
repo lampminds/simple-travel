@@ -35,7 +35,10 @@
                             />
 
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
-                                <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{{ route('catalog') }}" class="btn btn-outline-secondary">@lang('wizard.nav_back')</a>
+                                    <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
+                                </div>
                                 <div class="d-flex flex-wrap gap-2 justify-content-end">
                                     <a
                                         href="{{ route('services.wizard.step1.edit', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
@@ -53,6 +56,10 @@
                                         href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
                                         class="btn btn-outline-primary"
                                     >@lang('wizard.nav_to_step5')</a>
+                                    <a
+                                        href="{{ route('services.wizard.step6', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                                        class="btn btn-outline-primary"
+                                    >@lang('wizard.nav_to_step6')</a>
                                 </div>
                             </div>
                         </div>

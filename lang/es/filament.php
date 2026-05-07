@@ -487,6 +487,31 @@ return [
             'name' => 'Nombre',
         ],
 
+        'currency_cat_catalog_label' => 'Moneda #:id (ref #:ref)',
+
+        'currency_rate' => 'Tipo de cambio',
+        'currency_rates' => 'Tipos de cambio',
+
+        'currency_rate_fields' => [
+            'currency_id' => 'Moneda',
+            'units_per_usd' => 'Unidades por 1 USD',
+            'units_per_usd_help' => 'Cuántas unidades de esta moneda equivalen a 1 dólar estadounidense. Para USD siempre es 1.',
+            'starting_at' => 'Vigente desde',
+            'starting_at_help' => 'Este tipo aplica desde esta fecha (inicio del día) hasta que exista un registro más reciente para la misma moneda.',
+        ],
+
+        'currency_rate_columns' => [
+            'id' => 'ID',
+            'currency' => 'Moneda',
+            'units_per_usd' => 'Unid. / USD',
+            'starting_at' => 'Vigente desde',
+        ],
+
+        'currency_rate_validation' => [
+            'duplicate_starting_at' => 'Ya existe un tipo de cambio para esta moneda con la misma fecha de vigencia.',
+            'units_must_be_positive' => 'El valor debe ser mayor que cero.',
+        ],
+
         'menu' => 'Ítem de menú',
         'menus' => 'Menús web',
 
@@ -1359,6 +1384,8 @@ return [
             'active' => 'Activo',
             'inactive' => 'Inactivo',
             'hidden' => 'Oculto',
+            'suspended' => 'Suspendido',
+            'discontinued' => 'Descatalogado',
         ],
 
         'service_variant_pricing_type' => [

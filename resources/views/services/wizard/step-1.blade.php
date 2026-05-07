@@ -72,7 +72,7 @@
 
                                 <div class="row">
                                     @foreach ($languages as $language)
-                                        <div class="col-lg-6">
+                                        <div class="col-12 col-md-6 col-lg-4">
                                             <div class="border rounded p-3 mb-3 bg-white">
                                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                                     <h6 class="mb-0">{{ $language->display_name }}</h6>
@@ -120,7 +120,10 @@
                                 </div>
 
                                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
-                                    <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a href="{{ route('catalog') }}" class="btn btn-outline-secondary">@lang('wizard.nav_back')</a>
+                                        <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
+                                    </div>
                                     <div class="d-flex flex-wrap gap-2 justify-content-end">
                                         @if ($isEdit)
                                             <a
@@ -139,6 +142,10 @@
                                                 href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
                                                 class="btn btn-outline-primary"
                                             >@lang('wizard.nav_to_step5')</a>
+                                            <a
+                                                href="{{ route('services.wizard.step6', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                                                class="btn btn-outline-primary"
+                                            >@lang('wizard.nav_to_step6')</a>
                                         @endif
                                         <button type="submit" class="btn btn-primary">
                                             {{ $isEdit ? __('wizard.step1_submit_edit') : __('wizard.step1_submit_create') }}

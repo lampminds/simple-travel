@@ -6,6 +6,7 @@ use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
 use App\Models\ServiceType;
+use Illuminate\Support\Collection;
 use App\Services\Translation\TranslationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -42,11 +43,7 @@ class ServiceWizardController extends Controller
     {
         $serviceType->load('translations.language.locale');
 
-        $languages = Language::query()
-            ->with('locale')
-            ->get()
-            ->sortBy(fn (Language $language) => $language->display_name)
-            ->values();
+        $languages = $this->languagesForStepOneValidation();
 
         $cityDisplayLabel = '';
         if ($service?->city_id) {
@@ -71,7 +68,7 @@ class ServiceWizardController extends Controller
         $accountId = $request->user()?->currentAccountId();
         abort_unless($accountId, 403);
 
-        $languages = Language::query()->get(['id']);
+        $languages = $this->languagesForStepOneValidation();
 
         $rules = [
             'city_id' => ['required', 'integer', 'exists:addons.lmp_cities,id'],
@@ -84,7 +81,7 @@ class ServiceWizardController extends Controller
             $rules["translations.{$language->id}.description"] = ['nullable', 'string'];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [], $this->stepOneValidationAttributes($languages));
 
         $service->update([
             'city_id' => $validated['city_id'],
@@ -123,7 +120,7 @@ class ServiceWizardController extends Controller
         $accountId = $request->user()?->currentAccountId();
         abort_unless($accountId, 403);
 
-        $languages = Language::query()->get(['id']);
+        $languages = $this->languagesForStepOneValidation();
 
         $rules = [
             'city_id' => ['required', 'integer', 'exists:addons.lmp_cities,id'],
@@ -136,7 +133,7 @@ class ServiceWizardController extends Controller
             $rules["translations.{$language->id}.description"] = ['nullable', 'string'];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [], $this->stepOneValidationAttributes($languages));
 
         $service = Service::query()->create([
             'account_id' => $accountId,
@@ -216,6 +213,19 @@ class ServiceWizardController extends Controller
         ]);
     }
 
+    public function createStepSix(Request $request, ServiceType $serviceType, Service $service): View
+    {
+        $this->authorizeWizardService($request, $service, $serviceType);
+
+        $serviceType->load('translations.language.locale');
+        $service->load('translations.language.locale');
+
+        return view('services.wizard.step-6', [
+            'serviceType' => $serviceType,
+            'service' => $service,
+        ]);
+    }
+
     public function searchCities(Request $request): JsonResponse
     {
         $query = trim((string) $request->query('q', ''));
@@ -249,6 +259,44 @@ class ServiceWizardController extends Controller
     }
 
     /**
+     * Languages ordered like the step-1 form (for validation rules and attribute names).
+     *
+     * @return Collection<int, Language>
+     */
+    private function languagesForStepOneValidation(): Collection
+    {
+        return Language::query()
+            ->with('locale')
+            ->get()
+            ->sortBy(fn (Language $language) => $language->display_name)
+            ->values();
+    }
+
+    /**
+     * Human-readable :attribute names for step-1 validation messages.
+     *
+     * @param  Collection<int, Language>  $languages
+     * @return array<string, string>
+     */
+    private function stepOneValidationAttributes(Collection $languages): array
+    {
+        $attrs = [
+            'city_id' => __('wizard.validation.city_id'),
+            'city_name' => __('wizard.validation.city_name'),
+            'translations' => __('wizard.validation.translations'),
+        ];
+
+        foreach ($languages as $language) {
+            $id = (int) $language->id;
+            $localeLabel = $language->display_name;
+            $attrs["translations.{$id}.name"] = __('wizard.validation.translation_name', ['locale' => $localeLabel]);
+            $attrs["translations.{$id}.description"] = __('wizard.validation.translation_description', ['locale' => $localeLabel]);
+        }
+
+        return $attrs;
+    }
+
+    /**
      * City name plus state/province and country so duplicate city names are distinguishable in search.
      */
     private function formatCitySearchLabel(LmpCity $city): string
@@ -266,12 +314,21 @@ class ServiceWizardController extends Controller
 
     public function translateDescriptions(Request $request, TranslationService $translationService): JsonResponse
     {
-        $validated = $request->validate([
-            'source_language_id' => ['required', 'integer', Rule::exists(Language::class, 'id')],
-            'translations' => ['required', 'array'],
-            'translations.*.name' => ['nullable', 'string'],
-            'translations.*.description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validate(
+            [
+                'source_language_id' => ['required', 'integer', Rule::exists(Language::class, 'id')],
+                'translations' => ['required', 'array'],
+                'translations.*.name' => ['nullable', 'string'],
+                'translations.*.description' => ['nullable', 'string'],
+            ],
+            [],
+            [
+                'source_language_id' => __('wizard.validation.source_language_id'),
+                'translations' => __('wizard.validation.translations'),
+                'translations.*.name' => __('wizard.validation.translation_field_name'),
+                'translations.*.description' => __('wizard.validation.translation_field_description'),
+            ]
+        );
 
         $result = $translationService->translateFromLanguage(
             sourceLanguageId: (int) $validated['source_language_id'],

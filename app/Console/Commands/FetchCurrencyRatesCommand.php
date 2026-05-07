@@ -87,7 +87,7 @@ class FetchCurrencyRatesCommand extends Command
 
             CurrencyRate::create([
                 'currency_id' => $currency->id,
-                'rate' => $rate,
+                'units_per_usd' => $rate,
                 'starting_at' => $startingAt,
             ]);
             $saved++;

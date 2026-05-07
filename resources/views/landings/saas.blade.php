@@ -24,26 +24,6 @@
                                             {!! __('saas.hero_slide1_lead') !!}
                                         </p>
                                         <div class="pt-5">
-                                            <div class="row g-2 text-start">
-                                                <div class="col-md-4 col-lg-6">
-                                                    <label class="visually-hidden" for="email">Email</label>
-                                                    <input type="email" class="form-control mb-2 me-sm-2 shadow-sm" name="email"
-                                                           id="email" placeholder="{{ __('saas.email_placeholder') }}">
-                                                </div>
-                                                <div class="col-sm-3">
-                                                    <button type="submit" class="btn btn-primary mb-2">{{ __('saas.try_it') }}</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex mt-1 fs-12">
-                                            <div class="me-4">
-                                                <i data-feather="check" class="icon icon-dual-success icon-xs me-1"></i>{{ __('saas.demo_free') }}
-                                            </div>
-                                            <div>
-                                                <i data-feather="check" class="icon icon-dual-success icon-xs me-1"></i>{{ __('saas.no_credit_card') }}
-                                            </div>
-                                        </div>
-                                        <div class="pt-5">
                                             <ul class="navbar-nav align-items-lg-center d-flex">
                                                 <li class="nav-item ms-2">
                                                     <a class="btn btn-primary btn-sm" href="{{ route('pages.pricing') }}">{{ __('saas.view_plans') }}</a>
@@ -123,26 +103,6 @@
                                         <p class="fs-17 text-muted pt-3">
                                             {!! __('saas.hero_slide3_lead') !!}
                                         </p>
-                                        <div class="pt-5">
-                                            <div class="row g-2 text-start">
-                                                <div class="col-md-4 col-lg-6">
-                                                    <label class="visually-hidden" for="email3">Email</label>
-                                                    <input type="email" class="form-control mb-2 me-sm-2 shadow-sm" name="email"
-                                                           id="email3" placeholder="{{ __('saas.email_placeholder') }}">
-                                                </div>
-                                                <div class="col-sm-3">
-                                                    <button type="submit" class="btn btn-primary mb-2">{{ __('saas.try_it') }}</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex mt-1 fs-12">
-                                            <div class="me-4">
-                                                <i data-feather="check" class="icon icon-dual-success icon-xs me-1"></i>{{ __('saas.demo_free') }}
-                                            </div>
-                                            <div>
-                                                <i data-feather="check" class="icon icon-dual-success icon-xs me-1"></i>{{ __('saas.no_credit_card') }}
-                                            </div>
-                                        </div>
                                         <div class="pt-5">
                                             <ul class="navbar-nav align-items-lg-center d-flex">
                                                 <li class="nav-item ms-2">

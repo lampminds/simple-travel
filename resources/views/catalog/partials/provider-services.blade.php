@@ -40,8 +40,9 @@
                             <td>{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
                             <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
                             <td>
-                                @php $st = $svc->status ?? ''; @endphp
-                                {{ $st !== '' ? __('filament.resources.service_status.'.$st) : '—' }}
+                                @include('catalog.partials.catalog-status-badge', [
+                                    'presentation' => \App\Support\ServiceCatalogStatus::forService($svc->status ?? null),
+                                ])
                             </td>
                             <td class="text-center">
                                 {{ (int) ($svc->service_variants_count ?? 0) }}
@@ -102,6 +103,15 @@
                                                 >
                                                         <i class="icon-xxs icon me-2 text-danger" data-feather="image" aria-hidden="true"></i>
                                                     {{ __('wizard.provider_services_action_step5') }}
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="{{ route('services.wizard.step6', ['serviceType' => $svc->serviceType->code, 'service' => $svc->id]) }}"
+                                                    class="dropdown-item"
+                                                >
+                                                        <i class="icon-xxs icon me-2 text-secondary" data-feather="file-text" aria-hidden="true"></i>
+                                                    {{ __('wizard.provider_services_action_step6') }}
                                                 </a>
                                             </li>
                                         </ul>
