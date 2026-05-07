@@ -155,7 +155,7 @@
                             <option value="">{{ __('wizard.provider_new_service_placeholder') }}</option>
                             @foreach ($serviceTypes as $serviceType)
                                 <option value="{{ route('services.wizard.step1', ['serviceType' => $serviceType->code]) }}">
-                                    {{ $serviceType->name !== '' ? $serviceType->name : strtoupper($serviceType->code) }}
+                                    {{ $serviceType->dropdown_label }}
                                 </option>
                             @endforeach
                         </select>

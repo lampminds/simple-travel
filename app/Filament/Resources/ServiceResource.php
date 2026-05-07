@@ -99,7 +99,14 @@ class ServiceResource extends LmpResource
                                     ->required(),
                                 Select::make('service_type_id')
                                     ->label(__('filament.resources.service_fields.service_type_id'))
-                                    ->options(fn () => ServiceType::query()->with(['translations.language.locale'])->ordered()->where('active', true)->get()->pluck('name', 'id'))
+                                    ->options(
+                                        fn () => ServiceType::query()
+                                            ->with(['translations.language.locale'])
+                                            ->ordered()
+                                            ->where('active', true)
+                                            ->get()
+                                            ->mapWithKeys(fn (ServiceType $type) => [$type->id => $type->dropdown_label])
+                                    )
                                     ->searchable()
                                     ->required(),
                                 Select::make('city_id')

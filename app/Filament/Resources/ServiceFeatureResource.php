@@ -207,7 +207,7 @@ class ServiceFeatureResource extends LmpResource
                                         ->ordered()
                                         ->get()
                                         ->mapWithKeys(fn (ServiceType $type) => [
-                                            (string) $type->id => $type->name !== '' ? $type->name : $type->code,
+                                            (string) $type->id => $type->dropdown_label,
                                         ])
                                 )
                                 ->columns(2),

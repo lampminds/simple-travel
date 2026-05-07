@@ -72,7 +72,7 @@ class ServiceFeatureScopeResource extends LmpResource
                                 ->where('active', true)
                                 ->get()
                                 ->mapWithKeys(fn (ServiceType $type) => [
-                                    $type->id => $type->name !== '' ? $type->name : $type->code,
+                                    $type->id => $type->dropdown_label,
                                 ])
                         )
                         ->required()
@@ -140,7 +140,7 @@ class ServiceFeatureScopeResource extends LmpResource
                             ->where('active', true)
                             ->get()
                             ->mapWithKeys(fn (ServiceType $type) => [
-                                $type->id => $type->name !== '' ? $type->name : $type->code,
+                                $type->id => $type->dropdown_label,
                             ])
                     )
                     ->searchable(),

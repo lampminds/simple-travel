@@ -72,7 +72,7 @@ class ManageServiceFeatureScopesPage extends Page
                         ->ordered()
                         ->get()
                         ->mapWithKeys(fn (ServiceType $t) => [
-                            $t->id => $t->name !== '' ? $t->name : $t->code,
+                            $t->id => $t->dropdown_label,
                         ])
                         ->all()
                 )

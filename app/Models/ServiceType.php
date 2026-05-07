@@ -49,6 +49,22 @@ class ServiceType extends Model
     }
 
     /**
+     * Label used in service-type dropdowns.
+     * Format: "Type name (description)" when description exists.
+     */
+    public function getDropdownLabelAttribute(): string
+    {
+        $name = $this->name !== '' ? $this->name : strtoupper($this->code);
+        $description = trim($this->description);
+
+        if ($description === '') {
+            return $name;
+        }
+
+        return sprintf('%s (%s)', $name, $description);
+    }
+
+    /**
      * Translation to use for display (e.g. in tables and dropdowns).
      * Prefers the translation for the current app locale when available.
      */
