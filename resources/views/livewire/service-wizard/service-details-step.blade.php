@@ -1,0 +1,258 @@
+<div>
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <div class="fw-semibold">{{ __('wizard.step6_validation_heading') }}</div>
+            <ul class="mb-0 mt-2 small">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if ($categories->isEmpty() || $topicsByCategory->flatten()->isEmpty())
+        <div class="alert alert-warning mb-0" role="alert">
+            {{ __('wizard.step6_no_catalog') }}
+        </div>
+    @else
+        <p class="text-muted small mb-3">{{ __('wizard.step6_list_intro') }}</p>
+
+        <div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
+            <button type="button" class="btn btn-primary" wire:click="openAddModal">
+                {{ __('wizard.step6_add_detail') }}
+            </button>
+        </div>
+
+        @if (count($lines) === 0)
+            <div class="alert alert-light border mb-0" role="status">
+                {{ __('wizard.step6_empty_list') }}
+            </div>
+        @else
+            {{-- Same as catalog services list: no .table-responsive so Bootstrap dropdowns are not clipped by overflow. --}}
+            <table class="table table-hover align-middle bg-white rounded border mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-center text-nowrap" style="width: 1%;">{{ __('wizard.step6_col_order') }}</th>
+                            <th scope="col">{{ __('wizard.step6_col_category') }}</th>
+                            <th scope="col">{{ __('wizard.step6_col_topic') }}</th>
+                            <th scope="col">{{ __('wizard.step6_col_excerpt') }}</th>
+                            <th scope="col" class="text-center">{{ __('wizard.step6_col_active') }}</th>
+                            <th scope="col" class="text-end">{{ __('wizard.step6_col_actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($lines as $index => $line)
+                            @php
+                                $cat = $categories->firstWhere('id', (int) ($line['category_id'] ?? 0));
+                                $topic = $topicsById->get((int) ($line['topic_id'] ?? 0));
+                            @endphp
+                            <tr wire:key="service-detail-line-{{ $index }}">
+                                <td class="text-center text-nowrap">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('wizard.step6_col_order') }}">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            title="{{ __('wizard.step6_move_up') }}"
+                                            {{ $loop->first ? 'disabled' : '' }}
+                                            wire:click="moveLineUp({{ $index }})"
+                                        >↑</button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            title="{{ __('wizard.step6_move_down') }}"
+                                            {{ $loop->last ? 'disabled' : '' }}
+                                            wire:click="moveLineDown({{ $index }})"
+                                        >↓</button>
+                                    </div>
+                                </td>
+                                <td>{{ $cat ? ($cat->name ?: $cat->code) : '—' }}</td>
+                                <td>{{ $topic ? ($topic->name ?: $topic->code) : '—' }}</td>
+                                <td class="small text-muted">{{ $this->excerptForLine($line) }}</td>
+                                <td class="text-center">
+                                    @if ($line['active'] ?? true)
+                                        <span class="badge text-bg-success">{{ __('wizard.step6_active') }}</span>
+                                    @else
+                                        <span class="badge text-bg-secondary">{{ __('wizard.step6_inactive') }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <div class="dropdown">
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="{{ __('wizard.provider_services_actions_menu') }}"
+                                        >
+                                            <i class="icon icon-xs text-primary" data-feather="more-horizontal" aria-hidden="true"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    class="dropdown-item"
+                                                    wire:click="openEditModal({{ $index }})"
+                                                >
+                                                    <i class="icon-xxs icon me-2 text-primary" data-feather="edit-3" aria-hidden="true"></i>
+                                                    {{ __('wizard.step6_edit') }}
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    class="dropdown-item"
+                                                    wire:click="toggleLineActive({{ $index }})"
+                                                >
+                                                    <i class="icon-xxs icon me-2 text-secondary" data-feather="eye" aria-hidden="true"></i>
+                                                    {{ __('wizard.step6_toggle_active') }}
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    class="dropdown-item text-danger"
+                                                    wire:click="deleteLine({{ $index }})"
+                                                    wire:confirm="{{ __('wizard.step6_delete_confirm') }}"
+                                                >
+                                                    <i class="icon-xxs icon me-2" data-feather="trash-2" aria-hidden="true"></i>
+                                                    {{ __('wizard.step6_delete') }}
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+        @endif
+
+        @if ($showModal)
+            <div
+                class="modal fade show d-block"
+                tabindex="-1"
+                role="dialog"
+                aria-modal="true"
+                style="background-color: rgba(0, 0, 0, 0.45);"
+                wire:keydown.escape.window="closeModal"
+            >
+                <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+                    <div class="modal-content" wire:click.stop>
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                {{ $modalLineIndex === null ? __('wizard.step6_modal_title_add') : __('wizard.step6_modal_title_edit') }}
+                            </h5>
+                            <button type="button" class="btn-close" aria-label="{{ __('wizard.step6_modal_cancel') }}" wire:click="closeModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            @php
+                                $modalCategoryId = (int) ($modalLine['category_id'] ?? 0);
+                                $modalTopicOptions = $topicsByCategory->get($modalCategoryId, collect());
+                            @endphp
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="modal-detail-category">{{ __('wizard.step6_category') }}</label>
+                                    <select
+                                        id="modal-detail-category"
+                                        class="form-select @error('modalLine.category_id') is-invalid @enderror"
+                                        wire:model.live="modalLine.category_id"
+                                        wire:change="clearModalTopic"
+                                    >
+                                        <option value="">{{ __('wizard.step6_select_category') }}</option>
+                                        @foreach ($categories as $cat)
+                                            <option value="{{ $cat->id }}">{{ $cat->name ?: $cat->code }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('modalLine.category_id')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="modal-detail-topic">{{ __('wizard.step6_topic') }}</label>
+                                    <select
+                                        id="modal-detail-topic"
+                                        class="form-select @error('modalLine.topic_id') is-invalid @enderror"
+                                        wire:model.live="modalLine.topic_id"
+                                        @if ($modalCategoryId < 1) disabled @endif
+                                    >
+                                        <option value="">{{ __('wizard.step6_select_topic') }}</option>
+                                        @foreach ($modalTopicOptions as $topic)
+                                            <option value="{{ $topic->id }}">{{ $topic->name ?: $topic->code }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('modalLine.topic_id')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            role="switch"
+                                            id="modal-detail-active"
+                                            wire:model="modalLine.active"
+                                        >
+                                        <label class="form-check-label" for="modal-detail-active">{{ __('wizard.step6_active_label') }}</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-2">{{ __('wizard.step6_modal_translations_help') }}</p>
+
+                            <div class="row">
+                                @foreach ($languages as $language)
+                                    @php $langId = (int) $language->id; @endphp
+                                    <div class="col-12 col-md-6 col-lg-4">
+                                        <div class="border rounded p-3 mb-3 bg-body-secondary bg-opacity-25">
+                                            <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
+                                                <span class="fw-medium">{{ $language->display_name }}</span>
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    title="{{ __('wizard.step6_translate') }}"
+                                                    wire:click="translateModal({{ $langId }})"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="translateModal({{ $langId }})"
+                                                >
+                                                    <span wire:loading.remove wire:target="translateModal({{ $langId }})">🌐</span>
+                                                    <span wire:loading wire:target="translateModal({{ $langId }})" class="spinner-border spinner-border-sm" role="status"></span>
+                                                    <span class="visually-hidden">{{ __('wizard.step6_translate') }}</span>
+                                                </button>
+                                            </div>
+                                            <label class="form-label small text-muted" for="modal-detail-desc-{{ $langId }}">{{ __('wizard.step6_description') }}</label>
+                                            <textarea
+                                                id="modal-detail-desc-{{ $langId }}"
+                                                class="form-control @error('modalLine.translations.'.$langId.'.description') is-invalid @enderror"
+                                                rows="4"
+                                                wire:model="modalLine.translations.{{ $langId }}.description"
+                                            ></textarea>
+                                            @error('modalLine.translations.'.$langId.'.description')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @error('modalLine.translations')
+                                <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" wire:click="closeModal">
+                                {{ __('wizard.step6_modal_cancel') }}
+                            </button>
+                            <button type="button" class="btn btn-primary" wire:click="saveModal" wire:loading.attr="disabled" wire:target="saveModal">
+                                <span wire:loading.remove wire:target="saveModal">{{ __('wizard.step6_modal_save') }}</span>
+                                <span wire:loading wire:target="saveModal" class="spinner-border spinner-border-sm" role="status"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+</div>
