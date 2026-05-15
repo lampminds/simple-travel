@@ -85,7 +85,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CatMenusTableSeeder::class);
         $this->call(CatMenuTranslationsTableSeeder::class);
-        $this->call(CatMenuAccountTypeExclusionsTableSeeder::class);
 
         $this->call(CatParameterDefinitionsTableSeeder::class);
         $this->call(CatParameterDefinitionTranslationsTableSeeder::class);
@@ -105,6 +104,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CatAccountTypesTableSeeder::class);
         $this->call(CatAccountTypeTranslationsTableSeeder::class);
         $this->call(AccountTypeAssignmentsTableSeeder::class);
+        $this->call(CatMenuAccountTypeExclusionsTableSeeder::class);
     }
 }
 
