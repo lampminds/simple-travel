@@ -4,11 +4,13 @@ namespace App\Support;
 
 final class AccountTypeCategoryIds
 {
+    /** Provider lane ID in cat_account_types (routes, menus, dashboards). */
     public const PROVIDER = 3;
 
-    /** Business type `operator` in cat_account_categories (operator dashboard, catalog, relationships, menus). */
+    /** Operator lane ID in cat_account_types (operator dashboard, catalog, relationships, menus). */
     public const OPERATOR = 4;
 
+    /** Agency lane ID in cat_account_types. */
     public const AGENCY = 6;
 
     /**

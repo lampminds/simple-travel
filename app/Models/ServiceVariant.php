@@ -167,4 +167,26 @@ class ServiceVariant extends Model implements HasMedia
     {
         return $this->getMedia(self::MEDIA_COLLECTION_GALLERY);
     }
+
+    /**
+     * Catalog states omitted from provider→operator offer pickers (given de baja).
+     *
+     * @return list<string>
+     */
+    public static function catalogStatusesOmittedFromOperatorOffers(): array
+    {
+        return ['discontinued', 'terminated'];
+    }
+
+    /**
+     * Whether this variant may be toggled for operator proposals (active service + active variant).
+     */
+    public function catalogSelectableForOperatorOffers(?Service $parentService = null): bool
+    {
+        $service = $parentService ?? $this->service;
+
+        return $this->status === 'active'
+            && $service !== null
+            && $service->status === 'active';
+    }
 }

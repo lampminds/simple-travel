@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Settings;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\Settings\ParameterValueResource\Pages;
 use App\Models\ParameterDefinition;
@@ -29,6 +30,8 @@ class ParameterValueResource extends BaseResource
     protected static ?string $recordTitleAttribute = 'id';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     public static function getModelLabel(): string
     {

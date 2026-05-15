@@ -7,6 +7,18 @@
 
 return [
 
+    'clusters' => [
+        'accounts' => 'Contas',
+        'catalog' => 'Catálogo',
+        'gastronomy' => 'Gastronomia',
+        'hospitality' => 'Alojamento',
+        'experiences' => 'Experiências',
+        'crm' => 'CRM',
+        'commercial' => 'Comercial',
+        'administration' => 'Administração',
+        'transport' => 'Transporte',
+    ],
+
     'common' => [
         'active' => 'Ativo',
         'view' => 'Ver',
@@ -42,12 +54,12 @@ return [
         'account_tabs' => [
             'main' => 'Dados principais',
             'tax_ids' => 'Identificações fiscais',
-            'categories' => 'Categorias',
+            'business_types' => 'Tipos de conta',
         ],
 
         'account_type_category_fields' => [
             'label' => 'Tipos de conta',
-            'help' => 'Um ou mais tipos de negócio (prestador, agência, etc.). Só aparecem categorias com grupo «type».',
+            'help' => 'Um ou mais tipos de negócio (prestador, agência, etc.). Geridos em Tipos de conta (parâmetros).',
         ],
 
         'account_fields' => [
@@ -74,6 +86,7 @@ return [
             'commercial_name' => 'Razão social',
             'email' => 'E-mail',
             'account_category' => 'Categoria de conta',
+            'account_type' => 'Tipo de conta',
         ],
 
         'user_actions' => [
@@ -115,6 +128,27 @@ return [
             'name' => 'Nome',
             'description' => 'Descrição',
             'sort_order' => 'Ordem',
+        ],
+
+        'account_type' => 'Tipo de conta',
+        'account_types' => 'Tipos de conta',
+
+        'account_type_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'account_type_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+            'description' => 'Descrição',
+        ],
+
+        'account_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'description' => 'Descrição',
         ],
 
         'user' => 'Utilizador',
@@ -428,6 +462,7 @@ return [
             'id' => 'ID',
             'language' => 'Idioma',
             'code' => 'Código',
+            'list_order' => 'Ordem',
         ],
 
         'currency' => 'Moeda',
@@ -672,11 +707,37 @@ return [
             'active' => 'Ativo',
         ],
 
+        'module' => 'Módulo',
+        'modules' => 'Módulos',
+
+        'module_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'module_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+            'description' => 'Descrição',
+        ],
+
+        'module_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'active' => 'Ativo',
+        ],
+
         'nav_contacts' => 'Contactos',
+        'nav_catalog_conditions' => 'Condições',
+        'nav_catalog_experiences' => 'Experiências de serviço',
+        'nav_catalog_features' => 'Características',
+        'nav_accounts_price_lists' => 'Listas de preços',
         'nav_plans' => 'Planos e preços',
-        'nav_services' => 'Serviços (prestador)',
+        'nav_services' => 'Serviços',
+        'nav_accounts_transfer' => 'Transporte',
         'nav_hotels' => 'Hotéis',
-        'nav_entertainments' => 'Entretenimento',
+        'nav_activities' => 'Atividades',
         'nav_gastronomy' => 'Gastronomia',
         'nav_parameters' => 'Configurações',
         'nav_users' => 'Utilizadores',
@@ -844,8 +905,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_type' => 'Tipo de gastronomia',
-        'service_gastronomy_types' => 'Tipos de gastronomia',
+        'service_gastronomy_type' => 'Tipo',
+        'service_gastronomy_types' => 'Tipos',
 
         'service_gastronomy_type_tabs' => [
             'general' => 'Geral',
@@ -864,8 +925,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_venue' => 'Venue de gastronomia',
-        'service_gastronomy_venues' => 'Venues de gastronomia',
+        'service_gastronomy_venue' => 'Venue',
+        'service_gastronomy_venues' => 'Venues',
 
         'service_gastronomy_venue_tabs' => [
             'general' => 'Geral',
@@ -902,8 +963,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_menu' => 'Menu de gastronomia',
-        'service_gastronomy_menus' => 'Menus de gastronomia',
+        'service_gastronomy_menu' => 'Menu',
+        'service_gastronomy_menus' => 'Menus',
 
         'service_gastronomy_menu_tabs' => [
             'general' => 'Geral',
@@ -924,8 +985,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_menu_category' => 'Categoria de menu de gastronomia',
-        'service_gastronomy_menu_categories' => 'Categorias de menu de gastronomia',
+        'service_gastronomy_menu_category' => 'Categoria de menu',
+        'service_gastronomy_menu_categories' => 'Categorias de menus',
 
         'service_gastronomy_menu_category_tabs' => [
             'general' => 'Geral',
@@ -943,8 +1004,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_feature_category' => 'Categoria de característica de gastronomia',
-        'service_gastronomy_feature_categories' => 'Categorias de características de gastronomia',
+        'service_gastronomy_feature_category' => 'Categoria de característica',
+        'service_gastronomy_feature_categories' => 'Categorias de características',
 
         'service_gastronomy_feature_category_tabs' => [
             'general' => 'Geral',
@@ -962,8 +1023,8 @@ return [
             'name' => 'Nome',
         ],
 
-        'service_gastronomy_feature' => 'Característica de gastronomia',
-        'service_gastronomy_features' => 'Características de gastronomia',
+        'service_gastronomy_feature' => 'Característica',
+        'service_gastronomy_features' => 'Características',
 
         'service_gastronomy_feature_tabs' => [
             'general' => 'Geral',
@@ -1059,8 +1120,8 @@ return [
         ],
 
         'manage_service_feature_scopes' => [
-            'navigation_label' => 'Escopos de características (por tipo)',
-            'title' => 'Gerir escopos de características por tipo de serviço',
+            'navigation_label' => 'Scopes por tipo de serviço',
+            'title' => 'Gerir scopes por tipo de serviço',
             'service_type' => 'Tipo de serviço',
             'section_categories' => 'Categorias de características',
             'help_categories' => 'Apenas as características das categorias marcadas são listadas abaixo. Use o alternador em massa no cabeçalho da lista para selecionar todas ou nenhuma.',
@@ -1075,7 +1136,7 @@ return [
                 'save' => 'Guardar escopos',
             ],
             'notifications' => [
-                'saved' => 'Escopos de características guardados.',
+                'saved' => 'Scopes guardados.',
             ],
         ],
 
@@ -1102,97 +1163,99 @@ return [
             'sort_order' => 'Ordem',
         ],
 
-        'service_activity' => 'Atividade de serviço',
-        'service_activities' => 'Atividades de serviço',
+        'service_experience' => 'Experiência de serviço',
+        'service_experiences' => 'Experiências de serviço',
+
+        'service_experience_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'service_experience_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+            'category' => 'Categoria',
+        ],
+
+        'service_experience_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'category' => 'Categoria',
+        ],
+
+        'service_experience_category' => 'Categoria de experiência',
+        'service_experience_categories' => 'Categorias de experiência',
+
+        'service_experience_category_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'service_experience_category_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'service_experience_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'service_activity_type' => 'Tipo de atividade',
+        'service_activity_types' => 'Tipos de atividade',
+
+        'service_activity_type_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'service_activity_type_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+            'category' => 'Categoria',
+        ],
+
+        'service_activity_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'category' => 'Categoria',
+        ],
+
+        'service_activity_type_category' => 'Categoria de tipo de atividade',
+        'service_activity_type_categories' => 'Categorias de tipo de atividade',
+
+        'service_activity_type_category_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+
+        'service_activity_type_category_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'service_activity_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'service_activity' => 'Serviço de atividade',
+        'service_activities' => 'Serviços de atividade',
 
         'service_activity_tabs' => [
-            'general' => 'Geral',
-            'translations' => 'Traduções',
-        ],
-
-        'service_activity_fields' => [
-            'code' => 'Código',
-            'name' => 'Nome',
-            'category' => 'Categoria',
-        ],
-
-        'service_activity_columns' => [
-            'id' => 'ID',
-            'code' => 'Código',
-            'name' => 'Nome',
-            'category' => 'Categoria',
-        ],
-
-        'service_activity_category' => 'Categoria de atividade',
-        'service_activity_categories' => 'Categorias de atividade',
-
-        'service_activity_category_tabs' => [
-            'general' => 'Geral',
-            'translations' => 'Traduções',
-        ],
-
-        'service_activity_category_fields' => [
-            'code' => 'Código',
-            'name' => 'Nome',
-        ],
-
-        'service_activity_category_columns' => [
-            'id' => 'ID',
-            'code' => 'Código',
-            'name' => 'Nome',
-        ],
-
-        'service_entertainment_type' => 'Tipo de entretenimento',
-        'service_entertainment_types' => 'Tipos de entretenimento',
-
-        'service_entertainment_type_tabs' => [
-            'general' => 'Geral',
-            'translations' => 'Traduções',
-        ],
-
-        'service_entertainment_type_fields' => [
-            'code' => 'Código',
-            'name' => 'Nome',
-            'category' => 'Categoria',
-        ],
-
-        'service_entertainment_type_columns' => [
-            'id' => 'ID',
-            'code' => 'Código',
-            'name' => 'Nome',
-            'category' => 'Categoria',
-        ],
-
-        'service_entertainment_type_category' => 'Categoria de tipo de entretenimento',
-        'service_entertainment_type_categories' => 'Categorias de tipo de entretenimento',
-
-        'service_entertainment_type_category_tabs' => [
-            'general' => 'Geral',
-            'translations' => 'Traduções',
-        ],
-
-        'service_entertainment_type_category_fields' => [
-            'code' => 'Código',
-            'name' => 'Nome',
-        ],
-
-        'service_entertainment_type_category_columns' => [
-            'id' => 'ID',
-            'code' => 'Código',
-            'name' => 'Nome',
-        ],
-
-        'service_entertainment' => 'Serviço de entretenimento',
-        'service_entertainments' => 'Serviços de entretenimento',
-
-        'service_entertainment_tabs' => [
             'general' => 'Geral',
             'technical' => 'Técnico',
         ],
 
-        'service_entertainment_fields' => [
+        'service_activity_fields' => [
             'service_id' => 'Serviço',
-            'service_entertainment_type_id' => 'Tipo de entretenimento',
+            'service_activity_type_id' => 'Tipo de atividade (legado)',
+            'activity_types' => 'Tipos de atividade',
+            'activity_types_help' => 'Selecione um ou mais tipos do catálogo que descrevam este serviço.',
             'difficulty_level' => 'Dificuldade',
             'min_age' => 'Idade mínima',
             'max_age' => 'Idade máxima',
@@ -1204,21 +1267,21 @@ return [
             'distance_km' => 'Distância (km)',
         ],
 
-        'service_entertainment_columns' => [
+        'service_activity_columns' => [
             'id' => 'ID',
             'service' => 'Serviço',
             'type' => 'Tipo',
             'difficulty' => 'Dificuldade',
         ],
 
-        'service_entertainment_difficulty' => [
+        'service_activity_difficulty' => [
             'easy' => 'Fácil',
             'moderate' => 'Moderada',
             'difficult' => 'Difícil',
         ],
 
-        'service_detail_topic' => 'Tema de detalhe',
-        'service_detail_topics' => 'Temas de detalhe',
+        'service_detail_topic' => 'Tema de condição',
+        'service_detail_topics' => 'Temas de condição',
 
         'service_detail_topic_tabs' => [
             'general' => 'Geral',
@@ -1249,8 +1312,8 @@ return [
             'active' => 'Ativo',
         ],
 
-        'service_detail_topic_category' => 'Categoria de tema de detalhe',
-        'service_detail_topic_categories' => 'Categorias de tema de detalhe',
+        'service_detail_topic_category' => 'Categoria de condição',
+        'service_detail_topic_categories' => 'Categorias de condição',
 
         'service_detail_topic_category_tabs' => [
             'general' => 'Geral',
@@ -1271,8 +1334,8 @@ return [
             'active' => 'Ativo',
         ],
 
-        'service_detail' => 'Detalhe',
-        'service_details' => 'Detalhes',
+        'service_detail' => 'Condição',
+        'service_details' => 'Condições',
 
         'service_detail_tabs' => [
             'general' => 'Geral',
@@ -1286,7 +1349,7 @@ return [
             'description' => 'Descrição',
             'active' => 'Ativo',
             'sort_order' => 'Ordem',
-            'add' => 'Adicionar detalhe',
+            'add' => 'Adicionar condição',
         ],
 
         'service_detail_columns' => [
@@ -1305,8 +1368,8 @@ return [
             'general' => 'Geral',
             'translations' => 'Traduções',
             'variants' => 'Variantes',
-            'details' => 'Detalhes',
-            'activities' => 'Atividades',
+            'details' => 'Condições',
+            'experiences' => 'Experiências',
             'media' => 'Imagens',
         ],
 
@@ -1370,8 +1433,8 @@ return [
             'status' => 'Estado',
             'name' => 'Nome',
             'description' => 'Descrição',
-            'activities' => 'Atividades',
-            'activities_help' => 'Selecione as atividades que se aplicam a este serviço.',
+            'experiences' => 'Experiências',
+            'experiences_help' => 'Selecione as experiências que se aplicam a este serviço.',
         ],
 
         'service_columns' => [
@@ -1380,6 +1443,42 @@ return [
             'service_type' => 'Tipo de serviço',
             'name' => 'Nome',
             'status' => 'Estado',
+        ],
+
+        'service_delete_cascade' => [
+            'modal_heading' => 'Eliminar serviço',
+            'modal_intro' => 'O serviço e todos os registos relacionados indicados abaixo serão eliminados permanentemente.',
+            'modal_confirm' => 'Eliminar serviço e dados relacionados',
+            'grand_total' => 'Total de linhas a remover (incluindo este serviço): :count',
+            'labels' => [
+                'translations' => 'Traduções do serviço',
+                'experience_assignments' => 'Atribuições de experiências',
+                'details' => 'Linhas de condição do serviço',
+                'feature_links' => 'Ligações a características',
+                'variants' => 'Variantes',
+                'variant_translations' => 'Traduções de variantes',
+                'variant_availability_rules' => 'Regras de disponibilidade das variantes',
+                'variant_availability_overrides' => 'Exceções de disponibilidade',
+                'price_list_items' => 'Itens de listas de preços',
+                'allocations' => 'Alocações',
+                'service_offers' => 'Ofertas entre fornecedor e operador',
+                'operator_catalog_items' => 'Itens do catálogo do operador',
+                'media_files' => 'Ficheiros na biblioteca de média',
+                'hotel_type_assignments' => 'Atribuições de tipos de hotel',
+                'service_hotels' => 'Linhas de perfil hoteleiro',
+                'service_activity' => 'Linhas de perfil de atividade',
+                'gastronomy_menu_assignments' => 'Atribuições de formato de menu',
+                'gastronomy_venue_assignments' => 'Atribuições de venue',
+                'gastronomy_experiences' => 'Experiências',
+                'gastronomy_schedules' => 'Horários',
+                'gastronomy_capacities' => 'Capacidades',
+                'cuisine_gastronomy_assignments' => 'Atribuições de cozinha',
+                'service_gastronomies' => 'Linhas de perfil',
+                'transfer_routes' => 'Rotas de transfer',
+                'transfer_vehicles' => 'Veículos de transfer',
+                'transfer_prices' => 'Preços de transfer',
+                'service_transfers' => 'Linhas de perfil de transfer',
+            ],
         ],
 
         'service_status' => [
@@ -1431,6 +1530,7 @@ return [
 
         'price_list_item_fields' => [
             'price_list_id' => 'Lista',
+            'service_id' => 'Serviço (todas as variantes)',
             'service_variant_id' => 'Variante de serviço',
             'price' => 'Preço',
             'pricing_mode' => 'Modo de preço',
@@ -1439,6 +1539,8 @@ return [
         'price_list_item_columns' => [
             'id' => 'ID',
             'price_list' => 'Lista',
+            'target' => 'Alvo',
+            'service_all_variants' => 'Todas as variantes: :label',
             'service_variant' => 'Variante',
             'price' => 'Preço',
             'pricing_mode' => 'Modo',
@@ -1450,9 +1552,11 @@ return [
 
         'price_list_item_pricing_mode' => [
             'fixed' => 'Fixo',
+            'percentage' => 'Percentagem',
         ],
 
         'price_list_assignment_fields' => [
+            'operator_id' => 'Operador (conta)',
             'assigned_to_id' => 'Atribuído a (conta)',
             'adjustment_type' => 'Tipo de ajuste',
             'adjustment_value' => 'Valor do ajuste',
@@ -1466,6 +1570,152 @@ return [
             'none' => 'Sem ajuste',
             'percentage' => 'Percentagem',
             'fixed' => 'Montante fixo',
+        ],
+
+        'provider_price_list' => 'Lista de preços (fornecedor)',
+        'provider_price_lists' => 'Listas de preços (fornecedor)',
+
+        'provider_price_list_tabs' => [
+            'general' => 'Geral',
+            'assignments' => 'Atribuições a operadores',
+        ],
+
+        'provider_price_list_fields' => [
+            'provider_id' => 'Fornecedor (conta)',
+            'name' => 'Nome',
+            'currency_id' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Lista ativa',
+            'assignments' => 'Atribuições',
+        ],
+
+        'provider_price_list_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'provider' => 'Fornecedor',
+            'currency' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Ativa',
+            'items_count' => 'Linhas',
+        ],
+
+        'provider_price_list_assignment_fields' => [
+            'operator_id' => 'Operador (conta)',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor do ajuste',
+            'valid_from' => 'Válido desde',
+            'valid_to' => 'Válido até',
+            'is_active' => 'Ativa',
+            'add' => 'Adicionar atribuição',
+        ],
+
+        'provider_price_list_assignment_adjustment_type' => [
+            'none' => 'Sem ajuste',
+            'percentage' => 'Percentagem',
+            'fixed' => 'Montante fixo',
+        ],
+
+        'provider_price_list_item' => 'Item de lista (fornecedor)',
+        'provider_price_list_items' => 'Itens de listas (fornecedor)',
+
+        'provider_price_list_item_fields' => [
+            'price_list_id' => 'Lista de preços (fornecedor)',
+            'service_id' => 'Serviço (todas as variantes)',
+            'service_variant_id' => 'Variante de serviço',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo de preço',
+        ],
+
+        'provider_price_list_item_columns' => [
+            'id' => 'ID',
+            'price_list' => 'Lista',
+            'target' => 'Alvo',
+            'service_all_variants' => 'Todas as variantes: :label',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo',
+        ],
+
+        'provider_price_list_item_filters' => [
+            'price_list_id' => 'Lista',
+        ],
+
+        'provider_price_list_item_pricing_mode' => [
+            'fixed' => 'Fixo',
+            'percentage' => 'Percentagem',
+        ],
+
+        'operator_price_list' => 'Lista de preços (operador)',
+        'operator_price_lists' => 'Listas de preços (operador)',
+
+        'operator_price_list_tabs' => [
+            'general' => 'Geral',
+            'assignments' => 'Atribuições a agências',
+        ],
+
+        'operator_price_list_fields' => [
+            'operator_id' => 'Operador (conta)',
+            'name' => 'Nome',
+            'currency_id' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Lista ativa',
+            'assignments' => 'Atribuições',
+        ],
+
+        'operator_price_list_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'operator' => 'Operador',
+            'currency' => 'Moeda',
+            'valid_from' => 'Válida desde',
+            'valid_to' => 'Válida até',
+            'is_active' => 'Ativa',
+            'items_count' => 'Linhas',
+        ],
+
+        'operator_price_list_assignment_fields' => [
+            'agency_id' => 'Agência (conta)',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor do ajuste',
+            'valid_from' => 'Válido desde',
+            'valid_to' => 'Válido até',
+            'is_active' => 'Ativa',
+            'add' => 'Adicionar atribuição',
+        ],
+
+        'operator_price_list_assignment_adjustment_type' => [
+            'none' => 'Sem ajuste',
+            'percentage' => 'Percentagem',
+            'fixed' => 'Montante fixo',
+        ],
+
+        'operator_price_list_item' => 'Item de lista (operador)',
+        'operator_price_list_items' => 'Itens de listas (operador)',
+
+        'operator_price_list_item_fields' => [
+            'price_list_id' => 'Lista de preços (operador)',
+            'catalog_entry_id' => 'Entrada de catálogo',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo de preço',
+        ],
+
+        'operator_price_list_item_columns' => [
+            'id' => 'ID',
+            'price_list' => 'Lista',
+            'catalog_entry' => 'Catálogo',
+            'price' => 'Preço',
+            'pricing_mode' => 'Modo',
+        ],
+
+        'operator_price_list_item_filters' => [
+            'price_list_id' => 'Lista',
+        ],
+
+        'operator_price_list_item_pricing_mode' => [
+            'fixed' => 'Fixo',
+            'percentage' => 'Percentagem',
         ],
 
         'plan_user_price' => 'Preço por faixa de usuários',
@@ -1488,6 +1738,214 @@ return [
             'up_to' => 'Até usuários',
             'up_to_format' => 'Até :count usuários',
             'price' => 'Preço',
+        ],
+
+        'nav_transport' => 'Transfers',
+
+        'service_transfer_location_type_category' => 'Categoria de tipo de local de transfer',
+        'service_transfer_location_type_categories' => 'Categorias de tipo de local de transfer',
+        'service_transfer_location_type_category_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+        'service_transfer_location_type_category_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+        'service_transfer_location_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+
+        'service_transfer_location_type' => 'Tipo de local de transfer',
+        'service_transfer_location_types' => 'Tipos de local de transfer',
+        'service_transfer_location_type_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+        'service_transfer_location_type_fields' => [
+            'code' => 'Código',
+            'category' => 'Categoria',
+            'sort_order' => 'Ordem',
+        ],
+        'service_transfer_location_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'category' => 'Categoria',
+            'name' => 'Nome',
+        ],
+
+        'service_transfer_location' => 'Local de transfer',
+        'service_transfer_locations' => 'Locais de transfer',
+        'service_transfer_location_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+        'service_transfer_location_fields' => [
+            'service_transfer_location_type_id' => 'Tipo de local',
+            'address' => 'Morada',
+            'city_id' => 'Cidade',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'airport_code' => 'Código aeroporto',
+            'is_active' => 'Ativo',
+        ],
+        'service_transfer_location_columns' => [
+            'id' => 'ID',
+            'type' => 'Tipo',
+            'name' => 'Nome',
+            'airport_code' => 'Aeroporto',
+            'city' => 'Cidade',
+        ],
+
+        'service_transfer_vehicle_type_category' => 'Categoria de tipo de veículo de transfer',
+        'service_transfer_vehicle_type_categories' => 'Categorias de tipo de veículo de transfer',
+        'service_transfer_vehicle_type_category_tabs' => [
+            'general' => 'Geral',
+            'translations' => 'Traduções',
+        ],
+        'service_transfer_vehicle_type_category_fields' => [
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+        'service_transfer_vehicle_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Código',
+            'name' => 'Nome',
+        ],
+        'service_transfer_vehicle_type_category_relation' => [
+            'vehicle_types_tab' => 'Tipos de veículo',
+        ],
+
+        'service_transfer_vehicle_type' => 'Tipo de veículo de transfer',
+        'service_transfer_vehicle_types' => 'Tipos de veículo de transfer',
+        'service_transfer_vehicle_type_tabs' => [
+            'general' => 'Geral',
+        ],
+        'service_transfer_vehicle_type_fields' => [
+            'account_id' => 'Conta',
+            'category' => 'Categoria',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'max_passengers' => 'Máx. passageiros',
+            'max_luggage' => 'Máx. bagagem',
+        ],
+        'service_transfer_vehicle_type_columns' => [
+            'id' => 'ID',
+            'account' => 'Conta',
+            'category' => 'Categoria',
+            'code' => 'Código',
+            'name' => 'Nome',
+            'max_passengers' => 'Máx. pax',
+            'max_luggage' => 'Máx. bagagem',
+        ],
+
+        'service_transfer' => 'Perfil de transfer do serviço',
+        'service_transfers' => 'Perfis de transfer',
+        'service_transfer_tabs' => [
+            'general' => 'Geral',
+        ],
+        'service_transfer_fields' => [
+            'service_id' => 'Serviço',
+            'transfer_type' => 'Tipo de trajeto',
+            'modality' => 'Modalidade',
+            'allows_multiple_stops' => 'Permite várias paragens',
+            'max_passengers' => 'Máx. passageiros',
+            'max_luggage' => 'Máx. bagagem',
+            'default_duration_minutes' => 'Duração predefinida (min)',
+            'requires_flight_info' => 'Requer dados de voo',
+            'requires_pickup_time' => 'Requer hora de recolha',
+            'requires_dropoff_time' => 'Requer hora de entrega',
+        ],
+        'service_transfer_columns' => [
+            'id' => 'ID',
+            'service' => 'Serviço',
+            'transfer_type' => 'Tipo',
+            'modality' => 'Modalidade',
+        ],
+        'service_transfer_transfer_type' => [
+            'one_way' => 'Só ida',
+            'round_trip' => 'Ida e volta',
+        ],
+        'service_transfer_modality' => [
+            'private' => 'Privado',
+            'shared' => 'Partilhado',
+        ],
+
+        'service_transfer_route' => 'Rota de transfer',
+        'service_transfer_routes' => 'Rotas de transfer',
+        'service_transfer_route_tabs' => [
+            'general' => 'Geral',
+        ],
+        'service_transfer_route_fields' => [
+            'service_transfer_id' => 'Perfil de transfer',
+            'origin_location_id' => 'Origem',
+            'destination_location_id' => 'Destino',
+            'is_active' => 'Ativa',
+            'distance_km' => 'Distância (km)',
+            'duration_minutes' => 'Duração (min)',
+        ],
+        'service_transfer_route_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Perfil',
+            'origin' => 'Origem',
+            'destination' => 'Destino',
+        ],
+        'service_transfer_route_validation' => [
+            'different_endpoints' => 'Origem e destino devem ser diferentes.',
+        ],
+
+        'service_transfer_vehicle' => 'Atribuição de veículo',
+        'service_transfer_vehicles' => 'Atribuições de veículo',
+        'service_transfer_vehicle_tabs' => [
+            'general' => 'Geral',
+        ],
+        'service_transfer_vehicle_fields' => [
+            'service_transfer_id' => 'Perfil de transfer',
+            'service_transfer_vehicle_type_id' => 'Tipo de veículo',
+            'is_default' => 'Predefinido neste perfil',
+        ],
+        'service_transfer_vehicle_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Perfil',
+            'vehicle_type' => 'Tipo de veículo',
+        ],
+
+        'service_transfer_price' => 'Preço de transfer',
+        'service_transfer_prices' => 'Preços de transfer',
+        'service_transfer_price_tabs' => [
+            'general' => 'Geral',
+        ],
+        'service_transfer_price_fields' => [
+            'service_transfer_id' => 'Perfil de transfer',
+            'route_id' => 'Rota (opcional)',
+            'service_transfer_vehicle_type_id' => 'Tipo de veículo (opcional)',
+            'pricing_type' => 'Tipo de preço',
+            'currency_id' => 'Moeda',
+            'base_price' => 'Preço base',
+            'price_per_person' => 'Preço por pessoa',
+            'price_per_extra_passenger' => 'Preço por passageiro extra',
+            'min_passengers' => 'Mín. passageiros',
+            'max_passengers' => 'Máx. passageiros',
+            'valid_from' => 'Válido desde',
+            'valid_to' => 'Válido até',
+        ],
+        'service_transfer_price_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Perfil',
+            'route' => 'Rota',
+            'vehicle_type' => 'Tipo veículo',
+            'pricing_type' => 'Preço',
+            'currency' => 'Moeda',
+            'base_price' => 'Base',
+        ],
+        'service_transfer_price_pricing_type' => [
+            'per_vehicle' => 'Por veículo',
+            'per_person' => 'Por pessoa',
+        ],
+        'service_transfer_price_validation' => [
+            'route_belongs_to_transfer' => 'A rota deve pertencer ao perfil de transfer selecionado.',
         ],
 
     ],

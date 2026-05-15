@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\LatestSignupsWidget;
 use App\Http\Controllers\Filament\SetPanelLocaleController;
 use App\Http\Middleware\SetLocaleFromSession;
 use App\Models\Language;
@@ -10,7 +9,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -33,31 +31,17 @@ class SmplAdmPanelProvider extends PanelProvider
             ->id('smpl_adm')
             ->path('smpl_adm')
             ->login()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\Filament\Clusters')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->navigationGroups([
-                NavigationGroup::make(__('filament.resources.nav_services')),
-                NavigationGroup::make(__('filament.resources.nav_hotels')),
-                NavigationGroup::make(__('filament.resources.nav_entertainments')),
-                NavigationGroup::make(__('filament.resources.nav_gastronomy')),
-                NavigationGroup::make(__('filament.resources.nav_contacts')),
-                NavigationGroup::make(__('filament.resources.nav_plans')),
-                NavigationGroup::make(__('filament.resources.nav_onboarding')),
-                NavigationGroup::make(__('filament.resources.nav_parameters')),
-                NavigationGroup::make(__('filament.resources.nav_users')),
-                NavigationGroup::make(__('filament.resources.nav_authorization')),
-                NavigationGroup::make(__('filament.resources.nav_ai')),
-            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                LatestSignupsWidget::class,
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -77,11 +61,17 @@ class SmplAdmPanelProvider extends PanelProvider
                 Route::get('locale/{language}', SetPanelLocaleController::class)
                     ->name('locale');
             })
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => view(
+                'filament.styles.filament-help-tooltip',
+            )->render())
             ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): string => view(
                 'filament.scripts.copy-text-to-clipboard',
             )->render())
+            ->renderHook(PanelsRenderHook::SCRIPTS_AFTER, fn (): string => view(
+                'filament.scripts.auto-collapse-main-sidebar-when-sub-navigation',
+            )->render())
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, function (): string {
-                $languages = Language::with('locale')->orderBy('id')->get();
+                $languages = Language::with('locale')->get();
 
                 return view('filament.components.language-switcher', [
                     'languages' => $languages,

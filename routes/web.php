@@ -16,7 +16,9 @@ use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\AccountNotificationsController;
-use App\Http\Controllers\AccountPriceListController;
+use App\Http\Controllers\AccountProviderPriceListController;
+use App\Http\Controllers\AccountOperatorPriceListController;
+use App\Http\Controllers\AccountTransferVehicleTypesController;
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AccountOperatorServiceOfferController;
 use App\Http\Controllers\AccountProviderServiceOfferController;
@@ -133,16 +135,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/operator/service-offers/{offer}/accept', [AccountOperatorServiceOfferController::class, 'accept']);
     Route::post('account/operator/service-offers/{offer}/reject', [AccountOperatorServiceOfferController::class, 'reject']);
     Route::post('account/operator/service-offers/{offer}/availability', [AccountOperatorServiceOfferController::class, 'updateLinkedAvailability']);
-    Route::get('account/price-lists', [AccountPriceListController::class, 'index'])->name('account.price-lists.index');
-    Route::get('account/price-lists/create', [AccountPriceListController::class, 'create'])->name('account.price-lists.create');
-    Route::post('account/price-lists', [AccountPriceListController::class, 'store'])->name('account.price-lists.store');
-    Route::get('account/price-lists/{priceList}/assignments', [AccountPriceListController::class, 'editAssignments'])
-        ->name('account.price-lists.assignments.edit');
-    Route::put('account/price-lists/{priceList}/assignments', [AccountPriceListController::class, 'updateAssignments'])
-        ->name('account.price-lists.assignments.update');
-    Route::get('account/price-lists/{priceList}/edit', [AccountPriceListController::class, 'edit'])->name('account.price-lists.edit');
-    Route::put('account/price-lists/{priceList}', [AccountPriceListController::class, 'update'])->name('account.price-lists.update');
-    Route::delete('account/price-lists/{priceList}', [AccountPriceListController::class, 'destroy'])->name('account.price-lists.destroy');
+    Route::permanentRedirect('account/price-lists', '/account/provider-price-lists');
+    Route::permanentRedirect('account/price-lists/{tail}', '/account/provider-price-lists/{tail}')->where('tail', '.*');
+
+    Route::get('account/provider-price-lists', [AccountProviderPriceListController::class, 'index'])->name('account.provider-price-lists.index');
+    Route::get('account/provider-price-lists/create', [AccountProviderPriceListController::class, 'create'])->name('account.provider-price-lists.create');
+    Route::post('account/provider-price-lists', [AccountProviderPriceListController::class, 'store'])->name('account.provider-price-lists.store');
+    Route::get('account/provider-price-lists/{priceList}/assignments', [AccountProviderPriceListController::class, 'editAssignments'])
+        ->name('account.provider-price-lists.assignments.edit');
+    Route::put('account/provider-price-lists/{priceList}/assignments', [AccountProviderPriceListController::class, 'updateAssignments'])
+        ->name('account.provider-price-lists.assignments.update');
+    Route::get('account/provider-price-lists/{priceList}/edit', [AccountProviderPriceListController::class, 'edit'])->name('account.provider-price-lists.edit');
+    Route::put('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'update'])->name('account.provider-price-lists.update');
+    Route::delete('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'destroy'])->name('account.provider-price-lists.destroy');
+
+    Route::get('account/operator-price-lists', [AccountOperatorPriceListController::class, 'index'])->name('account.operator-price-lists.index');
+    Route::get('account/operator-price-lists/create', [AccountOperatorPriceListController::class, 'create'])->name('account.operator-price-lists.create');
+    Route::post('account/operator-price-lists', [AccountOperatorPriceListController::class, 'store'])->name('account.operator-price-lists.store');
+    Route::get('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'editAssignments'])
+        ->name('account.operator-price-lists.assignments.edit');
+    Route::put('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'updateAssignments'])
+        ->name('account.operator-price-lists.assignments.update');
+    Route::get('account/operator-price-lists/{operatorPriceList}/edit', [AccountOperatorPriceListController::class, 'edit'])->name('account.operator-price-lists.edit');
+    Route::put('account/operator-price-lists/{operatorPriceList}', [AccountOperatorPriceListController::class, 'update'])->name('account.operator-price-lists.update');
+    Route::delete('account/operator-price-lists/{operatorPriceList}', [AccountOperatorPriceListController::class, 'destroy'])->name('account.operator-price-lists.destroy');
+
+    Route::get('account/transfer-vehicle-types', [AccountTransferVehicleTypesController::class, 'index'])
+        ->name('account.transfer-vehicle-types.index');
+    Route::get('account/transfer-vehicle-types/create', [AccountTransferVehicleTypesController::class, 'create'])
+        ->name('account.transfer-vehicle-types.create');
+    Route::post('account/transfer-vehicle-types', [AccountTransferVehicleTypesController::class, 'store'])
+        ->name('account.transfer-vehicle-types.store');
+    Route::post('account/transfer-vehicle-types/import-from-template', [AccountTransferVehicleTypesController::class, 'import'])
+        ->name('account.transfer-vehicle-types.import');
+    Route::get('account/transfer-vehicle-types/{transfer_vehicle_type}/edit', [AccountTransferVehicleTypesController::class, 'edit'])
+        ->name('account.transfer-vehicle-types.edit');
+    Route::put('account/transfer-vehicle-types/{transfer_vehicle_type}', [AccountTransferVehicleTypesController::class, 'update'])
+        ->name('account.transfer-vehicle-types.update');
+    Route::delete('account/transfer-vehicle-types/{transfer_vehicle_type}', [AccountTransferVehicleTypesController::class, 'destroy'])
+        ->name('account.transfer-vehicle-types.destroy');
+
     Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
@@ -207,6 +239,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('services/wizard/{serviceType:code}/step-6/{service}', [ServiceWizardController::class, 'createStepSix'])
         ->name('services.wizard.step6');
+
+    Route::get('services/wizard/{serviceType:code}/step-7/{service}', [ServiceWizardController::class, 'createStepSeven'])
+        ->name('services.wizard.step7');
+
+    Route::get('services/wizard/{serviceType:code}/step-8/{service}', [ServiceWizardController::class, 'createStepEight'])
+        ->name('services.wizard.step8');
 });
 
 // Website language switcher (must be before catch-all routes)

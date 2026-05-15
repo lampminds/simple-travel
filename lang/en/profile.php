@@ -61,6 +61,9 @@ return [
     'contact_updated' => 'Your contact details were updated.',
     'contact_empty' => 'You do not have contact methods yet.',
     'contact_person_missing' => 'No linked person was found to edit contact methods.',
-    'contact_unique_type_error' => 'A contact method with type :type already exists for this person.',
+    'contact_duplicate_type_value_error' => 'A duplicate contact already exists for :type with the same value.',
+    'contact_registration_email_locked_help' => 'The registration/login email linked to your access account cannot be edited or deleted from this section.',
+    'contact_registration_email_locked_row' => 'This contact is protected because it matches the access email used for your registration.',
+    'contact_protected_badge' => 'Protected',
     'sign_out' => 'Sign out',
 ];

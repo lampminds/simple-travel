@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\FilamentIntroHelp;
+use App\Filament\Clusters\CatalogCluster;
 use App\Models\ServiceFeature;
 use App\Models\ServiceFeatureCategory;
 use App\Models\ServiceFeatureScope;
@@ -31,10 +33,25 @@ class ManageServiceFeatureScopesPage extends Page
 
     protected static ?string $slug = 'manage-service-feature-scopes';
 
+    protected static ?string $cluster = CatalogCluster::class;
+
     /**
      * @var array<string, mixed>
      */
     public ?array $data = [];
+
+    protected function getHeaderActions(): array
+    {
+        return array_merge(
+            [
+                FilamentIntroHelp::makeListHeaderAction(
+                    'manage_service_feature_scopes',
+                    $this->getTitle(),
+                ),
+            ],
+            parent::getHeaderActions(),
+        );
+    }
 
     public function mount(): void
     {

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\CurrencyResource\Pages;
 use App\Models\Currency;
 use App\Models\LmpCurrency;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 class CurrencyResource extends BaseResource
 {
     protected static ?string $model = Currency::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
 

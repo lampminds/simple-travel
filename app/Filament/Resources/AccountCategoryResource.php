@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\AccountCategoryResource\Pages;
 use App\Models\AccountCategory;
 use App\Models\Language;
@@ -23,6 +24,8 @@ use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 class AccountCategoryResource extends LmpResource
 {
     protected static ?string $model = AccountCategory::class;
+
+    protected static ?string $cluster = CrmCluster::class;
 
     public static function form(Schema $schema): Schema
     {

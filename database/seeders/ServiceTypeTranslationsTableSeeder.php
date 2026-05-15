@@ -73,7 +73,7 @@ class ServiceTypeTranslationsTableSeeder extends Seeder
                 'id' => 8,
                 'service_type_id' => 3,
                 'language_id' => 2,
-                'name' => 'Entertainment',
+                'name' => 'Actividad',
             ),
             8 =>
             array (

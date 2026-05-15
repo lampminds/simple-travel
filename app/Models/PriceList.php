@@ -5,18 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class PriceList extends Model
 {
     use AuditTrait;
 
-    protected $table = 'price_lists';
+    protected $table = 'provider_price_lists';
 
     protected $fillable = [
-        'owner_type',
-        'owner_id',
+        'provider_id',
         'name',
         'currency_id',
         'valid_from',
@@ -25,14 +23,14 @@ class PriceList extends Model
     ];
 
     protected $casts = [
-        'valid_from' => 'date',
-        'valid_to' => 'date',
+        'valid_from' => 'datetime',
+        'valid_to' => 'datetime',
         'is_active' => 'boolean',
     ];
 
-    public function owner(): MorphTo
+    public function provider(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Account::class, 'provider_id');
     }
 
     public function currency(): BelongsTo
@@ -42,11 +40,11 @@ class PriceList extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(PriceListItem::class);
+        return $this->hasMany(PriceListItem::class, 'provider_price_list_id');
     }
 
     public function assignments(): HasMany
     {
-        return $this->hasMany(PriceListAssignment::class);
+        return $this->hasMany(PriceListAssignment::class, 'provider_price_list_id');
     }
 }

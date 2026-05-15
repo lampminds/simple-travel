@@ -68,17 +68,26 @@
 
                 <ul class="navbar-nav align-items-center">
                     <!-- notification start -->
+                    @php
+                        $hasNavbarUnread = ($accountNavbarUnreadNotificationsCount ?? 0) > 0;
+                    @endphp
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notifications" role="button"
-                           data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="icon-xs">
-                                @svg('/duotone-icons/general/Notification#2')
+                        <a class="nav-link dropdown-toggle d-flex align-items-center py-lg-3" href="#" id="notifications" role="button"
+                           data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           aria-label="{{ __('account.notifications.heading') }}">
+                            <span class="position-relative d-inline-flex {{ $hasNavbarUnread ? 'text-warning' : 'text-muted' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                                @if ($hasNavbarUnread)
+                                    <span class="position-absolute badge rounded-pill bg-danger text-white border border-white px-1"
+                                          style="top: -3px; right: -9px; font-size: 0.6rem; line-height: 1; min-width: 1.1em; text-align: center;">
+                                        {{ min((int) $accountNavbarUnreadNotificationsCount, 99) }}
+                                    </span>
+                                @endif
                             </span>
-                            @if(($accountNavbarUnreadNotificationsCount ?? 0) > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ min((int) $accountNavbarUnreadNotificationsCount, 99) }}
-                                </span>
-                            @endif
                         </a>
                         <div class="dropdown-menu p-2" aria-labelledby="notifications">
                             @if(($accountNavbarNotifications ?? collect())->isEmpty())
@@ -92,8 +101,12 @@
                                             @php
                                                 $isRead = $notification->read_at !== null;
                                             @endphp
-                                            <span class="avatar avatar-xs rounded icon icon-with-bg icon-xxs me-3 flex-shrink-0 {{ $isRead ? 'bg-soft-warning text-warning' : 'bg-soft-success text-success' }}">
-                                                @svg('/duotone-icons/general/Notification#2')
+                                            <span class="avatar avatar-xs rounded icon icon-with-bg icon-xxs me-3 flex-shrink-0 {{ $isRead ? 'bg-soft-secondary text-secondary' : 'bg-soft-warning text-warning' }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                                </svg>
                                             </span>
                                             <div class="flex-grow-1 min-w-0">
                                                 <h6 class="fw-medium my-0 fs-13 text-wrap">{{ $notification->title }}</h6>

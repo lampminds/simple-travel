@@ -17,6 +17,7 @@ return new class extends Migration
             $table->tinyIncrements('id');
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_locales');
+            $table->tinyInteger('list_order')->default(0);
 
             lmpStamps($table);
         });

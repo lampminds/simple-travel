@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\Menu;
 use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Collection;
@@ -38,12 +38,14 @@ final class WebsiteNavigation
             return null;
         }
 
-        $routeTypeId = self::routeMenuTypeId(request()->route(), $account);
-        if ($routeTypeId === null) {
-            return null;
-        }
-
-        $typeIds = self::resolvedTypeCategoryIds($account, $routeTypeId);
+        // TEMPORARY: account-type gating disabled for website header menu.
+        // Keep these lines for easy re-enable in the future.
+        // $routeTypeId = self::routeMenuTypeId(request()->route(), $account);
+        // if ($routeTypeId === null) {
+        //     return null;
+        // }
+        // $typeIds = self::resolvedTypeCategoryIds($account, $routeTypeId);
+        $typeIds = collect();
 
         return self::buildMenuTree($typeIds);
     }
@@ -146,17 +148,17 @@ final class WebsiteNavigation
     }
 
     /**
-     * Resolve active category IDs for account business types (cat_account_categories.group = type),
+     * Resolve active account type IDs for the account,
      * constrained to the type expected by the current route.
      *
      * @return \Illuminate\Support\Collection<int>
      */
     public static function resolvedTypeCategoryIds(Account $account, int $routeTypeId): Collection
     {
-        return $account->typeCategories()
-            ->where((new AccountCategory)->getTable().'.active', true)
-            ->where((new AccountCategory)->getTable().'.id', $routeTypeId)
-            ->pluck((new AccountCategory)->getTable().'.id')
+        return $account->accountTypes()
+            ->where((new AccountType)->getTable().'.active', true)
+            ->where((new AccountType)->getTable().'.id', $routeTypeId)
+            ->pluck((new AccountType)->getTable().'.id')
             ->values();
     }
 
@@ -167,18 +169,17 @@ final class WebsiteNavigation
     private static function buildMenuTree(Collection $typeIds): Collection
     {
         $typeIds = $typeIds->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values();
-        if ($typeIds->isEmpty()) {
-            return collect();
-        }
 
-        $table = (new AccountCategory)->getTable();
+        $table = (new AccountType)->getTable();
 
         $menus = Menu::query()
             ->where('active', true)
-            ->whereHas(
-                'accountTypes',
-                fn ($q) => $q->whereIn($table.'.id', $typeIds)
-            )
+            // TEMPORARY: type-based menu visibility disabled.
+            // Re-enable this block when account-type scoping in website header menu is needed again.
+            // ->whereHas(
+            //     'accountTypes',
+            //     fn ($q) => $q->whereIn($table.'.id', $typeIds)
+            // )
             ->with(['translations.language.locale'])
             ->orderBy('sort_order')
             ->orderBy('id')

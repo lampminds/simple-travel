@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Listeners\RecordUserLastLoginAt;
 use App\Listeners\SyncVerifiedEmailToPersonContactMethods;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -16,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        Login::class => [
+            RecordUserLastLoginAt::class,
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],

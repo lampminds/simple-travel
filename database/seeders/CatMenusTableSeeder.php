@@ -174,7 +174,7 @@ class CatMenusTableSeeder extends Seeder
                 'id' => 17,
                 'slug' => 'prices',
                 'icon' => NULL,
-                'route' => 'account.price-lists.index',
+                'route' => 'account.provider-price-lists.index',
                 'parent_id' => NULL,
                 'sort_order' => 5,
                 'active' => 1,
@@ -187,6 +187,36 @@ class CatMenusTableSeeder extends Seeder
                 'route' => 'account.relationships.index',
                 'parent_id' => 2,
                 'sort_order' => 1,
+                'active' => 1,
+            ),
+            17 => 
+            array (
+                'id' => 19,
+                'slug' => 'vehicles',
+                'icon' => NULL,
+                'route' => 'account.transfer-vehicle-types.index',
+                'parent_id' => 3,
+                'sort_order' => 2,
+                'active' => 1,
+            ),
+            18 => 
+            array (
+                'id' => 20,
+                'slug' => 'services',
+                'icon' => NULL,
+                'route' => 'catalog',
+                'parent_id' => 3,
+                'sort_order' => 1,
+                'active' => 1,
+            ),
+            19 => 
+            array (
+                'id' => 21,
+                'slug' => 'operator_prices',
+                'icon' => NULL,
+                'route' => 'account.operator-price-lists.index',
+                'parent_id' => NULL,
+                'sort_order' => 5,
                 'active' => 1,
             ),
         ));

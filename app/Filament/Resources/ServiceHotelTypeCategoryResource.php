@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\HospitalityCluster;
 use App\Filament\Resources\ServiceHotelTypeCategoryResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceHotelTypeCategory;
@@ -39,6 +40,8 @@ class ServiceHotelTypeCategoryResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_hotels';
+
+    protected static ?string $cluster = HospitalityCluster::class;
 
     public static function getModelLabel(): string
     {

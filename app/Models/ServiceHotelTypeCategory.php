@@ -33,6 +33,14 @@ class ServiceHotelTypeCategory extends Model
     }
 
     /**
+     * Hotel types in this category (catalogue).
+     */
+    public function serviceHotelTypes(): HasMany
+    {
+        return $this->hasMany(ServiceHotelType::class, 'service_hotel_type_category_id');
+    }
+
+    /**
      * Get name for display (from translations).
      */
     public function getNameAttribute(): string

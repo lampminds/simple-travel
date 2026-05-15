@@ -61,6 +61,9 @@ return [
     'contact_updated' => 'Tus datos de contacto fueron actualizados.',
     'contact_empty' => 'Todavía no tenés datos de contacto cargados.',
     'contact_person_missing' => 'No encontramos una persona vinculada para editar contacto.',
-    'contact_unique_type_error' => 'Ya existe un contacto de tipo :type para esta persona.',
+    'contact_duplicate_type_value_error' => 'Ya existe un contacto repetido para :type con el mismo valor.',
+    'contact_registration_email_locked_help' => 'El email de registro vinculado a tu cuenta de acceso no puede editarse ni eliminarse desde esta sección.',
+    'contact_registration_email_locked_row' => 'Este contacto está protegido porque corresponde al email de acceso con el que te registraste.',
+    'contact_protected_badge' => 'Protegido',
     'sign_out' => 'Cerrar sesión',
 ];

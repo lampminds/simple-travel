@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\PersonResource\Pages;
 use App\Models\ContactDepartment;
 use App\Models\ContactPosition;
@@ -36,6 +37,8 @@ class PersonResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_contacts';
+
+    protected static ?string $cluster = CrmCluster::class;
 
     public static function getModelLabel(): string
     {

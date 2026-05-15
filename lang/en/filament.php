@@ -7,6 +7,18 @@
 
 return [
 
+    'clusters' => [
+        'accounts' => 'Accounts',
+        'catalog' => 'Catalog',
+        'gastronomy' => 'Gastronomy',
+        'hospitality' => 'Accommodation',
+        'experiences' => 'Experiences',
+        'crm' => 'CRM',
+        'commercial' => 'Commercial',
+        'administration' => 'Administration',
+        'transport' => 'Transport',
+    ],
+
     'common' => [
         'active' => 'Active',
         'view' => 'View',
@@ -42,12 +54,12 @@ return [
         'account_tabs' => [
             'main' => 'Main data',
             'tax_ids' => 'Tax IDs',
-            'categories' => 'Categories',
+            'business_types' => 'Business types',
         ],
 
         'account_type_category_fields' => [
             'label' => 'Account types',
-            'help' => 'One or more business types (e.g. provider, agency). Only categories with group “type” are listed.',
+            'help' => 'One or more business types (e.g. provider, agency). Managed from Account types under Parameters.',
         ],
 
         'account_fields' => [
@@ -74,6 +86,7 @@ return [
             'commercial_name' => 'Commercial name',
             'email' => 'Email',
             'account_category' => 'Account category',
+            'account_type' => 'Account type',
         ],
 
         'user_actions' => [
@@ -115,6 +128,27 @@ return [
             'name' => 'Name',
             'description' => 'Description',
             'sort_order' => 'Sort order',
+        ],
+
+        'account_type' => 'Account type',
+        'account_types' => 'Account types',
+
+        'account_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'account_type_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'account_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
         ],
 
         'user' => 'User',
@@ -469,6 +503,7 @@ return [
             'id' => 'ID',
             'language' => 'Language',
             'code' => 'Code',
+            'list_order' => 'Order',
         ],
 
         'currency' => 'Currency',
@@ -713,11 +748,37 @@ return [
             'active' => 'Active',
         ],
 
+        'module' => 'Module',
+        'modules' => 'Modules',
+
+        'module_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'module_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+        ],
+
+        'module_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'active' => 'Active',
+        ],
+
         'nav_contacts' => 'Contacts',
+        'nav_catalog_conditions' => 'Conditions',
+        'nav_catalog_experiences' => 'Service experiences',
+        'nav_catalog_features' => 'Features',
+        'nav_accounts_price_lists' => 'Price lists',
         'nav_plans' => 'Plans and pricing',
-        'nav_services' => 'Services (provider)',
+        'nav_services' => 'Services',
+        'nav_accounts_transfer' => 'Transfer',
         'nav_hotels' => 'Hotels',
-        'nav_entertainments' => 'Entertainment',
+        'nav_activities' => 'Activities',
         'nav_gastronomy' => 'Gastronomy',
         'nav_parameters' => 'Settings',
         'nav_users' => 'Users',
@@ -885,8 +946,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_type' => 'Gastronomy type',
-        'service_gastronomy_types' => 'Gastronomy types',
+        'service_gastronomy_type' => 'Type',
+        'service_gastronomy_types' => 'Types',
 
         'service_gastronomy_type_tabs' => [
             'general' => 'General',
@@ -905,8 +966,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_venue' => 'Gastronomy venue',
-        'service_gastronomy_venues' => 'Gastronomy venues',
+        'service_gastronomy_venue' => 'Venue',
+        'service_gastronomy_venues' => 'Venues',
 
         'service_gastronomy_venue_tabs' => [
             'general' => 'General',
@@ -943,8 +1004,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_menu' => 'Gastronomy menu',
-        'service_gastronomy_menus' => 'Gastronomy menus',
+        'service_gastronomy_menu' => 'Menu',
+        'service_gastronomy_menus' => 'Menus',
 
         'service_gastronomy_menu_tabs' => [
             'general' => 'General',
@@ -965,8 +1026,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_menu_category' => 'Gastronomy menu category',
-        'service_gastronomy_menu_categories' => 'Gastronomy menu categories',
+        'service_gastronomy_menu_category' => 'Menu category',
+        'service_gastronomy_menu_categories' => 'Menu categories',
 
         'service_gastronomy_menu_category_tabs' => [
             'general' => 'General',
@@ -984,8 +1045,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_feature_category' => 'Gastronomy feature category',
-        'service_gastronomy_feature_categories' => 'Gastronomy feature categories',
+        'service_gastronomy_feature_category' => 'Feature category',
+        'service_gastronomy_feature_categories' => 'Feature categories',
 
         'service_gastronomy_feature_category_tabs' => [
             'general' => 'General',
@@ -1003,8 +1064,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_gastronomy_feature' => 'Gastronomy feature',
-        'service_gastronomy_features' => 'Gastronomy features',
+        'service_gastronomy_feature' => 'Feature',
+        'service_gastronomy_features' => 'Features',
 
         'service_gastronomy_feature_tabs' => [
             'general' => 'General',
@@ -1100,8 +1161,8 @@ return [
         ],
 
         'manage_service_feature_scopes' => [
-            'navigation_label' => 'Feature scopes (by type)',
-            'title' => 'Manage feature scopes by service type',
+            'navigation_label' => 'Scopes by service type',
+            'title' => 'Manage scopes by service type',
             'service_type' => 'Service type',
             'section_categories' => 'Feature categories',
             'help_categories' => 'Only features in the checked categories are listed below. Use the bulk toggle in the list header to select all or none.',
@@ -1116,7 +1177,7 @@ return [
                 'save' => 'Save scopes',
             ],
             'notifications' => [
-                'saved' => 'Feature scopes saved.',
+                'saved' => 'Scopes saved.',
             ],
         ],
 
@@ -1143,97 +1204,99 @@ return [
             'sort_order' => 'Sort order',
         ],
 
-        'service_activity' => 'Service activity',
-        'service_activities' => 'Service activities',
+        'service_experience' => 'Service experience',
+        'service_experiences' => 'Service experiences',
+
+        'service_experience_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_experience_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_experience_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_experience_category' => 'Service experience category',
+        'service_experience_categories' => 'Service experience categories',
+
+        'service_experience_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_experience_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_experience_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_activity_type' => 'Activity type',
+        'service_activity_types' => 'Activity types',
+
+        'service_activity_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_activity_type_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_activity_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'category' => 'Category',
+        ],
+
+        'service_activity_type_category' => 'Activity type category',
+        'service_activity_type_categories' => 'Activity type categories',
+
+        'service_activity_type_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'service_activity_type_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_activity_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_activity' => 'Activity service',
+        'service_activities' => 'Activity services',
 
         'service_activity_tabs' => [
-            'general' => 'General',
-            'translations' => 'Translations',
-        ],
-
-        'service_activity_fields' => [
-            'code' => 'Code',
-            'name' => 'Name',
-            'category' => 'Category',
-        ],
-
-        'service_activity_columns' => [
-            'id' => 'ID',
-            'code' => 'Code',
-            'name' => 'Name',
-            'category' => 'Category',
-        ],
-
-        'service_activity_category' => 'Service activity category',
-        'service_activity_categories' => 'Service activity categories',
-
-        'service_activity_category_tabs' => [
-            'general' => 'General',
-            'translations' => 'Translations',
-        ],
-
-        'service_activity_category_fields' => [
-            'code' => 'Code',
-            'name' => 'Name',
-        ],
-
-        'service_activity_category_columns' => [
-            'id' => 'ID',
-            'code' => 'Code',
-            'name' => 'Name',
-        ],
-
-        'service_entertainment_type' => 'Entertainment type',
-        'service_entertainment_types' => 'Entertainment types',
-
-        'service_entertainment_type_tabs' => [
-            'general' => 'General',
-            'translations' => 'Translations',
-        ],
-
-        'service_entertainment_type_fields' => [
-            'code' => 'Code',
-            'name' => 'Name',
-            'category' => 'Category',
-        ],
-
-        'service_entertainment_type_columns' => [
-            'id' => 'ID',
-            'code' => 'Code',
-            'name' => 'Name',
-            'category' => 'Category',
-        ],
-
-        'service_entertainment_type_category' => 'Entertainment type category',
-        'service_entertainment_type_categories' => 'Entertainment type categories',
-
-        'service_entertainment_type_category_tabs' => [
-            'general' => 'General',
-            'translations' => 'Translations',
-        ],
-
-        'service_entertainment_type_category_fields' => [
-            'code' => 'Code',
-            'name' => 'Name',
-        ],
-
-        'service_entertainment_type_category_columns' => [
-            'id' => 'ID',
-            'code' => 'Code',
-            'name' => 'Name',
-        ],
-
-        'service_entertainment' => 'Entertainment service',
-        'service_entertainments' => 'Entertainment services',
-
-        'service_entertainment_tabs' => [
             'general' => 'General',
             'technical' => 'Technical',
         ],
 
-        'service_entertainment_fields' => [
+        'service_activity_fields' => [
             'service_id' => 'Service',
-            'service_entertainment_type_id' => 'Entertainment type',
+            'service_activity_type_id' => 'Activity type (legacy)',
+            'activity_types' => 'Activity types',
+            'activity_types_help' => 'Select one or more catalogue types that describe this service.',
             'difficulty_level' => 'Difficulty',
             'min_age' => 'Min age',
             'max_age' => 'Max age',
@@ -1245,21 +1308,21 @@ return [
             'distance_km' => 'Distance (km)',
         ],
 
-        'service_entertainment_columns' => [
+        'service_activity_columns' => [
             'id' => 'ID',
             'service' => 'Service',
             'type' => 'Type',
             'difficulty' => 'Difficulty',
         ],
 
-        'service_entertainment_difficulty' => [
+        'service_activity_difficulty' => [
             'easy' => 'Easy',
             'moderate' => 'Moderate',
             'difficult' => 'Difficult',
         ],
 
-        'service_detail_topic' => 'Detail topic',
-        'service_detail_topics' => 'Detail topics',
+        'service_detail_topic' => 'Condition topic',
+        'service_detail_topics' => 'Condition topics',
 
         'service_detail_topic_tabs' => [
             'general' => 'General',
@@ -1290,8 +1353,8 @@ return [
             'active' => 'Active',
         ],
 
-        'service_detail_topic_category' => 'Detail topic category',
-        'service_detail_topic_categories' => 'Detail topic categories',
+        'service_detail_topic_category' => 'Condition category',
+        'service_detail_topic_categories' => 'Condition categories',
 
         'service_detail_topic_category_tabs' => [
             'general' => 'General',
@@ -1312,8 +1375,8 @@ return [
             'active' => 'Active',
         ],
 
-        'service_detail' => 'Detail',
-        'service_details' => 'Details',
+        'service_detail' => 'Condition',
+        'service_details' => 'Conditions',
 
         'service_detail_tabs' => [
             'general' => 'General',
@@ -1327,7 +1390,7 @@ return [
             'description' => 'Description',
             'active' => 'Active',
             'sort_order' => 'Sort order',
-            'add' => 'Add detail',
+            'add' => 'Add condition',
         ],
 
         'service_detail_columns' => [
@@ -1346,8 +1409,8 @@ return [
             'general' => 'General',
             'translations' => 'Translations',
             'variants' => 'Variants',
-            'details' => 'Details',
-            'activities' => 'Activities',
+            'details' => 'Conditions',
+            'experiences' => 'Experiences',
             'media' => 'Images',
         ],
 
@@ -1411,8 +1474,8 @@ return [
             'status' => 'Status',
             'name' => 'Name',
             'description' => 'Description',
-            'activities' => 'Activities',
-            'activities_help' => 'Select the activities that apply to this service.',
+            'experiences' => 'Experiences',
+            'experiences_help' => 'Select the experiences that apply to this service.',
         ],
 
         'service_columns' => [
@@ -1421,6 +1484,42 @@ return [
             'service_type' => 'Service type',
             'name' => 'Name',
             'status' => 'Status',
+        ],
+
+        'service_delete_cascade' => [
+            'modal_heading' => 'Delete service',
+            'modal_intro' => 'This will permanently delete the service and all related records listed below.',
+            'modal_confirm' => 'Delete service and related data',
+            'grand_total' => 'Total rows to remove (including this service): :count',
+            'labels' => [
+                'translations' => 'Service translations',
+                'experience_assignments' => 'Experience assignments',
+                'details' => 'Service condition rows',
+                'feature_links' => 'Feature links',
+                'variants' => 'Variants',
+                'variant_translations' => 'Variant translations',
+                'variant_availability_rules' => 'Variant availability rules',
+                'variant_availability_overrides' => 'Variant availability overrides',
+                'price_list_items' => 'Price list items',
+                'allocations' => 'Allocations',
+                'service_offers' => 'Service offers',
+                'operator_catalog_items' => 'Operator catalog items',
+                'media_files' => 'Media library files',
+                'hotel_type_assignments' => 'Hotel type assignments',
+                'service_hotels' => 'Hotel profile rows',
+                'service_activity' => 'Activity profile rows',
+                'gastronomy_menu_assignments' => 'Menu format assignments',
+                'gastronomy_venue_assignments' => 'Venue assignments',
+                'gastronomy_experiences' => 'Experiences',
+                'gastronomy_schedules' => 'Schedules',
+                'gastronomy_capacities' => 'Capacities',
+                'cuisine_gastronomy_assignments' => 'Cuisine assignments',
+                'service_gastronomies' => 'Profile rows',
+                'transfer_routes' => 'Transfer routes',
+                'transfer_vehicles' => 'Transfer vehicles',
+                'transfer_prices' => 'Transfer prices',
+                'service_transfers' => 'Transfer profile rows',
+            ],
         ],
 
         'service_status' => [
@@ -1472,6 +1571,7 @@ return [
 
         'price_list_item_fields' => [
             'price_list_id' => 'Price list',
+            'service_id' => 'Service (all variants)',
             'service_variant_id' => 'Service variant',
             'price' => 'Price',
             'pricing_mode' => 'Pricing mode',
@@ -1480,6 +1580,8 @@ return [
         'price_list_item_columns' => [
             'id' => 'ID',
             'price_list' => 'Price list',
+            'target' => 'Target',
+            'service_all_variants' => 'All variants: :label',
             'service_variant' => 'Variant',
             'price' => 'Price',
             'pricing_mode' => 'Mode',
@@ -1491,9 +1593,11 @@ return [
 
         'price_list_item_pricing_mode' => [
             'fixed' => 'Fixed',
+            'percentage' => 'Percentage',
         ],
 
         'price_list_assignment_fields' => [
+            'operator_id' => 'Operator (account)',
             'assigned_to_id' => 'Assigned to (account)',
             'adjustment_type' => 'Adjustment type',
             'adjustment_value' => 'Adjustment value',
@@ -1507,6 +1611,152 @@ return [
             'none' => 'No adjustment',
             'percentage' => 'Percentage',
             'fixed' => 'Fixed amount',
+        ],
+
+        'provider_price_list' => 'Provider price list',
+        'provider_price_lists' => 'Provider price lists',
+
+        'provider_price_list_tabs' => [
+            'general' => 'General',
+            'assignments' => 'Operator assignments',
+        ],
+
+        'provider_price_list_fields' => [
+            'provider_id' => 'Provider (account)',
+            'name' => 'Name',
+            'currency_id' => 'Currency',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active list',
+            'assignments' => 'Assignments',
+        ],
+
+        'provider_price_list_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'provider' => 'Provider',
+            'currency' => 'Currency',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active',
+            'items_count' => 'Rows',
+        ],
+
+        'provider_price_list_assignment_fields' => [
+            'operator_id' => 'Operator (account)',
+            'adjustment_type' => 'Adjustment type',
+            'adjustment_value' => 'Adjustment value',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active',
+            'add' => 'Add assignment',
+        ],
+
+        'provider_price_list_assignment_adjustment_type' => [
+            'none' => 'No adjustment',
+            'percentage' => 'Percentage',
+            'fixed' => 'Fixed amount',
+        ],
+
+        'provider_price_list_item' => 'Provider list item',
+        'provider_price_list_items' => 'Provider list items',
+
+        'provider_price_list_item_fields' => [
+            'price_list_id' => 'Provider price list',
+            'service_id' => 'Service (all variants)',
+            'service_variant_id' => 'Service variant',
+            'price' => 'Price',
+            'pricing_mode' => 'Pricing mode',
+        ],
+
+        'provider_price_list_item_columns' => [
+            'id' => 'ID',
+            'price_list' => 'List',
+            'target' => 'Target',
+            'service_all_variants' => 'All variants: :label',
+            'price' => 'Price',
+            'pricing_mode' => 'Mode',
+        ],
+
+        'provider_price_list_item_filters' => [
+            'price_list_id' => 'List',
+        ],
+
+        'provider_price_list_item_pricing_mode' => [
+            'fixed' => 'Fixed',
+            'percentage' => 'Percentage',
+        ],
+
+        'operator_price_list' => 'Operator price list',
+        'operator_price_lists' => 'Operator price lists',
+
+        'operator_price_list_tabs' => [
+            'general' => 'General',
+            'assignments' => 'Agency assignments',
+        ],
+
+        'operator_price_list_fields' => [
+            'operator_id' => 'Operator (account)',
+            'name' => 'Name',
+            'currency_id' => 'Currency',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active list',
+            'assignments' => 'Assignments',
+        ],
+
+        'operator_price_list_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'operator' => 'Operator',
+            'currency' => 'Currency',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active',
+            'items_count' => 'Rows',
+        ],
+
+        'operator_price_list_assignment_fields' => [
+            'agency_id' => 'Agency (account)',
+            'adjustment_type' => 'Adjustment type',
+            'adjustment_value' => 'Adjustment value',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+            'is_active' => 'Active',
+            'add' => 'Add assignment',
+        ],
+
+        'operator_price_list_assignment_adjustment_type' => [
+            'none' => 'No adjustment',
+            'percentage' => 'Percentage',
+            'fixed' => 'Fixed amount',
+        ],
+
+        'operator_price_list_item' => 'Operator list item',
+        'operator_price_list_items' => 'Operator list items',
+
+        'operator_price_list_item_fields' => [
+            'price_list_id' => 'Operator price list',
+            'catalog_entry_id' => 'Catalog entry',
+            'price' => 'Price',
+            'pricing_mode' => 'Pricing mode',
+        ],
+
+        'operator_price_list_item_columns' => [
+            'id' => 'ID',
+            'price_list' => 'List',
+            'catalog_entry' => 'Catalog entry',
+            'price' => 'Price',
+            'pricing_mode' => 'Mode',
+        ],
+
+        'operator_price_list_item_filters' => [
+            'price_list_id' => 'List',
+        ],
+
+        'operator_price_list_item_pricing_mode' => [
+            'fixed' => 'Fixed',
+            'percentage' => 'Percentage',
         ],
 
         'plan_user_price' => 'User range price',
@@ -1529,6 +1779,214 @@ return [
             'up_to' => 'Up to users',
             'up_to_format' => 'Up to :count users',
             'price' => 'Price',
+        ],
+
+        'nav_transport' => 'Transfers',
+
+        'service_transfer_location_type_category' => 'Transfer location type category',
+        'service_transfer_location_type_categories' => 'Transfer location type categories',
+        'service_transfer_location_type_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+        'service_transfer_location_type_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+        'service_transfer_location_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+
+        'service_transfer_location_type' => 'Transfer location type',
+        'service_transfer_location_types' => 'Transfer location types',
+        'service_transfer_location_type_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+        'service_transfer_location_type_fields' => [
+            'code' => 'Code',
+            'category' => 'Category',
+            'sort_order' => 'Sort order',
+        ],
+        'service_transfer_location_type_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'category' => 'Category',
+            'name' => 'Name',
+        ],
+
+        'service_transfer_location' => 'Transfer location',
+        'service_transfer_locations' => 'Transfer locations',
+        'service_transfer_location_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+        'service_transfer_location_fields' => [
+            'service_transfer_location_type_id' => 'Location type',
+            'address' => 'Address',
+            'city_id' => 'City',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'airport_code' => 'Airport code',
+            'is_active' => 'Active',
+        ],
+        'service_transfer_location_columns' => [
+            'id' => 'ID',
+            'type' => 'Type',
+            'name' => 'Name',
+            'airport_code' => 'Airport',
+            'city' => 'City',
+        ],
+
+        'service_transfer_vehicle_type_category' => 'Transfer vehicle type category',
+        'service_transfer_vehicle_type_categories' => 'Transfer vehicle type categories',
+        'service_transfer_vehicle_type_category_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+        'service_transfer_vehicle_type_category_fields' => [
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+        'service_transfer_vehicle_type_category_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+        ],
+        'service_transfer_vehicle_type_category_relation' => [
+            'vehicle_types_tab' => 'Vehicle types',
+        ],
+
+        'service_transfer_vehicle_type' => 'Transfer vehicle type',
+        'service_transfer_vehicle_types' => 'Transfer vehicle types',
+        'service_transfer_vehicle_type_tabs' => [
+            'general' => 'General',
+        ],
+        'service_transfer_vehicle_type_fields' => [
+            'account_id' => 'Account',
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+            'max_passengers' => 'Max passengers',
+            'max_luggage' => 'Max luggage',
+        ],
+        'service_transfer_vehicle_type_columns' => [
+            'id' => 'ID',
+            'account' => 'Account',
+            'category' => 'Category',
+            'code' => 'Code',
+            'name' => 'Name',
+            'max_passengers' => 'Max pax',
+            'max_luggage' => 'Max luggage',
+        ],
+
+        'service_transfer' => 'Service transfer profile',
+        'service_transfers' => 'Service transfer profiles',
+        'service_transfer_tabs' => [
+            'general' => 'General',
+        ],
+        'service_transfer_fields' => [
+            'service_id' => 'Service',
+            'transfer_type' => 'Transfer type',
+            'modality' => 'Modality',
+            'allows_multiple_stops' => 'Allows multiple stops',
+            'max_passengers' => 'Max passengers',
+            'max_luggage' => 'Max luggage',
+            'default_duration_minutes' => 'Default duration (minutes)',
+            'requires_flight_info' => 'Requires flight info',
+            'requires_pickup_time' => 'Requires pickup time',
+            'requires_dropoff_time' => 'Requires drop-off time',
+        ],
+        'service_transfer_columns' => [
+            'id' => 'ID',
+            'service' => 'Service',
+            'transfer_type' => 'Type',
+            'modality' => 'Modality',
+        ],
+        'service_transfer_transfer_type' => [
+            'one_way' => 'One way',
+            'round_trip' => 'Round trip',
+        ],
+        'service_transfer_modality' => [
+            'private' => 'Private',
+            'shared' => 'Shared',
+        ],
+
+        'service_transfer_route' => 'Transfer route',
+        'service_transfer_routes' => 'Transfer routes',
+        'service_transfer_route_tabs' => [
+            'general' => 'General',
+        ],
+        'service_transfer_route_fields' => [
+            'service_transfer_id' => 'Transfer profile',
+            'origin_location_id' => 'Origin',
+            'destination_location_id' => 'Destination',
+            'is_active' => 'Active',
+            'distance_km' => 'Distance (km)',
+            'duration_minutes' => 'Duration (minutes)',
+        ],
+        'service_transfer_route_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Profile',
+            'origin' => 'Origin',
+            'destination' => 'Destination',
+        ],
+        'service_transfer_route_validation' => [
+            'different_endpoints' => 'Origin and destination must be different.',
+        ],
+
+        'service_transfer_vehicle' => 'Transfer vehicle assignment',
+        'service_transfer_vehicles' => 'Transfer vehicle assignments',
+        'service_transfer_vehicle_tabs' => [
+            'general' => 'General',
+        ],
+        'service_transfer_vehicle_fields' => [
+            'service_transfer_id' => 'Transfer profile',
+            'service_transfer_vehicle_type_id' => 'Vehicle type',
+            'is_default' => 'Default for this profile',
+        ],
+        'service_transfer_vehicle_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Profile',
+            'vehicle_type' => 'Vehicle type',
+        ],
+
+        'service_transfer_price' => 'Transfer price',
+        'service_transfer_prices' => 'Transfer prices',
+        'service_transfer_price_tabs' => [
+            'general' => 'General',
+        ],
+        'service_transfer_price_fields' => [
+            'service_transfer_id' => 'Transfer profile',
+            'route_id' => 'Route (optional)',
+            'service_transfer_vehicle_type_id' => 'Vehicle type (optional)',
+            'pricing_type' => 'Pricing type',
+            'currency_id' => 'Currency',
+            'base_price' => 'Base price',
+            'price_per_person' => 'Price per person',
+            'price_per_extra_passenger' => 'Price per extra passenger',
+            'min_passengers' => 'Min passengers',
+            'max_passengers' => 'Max passengers',
+            'valid_from' => 'Valid from',
+            'valid_to' => 'Valid to',
+        ],
+        'service_transfer_price_columns' => [
+            'id' => 'ID',
+            'transfer' => 'Profile',
+            'route' => 'Route',
+            'vehicle_type' => 'Vehicle type',
+            'pricing_type' => 'Pricing',
+            'currency' => 'Currency',
+            'base_price' => 'Base',
+        ],
+        'service_transfer_price_pricing_type' => [
+            'per_vehicle' => 'Per vehicle',
+            'per_person' => 'Per person',
+        ],
+        'service_transfer_price_validation' => [
+            'route_belongs_to_transfer' => 'The route must belong to the selected transfer profile.',
         ],
 
     ],

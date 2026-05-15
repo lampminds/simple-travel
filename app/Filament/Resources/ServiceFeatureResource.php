@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CatalogCluster;
 use App\Filament\Resources\ServiceFeatureResource\Pages;
 use App\Models\ServiceFeature;
 use App\Models\ServiceFeatureCategory;
@@ -49,7 +50,11 @@ class ServiceFeatureResource extends LmpResource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_catalog_features';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $cluster = CatalogCluster::class;
 
     public static function getModelLabel(): string
     {

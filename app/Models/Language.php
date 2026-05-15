@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
@@ -14,7 +15,25 @@ class Language extends Model
 
     protected $fillable = [
         'language_id',
+        'list_order',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('ordered', function (Builder $builder): void {
+            $table = $builder->getModel()->getTable();
+            $builder->orderBy($table.'.list_order')->orderBy($table.'.id');
+        });
+
+        static::creating(function (Language $language): void {
+            if ($language->list_order !== null && (int) $language->list_order !== 0) {
+                return;
+            }
+
+            $max = (int) (static::query()->withoutGlobalScopes()->max('list_order') ?? 0);
+            $language->list_order = $max > 0 ? $max + 10 : 10;
+        });
+    }
 
     /**
      * Reference to the locale catalog (cat_locales).

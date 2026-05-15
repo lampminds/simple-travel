@@ -112,8 +112,7 @@ final class AccountOperatorServiceOfferController extends Controller
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
 
-        $typeCodes = $account->categories()
-            ->where('group', 'type')
+        $typeCodes = $account->accountTypes()
             ->where('active', true)
             ->pluck('code');
         abort_unless($typeCodes->contains('operator'), 403);

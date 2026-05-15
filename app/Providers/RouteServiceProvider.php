@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\ServiceTransferVehicleType;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -24,6 +25,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Route::bind('transfer_vehicle_type', function (string $value): ServiceTransferVehicleType {
+            $user = auth()->user();
+            abort_unless($user !== null, 404);
+            $accountId = $user->currentAccountId();
+            abort_unless($accountId, 404);
+
+            return ServiceTransferVehicleType::query()
+                ->where('account_id', $accountId)
+                ->whereKey((int) $value)
+                ->firstOrFail();
+        });
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });

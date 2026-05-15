@@ -18,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetPermissionsTeamForRequest::class,
             \App\Http\Middleware\SetLocaleFromSession::class,
             \App\Http\Middleware\TrackUserPresence::class,
-            \App\Http\Middleware\RecordLastLogin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

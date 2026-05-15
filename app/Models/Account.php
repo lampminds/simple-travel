@@ -39,29 +39,16 @@ class Account extends Model
     }
 
     /**
-     * Get the categories that belong to the account.
+     * Business types assigned to this account ({@see AccountType}, pivot account_type_assignments).
      */
-    public function categories(): BelongsToMany
+    public function accountTypes(): BelongsToMany
     {
         return $this->belongsToMany(
-            AccountCategory::class,
-            'account_category_assignments',
+            AccountType::class,
+            'account_type_assignments',
             'account_id',
-            'account_category_id'
+            'account_type_id'
         );
-    }
-
-    /**
-     * Account "business type" rows only (cat_account_categories.group = type), same pivot as {@see categories()}.
-     */
-    public function typeCategories(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            AccountCategory::class,
-            'account_category_assignments',
-            'account_id',
-            'account_category_id'
-        )->where((new AccountCategory)->getTable().'.group', 'type');
     }
 
     /**
@@ -97,6 +84,14 @@ class Account extends Model
     }
 
     /**
+     * Commercial SaaS subscriptions purchased by this account.
+     */
+    public function commercialSubscriptions(): HasMany
+    {
+        return $this->hasMany(CommercialSubscription::class);
+    }
+
+    /**
      * Persons linked to this account with department/position (account_person).
      */
     public function accountPersons(): HasMany
@@ -127,7 +122,7 @@ class Account extends Model
     }
 
     /**
-     * How many of provider, operator, and agency (active "type" categories) are assigned to this account.
+     * How many of provider, operator, and agency (active business types) are assigned to this account.
      */
     public function businessDashboardLaneCount(): int
     {
@@ -139,10 +134,9 @@ class Account extends Model
      */
     protected function businessDashboardLaneInfo(): array
     {
-        $typeCodes = $this->categories()
-            ->where('group', 'type')
-            ->where('active', true)
-            ->pluck('code');
+        $typeCodes = $this->accountTypes()
+            ->where((new AccountType)->getTable().'.active', true)
+            ->pluck((new AccountType)->getTable().'.code');
 
         $hasProvider = $typeCodes->contains('provider');
         $hasOperator = $typeCodes->contains('operator');

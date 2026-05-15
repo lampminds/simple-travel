@@ -3,27 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\AccountType;
 use App\Models\Service;
 use App\Models\ServiceOffer;
 use App\Models\ServiceType;
 use App\Support\AccountDashboardLane;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class CatalogController extends Controller
 {
-    /** Service `status` values exposed in the catalog filter (aligned with Filament labels). */
-    private const SERVICE_STATUSES_FOR_FILTER = [
-        'active',
-        'onhold',
-        'suspended',
-        'discontinued',
-        'inactive',
-        'terminated',
-    ];
-
     /**
      * Catalog: provider, operator, and agency see this account's services (wizard-backed).
      * Operator/agency also see a placeholder control to request linked providers' services (TBD).
@@ -40,45 +31,55 @@ class CatalogController extends Controller
             return redirect()->route('account.dashboard');
         }
 
-        $statusFilter = $this->resolveCatalogStatusFilter($request);
+        $serviceTypes = ServiceType::query()
+            ->where('active', true)
+            ->ordered()
+            ->with('translations.language.locale')
+            ->get();
+
+        $typeFilter = $this->resolveCatalogTypeFilter($request, $serviceTypes);
         $catalogFilterView = [
-            'catalogStatusFilter' => $statusFilter,
-            'catalogServiceStatusOptions' => $this->catalogServiceStatusOptions(),
+            'catalogTypeFilter' => $typeFilter,
+            'catalogServiceTypeOptions' => $this->catalogServiceTypeOptions($serviceTypes),
         ];
 
-        return match (true) {
-            $laneId === AccountTypeCategoryIds::PROVIDER => $this->accountServicesCatalog($account, 'provider', $statusFilter, $catalogFilterView),
-            AccountTypeCategoryIds::isOperatorLaneTypeId($laneId) => $this->operatorCatalog($account, $statusFilter, $catalogFilterView),
-            $laneId === AccountTypeCategoryIds::AGENCY => $this->accountServicesCatalog($account, 'agency', $statusFilter, $catalogFilterView),
+        $laneType = AccountType::query()->whereKey($laneId)->first();
+        if ($laneType === null || ! $laneType->active) {
+            return redirect()->route('account.dashboard');
+        }
+
+        $laneCode = strtolower(trim((string) $laneType->code));
+
+        return match ($laneCode) {
+            'provider' => $this->accountServicesCatalog($account, 'provider', $typeFilter, $catalogFilterView, $serviceTypes),
+            'operator' => $this->operatorCatalog($account, $typeFilter, $catalogFilterView, $serviceTypes),
+            'agency' => $this->accountServicesCatalog($account, 'agency', $typeFilter, $catalogFilterView, $serviceTypes),
             default => redirect()->route('account.dashboard'),
         };
     }
 
-    /**
-     * Validated catalog list filter: null means "all statuses".
-     */
-    private function resolveCatalogStatusFilter(Request $request): ?string
+    /** Service type `code` for catalog list filter; null means all types. */
+    private function resolveCatalogTypeFilter(Request $request, Collection $serviceTypes): ?string
     {
-        $raw = (string) $request->query('status', '');
+        $raw = trim((string) $request->query('type', ''));
         if ($raw === '' || strcasecmp($raw, 'all') === 0) {
             return null;
         }
 
-        if (in_array($raw, self::SERVICE_STATUSES_FOR_FILTER, true)) {
-            return $raw;
-        }
+        $allowed = $serviceTypes->pluck('code')->map(fn ($c) => (string) $c)->all();
 
-        return null;
+        return in_array($raw, $allowed, true) ? $raw : null;
     }
 
     /**
+     * @param  Collection<int, ServiceType>  $serviceTypes
      * @return array<string, string>
      */
-    private function catalogServiceStatusOptions(): array
+    private function catalogServiceTypeOptions(Collection $serviceTypes): array
     {
         $out = [];
-        foreach (self::SERVICE_STATUSES_FOR_FILTER as $status) {
-            $out[$status] = __('filament.resources.service_status.'.$status);
+        foreach ($serviceTypes as $type) {
+            $out[(string) $type->code] = $type->dropdown_label;
         }
 
         return $out;
@@ -87,21 +88,21 @@ class CatalogController extends Controller
     /**
      * @param  'provider'|'agency'  $mode
      * @param  array<string, mixed>  $catalogFilterView
+     * @param  Collection<int, ServiceType>  $serviceTypes
      */
-    private function accountServicesCatalog(Account $account, string $mode, ?string $statusFilter, array $catalogFilterView): View
+    private function accountServicesCatalog(Account $account, string $mode, ?string $typeFilter, array $catalogFilterView, Collection $serviceTypes): View
     {
+        $typeId = null;
+        if ($typeFilter !== null) {
+            $typeId = $serviceTypes->firstWhere('code', $typeFilter)?->id;
+        }
+
         $services = Service::query()
             ->where('account_id', $account->id)
-            ->when($statusFilter !== null, fn ($query) => $query->where('status', $statusFilter))
+            ->when($typeId !== null, fn ($query) => $query->where('service_type_id', $typeId))
             ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
             ->withCount('serviceVariants')
             ->orderByDesc('id')
-            ->get();
-
-        $serviceTypes = ServiceType::query()
-            ->where('active', true)
-            ->ordered()
-            ->with('translations.language.locale')
             ->get();
 
         return view('catalog.index', array_merge($catalogFilterView, [
@@ -116,21 +117,21 @@ class CatalogController extends Controller
      * Operator catalog: own services plus accepted variant offers from linked providers.
      *
      * @param  array<string, mixed>  $catalogFilterView
+     * @param  Collection<int, ServiceType>  $serviceTypes
      */
-    private function operatorCatalog(Account $account, ?string $statusFilter, array $catalogFilterView): View
+    private function operatorCatalog(Account $account, ?string $typeFilter, array $catalogFilterView, Collection $serviceTypes): View
     {
+        $typeId = null;
+        if ($typeFilter !== null) {
+            $typeId = $serviceTypes->firstWhere('code', $typeFilter)?->id;
+        }
+
         $services = Service::query()
             ->where('account_id', $account->id)
-            ->when($statusFilter !== null, fn ($query) => $query->where('status', $statusFilter))
+            ->when($typeId !== null, fn ($query) => $query->where('service_type_id', $typeId))
             ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
             ->withCount('serviceVariants')
             ->orderByDesc('id')
-            ->get();
-
-        $serviceTypes = ServiceType::query()
-            ->where('active', true)
-            ->ordered()
-            ->with('translations.language.locale')
             ->get();
 
         $linkedCatalog = $this->linkedAcceptedCatalogForOperator($account);
@@ -146,9 +147,9 @@ class CatalogController extends Controller
     /**
      * Accepted variant offers grouped by provider; each item is one offer row (variant + operator availability).
      *
-     * @return \Illuminate\Support\Collection<int, array{provider: Account|null, items: \Illuminate\Support\Collection<int, array{offer: ServiceOffer, service: Service, variant: \App\Models\ServiceVariant}>}>
+     * @return Collection<int, array{provider: Account|null, items: Collection<int, array{offer: ServiceOffer, service: Service, variant: \App\Models\ServiceVariant}>}>
      */
-    private function linkedAcceptedCatalogForOperator(Account $operatorAccount): \Illuminate\Support\Collection
+    private function linkedAcceptedCatalogForOperator(Account $operatorAccount): Collection
     {
         $offers = ServiceOffer::query()
             ->where('operator_id', $operatorAccount->id)
@@ -167,7 +168,7 @@ class CatalogController extends Controller
 
         return $offers
             ->groupBy('provider_id')
-            ->map(function (\Illuminate\Support\Collection $providerOffers): array {
+            ->map(function (Collection $providerOffers): array {
                 /** @var Account|null $provider */
                 $provider = $providerOffers->first()?->providerAccount;
                 $items = $providerOffers

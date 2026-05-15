@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\AccountRelationshipResource\Pages;
 use App\Models\AccountRelationship;
 use BackedEnum;
@@ -22,6 +23,8 @@ use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 class AccountRelationshipResource extends LmpResource
 {
     protected static ?string $model = AccountRelationship::class;
+
+    protected static ?string $cluster = CrmCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-link';
 

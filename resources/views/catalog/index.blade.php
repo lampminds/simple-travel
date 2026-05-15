@@ -33,31 +33,39 @@
                 </div>
             @endif
 
-            <div class="row mt-3">
-                <div class="col-md-6 col-lg-4">
-                    <form method="get" action="{{ route('catalog') }}" id="catalog-status-filter-form">
-                        <label for="catalog-status-filter" class="form-label mb-1">{{ __('catalog.filter_by_status') }}</label>
-                        <select
-                            name="status"
-                            id="catalog-status-filter"
-                            class="form-select"
-                            aria-label="{{ __('catalog.filter_by_status') }}"
-                            onchange="document.getElementById('catalog-status-filter-form').submit()"
-                        >
-                            <option value="all" @selected(($catalogStatusFilter ?? null) === null)>{{ __('catalog.filter_status_all') }}</option>
-                            @foreach ($catalogServiceStatusOptions ?? [] as $value => $label)
-                                <option value="{{ $value }}" @selected(($catalogStatusFilter ?? null) === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </form>
+            @php
+                $catalogHideFilterAndOwnServicesList = ($catalogTypeFilter ?? null) === null && $services->isEmpty();
+            @endphp
+
+            @unless ($catalogHideFilterAndOwnServicesList)
+                <div class="row mt-3">
+                    <div class="col-md-6 col-lg-4">
+                        <form method="get" action="{{ route('catalog') }}" id="catalog-type-filter-form">
+                            <label for="catalog-type-filter" class="form-label mb-1">{{ __('catalog.filter_by_type') }}</label>
+                            <select
+                                name="type"
+                                id="catalog-type-filter"
+                                class="form-select"
+                                style="max-width: 100%;"
+                                aria-label="{{ __('catalog.filter_by_type') }}"
+                                onchange="document.getElementById('catalog-type-filter-form').submit()"
+                            >
+                                <option value="all" @selected(($catalogTypeFilter ?? null) === null)>{{ __('catalog.filter_type_all') }}</option>
+                                @foreach ($catalogServiceTypeOptions ?? [] as $code => $label)
+                                    <option value="{{ $code }}" @selected(($catalogTypeFilter ?? null) === $code)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            @endunless
 
             @if ($mode === 'provider')
                 @include('catalog.partials.provider-services', [
                     'services' => $services,
                     'serviceTypes' => $serviceTypes,
                     'showRequestFromProviders' => false,
+                    'hideOwnServicesHeadingAndList' => $catalogHideFilterAndOwnServicesList,
                 ])
             @elseif ($mode === 'operator')
                 @include('catalog.partials.provider-services', [
@@ -65,6 +73,7 @@
                     'serviceTypes' => $serviceTypes,
                     'showRequestFromProviders' => true,
                     'servicesSectionTitle' => __('catalog.operator_own_heading'),
+                    'hideOwnServicesHeadingAndList' => $catalogHideFilterAndOwnServicesList,
                 ])
                 @if (isset($linkedCatalog) && $linkedCatalog->isNotEmpty())
                     @include('catalog.partials.operator-linked-catalog', ['linkedCatalog' => $linkedCatalog])
@@ -74,6 +83,7 @@
                     'services' => $services,
                     'serviceTypes' => $serviceTypes,
                     'showRequestFromProviders' => true,
+                    'hideOwnServicesHeadingAndList' => $catalogHideFilterAndOwnServicesList,
                 ])
             @endif
 

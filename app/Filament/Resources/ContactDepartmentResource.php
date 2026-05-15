@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\ContactDepartmentResource\Pages;
 use App\Models\ContactDepartment;
 use App\Models\Language;
@@ -44,6 +45,8 @@ class ContactDepartmentResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'code';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_contacts';
+
+    protected static ?string $cluster = CrmCluster::class;
 
     public static function getModelLabel(): string
     {

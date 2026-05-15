@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Authorization;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\Authorization\RoleResource\Pages;
 use App\Filament\Resources\BaseResource;
 use App\Models\Role;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Builder;
 class RoleResource extends BaseResource
 {
     protected static ?string $model = Role::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
 

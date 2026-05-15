@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ServiceDetailResource\Pages;
 use App\Models\Language;
 use App\Models\Service;
@@ -33,6 +34,11 @@ class ServiceDetailResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'description';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+
+    protected static ?string $cluster = CuentasCluster::class;
+
+    /** After {@see ServiceResource} in the same navigation group. */
+    protected static ?int $navigationSort = 3;
 
     public static function getModelLabel(): string
     {

@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Middleware\RecordLastLogin;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\AccountPerson;
 use App\Models\ContactDepartment;
 use App\Models\ContactPosition;
@@ -35,7 +34,7 @@ class RegisteredUserController extends Controller
 
     private const SESSION_STARTUP_EXTERNAL_INVITATION_ID_AFTER_VERIFY = 'startup_external_invitation_id_after_verify';
 
-    /** Business types (cat_account_categories.id, group=type) chosen at signup; reapplied on email verify if needed. */
+    /** Business types (cat_account_types.id) chosen at signup; reapplied on email verify if needed. */
     private const SESSION_STARTUP_COMPANY_TYPE_CATEGORY_IDS_AFTER_VERIFY = 'startup_company_type_category_ids_after_verify';
 
     /**
@@ -43,8 +42,7 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): View
     {
-        $companyTypes = AccountCategory::query()
-            ->byGroup('type')
+        $companyTypes = AccountType::query()
             ->with('translations')
             ->where('active', true)
             ->ordered()
@@ -158,7 +156,7 @@ class RegisteredUserController extends Controller
             'company_types.*' => [
                 'required',
                 'integer',
-                Rule::exists('cat_account_categories', 'id')->where('group', 'type'),
+                Rule::exists('cat_account_types', 'id')->where('active', true),
             ],
             'contact_department_id' => [
                 'required',
@@ -349,7 +347,7 @@ class RegisteredUserController extends Controller
             'company_types.*' => [
                 'required',
                 'integer',
-                Rule::exists('cat_account_categories', 'id')->where('group', 'type'),
+                Rule::exists('cat_account_types', 'id')->where('active', true),
             ],
             'contact_department_id' => [
                 'required',
@@ -468,7 +466,7 @@ class RegisteredUserController extends Controller
                 'is_preferred_contact_mode' => false,
             ]);
 
-            $account->categories()->attach($companyTypeCategoryIds);
+            $account->accountTypes()->attach($companyTypeCategoryIds);
 
             if ($invitationToComplete !== null) {
                 $invitationToComplete->forceFill([
@@ -524,7 +522,6 @@ class RegisteredUserController extends Controller
         ?array $companyTypeCategoryIdsAfterVerify = null
     ): RedirectResponse
     {
-        $request->session()->put(RecordLastLogin::SESSION_KEY, true);
         CurrentAccountSession::put($request, $request->user(), $newAccountId);
         $request->session()->forget(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION);
 

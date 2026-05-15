@@ -2,8 +2,8 @@
 
 return [
     'title' => 'Catalog',
-    'filter_by_status' => 'Service status',
-    'filter_status_all' => 'All',
+    'filter_by_type' => 'Filter by type',
+    'filter_type_all' => 'All types',
     'provider_intro' => 'Services defined for your provider account.',
     'agency_intro' => 'Services for your agency account. Requesting catalog access from invited providers will be added next.',
     'operator_intro' => 'Your own services and accepted variants from linked providers appear below.',

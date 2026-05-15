@@ -18,6 +18,25 @@
                 </div>
             </div>
 
+            @if ($serviceStatusOptions->count() > 1)
+                <div class="row mt-3">
+                    <div class="col-lg-12">
+                        <form method="get" action="{{ route('account.service-offers.operators.edit', $operator) }}" class="d-flex flex-wrap align-items-end gap-2 mb-0">
+                            <div>
+                                <label for="service_status" class="form-label small mb-1">{{ __('account.service_offers.provider_edit_filter_service_status_label') }}</label>
+                                <select name="service_status" id="service_status" class="form-select form-select-sm" style="min-width: 14rem;" onchange="this.form.submit()">
+                                    <option value="">{{ __('account.service_offers.provider_edit_filter_service_status_all') }}</option>
+                                    @foreach ($serviceStatusOptions as $st)
+                                        @php $stLabel = \App\Support\ServiceCatalogStatus::forService($st)['label']; @endphp
+                                        <option value="{{ $st }}" @selected($serviceStatusFilter === $st)>{{ $stLabel }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <a href="{{ route('account.service-offers.index', ['as' => 'provider']) }}" class="btn btn-sm btn-outline-secondary mb-3">
@@ -29,6 +48,9 @@
             <form method="POST" action="{{ route('account.service-offers.operators.update', $operator) }}">
                 @csrf
                 @method('PUT')
+                @if ($serviceStatusFilter !== '')
+                    <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
+                @endif
 
                 @if ($services->isEmpty())
                     <div class="alert alert-light border">{{ __('wizard.variants_none') }}</div>
@@ -45,7 +67,8 @@
                                             <tr>
                                                 <th>{{ __('account.service_offers.provider_edit_col_variant') }}</th>
                                                 <th>{{ __('account.service_offers.provider_edit_col_sku') }}</th>
-                                                <th>{{ __('account.service_offers.provider_edit_col_state') }}</th>
+                                                <th>{{ __('account.service_offers.provider_edit_col_catalog_status') }}</th>
+                                                <th>{{ __('account.service_offers.provider_edit_col_offer_state') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.provider_edit_col_operator_price') }}</th>
                                                 <th class="text-center">{{ __('account.service_offers.provider_edit_col_propose') }}</th>
                                             </tr>
@@ -54,6 +77,9 @@
                                             @foreach ($service->serviceVariants as $variant)
                                                 @php
                                                     $status = $variant->offer_status ?? 'none';
+                                                    $catalogSelectable = $variant->catalogSelectableForOperatorOffers($service);
+                                                    $svcCatalog = \App\Support\ServiceCatalogStatus::forService($service->status);
+                                                    $varCatalog = \App\Support\ServiceCatalogStatus::forVariant($variant->status);
                                                     $opPrice = $variant->operator_price ?? [
                                                         'has_amount' => false,
                                                         'formatted' => '—',
@@ -64,6 +90,16 @@
                                                 <tr>
                                                     <td>{{ $variant->name !== '' ? $variant->name : '—' }}</td>
                                                     <td><code class="small">{{ $variant->sku }}</code></td>
+                                                    <td class="small">
+                                                        <div>
+                                                            <span class="text-muted me-1">{{ __('account.service_offers.provider_edit_catalog_service_prefix') }}</span>
+                                                            <span class="badge text-bg-{{ $svcCatalog['badge'] }}">{{ $svcCatalog['label'] }}</span>
+                                                        </div>
+                                                        <div class="mt-1">
+                                                            <span class="text-muted me-1">{{ __('account.service_offers.provider_edit_catalog_variant_prefix') }}</span>
+                                                            <span class="badge text-bg-{{ $varCatalog['badge'] }}">{{ $varCatalog['label'] }}</span>
+                                                        </div>
+                                                    </td>
                                                     <td>
                                                         <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
                                                             {{ __('account.service_offers.provider_edit_state_' . $status) }}
@@ -89,9 +125,11 @@
                                                             <input
                                                                 type="checkbox"
                                                                 class="form-check-input"
-                                                                name="propose[]"
+                                                                @if ($catalogSelectable) name="propose[]" @endif
                                                                 value="{{ $variant->id }}"
-                                                                @checked(in_array($status, ['pending'], true))
+                                                                @checked($status === 'pending')
+                                                                @disabled(! $catalogSelectable)
+                                                                @if (! $catalogSelectable) title="{{ __('account.service_offers.provider_edit_catalog_selectable_hint') }}" @endif
                                                             >
                                                         @endif
                                                     </td>

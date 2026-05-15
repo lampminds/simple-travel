@@ -45,3 +45,9 @@
     max-width: 1490px !important;
   }
 }
+
+/* Service wizard: top step strip — keep current step fully opaque (Bootstrap fades disabled buttons). */
+.wizard-steps-nav .wizard-step-nav-current.btn-primary.disabled {
+  opacity: 1;
+  cursor: default;
+}

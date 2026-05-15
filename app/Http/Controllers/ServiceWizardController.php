@@ -6,6 +6,8 @@ use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Support\ServiceWizardSkipsVariantsStep;
+use App\Support\ServiceWizardStepEight;
 use Illuminate\Support\Collection;
 use App\Services\Translation\TranslationService;
 use Illuminate\Http\JsonResponse;
@@ -187,9 +189,16 @@ class ServiceWizardController extends Controller
         ]);
     }
 
-    public function createStepFour(Request $request, ServiceType $serviceType, Service $service): View
+    public function createStepFour(Request $request, ServiceType $serviceType, Service $service): View|RedirectResponse
     {
         $this->authorizeWizardService($request, $service, $serviceType);
+
+        if (ServiceWizardSkipsVariantsStep::isSkippedForServiceTypeCode($serviceType->code)) {
+            return redirect()->route('services.wizard.step5', [
+                'serviceType' => $serviceType->code,
+                'service' => $service->id,
+            ]);
+        }
 
         $serviceType->load('translations.language.locale');
         $service->load('translations.language.locale');
@@ -221,6 +230,39 @@ class ServiceWizardController extends Controller
         $service->load('translations.language.locale');
 
         return view('services.wizard.step-6', [
+            'serviceType' => $serviceType,
+            'service' => $service,
+        ]);
+    }
+
+    /**
+     * Wizard step 7 — catalogue experiences linked to the service (all service types).
+     */
+    public function createStepSeven(Request $request, ServiceType $serviceType, Service $service): View
+    {
+        $this->authorizeWizardService($request, $service, $serviceType);
+
+        $serviceType->load('translations.language.locale');
+        $service->load('translations.language.locale');
+
+        return view('services.wizard.step-7', [
+            'serviceType' => $serviceType,
+            'service' => $service,
+        ]);
+    }
+
+    /**
+     * Wizard step 8 — vertical-specific advanced options (gastronomy, hotel, activities, transfers, …).
+     */
+    public function createStepEight(Request $request, ServiceType $serviceType, Service $service): View
+    {
+        $this->authorizeWizardService($request, $service, $serviceType);
+        abort_unless(ServiceWizardStepEight::isEnabledForServiceTypeCode($serviceType->code), 404);
+
+        $serviceType->load('translations.language.locale');
+        $service->load('translations.language.locale');
+
+        return view('services.wizard.step-8', [
             'serviceType' => $serviceType,
             'service' => $service,
         ]);
@@ -268,7 +310,6 @@ class ServiceWizardController extends Controller
         return Language::query()
             ->with('locale')
             ->get()
-            ->sortBy(fn (Language $language) => $language->display_name)
             ->values();
     }
 

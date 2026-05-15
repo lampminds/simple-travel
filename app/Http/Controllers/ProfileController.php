@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -71,11 +72,19 @@ class ProfileController extends Controller
             ->orderBy('id')
             ->get() ?? collect();
 
+        $protectedMethodIds = $contactMethods
+            ->filter(fn (PersonContactMethod $method): bool => $this->isProtectedRegistrationEmailMethod($user, $method))
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->values()
+            ->all();
+
         return view('account.profile-contact', [
             'user' => $user,
             'profilePerson' => $profilePerson,
             'contactTypes' => $this->activeContactTypes(),
             'contactMethods' => $contactMethods,
+            'protectedMethodIds' => $protectedMethodIds,
         ]);
     }
 
@@ -120,6 +129,9 @@ class ProfileController extends Controller
                 if (! $existing instanceof PersonContactMethod) {
                     continue;
                 }
+                if ($this->isProtectedRegistrationEmailMethod($user, $existing)) {
+                    continue;
+                }
                 if ($delete) {
                     $existing->delete();
                     continue;
@@ -130,7 +142,7 @@ class ProfileController extends Controller
                 if (! $typesById->has($contactTypeId)) {
                     continue;
                 }
-                $this->assertUniqueContactTypePerPerson($profilePerson, $contactTypeId, $methodId, $typesById);
+                $this->assertNoDuplicateContactTypeAndValue($profilePerson, $contactTypeId, $value, $methodId, $typesById);
                 $existing->update([
                     'contact_type_id' => $contactTypeId,
                     'value' => $value,
@@ -142,7 +154,7 @@ class ProfileController extends Controller
                 continue;
             }
 
-            $this->assertUniqueContactTypePerPerson($profilePerson, $contactTypeId, null, $typesById);
+            $this->assertNoDuplicateContactTypeAndValue($profilePerson, $contactTypeId, $value, null, $typesById);
             $profilePerson->contactMethods()->create([
                 'contact_type_id' => $contactTypeId,
                 'value' => $value,
@@ -388,24 +400,60 @@ class ProfileController extends Controller
     }
 
     /**
-     * Validate uniqueness rule for contact types configured as unique per person.
+     * Prevent exact duplicates by contact type + value for the same person.
      */
-    private function assertUniqueContactTypePerPerson(Person $person, int $contactTypeId, ?int $ignoreMethodId, EloquentCollection $typesById): void
+    private function assertNoDuplicateContactTypeAndValue(
+        Person $person,
+        int $contactTypeId,
+        string $value,
+        ?int $ignoreMethodId,
+        EloquentCollection $typesById
+    ): void
     {
-        $type = $typesById->get($contactTypeId);
-        if (! $type instanceof ContactType || ! $type->is_unique_per_person) {
+        $normalizedValue = Str::lower(trim($value));
+        if ($normalizedValue === '') {
             return;
         }
 
         $exists = $person->contactMethods()
             ->where('contact_type_id', $contactTypeId)
+            ->whereRaw('LOWER(TRIM(value)) = ?', [$normalizedValue])
             ->when($ignoreMethodId !== null, fn ($q) => $q->where('id', '!=', $ignoreMethodId))
             ->exists();
 
         if ($exists) {
+            $type = $typesById->get($contactTypeId);
+            $typeLabel = $type instanceof ContactType ? (string) $type->code : (string) $contactTypeId;
             throw ValidationException::withMessages([
-                'methods' => __('profile.contact_unique_type_error', ['type' => $type->code]),
+                'methods' => __('profile.contact_duplicate_type_value_error', ['type' => $typeLabel]),
             ])->errorBag('contact');
         }
+    }
+
+    /**
+     * The registration/login email contact method must not be editable/deletable from contact screen.
+     * We protect the primary email method, and also any email method matching current access email.
+     */
+    private function isProtectedRegistrationEmailMethod(User $user, PersonContactMethod $method): bool
+    {
+        $method->loadMissing('contactType');
+
+        $userEmail = Str::lower(trim((string) $user->email));
+        $methodValue = Str::lower(trim((string) $method->value));
+        $typeCode = Str::lower(trim((string) ($method->contactType?->getRawOriginal('code') ?? $method->contactType?->code ?? '')));
+
+        if (! in_array($typeCode, ['email', 'e-mail'], true)) {
+            return false;
+        }
+
+        if ((bool) $method->is_primary) {
+            return true;
+        }
+
+        if ($userEmail === '' || $methodValue === '') {
+            return false;
+        }
+
+        return $methodValue === $userEmail;
     }
 }

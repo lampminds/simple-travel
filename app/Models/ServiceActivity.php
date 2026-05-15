@@ -5,87 +5,57 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class ServiceActivity extends Model
 {
     use HasFactory, AuditTrait;
 
-    protected $table = 'cat_service_activities';
+    protected $table = 'service_activities';
 
     protected $fillable = [
-        'code',
-        'service_activity_category_id',
-        'sort_order',
+        'service_id',
+        'difficulty_level',
+        'min_age',
+        'max_age',
+        'guide_included',
+        'transport_included',
+        'outdoor_activity',
+        'max_altitude_m',
+        'distance_km',
+        'requires_good_weather',
         'active',
     ];
 
     protected $casts = [
+        'guide_included' => 'boolean',
+        'transport_included' => 'boolean',
+        'outdoor_activity' => 'boolean',
+        'requires_good_weather' => 'boolean',
         'active' => 'boolean',
-        'sort_order' => 'integer',
+        'difficulty_level' => 'integer',
+        'min_age' => 'integer',
+        'max_age' => 'integer',
+        'max_altitude_m' => 'integer',
+        'distance_km' => 'integer',
     ];
 
-    /**
-     * Get the category this activity belongs to.
-     */
-    public function category(): BelongsTo
+    public function service(): BelongsTo
     {
-        return $this->belongsTo(ServiceActivityCategory::class, 'service_activity_category_id');
+        return $this->belongsTo(Service::class);
     }
 
     /**
-     * Get the translations for this activity (one per language).
+     * Catalogue activity types assigned to this profile (many-to-many via pivot).
      */
-    public function translations(): HasMany
+    public function activityTypes(): BelongsToMany
     {
-        return $this->hasMany(ServiceActivityTranslation::class);
-    }
-
-    /**
-     * Get name for display (from translations).
-     */
-    public function getNameAttribute(): string
-    {
-        return $this->getTranslationForDisplay()?->name ?? '';
-    }
-
-    /**
-     * Translation to use for display (e.g. in tables and dropdowns).
-     * Prefers the translation for the current app locale when available.
-     */
-    protected function getTranslationForDisplay(): ?ServiceActivityTranslation
-    {
-        if (! $this->relationLoaded('translations')) {
-            $this->load('translations');
-        }
-
-        $translations = $this->translations;
-
-        if ($translations->isEmpty()) {
-            return null;
-        }
-
-        $locale = app()->getLocale();
-        foreach ($translations as $translation) {
-            $lang = $translation->language;
-            if (! $lang) {
-                continue;
-            }
-            $lang->loadMissing('locale');
-            if (Locale::primaryTagMatches($lang->locale, $locale)) {
-                return $translation;
-            }
-        }
-
-        return $translations->first();
-    }
-
-    /**
-     * Scope to order by sort_order.
-     */
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('sort_order');
+        return $this->belongsToMany(
+            ServiceActivityType::class,
+            'service_activity_type_assignments',
+            'service_activity_id',
+            'service_activity_type_id'
+        )->withTimestamps();
     }
 }

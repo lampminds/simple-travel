@@ -35,6 +35,9 @@
                                     @error('methods', 'contact')
                                         <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                     @enderror
+                                    <div class="alert alert-info" role="alert">
+                                        {{ __('profile.contact_registration_email_locked_help') }}
+                                    </div>
 
                                     @php
                                         $oldMethods = old('methods');
@@ -56,14 +59,17 @@
 
                                     <div id="contact-method-rows">
                                         @forelse($rows as $idx => $row)
-                                            @php $existingId = isset($row['id']) ? (int) $row['id'] : null; @endphp
+                                            @php
+                                                $existingId = isset($row['id']) ? (int) $row['id'] : null;
+                                                $isProtected = $existingId !== null && in_array($existingId, $protectedMethodIds ?? [], true);
+                                            @endphp
                                             <div class="row g-2 align-items-end border rounded p-2 mb-2 contact-method-row">
                                                 @if($existingId)
                                                     <input type="hidden" name="methods[{{ $idx }}][id]" value="{{ $existingId }}">
                                                 @endif
                                                 <div class="col-md-4">
                                                     <label class="form-label">{{ __('profile.contact_type') }}</label>
-                                                    <select name="methods[{{ $idx }}][contact_type_id]" class="form-select @error("methods.$idx.contact_type_id", 'contact') is-invalid @enderror">
+                                                    <select name="methods[{{ $idx }}][contact_type_id]" class="form-select @error("methods.$idx.contact_type_id", 'contact') is-invalid @enderror" @disabled($isProtected)>
                                                         <option value="">{{ __('profile.contact_select_type') }}</option>
                                                         @foreach($contactTypes as $type)
                                                             <option value="{{ $type->id }}" @selected((int) ($row['contact_type_id'] ?? 0) === (int) $type->id)>
@@ -81,7 +87,8 @@
                                                            name="methods[{{ $idx }}][value]"
                                                            class="form-control @error("methods.$idx.value", 'contact') is-invalid @enderror"
                                                            value="{{ (string) ($row['value'] ?? '') }}"
-                                                           placeholder="{{ __('profile.contact_value_placeholder') }}">
+                                                           placeholder="{{ __('profile.contact_value_placeholder') }}"
+                                                           @disabled($isProtected)>
                                                     @error("methods.$idx.value", 'contact')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
@@ -92,7 +99,8 @@
                                                             <input class="form-check-input" type="checkbox"
                                                                    id="delete-method-{{ $existingId }}"
                                                                    name="methods[{{ $idx }}][delete]" value="1"
-                                                                   @checked((bool) ($row['delete'] ?? false))>
+                                                                   @checked((bool) ($row['delete'] ?? false))
+                                                                   @disabled($isProtected)>
                                                             <label class="form-check-label" for="delete-method-{{ $existingId }}">
                                                                 {{ __('profile.contact_delete') }}
                                                             </label>
@@ -101,6 +109,11 @@
                                                         <button type="button" class="btn btn-outline-danger btn-sm js-remove-row">{{ __('profile.contact_remove_row') }}</button>
                                                     @endif
                                                 </div>
+                                                @if($isProtected)
+                                                    <div class="col-12">
+                                                        <small class="text-muted d-block mt-1">{{ __('profile.contact_registration_email_locked_row') }}</small>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @empty
                                             <p class="text-muted">{{ __('profile.contact_empty') }}</p>

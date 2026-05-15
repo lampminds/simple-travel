@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\TodoCategoryResource\Pages;
 use App\Models\Account;
 use App\Models\Language;
@@ -52,6 +53,8 @@ class TodoCategoryResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_onboarding';
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static ?int $navigationSort = 1;
 

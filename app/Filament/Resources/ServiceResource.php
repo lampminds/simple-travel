@@ -2,16 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ServiceResource\Pages;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
-use App\Models\ServiceActivity;
+use App\Models\ServiceExperience;
 use App\Models\ServiceDetailTopic;
 use App\Models\ServiceType;
+use App\Services\ServiceCascadeDeletion;
 use BackedEnum;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -25,6 +30,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,6 +57,10 @@ class ServiceResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $cluster = CuentasCluster::class;
 
     public static function getModelLabel(): string
     {
@@ -296,24 +306,24 @@ class ServiceResource extends LmpResource
                                     ->orderColumn('sort_order'),
                         ])
                         ->visibleOn(['edit', 'view']),
-                    Tab::make(__('filament.resources.service_tabs.activities'))
+                    Tab::make(__('filament.resources.service_tabs.experiences'))
                         ->schema([
                             Section::make('')->schema([
-                                Select::make('activities')
-                                    ->label(__('filament.resources.service_fields.activities'))
+                                Select::make('experiences')
+                                    ->label(__('filament.resources.service_fields.experiences'))
                                     ->relationship(
-                                        name: 'activities',
+                                        name: 'experiences',
                                         // DB column must exist; `name` is a translation accessor only.
                                         titleAttribute: 'code',
                                         modifyQueryUsing: fn ($query) => $query->with(['translations.language.locale'])->ordered()->where('active', true)
                                     )
                                     ->getOptionLabelFromRecordUsing(
-                                        fn (ServiceActivity $record): string => $record->name !== '' ? $record->name : (string) $record->code
+                                        fn (ServiceExperience $record): string => $record->name !== '' ? $record->name : (string) $record->code
                                     )
                                     ->multiple()
                                     ->searchable()
                                     ->preload()
-                                    ->helperText(__('filament.resources.service_fields.activities_help')),
+                                    ->helperText(__('filament.resources.service_fields.experiences_help')),
                             ])->columns(1),
                         ])
                         ->visibleOn(['edit', 'view']),
@@ -405,7 +415,17 @@ class ServiceResource extends LmpResource
                         'terminated' => __('filament.resources.service_status.terminated'),
                     ]),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale', 'account', 'serviceType', 'media']));
+            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale', 'account', 'serviceType', 'media']))
+            ->recordActions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make()
+                        ->modalHeading(__('filament.resources.service_delete_cascade.modal_heading'))
+                        ->modalDescription(fn (Service $record) => ServiceCascadeDeletion::modalDescriptionHtml($record))
+                        ->modalSubmitActionLabel(__('filament.resources.service_delete_cascade.modal_confirm'))
+                        ->action(fn (Service $record) => ServiceCascadeDeletion::delete($record)),
+                ]),
+            ], position: RecordActionsPosition::BeforeColumns);
     }
 
     public static function getGloballySearchableAttributes(): array

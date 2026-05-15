@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\CurrencyRateResource\Pages;
 use App\Models\Currency;
 use App\Models\CurrencyRate;
@@ -22,6 +23,8 @@ use Illuminate\Validation\ValidationException;
 class CurrencyRateResource extends BaseResource
 {
     protected static ?string $model = CurrencyRate::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
 

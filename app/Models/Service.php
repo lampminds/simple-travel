@@ -84,11 +84,11 @@ class Service extends Model implements HasMedia
     }
 
     /**
-     * Get the activities linked to this service (many-to-many via service_activity_assignments).
+     * Get the catalogue experiences linked to this service (many-to-many via service_experience_assignments).
      */
-    public function activities(): BelongsToMany
+    public function experiences(): BelongsToMany
     {
-        return $this->belongsToMany(ServiceActivity::class, 'service_activity_assignments')
+        return $this->belongsToMany(ServiceExperience::class, 'service_experience_assignments')
             ->withTimestamps();
     }
 
@@ -101,11 +101,35 @@ class Service extends Model implements HasMedia
     }
 
     /**
-     * Get the entertainment data for this service (1:1).
+     * Activity / event service profile (1:1), when the service type is activity or event.
      */
-    public function entertainment(): HasOne
+    public function activity(): HasOne
     {
-        return $this->hasOne(ServiceEntertainment::class);
+        return $this->hasOne(ServiceActivity::class);
+    }
+
+    /**
+     * Gastronomy-specific profile (1:1), when the service type is gastronomy.
+     */
+    public function gastronomy(): HasOne
+    {
+        return $this->hasOne(ServiceGastronomy::class);
+    }
+
+    /**
+     * Hotel / accommodation profile (1:1), when the service type is accommodation.
+     */
+    public function hotel(): HasOne
+    {
+        return $this->hasOne(ServiceHotel::class);
+    }
+
+    /**
+     * Transfer-specific profile (1:1), when the service type is transfer.
+     */
+    public function transfer(): HasOne
+    {
+        return $this->hasOne(ServiceTransfer::class);
     }
 
     /**
@@ -238,6 +262,16 @@ class Service extends Model implements HasMedia
     public function galleryMedia(): Collection
     {
         return $this->getMedia(self::MEDIA_COLLECTION_GALLERY);
+    }
+
+    /**
+     * Catalog states omitted from provider→operator offer pickers (given de baja).
+     *
+     * @return list<string>
+     */
+    public static function catalogStatusesOmittedFromOperatorOffers(): array
+    {
+        return ['discontinued', 'terminated'];
     }
 }
 

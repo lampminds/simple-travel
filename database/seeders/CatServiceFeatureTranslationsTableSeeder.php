@@ -1672,7 +1672,7 @@ class CatServiceFeatureTranslationsTableSeeder extends Seeder
                 'id' => 209,
                 'service_feature_id' => 90,
                 'language_id' => 2,
-                'name' => 'Mostrador de entertainmentes',
+                'name' => 'Mostrador de actividades',
                 'description' => NULL,
             ),
             207 => 

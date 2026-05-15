@@ -3,7 +3,7 @@
 namespace App\Support;
 
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\AccountType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
@@ -70,7 +70,24 @@ final class AccountDashboardLane
     }
 
     /**
-     * Lane for generic routes (catalog, relationships): cookie, else single-type account default.
+     * Active {@see AccountType} id for this account by canonical lane code (provider|operator|agency).
+     */
+    public static function activeTypeIdForLaneCode(Account $account, string $laneCode): ?int
+    {
+        $laneCode = strtolower(trim($laneCode));
+        $table = (new AccountType)->getTable();
+        $id = $account->accountTypes()
+            ->where($table.'.active', true)
+            ->where($table.'.code', $laneCode)
+            ->value($table.'.id');
+
+        return $id !== null ? (int) $id : null;
+    }
+
+    /**
+     * Lane for generic routes (catalog, relationships): cookie, else first matching known lane by code.
+     *
+     * Never relies on fixed numeric ids from {@see AccountTypeCategoryIds}; those may differ per database.
      */
     public static function resolvedLaneTypeId(Request $request, Account $account): ?int
     {
@@ -79,14 +96,11 @@ final class AccountDashboardLane
             return $fromCookie;
         }
 
-        $active = $account->typeCategories()
-            ->where((new AccountCategory)->getTable().'.active', true)
-            ->pluck((new AccountCategory)->getTable().'.id')
-            ->map(fn ($id) => (int) $id)
-            ->values();
-
-        if ($active->count() === 1) {
-            return (int) $active->first();
+        foreach (['provider', 'operator', 'agency'] as $code) {
+            $id = self::activeTypeIdForLaneCode($account, $code);
+            if ($id !== null) {
+                return $id;
+            }
         }
 
         return null;
@@ -94,9 +108,9 @@ final class AccountDashboardLane
 
     public static function accountHasActiveTypeId(Account $account, int $typeId): bool
     {
-        return $account->typeCategories()
-            ->where((new AccountCategory)->getTable().'.active', true)
-            ->where((new AccountCategory)->getTable().'.id', $typeId)
+        return $account->accountTypes()
+            ->where((new AccountType)->getTable().'.active', true)
+            ->where((new AccountType)->getTable().'.id', $typeId)
             ->exists();
     }
 
@@ -105,13 +119,6 @@ final class AccountDashboardLane
      */
     public static function resolveOperatorLaneTypeId(Account $account): ?int
     {
-        if ($account->typeCategories()
-            ->where((new AccountCategory)->getTable().'.active', true)
-            ->where((new AccountCategory)->getTable().'.id', AccountTypeCategoryIds::OPERATOR)
-            ->exists()) {
-            return AccountTypeCategoryIds::OPERATOR;
-        }
-
-        return null;
+        return self::activeTypeIdForLaneCode($account, 'operator');
     }
 }

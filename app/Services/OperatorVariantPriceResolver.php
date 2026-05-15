@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Account;
 use App\Models\PriceListAssignment;
 use App\Models\PriceListItem;
 use App\Models\ServiceVariant;
@@ -61,10 +60,7 @@ final class OperatorVariantPriceResolver
         }
 
         $list = $assignment->priceList;
-        $item = PriceListItem::query()
-            ->where('price_list_id', $list->id)
-            ->where('service_variant_id', $variant->id)
-            ->first();
+        $item = $this->findPriceListItemForVariant($list->id, $variant);
 
         $afterLine = $this->computeAfterListLine($baseNumeric, $item);
 
@@ -76,22 +72,14 @@ final class OperatorVariantPriceResolver
             }
 
             $listName = (string) $list->name;
-            if ($item->application_mode === 'final') {
+            if ($item->pricing_mode === 'fixed') {
                 $lines[] = __('account.service_offers.price_breakdown.list_final', [
                     'name' => $listName,
                     'amount' => $this->formatMoney($afterLine, $providerAccountId),
                     'currency' => $code,
                 ]);
-            } elseif ($item->application_mode === 'compose' && $item->pricing_mode === 'percentage') {
+            } elseif ($item->pricing_mode === 'percentage') {
                 $effect = $this->signedPercentLabel((float) $item->price);
-                $lines[] = __('account.service_offers.price_breakdown.list_with_effect', [
-                    'name' => $listName,
-                    'effect' => $effect,
-                    'amount' => $this->formatMoney($afterLine, $providerAccountId),
-                    'currency' => $code,
-                ]);
-            } elseif ($item->application_mode === 'compose' && $item->pricing_mode === 'fixed') {
-                $effect = $this->signedNumberLabel((float) $item->price);
                 $lines[] = __('account.service_offers.price_breakdown.list_with_effect', [
                     'name' => $listName,
                     'effect' => $effect,
@@ -198,20 +186,8 @@ final class OperatorVariantPriceResolver
 
         $L = (float) $item->price;
 
-        if ($item->application_mode === 'final') {
-            return $L;
-        }
-
-        if ($item->application_mode !== 'compose') {
-            return null;
-        }
-
         if ($item->pricing_mode === 'fixed') {
-            if ($base === null) {
-                return null;
-            }
-
-            return $base + $L;
+            return $L;
         }
 
         if ($item->pricing_mode === 'percentage') {
@@ -223,6 +199,27 @@ final class OperatorVariantPriceResolver
         }
 
         return null;
+    }
+
+    /**
+     * Prefer a variant-specific line; otherwise use a service-wide line (all variants).
+     */
+    private function findPriceListItemForVariant(int $priceListId, ServiceVariant $variant): ?PriceListItem
+    {
+        $serviceId = (int) $variant->service_id;
+
+        return PriceListItem::query()
+            ->where('provider_price_list_id', $priceListId)
+            ->where(function ($q) use ($variant, $serviceId): void {
+                $q->where('service_variant_id', $variant->id)
+                    ->orWhere(function ($q2) use ($serviceId): void {
+                        $q2->whereNull('service_variant_id')
+                            ->where('service_id', $serviceId);
+                    });
+            })
+            ->orderByRaw('CASE WHEN service_variant_id IS NOT NULL THEN 1 ELSE 0 END DESC')
+            ->orderByDesc('id')
+            ->first();
     }
 
     private function applyAssignmentAdjustment(float $amount, PriceListAssignment $assignment): float
@@ -237,12 +234,10 @@ final class OperatorVariantPriceResolver
     private function findActiveAssignment(int $providerAccountId, int $operatorAccountId, Carbon $d): ?PriceListAssignment
     {
         $assignments = PriceListAssignment::query()
-            ->where('assigned_to_type', Account::class)
-            ->where('assigned_to_id', $operatorAccountId)
+            ->where('operator_id', $operatorAccountId)
             ->where('is_active', true)
             ->whereHas('priceList', function ($q) use ($providerAccountId, $d): void {
-                $q->where('owner_type', Account::class)
-                    ->where('owner_id', $providerAccountId)
+                $q->where('provider_id', $providerAccountId)
                     ->where('is_active', true)
                     ->where(function ($q2) use ($d): void {
                         $q2->whereNull('valid_from')

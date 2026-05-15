@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\GastronomyCluster;
 use App\Filament\Resources\ServiceGastronomyCuisineResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceGastronomyCuisine;
@@ -39,6 +40,8 @@ class ServiceGastronomyCuisineResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_gastronomy';
+
+    protected static ?string $cluster = GastronomyCluster::class;
 
     public static function getModelLabel(): string
     {

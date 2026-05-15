@@ -23,16 +23,19 @@ class LanguagesTableSeeder extends Seeder
             array (
                 'id' => 1,
                 'language_id' => 1,
+                'list_order' => 20,
             ),
             1 =>
             array (
                 'id' => 2,
                 'language_id' => 2,
+                'list_order' => 10,
             ),
             2 =>
             array (
                 'id' => 3,
                 'language_id' => 3,
+                'list_order' => 30,
             ),
         ));
 

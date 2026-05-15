@@ -14,11 +14,11 @@ final class CurrentAccountSession
     public static function put(Request $request, User $user, int $accountId): void
     {
         $account = $user->accounts()
-            ->with(['typeCategories' => fn ($q) => $q->where('cat_account_categories.active', true)])
+            ->with(['accountTypes' => fn ($q) => $q->where('cat_account_types.active', true)])
             ->where('accounts.id', $accountId)
             ->first();
 
-        $typeIds = $account?->typeCategories
+        $typeIds = $account?->accountTypes
             ?->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()

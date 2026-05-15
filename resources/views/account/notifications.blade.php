@@ -53,7 +53,6 @@
                                                     <span class="badge {{ $notification->read_at ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' }}">
                                                         {{ $notification->read_at ? __('account.notifications.read') : __('account.notifications.unread') }}
                                                     </span>
-                                                    <span class="badge bg-light text-body border">{{ $notification->type }}</span>
                                                     @if ($notification->recipientUser)
                                                         <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
                                                             {{ __('account.notifications.recipient_private', ['name' => $notification->recipientUser->name]) }}

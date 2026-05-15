@@ -61,6 +61,9 @@ return [
     'contact_updated' => 'Os seus dados de contacto foram atualizados.',
     'contact_empty' => 'Ainda não tem meios de contacto registados.',
     'contact_person_missing' => 'Não foi encontrada uma pessoa vinculada para editar contacto.',
-    'contact_unique_type_error' => 'Já existe um contacto do tipo :type para esta pessoa.',
+    'contact_duplicate_type_value_error' => 'Já existe um contacto duplicado para :type com o mesmo valor.',
+    'contact_registration_email_locked_help' => 'O e-mail de registo/acesso vinculado à sua conta não pode ser editado nem eliminado nesta secção.',
+    'contact_registration_email_locked_row' => 'Este contacto está protegido porque corresponde ao e-mail de acesso usado no registo.',
+    'contact_protected_badge' => 'Protegido',
     'sign_out' => 'Terminar sessão',
 ];

@@ -2,10 +2,10 @@
 
 $files = [
     __DIR__.'/../database/seeders/ServiceTypeTranslationsTableSeeder.php',
-    __DIR__.'/../database/seeders/ServiceEntertainmentTypeTranslationsTableSeeder.php',
-    __DIR__.'/../database/seeders/ServiceEntertainmentTypeCategoryTranslationsTableSeeder.php',
+    __DIR__.'/../database/seeders/ServiceActivityTypeTranslationsTableSeeder.php',
+    __DIR__.'/../database/seeders/ServiceActivityTypeCategoryTranslationsTableSeeder.php',
     __DIR__.'/../database/seeders/CatServiceFeatureTranslationsTableSeeder.php',
-    __DIR__.'/../app/Console/Commands/SeedServiceEntertainmentTypesCommand.php',
+    __DIR__.'/../app/Console/Commands/SeedServiceActivityTypesCommand.php',
     __DIR__.'/../routes/console.php',
 ];
 

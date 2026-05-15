@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\LanguageResource\Pages;
 use App\Models\Language;
 use BackedEnum;
@@ -25,6 +26,8 @@ class LanguageResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'id';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     public static function getModelLabel(): string
     {
@@ -74,7 +77,8 @@ class LanguageResource extends LmpResource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('id');
+            ->defaultSort('list_order')
+            ->reorderable('list_order');
     }
 
     public static function getNavigationBadge(): ?string

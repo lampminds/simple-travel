@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\User;
 use App\Models\UserInvitation;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Support\Str;
 
 final class UserInvitationAcceptanceService
@@ -95,13 +94,16 @@ final class UserInvitationAcceptanceService
     private function resolveProviderAccountId(User $user): ?int
     {
         $currentAccount = $user->currentAccount();
-        if ($currentAccount && $currentAccount->categories()->whereKey(AccountTypeCategoryIds::PROVIDER)->exists()) {
+        if ($currentAccount && $currentAccount->accountTypes()->where('cat_account_types.code', 'provider')->where('cat_account_types.active', true)->exists()) {
             return (int) $currentAccount->id;
         }
 
         $providerAccountId = Account::query()
             ->whereIn('id', $user->accounts()->pluck('accounts.id'))
-            ->whereHas('categories', fn ($query) => $query->whereKey(AccountTypeCategoryIds::PROVIDER))
+            ->whereHas(
+                'accountTypes',
+                fn ($query) => $query->where('cat_account_types.code', 'provider')->where('cat_account_types.active', true)
+            )
             ->orderBy('id')
             ->value('id');
 

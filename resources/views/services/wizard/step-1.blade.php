@@ -1,25 +1,36 @@
 @php
     $isEdit = ($service ?? null) !== null;
     $serviceTypeLabel = $serviceType->name !== '' ? $serviceType->name : strtoupper($serviceType->code);
-    $step1PageTitle = $isEdit
-        ? __('wizard.step1_title_edit', ['type' => $serviceTypeLabel])
-        : __('wizard.step1_title_new', ['type' => $serviceTypeLabel]);
+    $headerDisplayName = $isEdit
+        ? ($service->name !== '' ? $service->name : __('wizard.service_unnamed'))
+        : __('wizard.header_new_service_placeholder');
+    $step1PageTitle = __('wizard.header_title', [
+        'type' => $serviceTypeLabel,
+        'name' => $headerDisplayName,
+        'step' => 1,
+    ]);
 @endphp
 @extends('layouts.base', ['title' => $step1PageTitle])
 
 @section('content')
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
 
+    @if ($isEdit)
+        @include('services.wizard.partials._steps_nav', [
+            'serviceType' => $serviceType,
+            'service' => $service,
+            'currentStep' => 1,
+        ])
+    @endif
+
     <section class="position-relative p-3 bg-gradient2">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ $step1PageTitle }}</h3>
-                        <p class="mt-1 fw-medium">{{ __('wizard.step1_subtitle') }}</p>
-                    </div>
-                </div>
-            </div>
+            @include('services.wizard.partials._header', [
+                'serviceType' => $serviceType,
+                'service' => $service ?? null,
+                'step' => 1,
+                'subtitle' => __('wizard.step1_subtitle'),
+            ])
 
             @if (session('status'))
                 <div class="alert alert-success mt-3" role="alert">
@@ -51,6 +62,7 @@
                                                 placeholder="Escribe al menos 4 letras para buscar…"
                                                 autocomplete="off"
                                                 value="{{ old('city_name', $cityDisplayLabel ?? '') }}"
+                                                @unless ($isEdit) autofocus @endunless
                                             >
                                             <small id="city-search-hint" class="form-text text-muted">La búsqueda empieza con 4 caracteres (hay muchas ciudades).</small>
                                             <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $isEdit ? $service->city_id : '') }}">
@@ -119,39 +131,17 @@
                                     @endforeach
                                 </div>
 
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <a href="{{ route('catalog') }}" class="btn btn-outline-secondary">@lang('wizard.nav_back')</a>
-                                        <a href="{{ route('provider.dashboard') }}" class="btn btn-outline-secondary">@lang('wizard.nav_dashboard')</a>
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-2 justify-content-end">
-                                        @if ($isEdit)
-                                            <a
-                                                href="{{ route('services.wizard.step2', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
-                                                class="btn btn-outline-primary"
-                                            >@lang('wizard.nav_to_step2')</a>
-                                            <a
-                                                href="{{ route('services.wizard.step3', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
-                                                class="btn btn-outline-primary"
-                                            >@lang('wizard.nav_to_step3')</a>
-                                            <a
-                                                href="{{ route('services.wizard.step4', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
-                                                class="btn btn-outline-primary"
-                                            >@lang('wizard.nav_to_step4')</a>
-                                            <a
-                                                href="{{ route('services.wizard.step5', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
-                                                class="btn btn-outline-primary"
-                                            >@lang('wizard.nav_to_step5')</a>
-                                            <a
-                                                href="{{ route('services.wizard.step6', ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
-                                                class="btn btn-outline-primary"
-                                            >@lang('wizard.nav_to_step6')</a>
-                                        @endif
-                                        <button type="submit" class="btn btn-primary">
-                                            {{ $isEdit ? __('wizard.step1_submit_edit') : __('wizard.step1_submit_create') }}
-                                        </button>
-                                    </div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        {{ $isEdit ? __('wizard.step1_submit_edit') : __('wizard.step1_submit_create') }}
+                                    </button>
                                 </div>
+
+                                @include('services.wizard.partials._footer', [
+                                    'serviceType' => $serviceType,
+                                    'service' => $service ?? null,
+                                    'currentStep' => 1,
+                                ])
                             </form>
                         </div>
                     </div>
@@ -400,6 +390,13 @@
                     translateFromLanguage(button.dataset.sourceLanguageId, button);
                 });
             });
+
+            @unless ($isEdit)
+            // Focus city search on new-service flow (navbar or other scripts may run first).
+            window.requestAnimationFrame(() => {
+                searchInput.focus({ preventScroll: false });
+            });
+            @endunless
         })();
     </script>
 @endsection

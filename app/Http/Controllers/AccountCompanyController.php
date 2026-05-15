@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\AccountTaxId;
 use App\Models\LmpCity;
 use App\Models\TodoTask;
@@ -25,10 +26,9 @@ final class AccountCompanyController extends Controller
 
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
-        $account->loadMissing('typeCategories.translations.language');
+        $account->loadMissing('accountTypes.translations.language');
 
-        $companyTypes = AccountCategory::query()
-            ->byGroup('type')
+        $companyTypes = AccountType::query()
             ->with('translations')
             ->where('active', true)
             ->ordered()
@@ -37,7 +37,7 @@ final class AccountCompanyController extends Controller
                 $cat->id => ['name' => $cat->name, 'description' => $cat->description ?? ''],
             ]);
 
-        $selectedCompanyTypeIds = $account->typeCategories
+        $selectedCompanyTypeIds = $account->accountTypes
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()

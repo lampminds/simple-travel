@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Account;
 use App\Models\User;
@@ -60,6 +61,8 @@ class UserResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_users';
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     public static function getModelLabel(): string
     {

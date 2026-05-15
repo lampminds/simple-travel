@@ -30,16 +30,14 @@ class DatabaseSeeder extends Seeder
         $this->call(CatAccountCategoriesTableSeeder::class);
         $this->call(CatAccountCategoryTranslationsTableSeeder::class);
 
-        $this->call(PlansTableSeeder::class);
-        $this->call(PlanItemsTableSeeder::class);
-        $this->call(PlanItemTranslationsTableSeeder::class);
-        $this->call(PlanUserPricesTableSeeder::class);
-        $this->call(PlanUserPriceTranslationsTableSeeder::class);
-
         $this->call(CatServiceTypesTableSeeder::class);
         $this->call(CatServiceTypeTranslationsTableSeeder::class);
 
         $this->call(AccountsTableSeeder::class);
+        $this->call(ServiceTransferLocationTypesCatalogSeeder::class);
+        // Default transfer locations for system account (id=1), Foz do Iguaçu area (city_id=11691).
+        $this->call(ServiceTransferLocationsFozDoIguacuAccount1Seeder::class);
+        $this->call(ServiceTransferVehicleTypesCatalogSeeder::class);
         $this->call(AccountUserTableSeeder::class);
 
         // Pivot rows need existing accounts (FK to accounts.id).
@@ -53,15 +51,15 @@ class DatabaseSeeder extends Seeder
         $this->call(ServiceDetailTopicsTableSeeder::class);
         $this->call(ServiceDetailTopicTranslationsTableSeeder::class);
 
-        $this->call(ServiceEntertainmentTypeCategoriesTableSeeder::class);
-        $this->call(ServiceEntertainmentTypeCategoryTranslationsTableSeeder::class);
-        $this->call(ServiceEntertainmentTypesTableSeeder::class);
-        $this->call(ServiceEntertainmentTypeTranslationsTableSeeder::class);
+        $this->call(ServiceActivityTypeCategoriesTableSeeder::class);
+        $this->call(ServiceActivityTypeCategoryTranslationsTableSeeder::class);
+        $this->call(ServiceActivityTypesTableSeeder::class);
+        $this->call(ServiceActivityTypeTranslationsTableSeeder::class);
 
-        $this->call(ServiceActivityCategoriesTableSeeder::class);
-        $this->call(ServiceActivityCategoryTranslationsTableSeeder::class);
-        $this->call(ServiceActivitiesTableSeeder::class);
-        $this->call(ServiceActivityTranslationsTableSeeder::class);
+        $this->call(ServiceExperienceCategoriesTableSeeder::class);
+        $this->call(ServiceExperienceCategoryTranslationsTableSeeder::class);
+        $this->call(ServiceExperiencesTableSeeder::class);
+        $this->call(ServiceExperienceTranslationsTableSeeder::class);
 
         $this->call(ServiceHotelTypeCategoriesTableSeeder::class);
         $this->call(ServiceHotelTypeCategoryTranslationsTableSeeder::class);
@@ -104,6 +102,9 @@ class DatabaseSeeder extends Seeder
         $this->call(AccountCategoryAssignmentsTableSeeder::class);
         $this->call(AccountRelationshipsTableSeeder::class);
         $this->call(CatContactTypeTranslationsTableSeeder::class);
+        $this->call(CatAccountTypesTableSeeder::class);
+        $this->call(CatAccountTypeTranslationsTableSeeder::class);
+        $this->call(AccountTypeAssignmentsTableSeeder::class);
     }
 }
 

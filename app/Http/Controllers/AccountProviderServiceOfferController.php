@@ -6,10 +6,13 @@ use App\Models\Account;
 use App\Models\AccountRelationship;
 use App\Models\Service;
 use App\Models\ServiceOffer;
+use App\Models\ServiceVariant;
 use App\Services\OperatorVariantPriceResolver;
 use App\Services\ServiceOfferSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 final class AccountProviderServiceOfferController extends Controller
@@ -50,17 +53,31 @@ final class AccountProviderServiceOfferController extends Controller
             ->get()
             ->keyBy(fn (ServiceOffer $o) => (int) $o->service_variant_id);
 
+        $serviceStatusOptions = $this->eligibleServiceStatusesForOperatorOffers($account);
+        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
+            (string) $request->query('service_status', ''),
+            $serviceStatusOptions,
+        );
+
         $services = Service::query()
             ->where('account_id', $account->id)
+            ->whereNotIn('status', Service::catalogStatusesOmittedFromOperatorOffers())
+            ->when($serviceStatusFilter !== '', fn ($q) => $q->where('status', $serviceStatusFilter))
             ->with([
                 'translations',
-                'serviceVariants' => fn ($q) => $q->orderBy('sort_order')->orderBy('id')->with([
-                    'translations.language.locale',
-                    'currency.lmpCurrency',
-                ]),
+                'serviceVariants' => fn ($q) => $q
+                    ->whereNotIn('status', ServiceVariant::catalogStatusesOmittedFromOperatorOffers())
+                    ->orderBy('sort_order')
+                    ->orderBy('id')
+                    ->with([
+                        'translations.language.locale',
+                        'currency.lmpCurrency',
+                    ]),
             ])
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->filter(fn (Service $service) => $service->serviceVariants->isNotEmpty())
+            ->values();
 
         foreach ($services as $service) {
             foreach ($service->serviceVariants as $variant) {
@@ -77,6 +94,8 @@ final class AccountProviderServiceOfferController extends Controller
             'account' => $account,
             'operator' => $operator,
             'services' => $services,
+            'serviceStatusOptions' => $serviceStatusOptions,
+            'serviceStatusFilter' => $serviceStatusFilter,
         ]);
     }
 
@@ -92,9 +111,31 @@ final class AccountProviderServiceOfferController extends Controller
             404
         );
 
+        $allowedStatusesCollection = $this->eligibleServiceStatusesForOperatorOffers($account);
+        $allowedServiceStatuses = $allowedStatusesCollection->all();
+
+        $serviceStatusRules = ['nullable', 'string'];
+        if ($allowedServiceStatuses !== []) {
+            $serviceStatusRules[] = Rule::in($allowedServiceStatuses);
+        }
+
         $validated = $request->validate([
             'propose' => ['nullable', 'array'],
-            'propose.*' => ['integer', 'distinct', 'exists:service_variants,id'],
+            'propose.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('service_variants', 'id')->where(function ($query) use ($account): void {
+                    $query->where('status', 'active')
+                        ->whereIn(
+                            'service_id',
+                            Service::query()
+                                ->where('account_id', $account->id)
+                                ->where('status', 'active')
+                                ->select('id')
+                        );
+                }),
+            ],
+            'service_status' => $serviceStatusRules,
         ]);
 
         $user = $request->user();
@@ -107,9 +148,42 @@ final class AccountProviderServiceOfferController extends Controller
             $user,
         );
 
+        $filterForRedirect = $this->resolveServiceStatusFilterForList(
+            (string) ($validated['service_status'] ?? ''),
+            $allowedStatusesCollection,
+        );
+        $query = $filterForRedirect !== '' ? ['service_status' => $filterForRedirect] : [];
+
         return redirect()
-            ->route('account.service-offers.operators.edit', $operator)
+            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
             ->with('status', __('account.service_offers.provider_status_saved'));
+    }
+
+    /**
+     * Distinct service.status values that appear in the operator-offers picker (omitted catalog states excluded; at least one non-omitted variant).
+     *
+     * @return Collection<int, string>
+     */
+    private function eligibleServiceStatusesForOperatorOffers(Account $account): Collection
+    {
+        return Service::query()
+            ->where('account_id', $account->id)
+            ->whereNotIn('status', Service::catalogStatusesOmittedFromOperatorOffers())
+            ->whereHas('serviceVariants', fn ($q) => $q->whereNotIn('status', ServiceVariant::catalogStatusesOmittedFromOperatorOffers()))
+            ->distinct()
+            ->orderBy('status')
+            ->pluck('status')
+            ->values();
+    }
+
+    private function resolveServiceStatusFilterForList(string $raw, Collection $allowedStatuses): string
+    {
+        $raw = trim($raw);
+        if ($raw === '' || ! $allowedStatuses->contains($raw)) {
+            return '';
+        }
+
+        return $raw;
     }
 
     private function resolveProviderAccount(Request $request): Account
@@ -120,8 +194,7 @@ final class AccountProviderServiceOfferController extends Controller
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
 
-        $typeCodes = $account->categories()
-            ->where('group', 'type')
+        $typeCodes = $account->accountTypes()
             ->where('active', true)
             ->pluck('code');
         abort_unless($typeCodes->contains('provider'), 403);

@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\LmpCity;
 use BackedEnum;
 use Filament\Forms\Components\CheckboxList;
@@ -25,6 +27,8 @@ use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 class AccountResource extends LmpResource
 {
     protected static ?string $model = Account::class;
+
+    protected static ?string $cluster = CrmCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
@@ -167,22 +171,21 @@ class AccountResource extends LmpResource
                                 ->addActionLabel(__('filament.resources.account_tax_id_fields.add')),
                         ])
                         ->visibleOn(['edit', 'view']),
-                    Tab::make(__('filament.resources.account_tabs.categories'))
+                    Tab::make(__('filament.resources.account_tabs.business_types'))
                         ->schema([
-                            CheckboxList::make('typeCategories')
+                            CheckboxList::make('accountTypes')
                                 ->label(__('filament.resources.account_type_category_fields.label'))
                                 ->helperText(__('filament.resources.account_type_category_fields.help'))
                                 ->relationship(
-                                    'typeCategories',
+                                    'accountTypes',
                                     'code',
                                     modifyQueryUsing: fn (Builder $query) => $query
                                         ->where('active', true)
-                                        ->byGroup('type')
                                         ->ordered()
                                         ->with(['translations.language.locale']),
                                 )
                                 ->getOptionLabelFromRecordUsing(
-                                    fn (AccountCategory $record): string => $record->name ?: (string) $record->code
+                                    fn (AccountType $record): string => $record->name ?: (string) $record->code
                                 )
                                 ->columns(2)
                                 ->gridDirection('row')
@@ -220,19 +223,18 @@ class AccountResource extends LmpResource
                     ->searchable(),
             ])
             ->filters([
-                SelectFilter::make('accountCategory')
-                    ->label(__('filament.resources.account_columns.account_category'))
+                SelectFilter::make('accountType')
+                    ->label(__('filament.resources.account_columns.account_type'))
                     ->relationship(
-                        'categories',
+                        'accountTypes',
                         'code',
                         fn (Builder $query) => $query
                             ->where('active', true)
-                            ->byGroup('type')
                             ->ordered()
                             ->with(['translations.language.locale'])
                     )
                     ->getOptionLabelFromRecordUsing(
-                        fn (AccountCategory $record): string => $record->name ?: (string) $record->code
+                        fn (AccountType $record): string => $record->name ?: (string) $record->code
                     )
                     ->searchable()
                     ->preload(),

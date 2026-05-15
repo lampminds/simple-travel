@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountType;
 use App\Support\AccountDashboardLane;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +27,13 @@ class RelationshipsDemoController extends Controller
 
     public function provider(Request $request): View|RedirectResponse
     {
-        return $this->renderForType($request, AccountTypeCategoryIds::PROVIDER);
+        $account = $request->user()?->currentAccount();
+        $typeId = $account !== null ? AccountDashboardLane::activeTypeIdForLaneCode($account, 'provider') : null;
+        if ($typeId === null) {
+            return redirect()->route('account.dashboard');
+        }
+
+        return $this->renderForType($request, $typeId);
     }
 
     public function operator(Request $request): View|RedirectResponse
@@ -48,15 +54,22 @@ class RelationshipsDemoController extends Controller
             return redirect()->route('account.dashboard');
         }
 
-        $accountTypeIds = $account->typeCategories()
-            ->where('cat_account_categories.active', true)
-            ->pluck('cat_account_categories.id');
+        $accountTypeIds = $account->accountTypes()
+            ->where('cat_account_types.active', true)
+            ->pluck('cat_account_types.id');
 
         if (! $accountTypeIds->contains($typeId)) {
             return redirect()->route('account.dashboard');
         }
 
-        if ($typeId === AccountTypeCategoryIds::AGENCY) {
+        $type = AccountType::query()->whereKey($typeId)->first();
+        if ($type === null || ! $type->active) {
+            return redirect()->route('account.dashboard');
+        }
+
+        $laneCode = strtolower(trim((string) $type->code));
+
+        if ($laneCode === 'agency') {
             return view('relationships.index', [
                 'isProvider' => false,
                 'title' => 'Relaciones',
@@ -67,21 +80,24 @@ class RelationshipsDemoController extends Controller
             ]);
         }
 
-        $isProvider = $typeId === AccountTypeCategoryIds::PROVIDER;
-
-        $rows = $isProvider
-            ? $this->providerRelatedOperators()
-            : $this->operatorRelatedProviders();
+        if ($laneCode === 'provider') {
+            return view('relationships.index', [
+                'isProvider' => true,
+                'title' => 'Relaciones',
+                'heading' => 'Relaciones',
+                'intro' => 'Empresas operadoras vinculadas a tu cuenta de prestador.',
+                'relatedLabel' => 'Operador',
+                'rows' => $this->providerRelatedOperators(),
+            ]);
+        }
 
         return view('relationships.index', [
-            'isProvider' => $isProvider,
+            'isProvider' => false,
             'title' => 'Relaciones',
             'heading' => 'Relaciones',
-            'intro' => $isProvider
-                ? 'Empresas operadoras vinculadas a tu cuenta de prestador.'
-                : 'Prestadores vinculados a tu cuenta de operador.',
-            'relatedLabel' => $isProvider ? 'Operador' : 'Prestador',
-            'rows' => $rows,
+            'intro' => 'Prestadores vinculados a tu cuenta de operador.',
+            'relatedLabel' => 'Prestador',
+            'rows' => $this->operatorRelatedProviders(),
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\UserInvitationResource\Pages;
 use App\Models\Role;
 use App\Models\UserInvitation;
@@ -21,6 +22,8 @@ use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 class UserInvitationResource extends LmpResource
 {
     protected static ?string $model = UserInvitation::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
 

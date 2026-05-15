@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CatalogCluster;
 use App\Filament\Resources\ServiceTypeResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceType;
@@ -40,6 +41,8 @@ class ServiceTypeResource extends LmpResource
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+
+    protected static ?string $cluster = CatalogCluster::class;
 
     public static function getModelLabel(): string
     {

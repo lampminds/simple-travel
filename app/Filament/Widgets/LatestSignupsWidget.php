@@ -10,7 +10,9 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class LatestSignupsWidget extends BaseTableWidget
 {
-    protected static ?string $heading = 'Últimos registros';
+    protected static ?string $heading = 'Registraciones recientes';
+
+    protected static ?int $sort = 2;
 
     protected int | string | array $columnSpan = 'full';
 

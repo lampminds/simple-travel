@@ -83,24 +83,31 @@
                                             </div>
 
                                             <div class="mb-3">
-                                                <label class="form-label">{{ __('auth.register.company_type') }}</label>
-                                                <div class="border rounded p-2 @error('company_types') border-danger @enderror">
+                                                <label class="form-label">{{ __('auth.register.company_type') }} (seleccione los que corresponda)</label>
+                                                <div class="company-type-options @error('company_types') border-danger @enderror">
                                                     @foreach($companyTypes ?? [] as $id => $data)
                                                         @php
-                                                            $name = is_array($data) ? ($data['name'] ?? '') : $data;
+                                                            $name = trim((string) (is_array($data) ? ($data['name'] ?? '') : $data));
                                                             $description = trim((string) (is_array($data) ? ($data['description'] ?? '') : ''));
-                                                            $label = $description !== '' ? "{$name} ({$description})" : $name;
                                                             $checked = in_array((string) $id, array_map('strval', old('company_types', [])), true);
                                                         @endphp
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input @error('company_types') is-invalid @enderror"
-                                                                   type="checkbox"
-                                                                   id="company_type_{{ $id }}"
-                                                                   name="company_types[]"
-                                                                   value="{{ $id }}"
-                                                                   @checked($checked)>
-                                                            <label class="form-check-label" for="company_type_{{ $id }}">{{ $label }}</label>
-                                                        </div>
+                                                        <label class="company-type-card" for="company_type_{{ $id }}">
+                                                            <span class="company-type-text">
+                                                                <span class="company-type-title">{{ $name }}</span>
+                                                                @if($description !== '')
+                                                                    <small class="company-type-description">{{ $description }}</small>
+                                                                @endif
+                                                            </span>
+                                                            <span class="form-check form-switch company-type-switch">
+                                                                <input class="form-check-input company-type-input"
+                                                                       type="checkbox"
+                                                                       role="switch"
+                                                                       id="company_type_{{ $id }}"
+                                                                       name="company_types[]"
+                                                                       value="{{ $id }}"
+                                                                       @checked($checked)>
+                                                            </span>
+                                                        </label>
                                                     @endforeach
                                                 </div>
                                                 <x-form-field-error name="company_types" />
@@ -296,8 +303,102 @@
 
 @section('script-bottom')
 @include('partials.password-toggle-feather')
+<style>
+.company-type-options {
+    display: grid;
+    gap: .75rem;
+}
+
+.company-type-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    border: 1px solid #d9dde3;
+    border-radius: .5rem;
+    padding: .85rem .95rem;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.company-type-title {
+    display: block;
+    font-weight: 600;
+    color: #25303b;
+    line-height: 1.35;
+}
+
+.company-type-text {
+    display: block;
+}
+
+.company-type-description {
+    display: block;
+    margin-top: .3rem;
+    color: #5f6b76;
+    line-height: 1.35;
+}
+
+.company-type-card:hover {
+    border-color: #6a8fd8;
+    background: #f9fbff;
+}
+
+.company-type-switch {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.company-type-input {
+    width: 2.6rem;
+    height: 1.35rem;
+    margin-top: 0;
+    cursor: pointer;
+}
+
+.company-type-card.is-focused {
+    border-color: #6a8fd8;
+    box-shadow: 0 0 0 .2rem rgba(67, 97, 238, .15);
+}
+
+.company-type-card.is-selected {
+    border-color: #4361ee;
+    background: #eef3ff;
+    box-shadow: 0 0 0 .15rem rgba(67, 97, 238, .18);
+}
+
+.company-type-card.is-selected .company-type-title {
+    color: #213ea8;
+}
+
+.company-type-options.border-danger .company-type-card {
+    border-color: #dc3545;
+}
+</style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const companyTypeInputs = document.querySelectorAll('.company-type-input');
+    companyTypeInputs.forEach(function (input) {
+        const card = input.closest('.company-type-card');
+        if (!card) {
+            return;
+        }
+
+        const syncSelected = function () {
+            card.classList.toggle('is-selected', input.checked);
+        };
+
+        syncSelected();
+        input.addEventListener('change', syncSelected);
+        input.addEventListener('focus', function () {
+            card.classList.add('is-focused');
+        });
+        input.addEventListener('blur', function () {
+            card.classList.remove('is-focused');
+        });
+    });
+
     const password = document.getElementById('password');
     const passwordConfirmation = document.getElementById('password_confirmation');
     const btnToggle = document.getElementById('btn-toggle-password');

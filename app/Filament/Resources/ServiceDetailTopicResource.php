@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\CatalogCluster;
 use App\Filament\Resources\ServiceDetailTopicResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceDetailTopic;
@@ -35,7 +36,11 @@ class ServiceDetailTopicResource extends LmpResource
 
     protected static ?string $recordTitleAttribute = 'code';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_services';
+    protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_catalog_conditions';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $cluster = CatalogCluster::class;
 
     public static function getModelLabel(): string
     {

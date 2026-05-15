@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\LmpCityResource\Pages;
 use App\Models\LmpCity;
 use App\Models\LmpCountry;
@@ -23,6 +24,8 @@ use Filament\Tables\Table;
 class LmpCityResource extends BaseResource
 {
     protected static ?string $model = LmpCity::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 

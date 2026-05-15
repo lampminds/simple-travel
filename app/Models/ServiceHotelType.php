@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
@@ -40,6 +41,19 @@ class ServiceHotelType extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(ServiceHotelTypeTranslation::class);
+    }
+
+    /**
+     * Hotel service profiles that use this catalogue type.
+     */
+    public function serviceHotels(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ServiceHotel::class,
+            'service_hotel_type_assignments',
+            'service_hotel_type_id',
+            'service_hotel_id'
+        )->withTimestamps();
     }
 
     /**

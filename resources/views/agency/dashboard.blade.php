@@ -8,8 +8,7 @@
 
         $typeCodes = collect();
         if ($account) {
-            $typeCodes = $account->categories()
-                ->where('group', 'type')
+            $typeCodes = $account->accountTypes()
                 ->where('active', true)
                 ->pluck('code');
         }

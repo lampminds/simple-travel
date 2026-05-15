@@ -12,4 +12,6 @@ return [
     'logout' => 'Sair',
     'search_placeholder' => 'O que você procura?',
     'toggle_nav' => 'Abrir menu',
+    'open_submenu_for' => 'Abrir submenu: :label',
+    'link_to_parent' => 'Ir para :label',
 ];

@@ -19,11 +19,10 @@ class OperatorDashboardController extends Controller
 
         $allowed = false;
         if ($account) {
-            $codes = $account->categories()
-                ->where('group', 'type')
+            $typeCodes = $account->accountTypes()
                 ->where('active', true)
                 ->pluck('code');
-            $allowed = $codes->contains('operator');
+            $allowed = $typeCodes->contains('operator');
         }
 
         if (! $allowed) {

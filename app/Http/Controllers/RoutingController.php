@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Support\AccountDashboardLane;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
@@ -72,9 +71,9 @@ class RoutingController extends BaseController
             $soleRoute = $account?->soleDashboardRouteName();
             if ($soleRoute !== null && $account !== null) {
                 $typeId = match ($soleRoute) {
-                    'provider.dashboard' => AccountTypeCategoryIds::PROVIDER,
+                    'provider.dashboard' => AccountDashboardLane::activeTypeIdForLaneCode($account, 'provider'),
                     'operator.dashboard' => AccountDashboardLane::resolveOperatorLaneTypeId($account),
-                    'agency.dashboard' => AccountTypeCategoryIds::AGENCY,
+                    'agency.dashboard' => AccountDashboardLane::activeTypeIdForLaneCode($account, 'agency'),
                     default => null,
                 };
                 if ($typeId !== null) {
@@ -87,8 +86,11 @@ class RoutingController extends BaseController
 
         if ($name === 'agency.dashboard') {
             $account = Auth::user()?->currentAccount();
-            if ($account !== null && AccountDashboardLane::accountHasActiveTypeId($account, AccountTypeCategoryIds::AGENCY)) {
-                AccountDashboardLane::set($account, AccountTypeCategoryIds::AGENCY);
+            $agencyTypeId = $account !== null
+                ? AccountDashboardLane::activeTypeIdForLaneCode($account, 'agency')
+                : null;
+            if ($agencyTypeId !== null) {
+                AccountDashboardLane::set($account, $agencyTypeId);
             }
         }
 

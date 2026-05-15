@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PriceListItem extends Model
 {
-    protected $table = 'price_list_items';
+    protected $table = 'provider_price_list_items';
 
     /** Table has no audit columns (created_by/updated_by). */
     protected $dont_use_audit = true;
@@ -15,11 +15,11 @@ class PriceListItem extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'price_list_id',
+        'provider_price_list_id',
+        'service_id',
         'service_variant_id',
         'price',
         'pricing_mode',
-        'application_mode',
     ];
 
     protected $casts = [
@@ -28,7 +28,12 @@ class PriceListItem extends Model
 
     public function priceList(): BelongsTo
     {
-        return $this->belongsTo(PriceList::class);
+        return $this->belongsTo(PriceList::class, 'provider_price_list_id');
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 
     public function serviceVariant(): BelongsTo

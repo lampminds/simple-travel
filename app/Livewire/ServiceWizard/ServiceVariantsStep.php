@@ -641,7 +641,6 @@ class ServiceVariantsStep extends Component
         return Language::query()
             ->with('locale')
             ->get()
-            ->sortBy(fn (Language $language) => $language->display_name)
             ->values();
     }
 

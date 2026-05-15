@@ -79,10 +79,28 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    /*
+     * Transfer wizard: account id whose vehicle type catalogue is offered as a template for new accounts (default 1).
+     * Transfer location bootstrap in the website wizard copies from this same account.
+     */
+    'transfer_vehicle_template_account_id' => (int) env('TRANSFER_VEHICLE_TEMPLATE_ACCOUNT_ID', 1),
+
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect' => env('FACEBOOK_REDIRECT_URI'),
+    ],
+
+    /*
+     * OpenStreetMap Nominatim (optional “suggest coordinates” in gastronomy wizard).
+     * Set NOMINATIM_GEOCODING_ENABLED=true and a descriptive NOMINATIM_USER_AGENT per policy.
+     */
+    'nominatim' => [
+        'enabled' => env('NOMINATIM_GEOCODING_ENABLED', false),
+        'user_agent' => env('NOMINATIM_USER_AGENT') ?: (trim((string) env('APP_NAME', 'SimpleTravel')).' ('.(string) env('APP_URL', 'http://localhost').')'),
+        /** Recommended by Nominatim when making automated requests. */
+        'email' => env('NOMINATIM_EMAIL'),
+        'timeout' => (int) env('NOMINATIM_TIMEOUT', 12),
     ],
 
 ];

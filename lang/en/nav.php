@@ -12,4 +12,6 @@ return [
     'logout' => 'Log out',
     'search_placeholder' => 'What are you looking for?',
     'toggle_nav' => 'Toggle navigation',
+    'open_submenu_for' => 'Open submenu: :label',
+    'link_to_parent' => 'Go to :label',
 ];

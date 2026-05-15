@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\UserInvitation;
 use App\Services\AccountStartupService;
 use App\Services\AccountRelationshipService;
@@ -61,9 +61,8 @@ class VerifyEmailController extends Controller
             ->values()
             ->all();
         if ($startupAccountId > 0 && $companyTypeCategoryIds !== [] && $request->user()->belongsToAccount($startupAccountId)) {
-            $validIds = AccountCategory::query()
+            $validIds = AccountType::query()
                 ->whereIn('id', $companyTypeCategoryIds)
-                ->where('group', 'type')
                 ->where('active', true)
                 ->pluck('id')
                 ->map(fn ($id): int => (int) $id)
@@ -71,7 +70,7 @@ class VerifyEmailController extends Controller
             if ($validIds !== []) {
                 $account = Account::query()->find($startupAccountId);
                 if ($account !== null) {
-                    $account->categories()->syncWithoutDetaching($validIds);
+                    $account->accountTypes()->syncWithoutDetaching($validIds);
                     CurrentAccountSession::put($request, $request->user(), $startupAccountId);
                 }
             }

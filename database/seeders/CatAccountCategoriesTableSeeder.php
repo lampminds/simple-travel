@@ -35,38 +35,6 @@ class CatAccountCategoriesTableSeeder extends Seeder
                 'active' => 1,
                 'sort_order' => 9999,
             ),
-            2 =>
-            array (
-                'id' => 3,
-                'group' => 'type',
-                'code' => 'provider',
-                'active' => 1,
-                'sort_order' => 1,
-            ),
-            3 =>
-            array (
-                'id' => 4,
-                'group' => 'type',
-                'code' => 'operator',
-                'active' => 1,
-                'sort_order' => 3,
-            ),
-            4 =>
-            array (
-                'id' => 6,
-                'group' => 'type',
-                'code' => 'agency',
-                'active' => 1,
-                'sort_order' => 2,
-            ),
-            5 =>
-            array (
-                'id' => 7,
-                'group' => 'tax_id',
-                'code' => 'OTA',
-                'active' => 1,
-                'sort_order' => 9999,
-            ),
         ));
 
 

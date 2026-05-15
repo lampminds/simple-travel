@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\AiKnowledgeItemResource\Pages;
 use App\Models\AiKnowledgeItem;
 use App\Models\Language;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Builder;
 class AiKnowledgeItemResource extends BaseResource
 {
     protected static ?string $model = AiKnowledgeItem::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
 

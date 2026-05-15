@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Support\AccountDashboardLane;
 use App\Support\AccountPanelStats;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,8 +19,7 @@ class ProviderDashboardController extends Controller
 
         $typeCodes = collect();
         if ($account) {
-            $typeCodes = $account->categories()
-                ->where('group', 'type')
+            $typeCodes = $account->accountTypes()
                 ->where('active', true)
                 ->pluck('code');
         }
@@ -30,7 +28,12 @@ class ProviderDashboardController extends Controller
             return redirect()->to('/account/dashboard');
         }
 
-        AccountDashboardLane::set($account, AccountTypeCategoryIds::PROVIDER);
+        $providerTypeId = AccountDashboardLane::activeTypeIdForLaneCode($account, 'provider');
+        if ($providerTypeId === null) {
+            return redirect()->to('/account/dashboard');
+        }
+
+        AccountDashboardLane::set($account, $providerTypeId);
 
         return view('provider.dashboard', [
             'panelStats' => AccountPanelStats::forAccount($account),

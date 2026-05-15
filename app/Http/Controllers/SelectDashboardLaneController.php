@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Support\AccountDashboardLane;
-use App\Support\AccountTypeCategoryIds;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -20,17 +19,13 @@ class SelectDashboardLaneController extends Controller
         }
 
         $typeId = match ($lane) {
-            'provider' => AccountTypeCategoryIds::PROVIDER,
-            'agency' => AccountTypeCategoryIds::AGENCY,
+            'provider' => AccountDashboardLane::activeTypeIdForLaneCode($account, 'provider'),
+            'agency' => AccountDashboardLane::activeTypeIdForLaneCode($account, 'agency'),
             'operator' => AccountDashboardLane::resolveOperatorLaneTypeId($account),
             default => null,
         };
 
-        if ($typeId === null) {
-            return redirect()->route('account.dashboard');
-        }
-
-        if ($lane !== 'operator' && ! AccountDashboardLane::accountHasActiveTypeId($account, $typeId)) {
+        if ($typeId === null || ! AccountDashboardLane::accountHasActiveTypeId($account, $typeId)) {
             return redirect()->route('account.dashboard');
         }
 

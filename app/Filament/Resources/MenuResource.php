@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\MenuResource\Pages;
-use App\Models\AccountCategory;
+use App\Models\AccountType;
 use App\Models\Language;
 use App\Models\Menu;
 use BackedEnum;
@@ -32,6 +33,8 @@ use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 class MenuResource extends BaseResource
 {
     protected static ?string $model = Menu::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bars-3-bottom-left';
 
@@ -280,12 +283,11 @@ class MenuResource extends BaseResource
                                         'code',
                                         modifyQueryUsing: fn (Builder $query) => $query
                                             ->where('active', true)
-                                            ->byGroup('type')
                                             ->ordered()
                                             ->with(['translations.language.locale']),
                                     )
                                     ->getOptionLabelFromRecordUsing(
-                                        fn (AccountCategory $record): string => $record->name ?: (string) $record->code
+                                        fn (AccountType $record): string => $record->name ?: (string) $record->code
                                     )
                                     ->columns(2)
                                     ->gridDirection('row')
@@ -318,7 +320,7 @@ class MenuResource extends BaseResource
                     ->label(__('filament.resources.menu_columns.account_types'))
                     ->getStateUsing(function (Menu $record): ?string {
                         $labels = $record->accountTypes
-                            ->map(fn (AccountCategory $t): string => $t->name !== '' ? $t->name : (string) $t->code)
+                            ->map(fn (AccountType $t): string => $t->name !== '' ? $t->name : (string) $t->code)
                             ->filter()
                             ->values();
 
@@ -351,13 +353,12 @@ class MenuResource extends BaseResource
                     }),
                 SelectFilter::make('account_type_id')
                     ->label(__('filament.resources.menu_filter.account_type'))
-                    ->options(fn (): array => AccountCategory::query()
+                    ->options(fn (): array => AccountType::query()
                         ->where('active', true)
-                        ->byGroup('type')
                         ->ordered()
                         ->with(['translations.language.locale'])
                         ->get()
-                        ->mapWithKeys(fn (AccountCategory $c): array => [
+                        ->mapWithKeys(fn (AccountType $c): array => [
                             (string) $c->getKey() => $c->name !== '' ? $c->name : (string) $c->code,
                         ])
                         ->all())

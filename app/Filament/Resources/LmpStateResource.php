@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\LmpStateResource\Pages;
 use App\Models\LmpCountry;
 use App\Models\LmpState;
@@ -22,6 +23,8 @@ use Filament\Tables\Table;
 class LmpStateResource extends BaseResource
 {
     protected static ?string $model = LmpState::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map';
 

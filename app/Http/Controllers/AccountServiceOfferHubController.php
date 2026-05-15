@@ -8,7 +8,7 @@ use Illuminate\View\View;
 
 /**
  * Single entry URL for catalog variant offers (menu / header link).
- * Delegates to provider or operator UI based on account type categories.
+ * Delegates to provider or operator UI based on assigned account types.
  */
 final class AccountServiceOfferHubController extends Controller
 {
@@ -20,8 +20,7 @@ final class AccountServiceOfferHubController extends Controller
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
 
-        $typeCodes = $account->categories()
-            ->where('group', 'type')
+        $typeCodes = $account->accountTypes()
             ->where('active', true)
             ->pluck('code');
 

@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         View::prependNamespace('filament-panels', resource_path('views/vendor/filament-panels'));
 
         View::composer(['layouts.partials.navbar', 'layouts.partials.dashboard-navbar'], function ($view) {
-            $view->with('languages', Language::with('locale')->orderBy('id')->get());
+            $view->with('languages', Language::with('locale')->get());
         });
 
         $this->registerFilamentCopyMacros();

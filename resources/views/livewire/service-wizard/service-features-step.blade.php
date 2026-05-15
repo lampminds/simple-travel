@@ -50,28 +50,6 @@
                 {{ __('wizard.features_none_for_filter') }}
             </div>
         @else
-            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                <span class="text-muted small me-1">{{ __('wizard.features_bulk_hint') }}</span>
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    wire:click="selectAllVisibleFeatures"
-                    wire:loading.attr="disabled"
-                    wire:target="selectAllVisibleFeatures,clearAllFeatures"
-                >
-                    {{ __('wizard.features_select_all') }}
-                </button>
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary"
-                    wire:click="clearAllFeatures"
-                    wire:loading.attr="disabled"
-                    wire:target="selectAllVisibleFeatures,clearAllFeatures"
-                >
-                    {{ __('wizard.features_select_none') }}
-                </button>
-            </div>
-
             <div class="row g-3">
                 @foreach ($groupedFeatures as $categoryId => $features)
                     @php
@@ -82,8 +60,28 @@
                     @endphp
                     <div class="col-12">
                         <div class="card border">
-                            <div class="card-header py-2 bg-light">
+                            <div class="card-header py-2 bg-light d-flex flex-wrap align-items-center justify-content-between gap-2">
                                 <h6 class="mb-0">{{ $categoryTitle }}</h6>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        wire:click="selectAllFeaturesInCategory({{ (int) $categoryId }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="selectAllFeaturesInCategory,clearFeaturesInCategory"
+                                    >
+                                        {{ __('wizard.features_select_all') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        wire:click="clearFeaturesInCategory({{ (int) $categoryId }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="selectAllFeaturesInCategory,clearFeaturesInCategory"
+                                    >
+                                        {{ __('wizard.features_select_none') }}
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-body py-3">
                                 <div class="row g-2">

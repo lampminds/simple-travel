@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Authorization;
 
+use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\Authorization\PermissionResource\Pages;
 use App\Filament\Resources\BaseResource;
 use BackedEnum;
@@ -16,6 +17,8 @@ use Spatie\Permission\Models\Permission;
 class PermissionResource extends BaseResource
 {
     protected static ?string $model = Permission::class;
+
+    protected static ?string $cluster = AdministrationCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-key';
 

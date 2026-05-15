@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\AccountRelationship;
+use App\Models\Service;
 use App\Models\ServiceOffer;
 use App\Models\ServiceVariant;
 use App\Models\User;
@@ -39,6 +40,9 @@ final class ServiceOfferSyncService
 
         $proposedVariantIds = array_values(array_unique(array_map('intval', $proposedVariantIds)));
 
+        $omittedServiceStatuses = Service::catalogStatusesOmittedFromOperatorOffers();
+        $omittedVariantStatuses = ServiceVariant::catalogStatusesOmittedFromOperatorOffers();
+
         $acceptedVariantIds = ServiceOffer::query()
             ->where('provider_id', $providerAccountId)
             ->where('operator_id', $operatorAccountId)
@@ -55,12 +59,16 @@ final class ServiceOfferSyncService
             ->all();
 
         $allowedVariantIds = ServiceVariant::query()
-            ->whereHas('service', fn ($q) => $q->where('account_id', $providerAccountId))
+            ->whereHas('service', function ($q) use ($providerAccountId, $omittedServiceStatuses): void {
+                $q->where('account_id', $providerAccountId)
+                    ->whereNotIn('status', $omittedServiceStatuses);
+            })
+            ->whereNotIn('status', $omittedVariantStatuses)
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();
 
-        foreach ($wantVariantIds as $vid) {
+        foreach ($proposedVariantIds as $vid) {
             abort_unless(in_array($vid, $allowedVariantIds, true), 422);
         }
 
@@ -69,10 +77,33 @@ final class ServiceOfferSyncService
         DB::transaction(function () use (
             $providerAccountId,
             $operatorAccountId,
+            $proposedVariantIds,
             $wantVariantIds,
             $allowedVariantIds,
+            $omittedServiceStatuses,
+            $omittedVariantStatuses,
             &$newPendingCount,
         ): void {
+            ServiceOffer::query()
+                ->where('provider_id', $providerAccountId)
+                ->where('operator_id', $operatorAccountId)
+                ->whereNotNull('service_variant_id')
+                ->whereIn('status', [
+                    ServiceOffer::STATUS_PENDING,
+                    ServiceOffer::STATUS_REJECTED,
+                ])
+                ->where(function ($q) use ($omittedVariantStatuses, $omittedServiceStatuses): void {
+                    $q->whereHas('serviceVariant', fn ($vq) => $vq->whereIn('status', $omittedVariantStatuses))
+                        ->orWhereHas('serviceVariant.service', fn ($sq) => $sq->whereIn('status', $omittedServiceStatuses));
+                })
+                ->delete();
+
+            $variantsById = ServiceVariant::query()
+                ->whereIn('id', $allowedVariantIds)
+                ->with('service')
+                ->get()
+                ->keyBy(fn (ServiceVariant $v) => (int) $v->id);
+
             $offers = ServiceOffer::query()
                 ->where('provider_id', $providerAccountId)
                 ->where('operator_id', $operatorAccountId)
@@ -110,6 +141,11 @@ final class ServiceOfferSyncService
                     ServiceOffer::STATUS_PENDING,
                     ServiceOffer::STATUS_REJECTED,
                 ], true)) {
+                    /** @var ServiceVariant|null $variant */
+                    $variant = $variantsById->get($variantId);
+                    if ($variant !== null && ! $variant->catalogSelectableForOperatorOffers()) {
+                        continue;
+                    }
                     $offer->delete();
                 }
             }

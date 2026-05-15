@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Middleware\RecordLastLogin;
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -17,8 +16,6 @@ class AuthLoginRedirectService
         if (! $request->session()->has('locale')) {
             $request->session()->put('locale', config('app.locale'));
         }
-
-        $request->session()->put(RecordLastLogin::SESSION_KEY, true);
 
         $accountIds = $user->accounts()
             ->orderBy('accounts.id')

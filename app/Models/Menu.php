@@ -44,17 +44,17 @@ class Menu extends Model
     }
 
     /**
-     * Account types (cat_account_categories.group = type) that may see this menu.
+     * Account business types that may see this menu (cat_account_types).
      * Empty pivot means the item is not shown for any account type (explicit assignment required).
      */
     public function accountTypes(): BelongsToMany
     {
         return $this->belongsToMany(
-            AccountCategory::class,
+            AccountType::class,
             'cat_menu_account_type_assignments',
             'menu_id',
             'type_id'
-        )->where((new AccountCategory)->getTable().'.group', 'type');
+        );
     }
 
     /**
