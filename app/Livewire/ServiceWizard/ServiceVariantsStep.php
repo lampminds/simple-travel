@@ -22,8 +22,6 @@ class ServiceVariantsStep extends Component
 
     public const MODE_LIST = 'list';
 
-    public const MODE_FORM = 'form';
-
     public int $serviceId;
 
     public int $serviceTypeId;
@@ -40,6 +38,9 @@ class ServiceVariantsStep extends Component
     public ?string $flashMessage = null;
 
     public bool $isCopy = false;
+
+    /** True while the variant form (create / edit / copy) is shown in a modal over the list. */
+    public bool $showVariantFormModal = false;
 
     /** Bootstrap tab id: general | pricing | descriptions | images */
     public string $variantFormTab = 'general';
@@ -67,6 +68,7 @@ class ServiceVariantsStep extends Component
         $this->isCopy = false;
         $this->variantFormTab = 'general';
         $this->variantTabsWithErrors = [];
+        $this->showVariantFormModal = false;
         $this->resetImageUploads();
     }
 
@@ -83,7 +85,8 @@ class ServiceVariantsStep extends Component
     public function startCreate(): void
     {
         $this->clearFlash();
-        $this->mode = self::MODE_FORM;
+        $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = true;
         $this->editingVariantId = null;
         $this->isCopy = false;
         $this->variantFormTab = 'general';
@@ -102,7 +105,8 @@ class ServiceVariantsStep extends Component
             ->with(['translations', 'media'])
             ->firstOrFail();
 
-        $this->mode = self::MODE_FORM;
+        $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = true;
         $this->editingVariantId = $variant->id;
         $this->isCopy = false;
         $this->variantFormTab = 'general';
@@ -128,7 +132,8 @@ class ServiceVariantsStep extends Component
         unset($row['id']);
         $row['sku'] = $this->suggestedUniqueSku($variant->sku);
 
-        $this->mode = self::MODE_FORM;
+        $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = true;
         $this->editingVariantId = null;
         $this->isCopy = true;
         $this->variantFormTab = 'general';
@@ -171,6 +176,7 @@ class ServiceVariantsStep extends Component
     {
         $this->clearFlash();
         $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = false;
         $this->editingVariantId = null;
         $this->isCopy = false;
         $this->form = [];
@@ -190,6 +196,13 @@ class ServiceVariantsStep extends Component
 
         $this->flashMessage = __('wizard.variants_deleted');
         $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = false;
+        $this->editingVariantId = null;
+        $this->isCopy = false;
+        $this->form = [];
+        $this->variantFormTab = 'general';
+        $this->variantTabsWithErrors = [];
+        $this->resetImageUploads();
     }
 
     public function removeVariantMainImage(): void
@@ -318,6 +331,7 @@ class ServiceVariantsStep extends Component
 
         $this->flashMessage = __('wizard.variants_saved');
         $this->mode = self::MODE_LIST;
+        $this->showVariantFormModal = false;
         $this->editingVariantId = null;
         $this->isCopy = false;
         $this->form = [];
@@ -655,7 +669,7 @@ class ServiceVariantsStep extends Component
 
         $mainMedia = null;
         $galleryMedia = collect();
-        if ($this->mode === self::MODE_FORM && $this->editingVariantId) {
+        if ($this->showVariantFormModal && $this->editingVariantId) {
             $variant = ServiceVariant::query()
                 ->where('service_id', $this->authorizedService()->id)
                 ->whereKey($this->editingVariantId)
