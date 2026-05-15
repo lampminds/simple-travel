@@ -16,7 +16,9 @@ return new class extends Migration
         Schema::create('account_type_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('account_type_id')->constrained('cat_account_types')->cascadeOnDelete();
+            $table->foreignId('account_type_id')
+                ->constrained('cat_account_types', 'id', 'aat_type_fk')
+                ->cascadeOnDelete();
 
             $table->unique(['account_id', 'account_type_id']);
 
