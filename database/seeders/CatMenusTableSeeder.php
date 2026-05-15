@@ -211,12 +211,22 @@ class CatMenusTableSeeder extends Seeder
             ),
             19 => 
             array (
-                'id' => 21,
-                'slug' => 'operator_prices',
+                'id' => 22,
+                'slug' => 'prices_provider',
+                'icon' => NULL,
+                'route' => 'account.provider-price-lists.index',
+                'parent_id' => 17,
+                'sort_order' => 1,
+                'active' => 1,
+            ),
+            20 => 
+            array (
+                'id' => 23,
+                'slug' => 'prices_operator-copy',
                 'icon' => NULL,
                 'route' => 'account.operator-price-lists.index',
-                'parent_id' => NULL,
-                'sort_order' => 5,
+                'parent_id' => 17,
+                'sort_order' => 2,
                 'active' => 1,
             ),
         ));

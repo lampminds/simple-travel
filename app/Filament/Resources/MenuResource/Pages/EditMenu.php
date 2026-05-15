@@ -41,7 +41,7 @@ class EditMenu extends LmpEditRecord
         /** @var Menu $record */
         $record = $this->getRecord();
 
-        $data = Arr::except($data, ['translations', 'accountTypes']);
+        $data = Arr::except($data, ['translations', 'excludedAccountTypes']);
 
         if (isset($data['parent_id']) && $data['parent_id'] === '') {
             $data['parent_id'] = null;
@@ -63,7 +63,7 @@ class EditMenu extends LmpEditRecord
     }
 
     /**
-     * Persist BelongsToMany (account types) after the main row update.
+     * Persist BelongsToMany (excluded account types) after the main row update.
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {

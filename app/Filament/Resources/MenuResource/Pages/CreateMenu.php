@@ -47,7 +47,7 @@ class CreateMenu extends LmpCreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data = Arr::except($data, ['translations', 'accountTypes']);
+        $data = Arr::except($data, ['translations', 'excludedAccountTypes']);
 
         if (isset($data['parent_id']) && $data['parent_id'] === '') {
             $data['parent_id'] = null;

@@ -73,7 +73,7 @@ class MenuResource extends BaseResource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with([
-            'accountTypes' => fn (BelongsToMany $query): BelongsToMany => $query
+            'excludedAccountTypes' => fn (BelongsToMany $query): BelongsToMany => $query
                 ->with(['translations.language.locale'])
                 ->orderBy('sort_order')
                 ->orderBy('id'),
@@ -116,7 +116,7 @@ class MenuResource extends BaseResource
      */
     public static function duplicateFormDefaults(Menu $source): array
     {
-        $source->loadMissing(['translations', 'accountTypes']);
+        $source->loadMissing(['translations', 'excludedAccountTypes']);
 
         $translations = [];
         foreach (Language::query()->orderBy('id')->get() as $lang) {
@@ -134,7 +134,7 @@ class MenuResource extends BaseResource
             'parent_id' => $source->parent_id,
             'active' => (bool) $source->active,
             'translations' => $translations,
-            'accountTypes' => $source->accountTypes->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+            'excludedAccountTypes' => $source->excludedAccountTypes->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
         ];
     }
 
@@ -275,11 +275,11 @@ class MenuResource extends BaseResource
                     Tab::make(__('filament.resources.menu_tabs.account_types'))
                         ->schema([
                             Section::make('')->schema([
-                                CheckboxList::make('accountTypes')
-                                    ->label(__('filament.resources.menu_fields.account_types'))
-                                    ->helperText(__('filament.resources.menu_fields.account_types_help'))
+                                CheckboxList::make('excludedAccountTypes')
+                                    ->label(__('filament.resources.menu_fields.excluded_account_types'))
+                                    ->helperText(__('filament.resources.menu_fields.excluded_account_types_help'))
                                     ->relationship(
-                                        'accountTypes',
+                                        'excludedAccountTypes',
                                         'code',
                                         modifyQueryUsing: fn (Builder $query) => $query
                                             ->where('active', true)
@@ -316,17 +316,17 @@ class MenuResource extends BaseResource
                 IconColumn::make('active')
                     ->label(__('filament.common.active'))
                     ->boolean(),
-                TextColumn::make('account_types_labels')
-                    ->label(__('filament.resources.menu_columns.account_types'))
+                TextColumn::make('excluded_account_types_labels')
+                    ->label(__('filament.resources.menu_columns.excluded_account_types'))
                     ->getStateUsing(function (Menu $record): ?string {
-                        $labels = $record->accountTypes
+                        $labels = $record->excludedAccountTypes
                             ->map(fn (AccountType $t): string => $t->name !== '' ? $t->name : (string) $t->code)
                             ->filter()
                             ->values();
 
                         return $labels->isEmpty() ? null : $labels->implode(', ');
                     })
-                    ->placeholder(__('filament.resources.menu_columns.account_types_none'))
+                    ->placeholder(__('filament.resources.menu_columns.excluded_account_types_none'))
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('parent.admin_label')
@@ -371,7 +371,7 @@ class MenuResource extends BaseResource
                             return;
                         }
                         $query->whereHas(
-                            'accountTypes',
+                            'excludedAccountTypes',
                             fn (Builder $q): Builder => $q->whereKey((int) $id)
                         );
                     }),

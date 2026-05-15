@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * Builds the authenticated website navbar menu from {@see Menu} rows, scoped by account type
- * (assignments in cat_menu_account_type_assignments).
+ * (exclusions in cat_menu_account_type_exclusions).
  */
 final class WebsiteNavigation
 {
@@ -38,37 +38,53 @@ final class WebsiteNavigation
             return null;
         }
 
-        // TEMPORARY: account-type gating disabled for website header menu.
-        // Keep these lines for easy re-enable in the future.
-        // $routeTypeId = self::routeMenuTypeId(request()->route(), $account);
-        // if ($routeTypeId === null) {
-        //     return null;
-        // }
-        // $typeIds = self::resolvedTypeCategoryIds($account, $routeTypeId);
-        $typeIds = collect();
-
-        return self::buildMenuTree($typeIds);
+        return self::buildMenuTree(self::resolvedExclusionTypeIds($account));
     }
 
     /**
-     * Resolve the current route type ID if it maps to a supported account type.
+     * Account type IDs from {@see cat_account_types} used to evaluate menu exclusions.
+     * Uses lane codes and session ids (never hardcoded category constants).
+     * Empty collection means no exclusion filter (all active menu rows are eligible).
+     *
+     * @return \Illuminate\Support\Collection<int, int>
      */
-    private static function routeMenuTypeId(mixed $route, Account $account): ?int
+    private static function resolvedExclusionTypeIds(Account $account): Collection
     {
-        if (! $route instanceof IlluminateRoute) {
-            return null;
+        $request = request();
+        $route = $request->route();
+
+        if ($route instanceof IlluminateRoute) {
+            $laneCode = self::routeLaneCode($route);
+            if ($laneCode !== null) {
+                $typeId = AccountDashboardLane::activeTypeIdForLaneCode($account, $laneCode);
+                if ($typeId !== null) {
+                    return collect([$typeId]);
+                }
+            }
         }
 
-        $typeId = data_get($route->getAction(), 'defaults.menu_type_id')
-            ?? data_get($route->getAction(), 'menu_type_id')
-            ?? $route->parameter('menu_type_id');
-
-        if (is_numeric($typeId)) {
-            $typeId = (int) $typeId;
-
-            return in_array($typeId, AccountTypeCategoryIds::allowed(), true) ? $typeId : null;
+        $laneTypeId = AccountDashboardLane::resolvedLaneTypeId($request, $account);
+        if ($laneTypeId !== null) {
+            return collect([$laneTypeId]);
         }
 
+        $sessionTypeIds = CurrentAccountSession::typeIds($request);
+        if ($sessionTypeIds === []) {
+            return collect();
+        }
+
+        return collect($sessionTypeIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * Canonical lane code for the current route (provider|operator|agency), or null.
+     */
+    private static function routeLaneCode(IlluminateRoute $route): ?string
+    {
         $firstSegment = (string) request()->segment(1);
         $firstParam = (string) $route->parameter('first');
         $routeName = (string) $route->getName();
@@ -82,69 +98,34 @@ final class WebsiteNavigation
             $scope = 'operator';
         }
 
-        $typeId = match ($scope) {
-            'provider' => AccountTypeCategoryIds::PROVIDER,
-            'agency' => AccountTypeCategoryIds::AGENCY,
-            'operator' => AccountTypeCategoryIds::OPERATOR,
-            default => null,
-        };
-
-        if (is_numeric($typeId)) {
-            $typeId = (int) $typeId;
-
-            return in_array($typeId, AccountTypeCategoryIds::allowed(), true) ? $typeId : null;
+        if (in_array($scope, ['provider', 'agency', 'operator'], true)) {
+            return $scope;
         }
 
-        // Generic routes (/catalog, /relationships): use persisted dashboard lane (cookie) or single-type default.
-        if (in_array($routeName, ['catalog', 'relationships'], true)) {
-            $lane = AccountDashboardLane::resolvedLaneTypeId(request(), $account);
-            if ($lane !== null && in_array($lane, AccountTypeCategoryIds::allowed(), true)) {
-                return $lane;
-            }
-
-            return null;
-        }
-
-        // Services area and wizard routes: provider lane by default; fall back to session/lane resolution.
         if (str_starts_with($routeName, 'services.') || $firstSegment === 'services') {
-            $sessionTypeIds = CurrentAccountSession::typeIds(request());
-            if (in_array(AccountTypeCategoryIds::PROVIDER, $sessionTypeIds, true)) {
-                return AccountTypeCategoryIds::PROVIDER;
-            }
-
-            $lane = AccountDashboardLane::resolvedLaneTypeId(request(), $account);
-            if ($lane !== null && in_array($lane, AccountTypeCategoryIds::allowed(), true)) {
-                return $lane;
-            }
-
-            if (count($sessionTypeIds) === 1) {
-                $only = (int) $sessionTypeIds[0];
-
-                return in_array($only, AccountTypeCategoryIds::allowed(), true) ? $only : null;
-            }
-
-            return null;
-        }
-
-        // Account area routes should keep dynamic menu based on active session account + selected lane.
-        if (str_starts_with($routeName, 'account.')) {
-            $sessionTypeIds = CurrentAccountSession::typeIds(request());
-
-            if (count($sessionTypeIds) === 1) {
-                $only = (int) $sessionTypeIds[0];
-
-                return in_array($only, AccountTypeCategoryIds::allowed(), true) ? $only : null;
-            }
-
-            $lane = AccountDashboardLane::resolvedLaneTypeId(request(), $account);
-            if ($lane !== null && in_array($lane, AccountTypeCategoryIds::allowed(), true)) {
-                return $lane;
-            }
-
-            return null;
+            return 'provider';
         }
 
         return null;
+    }
+
+    /**
+     * Resolve the current route type ID if it maps to a supported account type.
+     *
+     * @deprecated Prefer {@see resolvedExclusionTypeIds()} — uses real {@see cat_account_types} ids.
+     */
+    public static function routeMenuTypeId(mixed $route, Account $account): ?int
+    {
+        if (! $route instanceof IlluminateRoute) {
+            return null;
+        }
+
+        $laneCode = self::routeLaneCode($route);
+        if ($laneCode !== null) {
+            return AccountDashboardLane::activeTypeIdForLaneCode($account, $laneCode);
+        }
+
+        return AccountDashboardLane::resolvedLaneTypeId(request(), $account);
     }
 
     /**
@@ -172,14 +153,16 @@ final class WebsiteNavigation
 
         $table = (new AccountType)->getTable();
 
-        $menus = Menu::query()
-            ->where('active', true)
-            // TEMPORARY: type-based menu visibility disabled.
-            // Re-enable this block when account-type scoping in website header menu is needed again.
-            // ->whereHas(
-            //     'accountTypes',
-            //     fn ($q) => $q->whereIn($table.'.id', $typeIds)
-            // )
+        $query = Menu::query()->where('active', true);
+
+        if ($typeIds->isNotEmpty()) {
+            $query->whereDoesntHave(
+                'excludedAccountTypes',
+                fn ($q) => $q->whereIn($table.'.id', $typeIds)
+            );
+        }
+
+        $menus = $query
             ->with(['translations.language.locale'])
             ->orderBy('sort_order')
             ->orderBy('id')

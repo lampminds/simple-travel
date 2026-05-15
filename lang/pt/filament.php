@@ -510,7 +510,7 @@ return [
         'menu_tabs' => [
             'general' => 'Geral',
             'translations' => 'Traduções',
-            'account_types' => 'Tipos de conta',
+            'account_types' => 'Visibilidade por tipo',
         ],
 
         'menu_fields' => [
@@ -521,8 +521,8 @@ return [
             'route' => 'Nome da rota',
             'translation_name' => 'Rótulo',
             'translation_tip' => 'Tooltip',
-            'account_types' => 'Visível para tipos de conta',
-            'account_types_help' => 'Se nenhum estiver selecionado, o item fica oculto para todos os tipos de conta.',
+            'excluded_account_types' => 'Oculto para tipos de conta',
+            'excluded_account_types_help' => 'Deixe vazio para mostrar o item a todos os tipos. Marque os tipos que não devem ver este menu.',
         ],
 
         'menu_columns' => [
@@ -530,8 +530,8 @@ return [
             'label' => 'Rótulo',
             'route' => 'Rota',
             'parent' => 'Pai',
-            'account_types' => 'Tipos de conta',
-            'account_types_none' => 'Nenhum',
+            'excluded_account_types' => 'Oculto para tipos',
+            'excluded_account_types_none' => 'Todos os tipos',
         ],
 
         'menu_duplicate' => 'Duplicar',

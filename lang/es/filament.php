@@ -553,7 +553,7 @@ return [
         'menu_tabs' => [
             'general' => 'General',
             'translations' => 'Traducciones',
-            'account_types' => 'Tipos de cuenta',
+            'account_types' => 'Visibilidad por tipo',
         ],
 
         'menu_fields' => [
@@ -564,8 +564,8 @@ return [
             'route' => 'Nombre de ruta',
             'translation_name' => 'Etiqueta',
             'translation_tip' => 'Tooltip',
-            'account_types' => 'Visible para tipos de cuenta',
-            'account_types_help' => 'Si no se selecciona ninguno, el ítem no se muestra para ningún tipo de cuenta.',
+            'excluded_account_types' => 'Oculto para tipos de cuenta',
+            'excluded_account_types_help' => 'Déjelo vacío para mostrar el ítem a todos los tipos. Marque los tipos que no deben ver este menú.',
         ],
 
         'menu_columns' => [
@@ -573,8 +573,8 @@ return [
             'label' => 'Etiqueta',
             'route' => 'Ruta',
             'parent' => 'Padre',
-            'account_types' => 'Tipos de cuenta',
-            'account_types_none' => 'Ninguno',
+            'excluded_account_types' => 'Oculto para tipos',
+            'excluded_account_types_none' => 'Todos los tipos',
         ],
 
         'menu_duplicate' => 'Copiar',

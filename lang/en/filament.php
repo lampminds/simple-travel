@@ -551,7 +551,7 @@ return [
         'menu_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
-            'account_types' => 'Account types',
+            'account_types' => 'Visibility by type',
         ],
 
         'menu_fields' => [
@@ -562,8 +562,8 @@ return [
             'route' => 'Route name',
             'translation_name' => 'Label',
             'translation_tip' => 'Tooltip',
-            'account_types' => 'Visible for account types',
-            'account_types_help' => 'If none are selected, this item is hidden for every account type.',
+            'excluded_account_types' => 'Hidden for account types',
+            'excluded_account_types_help' => 'Leave empty to show this item for every account type. Check types that must not see this menu.',
         ],
 
         'menu_columns' => [
@@ -571,8 +571,8 @@ return [
             'label' => 'Label',
             'route' => 'Route',
             'parent' => 'Parent',
-            'account_types' => 'Account types',
-            'account_types_none' => 'None',
+            'excluded_account_types' => 'Hidden for types',
+            'excluded_account_types_none' => 'All types',
         ],
 
         'menu_duplicate' => 'Duplicate',

@@ -36,10 +36,12 @@ return new class extends Migration
             lmpStamps($table);
         });
 
-        Schema::create('cat_menu_account_type_assignments', function (Blueprint $table) {
+        Schema::create('cat_menu_account_type_exclusions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_id')->constrained('cat_menus')->cascadeOnDelete();
-            $table->foreignId('type_id')->nullable()->constrained('cat_account_categories');
+            $table->foreignId('account_type_id')->constrained('cat_account_types')->cascadeOnDelete();
+
+            $table->unique(['menu_id', 'account_type_id']);
 
             lmpStamps($table);
         });
@@ -52,7 +54,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cat_menu_account_type_assignments');
+        Schema::dropIfExists('cat_menu_account_type_exclusions');
         Schema::dropIfExists('cat_menu_translations');
         Schema::dropIfExists('cat_menus');
     }

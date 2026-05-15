@@ -144,7 +144,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'id' => 17,
                 'menu_id' => 17,
                 'language_id' => 2,
-                'name' => 'Precios (prestador)',
+                'name' => 'Listas de Precios',
                 'tip' => NULL,
             ),
             16 => 
@@ -152,7 +152,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'id' => 18,
                 'menu_id' => 18,
                 'language_id' => 2,
-                'name' => 'Relaciones',
+                'name' => 'Relaciones comerciales',
                 'tip' => NULL,
             ),
             17 => 
@@ -181,42 +181,50 @@ class CatMenuTranslationsTableSeeder extends Seeder
             ),
             20 => 
             array (
-                'id' => 22,
-                'menu_id' => 21,
-                'language_id' => 2,
-                'name' => 'Precios (operador)',
+                'id' => 24,
+                'menu_id' => 17,
+                'language_id' => 1,
+                'name' => 'Pricing',
                 'tip' => NULL,
             ),
             21 => 
             array (
-                'id' => 23,
-                'menu_id' => 21,
-                'language_id' => 1,
-                'name' => 'Operator prices',
+                'id' => 25,
+                'menu_id' => 17,
+                'language_id' => 3,
+                'name' => 'Listas de Preços',
                 'tip' => NULL,
             ),
             22 => 
             array (
-                'id' => 24,
-                'menu_id' => 17,
+                'id' => 27,
+                'menu_id' => 22,
                 'language_id' => 1,
                 'name' => 'Provider prices',
                 'tip' => NULL,
             ),
             23 => 
             array (
-                'id' => 25,
-                'menu_id' => 17,
-                'language_id' => 3,
-                'name' => 'Preços (prestador)',
+                'id' => 28,
+                'menu_id' => 22,
+                'language_id' => 2,
+                'name' => 'Precios a operadores',
                 'tip' => NULL,
             ),
             24 => 
             array (
-                'id' => 26,
-                'menu_id' => 21,
-                'language_id' => 3,
-                'name' => 'Preços (operador)',
+                'id' => 29,
+                'menu_id' => 23,
+                'language_id' => 1,
+                'name' => 'Operator prices',
+                'tip' => NULL,
+            ),
+            25 => 
+            array (
+                'id' => 30,
+                'menu_id' => 23,
+                'language_id' => 2,
+                'name' => 'Precios comerciales',
                 'tip' => NULL,
             ),
         ));
