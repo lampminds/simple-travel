@@ -16,7 +16,6 @@ class ServiceGastronomy extends Model
 
     protected $fillable = [
         'service_id',
-        'service_gastronomy_type_id',
         'city_id',
         'address',
         'latitude',
@@ -41,9 +40,17 @@ class ServiceGastronomy extends Model
         return $this->belongsTo(Service::class);
     }
 
-    public function gastronomyType(): BelongsTo
+    /**
+     * Catalogue gastronomy types assigned to this profile (many-to-many via pivot).
+     */
+    public function gastronomyTypes(): BelongsToMany
     {
-        return $this->belongsTo(ServiceGastronomyType::class, 'service_gastronomy_type_id');
+        return $this->belongsToMany(
+            ServiceGastronomyType::class,
+            'service_gastronomy_type_assignments',
+            'service_gastronomy_id',
+            'service_gastronomy_type_id',
+        )->withTimestamps();
     }
 
     public function city(): BelongsTo

@@ -9,8 +9,48 @@
         'name' => $headerDisplayName,
         'step' => 1,
     ]);
+    $catalogServiceDescriptionHelp = \App\Support\CatalogHelperContent::htmlForQuery(
+        new \App\Services\CatalogHelperQuery(
+            screenCode: \App\Support\ServiceWizardHelperScreens::STEP1_SERVICE_DESCRIPTION,
+            code: 'catalog_service_description',
+            serviceTypeId: $serviceType->id,
+            accountTypeId: $catalogHelperAccountTypeId ?? null,
+        )
+    );
 @endphp
 @extends('layouts.base', ['title' => $step1PageTitle])
+
+@section('css')
+    <style>
+        .popover.catalog-helper-popover {
+            max-width: min(28rem, 92vw);
+            border: 1px solid rgba(15, 23, 42, 0.18);
+            border-radius: 0.5rem;
+            box-shadow:
+                0 0 0 1px rgba(15, 23, 42, 0.06),
+                0 10px 15px -3px rgba(15, 23, 42, 0.14),
+                0 20px 40px -12px rgba(15, 23, 42, 0.22);
+            background-color: #f1f5f9;
+            overflow: hidden;
+        }
+        .popover.catalog-helper-popover .popover-header {
+            background-color: #e2e8f0;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+            color: #0f172a;
+            font-weight: 600;
+        }
+        .popover.catalog-helper-popover .popover-body {
+            max-height: min(70vh, 28rem);
+            overflow: auto;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .popover.catalog-helper-popover .popover-body img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+@endsection
 
 @section('content')
     @include('layouts.partials.dashboard-navbar', ['fixedWidth' => true, 'sticky' => false,'topbarColor' => 'navbar-light', 'classList' => 'mx-auto' ])
@@ -80,7 +120,15 @@
 
                                 <hr class="my-3">
 
-                                <h5 class="mb-3">Traducciones del servicio</h5>
+                                <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                                    <h5 class="mb-0">{{ __('wizard.step1_service_description_heading') }}</h5>
+                                    <x-catalog-helper-icon
+                                        :html="$catalogServiceDescriptionHelp"
+                                        trigger-id="step1-catalog-helper-service-description"
+                                        content-id="step1-catalog-helper-service-description-html"
+                                        :aria-label="__('wizard.catalog_helper.aria_label')"
+                                    />
+                                </div>
 
                                 <div class="row">
                                     @foreach ($languages as $language)
@@ -398,6 +446,8 @@
             });
             @endunless
         })();
+
     </script>
+    @include('partials.catalog-helper-popover-script')
 @endsection
 

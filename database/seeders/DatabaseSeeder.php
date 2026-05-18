@@ -105,6 +105,8 @@ class DatabaseSeeder extends Seeder
         $this->call(CatAccountTypeTranslationsTableSeeder::class);
         $this->call(AccountTypeAssignmentsTableSeeder::class);
         $this->call(CatMenuAccountTypeExclusionsTableSeeder::class);
+        $this->call(CatHelpersTableSeeder::class);
+        $this->call(CatHelperTranslationsTableSeeder::class);
     }
 }
 

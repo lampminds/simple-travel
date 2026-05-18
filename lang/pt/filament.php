@@ -925,6 +925,24 @@ return [
             'name' => 'Nome',
         ],
 
+        'service_gastronomy_type_assignment' => 'Atribuição de tipo gastronómico',
+        'service_gastronomy_type_assignments' => 'Atribuições de tipos gastronómicos',
+
+        'service_gastronomy_type_assignment_tabs' => [
+            'general' => 'Geral',
+        ],
+
+        'service_gastronomy_type_assignment_fields' => [
+            'service_gastronomy_id' => 'Perfil de gastronomia',
+            'service_gastronomy_type_id' => 'Tipo de gastronomia',
+        ],
+
+        'service_gastronomy_type_assignment_columns' => [
+            'id' => 'ID',
+            'service' => 'Serviço',
+            'type' => 'Tipo',
+        ],
+
         'service_gastronomy_venue' => 'Venue',
         'service_gastronomy_venues' => 'Venues',
 
@@ -1473,6 +1491,7 @@ return [
                 'gastronomy_schedules' => 'Horários',
                 'gastronomy_capacities' => 'Capacidades',
                 'cuisine_gastronomy_assignments' => 'Atribuições de cozinha',
+                'gastronomy_type_assignments' => 'Atribuições de tipos gastronómicos',
                 'service_gastronomies' => 'Linhas de perfil',
                 'transfer_routes' => 'Rotas de transfer',
                 'transfer_vehicles' => 'Veículos de transfer',

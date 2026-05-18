@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Log;
  */
 class NominatimGeocoder
 {
+    public function __construct(
+        protected ?ServiceLocationAddressNormalizer $addressNormalizer = null,
+    ) {
+        $this->addressNormalizer ??= new ServiceLocationAddressNormalizer;
+    }
+
     /**
      * @return array{lat: float, lon: float}|null
      */
@@ -74,9 +80,45 @@ class NominatimGeocoder
             'Accept-Language' => str_replace('_', '-', app()->getLocale()).',en;q=0.8',
         ];
 
-        // 1) Structured search (no "q=" — avoids em-dash display labels and matches Nominatim expectations).
+        $streetVariants = $this->addressNormalizer->searchVariants($streetAddress, $city);
+        if ($streetVariants === []) {
+            $streetVariants = [$streetAddress];
+        }
+
+        foreach ($streetVariants as $streetLine) {
+            $parsed = $this->searchForStreetLine($streetLine, $cityName, $stateName, $countryName, $baseQuery, $headers);
+            if ($parsed !== null) {
+                return $parsed;
+            }
+        }
+
+        $postalCode = $this->addressNormalizer->extractBrazilianPostalCode($streetAddress);
+        if ($postalCode !== null && $countryName !== '') {
+            $qPostal = implode(', ', array_filter([$postalCode, $cityName, $countryName], fn (string $s): bool => $s !== ''));
+            $parsed = $this->executeSearch(array_merge($baseQuery, ['q' => $qPostal]), $headers);
+            if ($parsed !== null) {
+                return $parsed;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $baseQuery
+     * @param  array<string, string>  $headers
+     * @return array{lat: float, lon: float}|null
+     */
+    protected function searchForStreetLine(
+        string $streetLine,
+        string $cityName,
+        string $stateName,
+        string $countryName,
+        array $baseQuery,
+        array $headers,
+    ): ?array {
         $structured = array_merge($baseQuery, [
-            'street' => $streetAddress,
+            'street' => $streetLine,
             'city' => $cityName,
         ]);
         if ($stateName !== '') {
@@ -91,22 +133,20 @@ class NominatimGeocoder
             return $parsed;
         }
 
-        // 2) Free-form fallback: comma-separated, no em dash.
-        $parts = array_filter([$streetAddress, $cityName, $stateName, $countryName], fn (string $s): bool => $s !== '');
-        $q = implode(', ', $parts);
-
-        $parsed = $this->executeSearch(array_merge($baseQuery, ['q' => $q]), $headers);
+        $parts = array_filter([$streetLine, $cityName, $stateName, $countryName], fn (string $s): bool => $s !== '');
+        $parsed = $this->executeSearch(array_merge($baseQuery, ['q' => implode(', ', $parts)]), $headers);
         if ($parsed !== null) {
             return $parsed;
         }
 
-        // 3) Broader fallback: address + country only (helps when state name mismatches OSM).
-        if ($countryName !== '') {
-            $qWide = $streetAddress.', '.$countryName;
-            $parsed = $this->executeSearch(array_merge($baseQuery, ['q' => $qWide]), $headers);
+        if ($countryName === '') {
+            return null;
         }
 
-        return $parsed;
+        return $this->executeSearch(
+            array_merge($baseQuery, ['q' => $streetLine.', '.$countryName]),
+            $headers
+        );
     }
 
     /**

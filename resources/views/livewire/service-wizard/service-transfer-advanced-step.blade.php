@@ -204,15 +204,15 @@
                                     <td>{{ $p->vehicleType?->wizardPricingVehicleLabel() ?? __('wizard.step7_transfer_price_any_vehicle') }}</td>
                                     <td>
                                         {{ $p->pricing_type === 'per_vehicle' ? __('wizard.step7_transfer_pricing_per_vehicle') : __('wizard.step7_transfer_pricing_per_person') }}
-                                        <span class="text-muted small">({{ $p->currency?->display_name ?? '#' }})</span>
+                                        <span class="text-muted small">({{ $p->currency?->currency_code ?? '#' }})</span>
                                     </td>
                                     <td class="small">
                                         @if ($p->base_price !== null)
-                                            {{ __('wizard.step7_transfer_col_base') }}: {{ $p->base_price }}
+                                            {{ __('wizard.step7_transfer_col_base') }}: {{ $this->formatTransferPrice($p->base_price, $p->currency) }}
                                         @endif
                                         @if ($p->price_per_person !== null)
                                             @if ($p->base_price !== null)<br>@endif
-                                            {{ __('wizard.step7_transfer_col_per_person') }}: {{ $p->price_per_person }}
+                                            {{ __('wizard.step7_transfer_col_per_person') }}: {{ $this->formatTransferPrice($p->price_per_person, $p->currency) }}
                                         @endif
                                     </td>
                                     <td class="text-end">

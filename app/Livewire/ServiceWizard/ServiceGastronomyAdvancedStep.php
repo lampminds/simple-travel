@@ -27,9 +27,10 @@ class ServiceGastronomyAdvancedStep extends Component
 
     public int $serviceTypeId;
 
-    public string $activeTab = 'basics';
+    public string $activeTab = 'types';
 
-    public int $gastronomyTypeId = 0;
+    /** @var array<int, string> */
+    public array $gastronomyTypeIds = [];
 
     public bool $is_indoor = false;
 
@@ -89,11 +90,11 @@ class ServiceGastronomyAdvancedStep extends Component
         $service = $this->authorizedService();
         $gastro = ServiceGastronomy::query()
             ->where('service_id', $service->id)
-            ->with(['cuisines', 'venues', 'menus', 'experience'])
+            ->with(['gastronomyTypes', 'cuisines', 'venues', 'menus', 'experience'])
             ->first();
 
         if ($gastro === null) {
-            $this->gastronomyTypeId = 0;
+            $this->gastronomyTypeIds = [];
             $this->experienceDurationMinutes = null;
             $this->experienceIncludesFood = false;
             $this->experienceIncludesDrinks = false;
@@ -103,7 +104,7 @@ class ServiceGastronomyAdvancedStep extends Component
             return;
         }
 
-        $this->gastronomyTypeId = (int) $gastro->service_gastronomy_type_id;
+        $this->gastronomyTypeIds = $gastro->gastronomyTypes->pluck('id')->map(fn ($id) => (string) $id)->values()->all();
         $this->is_indoor = (bool) $gastro->is_indoor;
         $this->is_outdoor = (bool) $gastro->is_outdoor;
         $this->has_takeaway = (bool) $gastro->has_takeaway;
@@ -254,7 +255,7 @@ class ServiceGastronomyAdvancedStep extends Component
 
     public function setTab(string $tab): void
     {
-        $allowed = ['basics', 'cuisines', 'venues', 'menus', 'experience'];
+        $allowed = ['types', 'basics', 'cuisines', 'venues', 'menus', 'experience'];
         $this->activeTab = in_array($tab, $allowed, true) ? $tab : 'basics';
     }
 
@@ -264,7 +265,6 @@ class ServiceGastronomyAdvancedStep extends Component
 
         $service = $this->authorizedService();
 
-        $this->gastronomyTypeId = (int) $this->gastronomyTypeId;
         if ($this->experienceDurationMinutes === '' || $this->experienceDurationMinutes === null) {
             $this->experienceDurationMinutes = null;
         } else {
@@ -279,8 +279,16 @@ class ServiceGastronomyAdvancedStep extends Component
         $venueTable = (new ServiceGastronomyVenue)->getTable();
         $menuTable = (new ServiceGastronomyMenu)->getTable();
 
+        $typeSync = collect($this->gastronomyTypeIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
         $rules = [
-            'gastronomyTypeId' => ['required', 'integer', 'min:1', Rule::exists($typeTable, 'id')->where('active', true)],
+            'gastronomyTypeIds' => ['required', 'array', 'min:1'],
+            'gastronomyTypeIds.*' => ['required', Rule::exists($typeTable, 'id')->where('active', true)],
             'locationCityId' => ['nullable', 'integer', Rule::exists('addons.lmp_cities', 'id')],
             'address' => ['nullable', 'string', 'max:500'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
@@ -302,7 +310,8 @@ class ServiceGastronomyAdvancedStep extends Component
         ];
 
         $this->validate($rules, [], [
-            'gastronomyTypeId' => __('wizard.step7_field_gastronomy_type'),
+            'gastronomyTypeIds' => __('wizard.step7_field_gastronomy_types'),
+            'gastronomyTypeIds.*' => __('wizard.step7_field_gastronomy_type'),
             'locationCityId' => __('wizard.step7_field_city'),
             'address' => __('wizard.step7_field_address'),
             'latitude' => __('wizard.step7_field_latitude'),
@@ -316,11 +325,10 @@ class ServiceGastronomyAdvancedStep extends Component
         $venueSync = collect($this->venueIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
         $menuSync = collect($this->menuIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
 
-        DB::transaction(function () use ($service, $cuisineSync, $venueSync, $menuSync, $latFloat, $lonFloat): void {
+        DB::transaction(function () use ($service, $typeSync, $cuisineSync, $venueSync, $menuSync, $latFloat, $lonFloat): void {
             $gastro = ServiceGastronomy::query()->updateOrCreate(
                 ['service_id' => $service->id],
                 [
-                    'service_gastronomy_type_id' => $this->gastronomyTypeId,
                     'city_id' => $this->locationCityId,
                     'address' => $this->address !== '' ? $this->address : null,
                     'latitude' => $latFloat,
@@ -332,6 +340,7 @@ class ServiceGastronomyAdvancedStep extends Component
                 ]
             );
 
+            $gastro->gastronomyTypes()->sync($typeSync);
             $gastro->cuisines()->sync($cuisineSync);
             $gastro->venues()->sync($venueSync);
             $gastro->menus()->sync($menuSync);
@@ -347,6 +356,7 @@ class ServiceGastronomyAdvancedStep extends Component
             );
         });
 
+        $this->gastronomyTypeIds = collect($typeSync)->map(fn (int $id) => (string) $id)->values()->all();
         $this->latitude = $latFloat !== null ? (string) $latFloat : null;
         $this->longitude = $lonFloat !== null ? (string) $lonFloat : null;
 

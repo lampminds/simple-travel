@@ -60,6 +60,7 @@ class ServiceWizardController extends Controller
             'languages' => $languages,
             'service' => $service,
             'cityDisplayLabel' => $cityDisplayLabel,
+            'catalogHelperAccountTypeId' => \App\Support\CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
         ]);
     }
 
@@ -206,6 +207,7 @@ class ServiceWizardController extends Controller
         return view('services.wizard.step-4', [
             'serviceType' => $serviceType,
             'service' => $service,
+            'catalogHelperAccountTypeId' => \App\Support\CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
         ]);
     }
 

@@ -265,6 +265,7 @@ final class ServiceCascadeDeletion
             'filament.resources.service_delete_cascade.labels.gastronomy_schedules' => (int) DB::table('service_gastronomy_schedules')->whereIn('service_gastronomy_id', $gastroIds)->count(),
             'filament.resources.service_delete_cascade.labels.gastronomy_capacities' => (int) DB::table('service_gastronomy_capacities')->whereIn('service_gastronomy_id', $gastroIds)->count(),
             'filament.resources.service_delete_cascade.labels.cuisine_gastronomy_assignments' => (int) DB::table('service_cuisine_gastronomy_assignments')->whereIn('service_gastronomy_id', $gastroIds)->count(),
+            'filament.resources.service_delete_cascade.labels.gastronomy_type_assignments' => (int) DB::table('service_gastronomy_type_assignments')->whereIn('service_gastronomy_id', $gastroIds)->count(),
             'filament.resources.service_delete_cascade.labels.service_gastronomies' => (int) $gastroIds->count(),
         ];
     }
@@ -282,6 +283,7 @@ final class ServiceCascadeDeletion
         DB::table('service_gastronomy_schedules')->whereIn('service_gastronomy_id', $gastroIds)->delete();
         DB::table('service_gastronomy_capacities')->whereIn('service_gastronomy_id', $gastroIds)->delete();
         DB::table('service_cuisine_gastronomy_assignments')->whereIn('service_gastronomy_id', $gastroIds)->delete();
+        DB::table('service_gastronomy_type_assignments')->whereIn('service_gastronomy_id', $gastroIds)->delete();
         DB::table('service_gastronomies')->where('service_id', $serviceId)->delete();
     }
 

@@ -25,6 +25,13 @@
             <li class="nav-item" role="presentation">
                 <button
                     type="button"
+                    class="nav-link @if ($activeTab === 'types') active @endif"
+                    wire:click="setTab('types')"
+                >{{ __('wizard.step7_tab_types') }}</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button
+                    type="button"
                     class="nav-link @if ($activeTab === 'basics') active @endif"
                     wire:click="setTab('basics')"
                 >{{ __('wizard.step7_tab_basics') }}</button>
@@ -60,21 +67,34 @@
         </ul>
 
         <div class="tab-content border border-top-0 rounded-bottom p-3 p-md-4 bg-white">
-            @if ($activeTab === 'basics')
+            @if ($activeTab === 'types')
+                <p class="text-muted small">{{ __('wizard.step7_types_help') }}</p>
+                <div class="row g-2">
+                    @foreach ($types as $type)
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="form-check">
+                                <input
+                                    class="form-check-input @error('gastronomyTypeIds') is-invalid @enderror"
+                                    type="checkbox"
+                                    wire:model.live="gastronomyTypeIds"
+                                    value="{{ (string) $type->id }}"
+                                    id="gastro-type-{{ $type->id }}"
+                                >
+                                <label class="form-check-label" for="gastro-type-{{ $type->id }}">
+                                    {{ $type->name !== '' ? $type->name : $type->code }}
+                                </label>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @error('gastronomyTypeIds')
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
+                @enderror
+                @error('gastronomyTypeIds.*')
+                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
+                @enderror
+            @elseif ($activeTab === 'basics')
                 <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label" for="gastro-type">{{ __('wizard.step7_field_gastronomy_type') }}</label>
-                        <select id="gastro-type" class="form-select @error('gastronomyTypeId') is-invalid @enderror" wire:model="gastronomyTypeId">
-                            <option value="0">{{ __('wizard.step7_gastronomy_select_type') }}</option>
-                            @foreach ($types as $type)
-                                <option value="{{ (int) $type->id }}">{{ $type->name !== '' ? $type->name : $type->code }}</option>
-                            @endforeach
-                        </select>
-                        @error('gastronomyTypeId')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
                     <div class="col-12">
                         <label class="form-label" for="gastro-city-query">{{ __('wizard.step7_field_city') }}</label>
                         <input
@@ -128,6 +148,7 @@
                             maxlength="500"
                             placeholder="{{ __('wizard.step7_address_placeholder') }}"
                         ></textarea>
+                        <p class="form-text text-muted mb-0">{{ __('wizard.step7_address_hint') }}</p>
                         @error('address')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
@@ -166,6 +187,9 @@
                         @error('longitude')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                    </div>
+                    <div class="col-12">
+                        <x-coordinate-map-links :latitude="$latitude" :longitude="$longitude" />
                     </div>
                     <div class="col-12">
                         <p class="text-muted small mb-2">{{ __('wizard.step7_geocode_on_click_only') }}</p>

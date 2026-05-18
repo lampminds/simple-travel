@@ -6,6 +6,7 @@ use App\Models\Currency;
 use App\Models\Language;
 use App\Models\Service;
 use App\Models\ServiceVariant;
+use App\Services\PriceFormatService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -58,10 +59,14 @@ class ServiceVariantsStep extends Component
     /** @var array<int, mixed> */
     public array $galleryImages = [];
 
-    public function mount(int $serviceId, int $serviceTypeId): void
+    /** Resolved catalog helper HTML for variant descriptions (from parent step-4 view). */
+    public ?string $catalogVariantDescriptionHelpHtml = null;
+
+    public function mount(int $serviceId, int $serviceTypeId, ?string $catalogVariantDescriptionHelpHtml = null): void
     {
         $this->serviceId = $serviceId;
         $this->serviceTypeId = $serviceTypeId;
+        $this->catalogVariantDescriptionHelpHtml = $catalogVariantDescriptionHelpHtml;
         $this->mode = self::MODE_LIST;
         $this->form = [];
         $this->editingVariantId = null;
@@ -620,6 +625,17 @@ class ServiceVariantsStep extends Component
     public function variantTabHasError(string $tab): bool
     {
         return in_array($tab, $this->variantTabsWithErrors, true);
+    }
+
+    public function formatVariantBasePrice(ServiceVariant $variant): string
+    {
+        $accountId = Auth::user()?->currentAccountId();
+
+        return app(PriceFormatService::class)->formatWithCurrency(
+            $variant->base_price,
+            $variant->currency,
+            accountId: $accountId !== null ? (int) $accountId : null,
+        );
     }
 
     protected function authorizedService(): Service

@@ -138,7 +138,9 @@ final class OperatorVariantPriceResolver
         return [
             'amount' => $amount,
             'has_amount' => $has,
-            'formatted' => $has ? ($this->formatMoney((float) $amount, $accountId).' '.$currencyCode) : '—',
+            'formatted' => $has
+                ? $this->priceFormatService->formatWithCurrency((float) $amount, currencyCode: $currencyCode, accountId: $accountId)
+                : '—',
             'breakdown_html' => $html,
         ];
     }
@@ -146,10 +148,11 @@ final class OperatorVariantPriceResolver
     private function currencyCode(ServiceVariant $variant): string
     {
         if ($variant->relationLoaded('currency') && $variant->currency) {
-            $lmp = $variant->currency->lmpCurrency ?? null;
-            if ($lmp !== null && trim((string) $lmp->code) !== '') {
-                return strtoupper(trim((string) $lmp->code));
+            if (! $variant->currency->relationLoaded('lmpCurrency')) {
+                $variant->currency->loadMissing('lmpCurrency');
             }
+
+            return $variant->currency->currency_code;
         }
 
         return '—';

@@ -812,6 +812,38 @@ return [
             'translations_count' => 'Locales',
         ],
 
+        'cat_helper' => 'Context help',
+        'cat_helpers' => 'Context help snippets',
+        'cat_helper_duplicate' => 'Duplicate',
+
+        'cat_helper_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'cat_helper_fields' => [
+            'screen_code' => 'Screen',
+            'screen_code_help' => 'Logical screen or flow this help belongs to (letters, numbers, dashes and underscores).',
+            'code' => 'Helper key',
+            'code_help' => 'Stable identifier for Blade / front-end (letters, numbers, dashes and underscores).',
+            'account_type' => 'Account type (optional)',
+            'service_type' => 'Service type (optional)',
+            'notes' => 'Internal notes',
+            'text' => 'HTML content',
+            'text_help' => 'Use the toolbar to format text and attach images; files are stored under public storage (no separate media collection).',
+        ],
+
+        'cat_helper_columns' => [
+            'id' => 'ID',
+            'screen_and_code' => 'Screen & key',
+            'screen_code' => 'Screen',
+            'code' => 'Helper key',
+            'account_type' => 'Account type',
+            'service_type' => 'Service type',
+            'text_preview' => 'Help text',
+            'translations_count' => 'Locales',
+        ],
+
         'todo_category' => 'To-do category',
         'todo_categories' => 'To-do categories',
 
@@ -964,6 +996,24 @@ return [
             'id' => 'ID',
             'code' => 'Code',
             'name' => 'Name',
+        ],
+
+        'service_gastronomy_type_assignment' => 'Gastronomy type assignment',
+        'service_gastronomy_type_assignments' => 'Gastronomy type assignments',
+
+        'service_gastronomy_type_assignment_tabs' => [
+            'general' => 'General',
+        ],
+
+        'service_gastronomy_type_assignment_fields' => [
+            'service_gastronomy_id' => 'Gastronomy profile',
+            'service_gastronomy_type_id' => 'Gastronomy type',
+        ],
+
+        'service_gastronomy_type_assignment_columns' => [
+            'id' => 'ID',
+            'service' => 'Service',
+            'type' => 'Type',
         ],
 
         'service_gastronomy_venue' => 'Venue',
@@ -1407,7 +1457,7 @@ return [
 
         'service_tabs' => [
             'general' => 'General',
-            'translations' => 'Translations',
+            'translations' => 'Service description',
             'variants' => 'Variants',
             'details' => 'Conditions',
             'experiences' => 'Experiences',
@@ -1514,6 +1564,7 @@ return [
                 'gastronomy_schedules' => 'Schedules',
                 'gastronomy_capacities' => 'Capacities',
                 'cuisine_gastronomy_assignments' => 'Cuisine assignments',
+                'gastronomy_type_assignments' => 'Gastronomy type assignments',
                 'service_gastronomies' => 'Profile rows',
                 'transfer_routes' => 'Transfer routes',
                 'transfer_vehicles' => 'Transfer vehicles',

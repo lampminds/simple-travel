@@ -18,8 +18,6 @@ return new class extends Migration
 
             $table->foreignId('service_id')->unique()->constrained();
 
-            $table->foreignId('service_gastronomy_type_id')->constrained('cat_service_gastronomy_types');
-
             $table->unsignedBigInteger('city_id')->nullable(); //References lmp_cities.id on addons connection (no FK across DBs)
 
             $table->string('address')->nullable();
@@ -33,6 +31,20 @@ return new class extends Migration
 
             lmpStamps($table);
         });
+
+        Schema::create('service_gastronomy_type_assignments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('service_gastronomy_id')
+                ->constrained('service_gastronomies', 'id', 'sgta_sg_fk')
+                ->cascadeOnDelete();
+            $table->foreignId('service_gastronomy_type_id')
+                ->constrained('cat_service_gastronomy_types', 'id', 'sgta_type_fk')
+                ->cascadeOnDelete();
+
+            $table->unique(['service_gastronomy_id', 'service_gastronomy_type_id'], 'sgta_sg_type_unique');
+
+            lmpStamps($table);
+        });
     }
 
     /**
@@ -42,6 +54,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('service_gastronomy_type_assignments');
         Schema::dropIfExists('service_gastronomies');
     }
 };

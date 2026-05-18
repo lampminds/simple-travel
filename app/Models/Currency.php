@@ -72,6 +72,19 @@ class Currency extends Model
     }
 
     /**
+     * ISO currency code for amount display (e.g. ARS, USD).
+     */
+    public function getCurrencyCodeAttribute(): string
+    {
+        $lmp = $this->relationLoaded('lmpCurrency') ? $this->lmpCurrency : $this->lmpCurrency;
+        if ($lmp !== null && trim((string) $lmp->code) !== '') {
+            return strtoupper(trim((string) $lmp->code));
+        }
+
+        return '—';
+    }
+
+    /**
      * Display name for dropdowns and tables (from lmp_currencies when available).
      */
     public function getDisplayNameAttribute(): string

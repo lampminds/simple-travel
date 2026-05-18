@@ -10,7 +10,15 @@
     @endif
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <h6 class="mb-0">{{ __('wizard.variants_list_heading') }}</h6>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h6 class="mb-0">{{ __('wizard.variants_list_heading') }}</h6>
+            <x-catalog-helper-icon
+                :html="$catalogVariantDescriptionHelpHtml"
+                trigger-id="step4-catalog-helper-variant-description"
+                content-id="step4-catalog-helper-variant-description-html"
+                :aria-label="__('wizard.catalog_helper.aria_label_variant')"
+            />
+        </div>
         <button type="button" class="btn btn-sm btn-primary" wire:click="startCreate">
             {{ __('wizard.variants_new') }}
         </button>
@@ -54,10 +62,7 @@
                             <td class="fw-medium">{{ $variant->sku }}</td>
                             <td>{{ $variant->name !== '' ? $variant->name : '—' }}</td>
                             <td>{{ __('filament.resources.service_variant_status.'.$variant->status) }}</td>
-                            <td>
-                                {{ number_format((float) $variant->base_price, 2, ',', ' ') }}
-                                {{ $variant->currency?->display_name ?? '' }}
-                            </td>
+                            <td>{{ $this->formatVariantBasePrice($variant) }}</td>
                             <td class="text-end text-nowrap">
                                 <button
                                     type="button"
@@ -103,14 +108,23 @@
             <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered" wire:click.stop>
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="wizardVariantFormModalTitle">
-                            @if ($editingVariantId)
-                                {{ __('wizard.variants_form_edit_title') }}
-                            @elseif ($isCopy)
-                                {{ __('wizard.variants_form_copy_title') }}
-                            @else
-                                {{ __('wizard.variants_form_create_title') }}
-                            @endif
+                        <h5 class="modal-title d-flex align-items-center flex-wrap gap-2 mb-0" id="wizardVariantFormModalTitle">
+                            <span>
+                                @if ($editingVariantId)
+                                    {{ __('wizard.variants_form_edit_title') }}
+                                @elseif ($isCopy)
+                                    {{ __('wizard.variants_form_copy_title') }}
+                                @else
+                                    {{ __('wizard.variants_form_create_title') }}
+                                @endif
+                            </span>
+                            <x-catalog-helper-icon
+                                :html="$catalogVariantDescriptionHelpHtml"
+                                trigger-id="wizard-variant-catalog-helper-btn"
+                                content-id="wizard-variant-catalog-helper-html"
+                                :aria-label="__('wizard.catalog_helper.aria_label_variant')"
+                                wire:click.stop
+                            />
                         </h5>
                         <button type="button" class="btn-close" wire:click="cancel" aria-label="{{ __('filament.common.close') }}"></button>
                     </div>

@@ -12,6 +12,7 @@ use App\Models\ServiceTransferRoute;
 use App\Models\ServiceTransferVehicleType;
 use App\Models\LmpCity;
 use App\Services\AccountNotificationService;
+use App\Services\PriceFormatService;
 use App\Services\ServiceTransferLocationCatalogBootstrapService;
 use App\Services\ServiceTransferVehicleCatalogBootstrapService;
 use Illuminate\Contracts\View\View;
@@ -820,6 +821,17 @@ class ServiceTransferAdvancedStep extends Component
             ->whereKey($this->serviceTransferId)
             ->where('service_id', $service->id)
             ->firstOrFail();
+    }
+
+    public function formatTransferPrice(float|string|null $amount, ?Currency $currency = null): string
+    {
+        $accountId = Auth::user()?->currentAccountId();
+
+        return app(PriceFormatService::class)->formatWithCurrency(
+            $amount,
+            $currency,
+            accountId: $accountId !== null ? (int) $accountId : null,
+        );
     }
 
     protected function authorizedService(): Service
