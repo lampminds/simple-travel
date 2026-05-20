@@ -9,6 +9,16 @@ use Illuminate\Support\Facades\DB;
 final class TodoCategoryCopyTasksToAccountService
 {
     /**
+     * Copies system-catalog tasks (account_id null) onto a tenant account.
+     *
+     * @return array{created: int, skipped: int}
+     */
+    public function copyFromSystemCatalog(TodoCategory $category, int $destinationAccountId): array
+    {
+        return $this->copy($category, $destinationAccountId, null, systemCatalogOnly: true);
+    }
+
+    /**
      * Duplicates every task in the category onto {@see $destinationAccountId},
      * including `todo_task_translations` and remapping `original_task_id` when both endpoints are in this batch.
      * Optionally restricts the source to one account id.
@@ -18,22 +28,32 @@ final class TodoCategoryCopyTasksToAccountService
      *
      * @return array{created: int, skipped: int}
      */
-    public function copy(TodoCategory $category, int $destinationAccountId, ?int $sourceAccountId = null): array
-    {
+    public function copy(
+        TodoCategory $category,
+        int $destinationAccountId,
+        ?int $sourceAccountId = null,
+        bool $systemCatalogOnly = false,
+    ): array {
         if ($destinationAccountId < 1) {
             throw new \InvalidArgumentException('Invalid destination account.');
         }
 
         $tasksQuery = TodoTask::query()
             ->where('todo_category_id', (int) $category->getKey())
-            // Never use the destination account as a source row (would "copy" a task onto itself).
-            ->where('account_id', '!=', $destinationAccountId)
             ->with('translations')
             ->orderBy('sort_order')
             ->orderBy('id');
 
-        if ($sourceAccountId !== null) {
+        if ($systemCatalogOnly) {
+            $tasksQuery->whereNull('account_id');
+        } elseif ($sourceAccountId !== null) {
             $tasksQuery->where('account_id', $sourceAccountId);
+        } else {
+            // System templates (null) plus any other account except the destination.
+            $tasksQuery->where(function ($query) use ($destinationAccountId): void {
+                $query->whereNull('account_id')
+                    ->orWhere('account_id', '!=', $destinationAccountId);
+            });
         }
 
         $tasks = $tasksQuery->get();

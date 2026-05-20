@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
             }
             if ($invitation && $acceptanceService->acceptExternalForExistingUser($invitation, $request->user())) {
                 return redirect()
-                    ->route('account.relationships.index')
+                    ->route('account.dashboard')
                     ->with('status', __('invitations.accepted_relationship'));
             }
         }

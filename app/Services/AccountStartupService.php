@@ -5,10 +5,16 @@ namespace App\Services;
 use App\Models\TodoCategory;
 use App\Models\TodoTask;
 
+/**
+ * Onboarding for new tenant accounts: Spatie roles (platform account id) and todo templates (account_id null).
+ *
+ * @see docs/account-scoping.md
+ */
 final class AccountStartupService
 {
     private const SETUP_CATEGORY_CODE = 'account_setup';
 
+    /** Platform account — used only for role replication, not for todo catalog source. */
     private const PLATFORM_ACCOUNT_ID = 1;
 
     public function __construct(
@@ -52,6 +58,6 @@ final class AccountStartupService
             return;
         }
 
-        $this->copyTasksToAccountService->copy($category, $accountId, self::PLATFORM_ACCOUNT_ID);
+        $this->copyTasksToAccountService->copyFromSystemCatalog($category, $accountId);
     }
 }

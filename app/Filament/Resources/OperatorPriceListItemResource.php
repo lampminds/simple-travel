@@ -93,17 +93,12 @@ class OperatorPriceListItemResource extends LmpResource
 
                             return OperatorServiceCatalog::query()
                                 ->where('operator_id', (int) $operatorId)
-                                ->with(['provider', 'service', 'serviceVariant'])
+                                ->with('translations')
                                 ->orderBy('id')
                                 ->get()
-                                ->mapWithKeys(function (OperatorServiceCatalog $row): array {
-                                    $provider = trim($row->provider?->commercial_name ?? $row->provider?->name ?? '');
-                                    $service = trim($row->service?->name ?? '');
-                                    $sku = trim((string) ($row->serviceVariant?->sku ?? ''));
-                                    $parts = array_filter([$provider !== '' ? $provider : null, $service !== '' ? $service : null, $sku !== '' ? $sku : null]);
-
-                                    return [$row->id => implode(' — ', $parts) ?: ('#'.$row->id)];
-                                })
+                                ->mapWithKeys(fn (OperatorServiceCatalog $row): array => [
+                                    $row->id => $row->displayLabel(),
+                                ])
                                 ->all();
                         })
                         ->searchable()

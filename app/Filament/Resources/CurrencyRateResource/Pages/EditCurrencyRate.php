@@ -15,7 +15,13 @@ class EditCurrencyRate extends LmpEditRecord
         $data = CurrencyRateResource::normalizeStartingAtToDayStart($data);
         $data = CurrencyRateResource::normalizeUsdRate($data);
         if (isset($data['currency_id'], $data['starting_at'])) {
-            CurrencyRateResource::assertUniqueStartingAt((int) $data['currency_id'], $data['starting_at'], (int) $this->record->getKey());
+            CurrencyRateResource::assertUniqueStartingAt(
+                (int) $data['currency_id'],
+                $data['starting_at'],
+                isset($data['account_id']) && $data['account_id'] !== '' ? (int) $data['account_id'] : null,
+                $data['source'] ?? null,
+                (int) $this->record->getKey(),
+            );
         }
 
         return $data;

@@ -14,20 +14,27 @@ class UserModelHasRolesTableSeeder extends Seeder
      */
     public function run()
     {
-
+        
 
         \DB::table('user_model_has_roles')->delete();
-
+        
         \DB::table('user_model_has_roles')->insert(array (
-            0 =>
+            0 => 
             array (
                 'role_id' => 1,
                 'model_type' => 'App\\Models\\User',
                 'model_id' => 2,
                 'account_id' => 1,
             ),
+            1 => 
+            array (
+                'role_id' => 6,
+                'model_type' => 'App\\Models\\User',
+                'model_id' => 3,
+                'account_id' => 2,
+            ),
         ));
-
-
+        
+        
     }
 }

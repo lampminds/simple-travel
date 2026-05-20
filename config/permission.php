@@ -134,8 +134,10 @@ return [
     'teams' => true,
 
     /*
-     * Reserved account id for platform-wide roles (Spatie team). Convention: id=1, no extra column on accounts.
-     * Users linked to this account in account_user can hold global (cross-tenant) roles when team is set to this id.
+     * Reserved account id for the platform / system (Spatie team). Default: 1 — keep this id reserved.
+     * Used for user_roles templates, staff account_user links, and ReplicateDefaultRolesToAccountService.
+     * Not the same as system *catalog* rows (todo_tasks, transfer types, etc.), which use account_id NULL.
+     * See docs/account-scoping.md and docs/permissions.md.
      */
     'platform_account_id' => (int) env('PLATFORM_ACCOUNT_ID', 1),
 

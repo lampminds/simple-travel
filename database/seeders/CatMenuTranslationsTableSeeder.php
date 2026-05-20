@@ -227,6 +227,22 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Precios comerciales',
                 'tip' => NULL,
             ),
+            26 => 
+            array (
+                'id' => 31,
+                'menu_id' => 24,
+                'language_id' => 1,
+                'name' => 'Packages',
+                'tip' => NULL,
+            ),
+            27 => 
+            array (
+                'id' => 32,
+                'menu_id' => 24,
+                'language_id' => 2,
+                'name' => 'Paquetes',
+                'tip' => NULL,
+            ),
         ));
         
         

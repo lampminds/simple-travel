@@ -85,7 +85,7 @@ final class AccountDashboardLane
     }
 
     /**
-     * Lane for generic routes (catalog, relationships): cookie, else first matching known lane by code.
+     * Lane for generic routes (catalog, service offers): cookie, else first matching known lane by code.
      *
      * Never relies on fixed numeric ids from {@see AccountTypeCategoryIds}; those may differ per database.
      */

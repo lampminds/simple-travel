@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(AccountsTableSeeder::class);
         $this->call(ServiceTransferLocationTypesCatalogSeeder::class);
-        // Default transfer locations for system account (id=1), Foz do Iguaçu area (city_id=11691).
+        // Default transfer locations for system catalog (account_id null), Foz do Iguaçu area (city_id=11691).
         $this->call(ServiceTransferLocationsFozDoIguacuAccount1Seeder::class);
         $this->call(ServiceTransferVehicleTypesCatalogSeeder::class);
         $this->call(AccountUserTableSeeder::class);
@@ -107,6 +107,11 @@ class DatabaseSeeder extends Seeder
         $this->call(CatMenuAccountTypeExclusionsTableSeeder::class);
         $this->call(CatHelpersTableSeeder::class);
         $this->call(CatHelperTranslationsTableSeeder::class);
+//        $this->call(CurrencyRatesTableSeeder::class);
+        $this->call(PersonsTableSeeder::class);
+        $this->call(AccountPersonTableSeeder::class);
+        $this->call(PersonContactMethodsTableSeeder::class);
+        $this->call(UserPersonTableSeeder::class);
     }
 }
 

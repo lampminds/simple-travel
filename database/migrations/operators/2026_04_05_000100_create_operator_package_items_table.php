@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Activity/event service profile (1:1 with service) and catalogue type assignments.
+     * Operator packages items
      *
      * @return void
      */
@@ -18,12 +18,15 @@ return new class extends Migration
 
             $table->id();
             $table->foreignId('operator_service_catalog_id')->constrained('operator_service_catalog', 'id', 'fkp_service_id');
+            $table->foreignId('service_id')->constrained();
+            $table->foreignId('service_variant_id')->nullable();
+            $table->foreignId('service_offer_id')->constrained();
+
             $table->unsignedSmallInteger('day_number')->nullable();
             $table->unsignedSmallInteger('sort_order')->default(9999);
             $table->integer('quantity')->default(1);
             $table->enum('inclusion_mode', ['included', 'optional', 'upgrade'])
-                    ->comment('included: always included, optional: included if selected, upgrade: only if selected');
-            $table->enum('cost_mode', ['fixed', 'percentage', 'inherit']);
+                ->comment('included: always included, optional: included if selected, upgrade: only if selected');
             $table->text('notes')->nullable();
 
             lmpStamps($table);

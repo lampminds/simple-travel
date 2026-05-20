@@ -8,6 +8,7 @@ use App\Http\Controllers\ProviderDashboardController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\AccountSelectionController;
 use App\Http\Controllers\OperatorDashboardController;
+use App\Http\Controllers\AgencyDashboardController;
 use App\Http\Controllers\RelationshipsDemoController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
@@ -16,13 +17,15 @@ use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\AccountNotificationsController;
+use App\Http\Controllers\AccountContactsController;
 use App\Http\Controllers\AccountProviderPriceListController;
 use App\Http\Controllers\AccountOperatorPriceListController;
+use App\Http\Controllers\AccountOperatorPackageController;
+use App\Http\Controllers\AccountExchangeRateController;
 use App\Http\Controllers\AccountTransferVehicleTypesController;
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AccountOperatorServiceOfferController;
 use App\Http\Controllers\AccountProviderServiceOfferController;
-use App\Http\Controllers\AccountRelationshipController;
 use App\Http\Controllers\AccountServiceOfferHubController;
 use App\Models\Account;
 use Illuminate\Http\Request;
@@ -74,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('account/invitations/{invitation}/revoke', [ProfileInvitationController::class, 'revoke'])
         ->name('account.invitations.revoke');
 
+    Route::get('account/exchange-rates', [AccountExchangeRateController::class, 'index'])->name('account.exchange-rates.index');
+    Route::get('account/exchange-rates/edit', [AccountExchangeRateController::class, 'edit'])->name('account.exchange-rates.edit');
+    Route::post('account/exchange-rates', [AccountExchangeRateController::class, 'store'])->name('account.exchange-rates.store');
+
 });
 
 // One-time support link: open in another browser; no prior session required to redeem.
@@ -105,8 +112,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/notifications', [AccountNotificationsController::class, 'store'])->name('account.notifications.store');
     Route::post('account/notifications/{notification}/read', [AccountNotificationsController::class, 'markAsRead'])
         ->name('account.notifications.read');
-    Route::get('account/relationships', [AccountRelationshipController::class, 'index'])->name('account.relationships.index');
 
+    Route::get('account/contacts', [AccountContactsController::class, 'index'])->name('account.contacts.index');
+    Route::get('account/contacts/{accountPerson}', [AccountContactsController::class, 'show'])->name('account.contacts.show');
+    Route::post('account/contacts/{accountPerson}/message', [AccountContactsController::class, 'storeMessage'])
+        ->name('account.contacts.message');
     Route::get('account/service-offers', [AccountServiceOfferHubController::class, 'index'])
         ->name('account.service-offers.index');
 
@@ -152,6 +162,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/operator-price-lists', [AccountOperatorPriceListController::class, 'index'])->name('account.operator-price-lists.index');
     Route::get('account/operator-price-lists/create', [AccountOperatorPriceListController::class, 'create'])->name('account.operator-price-lists.create');
     Route::post('account/operator-price-lists', [AccountOperatorPriceListController::class, 'store'])->name('account.operator-price-lists.store');
+    Route::post('account/operator-price-lists/preview-item', [AccountOperatorPriceListController::class, 'previewItem'])
+        ->name('account.operator-price-lists.preview-item');
     Route::get('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'editAssignments'])
         ->name('account.operator-price-lists.assignments.edit');
     Route::put('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'updateAssignments'])
@@ -159,6 +171,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/operator-price-lists/{operatorPriceList}/edit', [AccountOperatorPriceListController::class, 'edit'])->name('account.operator-price-lists.edit');
     Route::put('account/operator-price-lists/{operatorPriceList}', [AccountOperatorPriceListController::class, 'update'])->name('account.operator-price-lists.update');
     Route::delete('account/operator-price-lists/{operatorPriceList}', [AccountOperatorPriceListController::class, 'destroy'])->name('account.operator-price-lists.destroy');
+
+    Route::get('account/operator-packages', [AccountOperatorPackageController::class, 'index'])->name('account.operator-packages.index');
+    Route::get('account/operator-packages/create', [AccountOperatorPackageController::class, 'create'])->name('account.operator-packages.create');
+    Route::post('account/operator-packages', [AccountOperatorPackageController::class, 'store'])->name('account.operator-packages.store');
+    Route::post('account/operator-packages/translate-translations', [AccountOperatorPackageController::class, 'translateTranslations'])
+        ->name('account.operator-packages.translate-translations');
+    Route::get('account/operator-packages/offers', [AccountOperatorPackageController::class, 'offers'])->name('account.operator-packages.offers');
+    Route::get('account/operator-packages/{operatorPackage}/edit', [AccountOperatorPackageController::class, 'edit'])->name('account.operator-packages.edit');
+    Route::put('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'update'])->name('account.operator-packages.update');
+    Route::delete('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'destroy'])->name('account.operator-packages.destroy');
 
     Route::get('account/transfer-vehicle-types', [AccountTransferVehicleTypesController::class, 'index'])
         ->name('account.transfer-vehicle-types.index');
@@ -204,11 +226,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('agency')
         ->name('agency.')
         ->group(function () {
-            Route::get('dashboard', [RoutingController::class, 'secondLevel'])
+            Route::get('dashboard', [AgencyDashboardController::class, 'show'])
                 ->defaults('menu_type_id', AccountTypeCategoryIds::AGENCY)
-                ->name('dashboard')
-                ->defaults('first', 'agency')
-                ->defaults('second', 'dashboard');
+                ->name('dashboard');
         });
 
     // Service wizard step 1 (create or edit).

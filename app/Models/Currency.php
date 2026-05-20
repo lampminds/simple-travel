@@ -9,7 +9,7 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 /**
  * Project currency row in cat_currencies; links to master data (lmp_currencies on addons).
- * Exchange rates vs USD live in currency_rates (Filament + optional currency:fetch-rates).
+ * Exchange rates vs USD live in currency_rates (Filament + currency:fetch-dolarapi-rates).
  */
 class Currency extends Model
 {
@@ -30,7 +30,7 @@ class Currency extends Model
     }
 
     /**
-     * Exchange rates vs USD (1 USD = units_per_usd in this currency; USD = 1).
+     * Exchange rates vs USD (buy/sell legs; USD = 1). System rows have account_id null.
      */
     public function currencyRates(): HasMany
     {

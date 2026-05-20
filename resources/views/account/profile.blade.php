@@ -103,6 +103,24 @@
                                     </div>
                                 </div>
 
+                                <div class="border rounded p-3 mb-3">
+                                    <h6 class="fw-semibold mb-2">{{ __('profile.visibility_heading') }}</h6>
+                                    <p class="text-muted small mb-3">{{ __('profile.visibility_help') }}</p>
+                                    <div class="form-check mb-2">
+                                        <input type="hidden" name="is_public_contact" value="0">
+                                        <input class="form-check-input" type="checkbox" name="is_public_contact" id="is_public_contact" value="1"
+                                               @checked((bool) old('is_public_contact', $accountPerson?->is_public_contact))>
+                                        <label class="form-check-label" for="is_public_contact">{{ __('profile.is_public_contact') }}</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="hidden" name="is_preferred_contact_mode" value="0">
+                                        <input class="form-check-input" type="checkbox" name="is_preferred_contact_mode" id="is_preferred_contact_mode" value="1"
+                                               @checked((bool) old('is_preferred_contact_mode', $accountPerson?->is_preferred_contact_mode))>
+                                        <label class="form-check-label" for="is_preferred_contact_mode">{{ __('profile.is_preferred_contact_mode') }}</label>
+                                        <div class="form-text">{{ __('profile.is_preferred_contact_mode_help') }}</div>
+                                    </div>
+                                </div>
+
                                 <button type="submit" class="btn btn-primary">{{ __('profile.save') }}</button>
                             </form>
                         </div>

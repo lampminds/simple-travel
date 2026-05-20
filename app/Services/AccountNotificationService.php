@@ -60,6 +60,7 @@ final class AccountNotificationService
         bool $providerAlreadyExisted,
     ): AccountNotification {
         $operatorAccountId = (int) ($invitation->account_inviting ?: $invitation->account_id);
+        $companyName = (string) ($providerAccount->commercial_name ?: $providerAccount->name);
 
         return $this->createForAccount(
             accountId: $operatorAccountId,
@@ -69,15 +70,14 @@ final class AccountNotificationService
             title: (string) __(
                 $providerAlreadyExisted
                     ? 'account.notifications.external_invitation_existing_customer_title'
-                    : 'account.notifications.external_invitation_new_customer_title'
+                    : 'account.notifications.external_invitation_new_customer_title',
+                ['company' => $companyName]
             ),
             message: (string) __(
                 $providerAlreadyExisted
                     ? 'account.notifications.external_invitation_existing_customer_message'
                     : 'account.notifications.external_invitation_new_customer_message',
-                [
-                    'company' => $providerAccount->commercial_name ?: $providerAccount->name,
-                ]
+                ['company' => $companyName]
             ),
             recipientUserId: $invitation->invited_by !== null ? (int) $invitation->invited_by : null,
             data: [

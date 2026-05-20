@@ -1,16 +1,17 @@
 @php
     $isEdit = $priceList !== null;
-    $catalogOptions = $catalogOptions ?? [];
+    $packageItemOptions = $packageItemOptions ?? [];
+    $itemPreviewUrl = $itemPreviewUrl ?? '';
     $itemsOld = old('items');
     $items = is_array($itemsOld)
         ? $itemsOld
         : ($isEdit ? $priceList->items->map(fn ($item) => [
-            'operator_service_catalog_id' => $item->operator_service_catalog_id,
+            'operator_package_item_id' => $item->operator_package_item_id,
             'pricing_mode' => $item->pricing_mode,
             'price' => $item->price,
         ])->toArray() : [[
-            'operator_service_catalog_id' => '',
-            'pricing_mode' => 'fixed',
+            'operator_package_item_id' => '',
+            'pricing_mode' => 'direct',
             'price' => '',
         ]]);
     $activePriceListTab = 'general';
@@ -213,53 +214,30 @@
                                             {{ __('account.price_lists.fields.price') }}: 12{{ $thousandsSeparator }}345{{ $decimalSeparator }}{{ str_repeat('0', max(1, $priceDecimals)) }}
                                         </p>
 
+                                        @if ($packageItemOptions === [])
+                                            <div class="alert alert-info mb-3">{{ __('account.operator_price_lists.no_package_items') }}</div>
+                                        @endif
+
                                         <div class="table-responsive">
                                             <table class="table align-middle" id="items-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>{{ __('account.operator_price_lists.fields.catalog_entry') }}</th>
+                                                        <th>{{ __('account.operator_price_lists.fields.package_item') }}</th>
                                                         <th>{{ __('account.price_lists.fields.pricing_mode') }}</th>
-                                                        <th>{{ __('account.price_lists.fields.price') }}</th>
+                                                        <th>{{ __('account.operator_price_lists.fields.list_item_value') }}</th>
+                                                        <th class="text-end">{{ __('account.operator_price_lists.columns.provider_cost') }}</th>
+                                                        <th class="text-end">{{ __('account.operator_price_lists.columns.final_price') }}</th>
                                                         <th class="text-end">{{ __('account.price_lists.fields.actions') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="items-body">
-                                                    @foreach($items as $index => $item)
-                                                        <tr>
-                                                            <td>
-                                                                <select name="items[{{ $index }}][operator_service_catalog_id]" class="form-select" required>
-                                                                    <option value="">{{ __('account.operator_price_lists.fields.catalog_placeholder') }}</option>
-                                                                    @foreach($catalogOptions as $catalogId => $catalogLabel)
-                                                                        <option value="{{ $catalogId }}" @selected((string) ($item['operator_service_catalog_id'] ?? '') === (string) $catalogId)>
-                                                                            {{ $catalogLabel }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </td>
-                                                            <td>
-                                                                <select name="items[{{ $index }}][pricing_mode]" class="form-select" required>
-                                                                    <option value="fixed" @selected(($item['pricing_mode'] ?? '') === 'fixed')>{{ __('account.price_lists.pricing_mode.fixed') }}</option>
-                                                                    <option value="percentage" @selected(($item['pricing_mode'] ?? '') === 'percentage')>{{ __('account.price_lists.pricing_mode.percentage') }}</option>
-                                                                </select>
-                                                            </td>
-                                                            <td>
-                                                                <input
-                                                                    type="number"
-                                                                    name="items[{{ $index }}][price]"
-                                                                    class="form-control"
-                                                                    data-role="item-price"
-                                                                    step="{{ $priceStep }}"
-                                                                    required
-                                                                    value="{{ $item['price'] ?? '' }}"
-                                                                >
-                                                                <small class="form-text text-muted" data-role="item-price-help"></small>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
-                                                                    {{ __('account.price_lists.remove_item_button') }}
-                                                                </button>
-                                                            </td>
-                                                        </tr>
+                                                    @foreach ($items as $index => $item)
+                                                        @include('account.operator-price-lists.partials.item-row', [
+                                                            'index' => $index,
+                                                            'item' => $item,
+                                                            'packageItemOptions' => $packageItemOptions,
+                                                            'priceStep' => $priceStep,
+                                                        ])
                                                     @endforeach
                                                 </tbody>
                                             </table>
@@ -281,103 +259,194 @@
         </div>
     </section>
 
+    <template id="price-list-item-row-template">
+        @include('account.operator-price-lists.partials.item-row', [
+            'index' => '__INDEX__',
+            'item' => ['operator_package_item_id' => '', 'pricing_mode' => 'direct', 'price' => ''],
+            'packageItemOptions' => $packageItemOptions,
+            'priceStep' => $priceStep,
+        ])
+    </template>
+
     <script>
         (function () {
             const itemsBody = document.getElementById('items-body');
             const addButton = document.getElementById('btn-add-item');
-            if (!itemsBody || !addButton) {
+            const rowTemplate = document.getElementById('price-list-item-row-template');
+            const currencySelect = document.getElementById('currency_id');
+            const previewUrl = @json($itemPreviewUrl);
+            const csrfToken = @json(csrf_token());
+
+            if (!itemsBody || !addButton || !rowTemplate) {
                 return;
             }
 
-            const catalogOptionsHtml = @json(collect($catalogOptions)->map(
-                fn ($label, $id) => '<option value="'.e((string) $id).'">'.e($label).'</option>'
-            )->implode(''));
+            const hintPercentage = @json(__('account.operator_price_lists.hints.percentage_on_provider_cost'));
+            const hintFixedDelta = @json(__('account.operator_price_lists.hints.fixed_delta_on_provider_cost'));
+            const hintDirect = @json(__('account.operator_price_lists.hints.direct_price'));
+            const modeLabels = {
+                percentage: @json(__('account.operator_price_lists.item_pricing_mode.percentage')),
+                fixed_delta: @json(__('account.operator_price_lists.item_pricing_mode.fixed_delta')),
+                direct: @json(__('account.operator_price_lists.item_pricing_mode.direct')),
+            };
 
-            const catalogPlaceholder = @json(__('account.operator_price_lists.fields.catalog_placeholder'));
+            let previewTimer = null;
 
             function rowsCount() {
-                return itemsBody.querySelectorAll('tr').length;
+                return itemsBody.querySelectorAll('[data-role="price-list-item-row"]').length;
             }
 
             function refreshRowIndexes() {
-                const rows = itemsBody.querySelectorAll('tr');
-                rows.forEach((row, index) => {
+                itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row, index) => {
                     row.querySelectorAll('[name]').forEach((input) => {
                         const currentName = input.getAttribute('name');
                         if (!currentName) {
                             return;
                         }
-                        const updatedName = currentName.replace(/items\[\d+\]/, 'items[' + index + ']');
-                        input.setAttribute('name', updatedName);
+                        input.setAttribute('name', currentName.replace(/items\[[^\]]+\]/, 'items[' + index + ']'));
                     });
                 });
             }
 
-            const amountPlaceholder = @json(__('account.price_lists.fields.amount_placeholder'));
-            const percentagePlaceholder = @json(__('account.price_lists.fields.percentage_placeholder'));
-            const hintFixedList = @json(__('account.price_lists.hints.fixed_list_price'));
-            const hintPercentageBase = @json(__('account.price_lists.hints.percentage_on_base'));
-            const priceStep = @json($priceStep);
-            const modePercentage = 'percentage';
-
             function applyPricingBehavior(row) {
-                const pricingModeSelect = row.querySelector('select[name$="[pricing_mode]"]');
-                const priceInput = row.querySelector('[data-role="item-price"]');
+                const pricingModeSelect = row.querySelector('[data-role="pricing-mode-select"]');
                 const priceHelp = row.querySelector('[data-role="item-price-help"]');
-
-                if (!pricingModeSelect || !priceInput || !priceHelp) {
+                if (!pricingModeSelect || !priceHelp) {
                     return;
                 }
 
-                const isPercentage = pricingModeSelect.value === modePercentage;
+                const mode = pricingModeSelect.value;
+                if (mode === 'percentage') {
+                    priceHelp.textContent = hintPercentage;
+                } else if (mode === 'fixed_delta') {
+                    priceHelp.textContent = hintFixedDelta;
+                } else {
+                    priceHelp.textContent = hintDirect;
+                }
+            }
 
-                priceInput.placeholder = isPercentage ? percentagePlaceholder : amountPlaceholder;
-                priceHelp.textContent = isPercentage ? hintPercentageBase : hintFixedList;
+            function syncModeOptions(row, allowedModes) {
+                const pricingModeSelect = row.querySelector('[data-role="pricing-mode-select"]');
+                if (!pricingModeSelect || !Array.isArray(allowedModes)) {
+                    return;
+                }
+
+                const current = pricingModeSelect.value;
+                pricingModeSelect.querySelectorAll('option').forEach((option) => {
+                    const enabled = allowedModes.includes(option.value);
+                    option.disabled = !enabled;
+                    option.hidden = !enabled;
+                });
+
+                if (!allowedModes.includes(current)) {
+                    pricingModeSelect.value = allowedModes.includes('direct') ? 'direct' : allowedModes[0];
+                }
+            }
+
+            function setRowPreview(row, data) {
+                const providerCell = row.querySelector('[data-role="provider-cost-cell"]');
+                const finalCell = row.querySelector('[data-role="final-price-cell"]');
+                const warningBox = row.querySelector('[data-role="item-warning"]');
+
+                if (providerCell) {
+                    providerCell.textContent = data?.provider_cost_formatted ?? '—';
+                }
+                if (finalCell) {
+                    finalCell.textContent = data?.final_price_formatted ?? '—';
+                }
+                if (warningBox) {
+                    const warning = data?.warning ?? '';
+                    warningBox.textContent = warning;
+                    warningBox.classList.toggle('d-none', warning === '');
+                }
+
+                if (data?.allowed_modes) {
+                    syncModeOptions(row, data.allowed_modes);
+                }
+                applyPricingBehavior(row);
+            }
+
+            async function refreshRowPreview(row) {
+                const packageItemId = row.querySelector('[data-role="package-item-select"]')?.value ?? '';
+                const pricingMode = row.querySelector('[data-role="pricing-mode-select"]')?.value ?? 'direct';
+                const price = row.querySelector('[data-role="item-price"]')?.value ?? '';
+                const currencyId = currencySelect?.value ?? '';
+
+                if (!packageItemId || !currencyId) {
+                    setRowPreview(row, {
+                        provider_cost_formatted: '—',
+                        final_price_formatted: '—',
+                        warning: '',
+                        allowed_modes: ['percentage', 'fixed_delta', 'direct'],
+                    });
+
+                    return;
+                }
+
+                try {
+                    const response = await fetch(previewUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({
+                            operator_package_item_id: packageItemId,
+                            currency_id: currencyId,
+                            pricing_mode: pricingMode,
+                            price: price,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    setRowPreview(row, data);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            function scheduleRowPreview(row) {
+                window.clearTimeout(previewTimer);
+                previewTimer = window.setTimeout(() => refreshRowPreview(row), 300);
             }
 
             function bindRowEvents(row) {
-                const pricingModeSelect = row.querySelector('select[name$="[pricing_mode]"]');
-
-                if (pricingModeSelect) {
-                    pricingModeSelect.addEventListener('change', () => applyPricingBehavior(row));
-                }
-
+                row.querySelectorAll('[data-role="package-item-select"], [data-role="pricing-mode-select"], [data-role="item-price"]').forEach((el) => {
+                    el.addEventListener('change', () => scheduleRowPreview(row));
+                    el.addEventListener('input', () => scheduleRowPreview(row));
+                });
                 applyPricingBehavior(row);
+                scheduleRowPreview(row);
             }
 
             function addRow() {
                 const index = rowsCount();
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <select name="items[${index}][operator_service_catalog_id]" class="form-select" required>
-                            <option value="">${catalogPlaceholder}</option>
-                            ${catalogOptionsHtml}
-                        </select>
-                    </td>
-                    <td>
-                        <select name="items[${index}][pricing_mode]" class="form-select" required>
-                            <option value="fixed">{{ __('account.price_lists.pricing_mode.fixed') }}</option>
-                            <option value="percentage">{{ __('account.price_lists.pricing_mode.percentage') }}</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="number" name="items[${index}][price]" class="form-control" data-role="item-price" step="${priceStep}" required>
-                        <small class="form-text text-muted" data-role="item-price-help"></small>
-                    </td>
-                    <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
-                            {{ __('account.price_lists.remove_item_button') }}
-                        </button>
-                    </td>
-                `;
+                const html = rowTemplate.innerHTML.replaceAll('__INDEX__', String(index));
+                const wrapper = document.createElement('tbody');
+                wrapper.innerHTML = html.trim();
+                const row = wrapper.querySelector('tr');
+                if (!row) {
+                    return;
+                }
                 itemsBody.appendChild(row);
                 bindRowEvents(row);
             }
 
             addButton.addEventListener('click', addRow);
 
-            itemsBody.querySelectorAll('tr').forEach((row) => bindRowEvents(row));
+            itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row) => bindRowEvents(row));
+
+            if (currencySelect) {
+                currencySelect.addEventListener('change', () => {
+                    itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row) => scheduleRowPreview(row));
+                });
+            }
 
             itemsBody.addEventListener('click', (event) => {
                 const target = event.target;
@@ -386,11 +455,7 @@
                 }
 
                 const row = target.closest('tr');
-                if (!row) {
-                    return;
-                }
-
-                if (rowsCount() <= 1) {
+                if (!row || rowsCount() <= 1) {
                     return;
                 }
 

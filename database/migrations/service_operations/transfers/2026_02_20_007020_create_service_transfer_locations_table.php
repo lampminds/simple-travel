@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('service_transfer_locations', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->nullable()->constrained();
 
             $table->foreignId('service_transfer_location_type_id')
                 ->constrained('service_transfer_location_types', 'id', 'stlt_fk');

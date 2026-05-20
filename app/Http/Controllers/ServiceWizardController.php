@@ -6,6 +6,7 @@ use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Support\AccountBusinessTypeGate;
 use App\Support\ServiceWizardSkipsVariantsStep;
 use App\Support\ServiceWizardStepEight;
 use Illuminate\Support\Collection;
@@ -26,6 +27,8 @@ class ServiceWizardController extends Controller
 
     public function createStepOne(Request $request, ServiceType $serviceType): View
     {
+        $this->assertProviderAccount($request);
+
         return $this->renderStepOne($request, $serviceType, null);
     }
 
@@ -68,8 +71,7 @@ class ServiceWizardController extends Controller
     {
         $this->authorizeWizardService($request, $service, $serviceType);
 
-        $accountId = $request->user()?->currentAccountId();
-        abort_unless($accountId, 403);
+        $accountId = $this->assertProviderAccount($request);
 
         $languages = $this->languagesForStepOneValidation();
 
@@ -112,16 +114,14 @@ class ServiceWizardController extends Controller
 
     private function authorizeWizardService(Request $request, Service $service, ServiceType $serviceType): void
     {
-        $accountId = $request->user()?->currentAccountId();
-        abort_unless($accountId, 403);
+        $accountId = $this->assertProviderAccount($request);
         abort_unless((int) $service->account_id === (int) $accountId, 403);
         abort_unless((int) $service->service_type_id === (int) $serviceType->id, 404);
     }
 
     public function storeStepOne(Request $request, ServiceType $serviceType): RedirectResponse
     {
-        $accountId = $request->user()?->currentAccountId();
-        abort_unless($accountId, 403);
+        $accountId = $this->assertProviderAccount($request);
 
         $languages = $this->languagesForStepOneValidation();
 
@@ -272,6 +272,8 @@ class ServiceWizardController extends Controller
 
     public function searchCities(Request $request): JsonResponse
     {
+        $this->assertProviderAccount($request);
+
         $query = trim((string) $request->query('q', ''));
 
         if (mb_strlen($query) < self::MIN_CITY_SEARCH_LENGTH) {
@@ -357,6 +359,8 @@ class ServiceWizardController extends Controller
 
     public function translateDescriptions(Request $request, TranslationService $translationService): JsonResponse
     {
+        $this->assertProviderAccount($request);
+
         $validated = $request->validate(
             [
                 'source_language_id' => ['required', 'integer', Rule::exists(Language::class, 'id')],
@@ -391,6 +395,16 @@ class ServiceWizardController extends Controller
             'providers' => $result['providers'],
             'failures' => $result['failures'],
         ]);
+    }
+
+    private function assertProviderAccount(Request $request): int
+    {
+        AccountBusinessTypeGate::assertProviderAccount($request);
+
+        $accountId = $request->user()?->currentAccountId();
+        abort_unless($accountId, 403);
+
+        return (int) $accountId;
     }
 }
 

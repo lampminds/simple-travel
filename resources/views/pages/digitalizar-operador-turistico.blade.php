@@ -17,36 +17,36 @@
 
     <section class="section py-6 position-relative">
         <div class="container">
-            <div class="row mb-3 pb-2 border-bottom align-items-end">
-                <div class="col-lg-3 col-md-4 mb-0 d-none d-md-block">
-                    <span class="text-muted small text-uppercase fw-semibold">{{ __('digitalizar.topic') }}</span>
-                </div>
-                <div class="col-lg-4 col-md-4">
-                    <h2 class="h4 text-muted text-center mb-0">{{ __('digitalizar.column_sin') }}</h2>
-                </div>
-                <div class="col-lg-5 col-md-4">
-                    <h2 class="h4 text-primary text-center mb-0">{{ __('digitalizar.column_con') }}</h2>
-                </div>
-            </div>
-
             @foreach ($rows as $index => $row)
-                <div class="row align-items-stretch border-bottom py-4" data-aos="fade-up" data-aos-duration="{{ 200 + ($index + 1) * 100 }}">
-                    <div class="col-lg-3 col-md-4 mb-3 mb-md-0 pe-lg-3">
-                        <h3 class="h5 mb-0">{{ __($row['title_key']) }}</h3>
+                <article
+                    class="comparison-block py-5 {{ ! $loop->last ? 'border-bottom' : '' }}"
+                    data-aos="fade-up"
+                    data-aos-duration="{{ 200 + ($index + 1) * 100 }}"
+                >
+                    <h2 class="h2 text-center mb-4">{{ __($row['title_key']) }}</h2>
+
+                    @if ($row['img'])
+                        <div class="text-center mb-4 mb-lg-5">
+                            <img
+                                src="{{ asset($row['img']) }}"
+                                alt="{{ __($row['title_key']) }}"
+                                class="img-fluid rounded"
+                                loading="lazy"
+                            >
+                        </div>
+                    @endif
+
+                    <div class="row g-4 g-lg-5 justify-content-center">
+                        <div class="col-lg-6">
+                            <h3 class="h4 text-muted text-center mb-3">{{ __('digitalizar.column_sin') }}</h3>
+                            <p class="text-muted mb-0 text-center">{{ __($row['sin_key']) }}</p>
+                        </div>
+                        <div class="col-lg-6">
+                            <h3 class="h4 text-primary text-center mb-3">{{ __('digitalizar.column_con') }}</h3>
+                            <p class="mb-0 text-center">{{ __($row['con_key']) }}</p>
+                        </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 pe-lg-3 overflow-hidden">
-                        @if ($row['img_wo'])
-                            <img src="{{ asset($row['img_wo']) }}" alt="" class="float-start me-3 mb-2 rounded" style="max-width: 140px; height: auto;" loading="lazy">
-                        @endif
-                        <p class="text-muted mb-0">{{ __($row['sin_key']) }}</p>
-                    </div>
-                    <div class="col-lg-5 col-md-4 mt-3 mt-md-0 overflow-hidden">
-                        @if ($row['img_w'])
-                            <img src="{{ asset($row['img_w']) }}" alt="" class="float-start me-3 mb-2 rounded" style="max-width: 140px; height: auto;" loading="lazy">
-                        @endif
-                        <p class="mb-0">{{ __($row['con_key']) }}</p>
-                    </div>
-                </div>
+                </article>
             @endforeach
         </div>
     </section>

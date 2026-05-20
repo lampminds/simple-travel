@@ -73,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
             $items = AccountNotification::query()
                 ->forAccount($accountId)
                 ->visibleToUser($user)
+                ->unread()
                 ->latest()
                 ->with('createdByUser')
                 ->limit(7)

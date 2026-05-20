@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\CurrencyRateResource\Pages;
+use App\Models\Account;
 use App\Models\Currency;
 use App\Models\CurrencyRate;
 use App\Models\LmpCurrency;
@@ -11,10 +12,13 @@ use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -61,16 +65,19 @@ class CurrencyRateResource extends BaseResource
             return '';
         }
 
-        $record->loadMissing('currency.lmpCurrency');
+        $record->loadMissing('currency.lmpCurrency', 'account');
 
         $label = $record->currency?->display_name ?? '#'.$record->currency_id;
         $when = $record->starting_at?->format('Y-m-d') ?? '';
+        $scope = $record->isSystemRate()
+            ? __('filament.resources.currency_rate_scope.system')
+            : ($record->account?->commercial_name ?? $record->account?->name ?? '#'.$record->account_id);
 
-        return trim($label.($when !== '' ? ' — '.$when : ''));
+        return trim($label.($when !== '' ? ' — '.$when : '').' ('.$scope.')');
     }
 
     /**
-     * Force USD to 1 unit per USD and block duplicate (currency_id, starting_at).
+     * Force USD to 1 unit per USD (buy and sell) and block duplicate keys.
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
@@ -79,7 +86,8 @@ class CurrencyRateResource extends BaseResource
     {
         $cid = isset($data['currency_id']) ? (int) $data['currency_id'] : null;
         if (Currency::isUsdProjectCurrency($cid)) {
-            $data['units_per_usd'] = '1';
+            $data['units_per_usd_buy'] = '1';
+            $data['units_per_usd_sell'] = '1';
         }
 
         return $data;
@@ -102,16 +110,36 @@ class CurrencyRateResource extends BaseResource
         return $data;
     }
 
-    public static function assertUniqueStartingAt(int $currencyId, mixed $startingAt, ?int $ignoreId = null): void
-    {
+    public static function assertUniqueStartingAt(
+        int $currencyId,
+        mixed $startingAt,
+        ?int $accountId = null,
+        ?string $source = null,
+        ?int $ignoreId = null,
+    ): void {
         $at = \Illuminate\Support\Carbon::parse($startingAt)->startOfDay();
+        $source = $source !== null && trim($source) !== '' ? trim($source) : null;
 
         $query = CurrencyRate::query()
             ->where('currency_id', $currencyId)
             ->where('starting_at', $at);
+
+        if ($accountId === null) {
+            $query->whereNull('account_id');
+        } else {
+            $query->where('account_id', $accountId);
+        }
+
+        if ($source === null) {
+            $query->whereNull('source');
+        } else {
+            $query->where('source', $source);
+        }
+
         if ($ignoreId !== null) {
             $query->whereKeyNot($ignoreId);
         }
+
         if ($query->exists()) {
             throw ValidationException::withMessages([
                 'starting_at' => __('filament.resources.currency_rate_validation.duplicate_starting_at'),
@@ -123,6 +151,22 @@ class CurrencyRateResource extends BaseResource
     {
         return [
             Section::make('')->schema([
+                Select::make('account_id')
+                    ->label(__('filament.resources.currency_rate_fields.account_id'))
+                    ->helperText(__('filament.resources.currency_rate_fields.account_id_help'))
+                    ->options(
+                        fn (): array => Account::query()
+                            ->orderBy('commercial_name')
+                            ->orderBy('name')
+                            ->get()
+                            ->mapWithKeys(fn (Account $a): array => [
+                                $a->id => trim($a->commercial_name ?? $a->name ?? $a->nick ?? ('#'.$a->id)),
+                            ])
+                            ->all()
+                    )
+                    ->searchable()
+                    ->nullable()
+                    ->placeholder(__('filament.resources.currency_rate_scope.system')),
                 Select::make('currency_id')
                     ->label(__('filament.resources.currency_rate_fields.currency_id'))
                     ->options(
@@ -138,41 +182,72 @@ class CurrencyRateResource extends BaseResource
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set): void {
                         if (Currency::isUsdProjectCurrency($state !== null && $state !== '' ? (int) $state : null)) {
-                            $set('units_per_usd', '1');
+                            $set('units_per_usd_buy', '1');
+                            $set('units_per_usd_sell', '1');
                         }
                     }),
-                TextInput::make('units_per_usd')
-                    ->label(__('filament.resources.currency_rate_fields.units_per_usd'))
+                TextInput::make('source')
+                    ->label(__('filament.resources.currency_rate_fields.source'))
+                    ->helperText(__('filament.resources.currency_rate_fields.source_help'))
+                    ->maxLength(20)
+                    ->nullable()
+                    ->placeholder('dolarapi'),
+                TextInput::make('units_per_usd_buy')
+                    ->label(__('filament.resources.currency_rate_fields.units_per_usd_buy'))
                     ->helperText(__('filament.resources.currency_rate_fields.units_per_usd_help'))
                     ->numeric()
                     ->step(0.00000001)
                     ->required()
-                    ->default('1')
                     ->disabled(
                         fn (Get $get): bool => Currency::isUsdProjectCurrency(
                             $get('currency_id') !== null && $get('currency_id') !== '' ? (int) $get('currency_id') : null
                         )
                     )
                     ->dehydrated()
-                    ->rules([
-                        fn (Get $get): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($get): void {
-                            if (Currency::isUsdProjectCurrency(
-                                $get('currency_id') !== null && $get('currency_id') !== '' ? (int) $get('currency_id') : null
-                            )) {
-                                return;
-                            }
-                            if ((float) $value <= 0) {
-                                $fail(__('filament.resources.currency_rate_validation.units_must_be_positive'));
-                            }
-                        },
-                    ]),
+                    ->rules([self::positiveUnitsRule('units_per_usd_buy')]),
+                TextInput::make('units_per_usd_sell')
+                    ->label(__('filament.resources.currency_rate_fields.units_per_usd_sell'))
+                    ->helperText(__('filament.resources.currency_rate_fields.units_per_usd_help'))
+                    ->numeric()
+                    ->step(0.00000001)
+                    ->required()
+                    ->disabled(
+                        fn (Get $get): bool => Currency::isUsdProjectCurrency(
+                            $get('currency_id') !== null && $get('currency_id') !== '' ? (int) $get('currency_id') : null
+                        )
+                    )
+                    ->dehydrated()
+                    ->rules([self::positiveUnitsRule('units_per_usd_sell')]),
                 DatePicker::make('starting_at')
                     ->label(__('filament.resources.currency_rate_fields.starting_at'))
                     ->helperText(__('filament.resources.currency_rate_fields.starting_at_help'))
                     ->required()
                     ->native(false)
                     ->default(now()->startOfDay()),
+                Toggle::make('is_active')
+                    ->label(__('filament.resources.currency_rate_fields.is_active'))
+                    ->default(true)
+                    ->inline(false),
             ])->columns(2),
+        ];
+    }
+
+    /**
+     * @return array<\Closure|string>
+     */
+    private static function positiveUnitsRule(string $field): array
+    {
+        return [
+            fn (Get $get): \Closure => function (string $attribute, mixed $value, \Closure $fail) use ($get, $field): void {
+                if (Currency::isUsdProjectCurrency(
+                    $get('currency_id') !== null && $get('currency_id') !== '' ? (int) $get('currency_id') : null
+                )) {
+                    return;
+                }
+                if ((float) $value <= 0) {
+                    $fail(__('filament.resources.currency_rate_validation.units_must_be_positive'));
+                }
+            },
         ];
     }
 
@@ -180,11 +255,16 @@ class CurrencyRateResource extends BaseResource
     {
         return parent::table($table)
             ->modifyQueryUsing(
-                fn (Builder $query): Builder => $query->with(['currency.lmpCurrency'])->orderByDesc('starting_at')
+                fn (Builder $query): Builder => $query->with(['currency.lmpCurrency', 'account'])->orderByDesc('starting_at')
             )
             ->columns([
                 TextColumn::make('id')
                     ->label(__('filament.resources.currency_rate_columns.id'))
+                    ->sortable(),
+                TextColumn::make('account.commercial_name')
+                    ->label(__('filament.resources.currency_rate_columns.account'))
+                    ->placeholder(__('filament.resources.currency_rate_scope.system'))
+                    ->searchable(['account.commercial_name', 'account.name', 'account.nick'])
                     ->sortable(),
                 TextColumn::make('currency.display_name')
                     ->label(__('filament.resources.currency_rate_columns.currency'))
@@ -218,14 +298,44 @@ class CurrencyRateResource extends BaseResource
 
                         return $query->whereIn('currency_id', $catIds);
                     }),
-                TextColumn::make('units_per_usd')
-                    ->label(__('filament.resources.currency_rate_columns.units_per_usd'))
+                TextColumn::make('source')
+                    ->label(__('filament.resources.currency_rate_fields.source'))
+                    ->placeholder('—')
+                    ->toggleable(),
+                TextColumn::make('units_per_usd_buy')
+                    ->label(__('filament.resources.currency_rate_columns.units_per_usd_buy'))
+                    ->sortable()
+                    ->alignEnd(),
+                TextColumn::make('units_per_usd_sell')
+                    ->label(__('filament.resources.currency_rate_columns.units_per_usd_sell'))
                     ->sortable()
                     ->alignEnd(),
                 TextColumn::make('starting_at')
                     ->label(__('filament.resources.currency_rate_columns.starting_at'))
                     ->date()
                     ->sortable(),
+                IconColumn::make('is_active')
+                    ->label(__('filament.resources.currency_rate_columns.is_active'))
+                    ->boolean()
+                    ->sortable(),
+            ])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label(__('filament.resources.currency_rate_columns.is_active'))
+                    ->placeholder(__('filament.resources.currency_rate_filters.all_active_states'))
+                    ->trueLabel(__('filament.resources.currency_rate_filters.active_only'))
+                    ->falseLabel(__('filament.resources.currency_rate_filters.inactive_only')),
+                TernaryFilter::make('account_id')
+                    ->label(__('filament.resources.currency_rate_filters.scope'))
+                    ->nullable()
+                    ->placeholder(__('filament.resources.currency_rate_filters.all_scopes'))
+                    ->trueLabel(__('filament.resources.currency_rate_filters.tenant_only'))
+                    ->falseLabel(__('filament.resources.currency_rate_filters.system_only'))
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query->whereNotNull('account_id'),
+                        false: fn (Builder $query): Builder => $query->whereNull('account_id'),
+                        blank: fn (Builder $query): Builder => $query,
+                    ),
             ])
             ->defaultSort('starting_at', 'desc');
     }

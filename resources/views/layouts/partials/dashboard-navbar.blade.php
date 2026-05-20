@@ -98,10 +98,7 @@
                                 @foreach($accountNavbarNotifications as $notification)
                                     <div class="dropdown-item p-2">
                                         <div class="d-flex align-items-start">
-                                            @php
-                                                $isRead = $notification->read_at !== null;
-                                            @endphp
-                                            <span class="avatar avatar-xs rounded icon icon-with-bg icon-xxs me-3 flex-shrink-0 {{ $isRead ? 'bg-soft-secondary text-secondary' : 'bg-soft-warning text-warning' }}">
+                                            <span class="avatar avatar-xs rounded icon icon-with-bg icon-xxs me-3 flex-shrink-0 bg-soft-warning text-warning">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -114,14 +111,12 @@
                                                     <span class="text-muted d-block"><small>{{ __('account.notifications.by_author', ['name' => $notification->authorName()]) }}</small></span>
                                                 @endif
                                                 <span class="text-muted d-block"><small>{{ $notification->created_at?->diffForHumans() }}</small></span>
-                                                @if(! $notification->read_at)
-                                                    <form method="POST" action="{{ route('account.notifications.read', $notification) }}" class="mt-1">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-link p-0 fs-12 text-decoration-none">
-                                                            {{ __('account.notifications.mark_as_read') }}
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                <form method="POST" action="{{ route('account.notifications.read', $notification) }}" class="mt-1">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-link p-0 fs-12 text-decoration-none">
+                                                        {{ __('account.notifications.mark_as_read') }}
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -194,6 +189,10 @@
                                 <i class="icon icon-xxs me-1 icon-dual" data-feather="at-sign"></i>
                                 {{ __('profile.menu_contact') }}
                             </a>
+                            <a class="dropdown-item p-2" href="{{ route('account.contacts.index') }}">
+                                <i class="icon icon-xxs me-1 icon-dual" data-feather="users"></i>
+                                {{ __('account.contacts.menu') }}
+                            </a>
                             <!-- item end -->
 
                             <!-- item start -->
@@ -208,6 +207,15 @@
                                 <a class="dropdown-item p-2" href="{{ route('account.invitations.index') }}">
                                     <i class="icon icon-xxs me-1 icon-dual" data-feather="mail"></i>
                                     {{ __('invitations.menu') }}
+                                </a>
+                                <!-- item end -->
+                            @endif
+
+                            @if(auth()->user()->currentAccount())
+                                <!-- item start -->
+                                <a class="dropdown-item p-2" href="{{ route('account.exchange-rates.index') }}">
+                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="repeat"></i>
+                                    {{ __('exchange_rates.menu') }}
                                 </a>
                                 <!-- item end -->
                             @endif

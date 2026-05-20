@@ -2,8 +2,11 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Actions\OpenWebsiteImpersonationAction;
 use App\Models\User;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseTableWidget;
 use Illuminate\Contracts\Support\Htmlable;
@@ -59,6 +62,11 @@ class LatestSignupsWidget extends BaseTableWidget
                     })
                     ->sortable(),
             ])
+            ->recordActions([
+                ActionGroup::make([
+                    OpenWebsiteImpersonationAction::make(),
+                ]),
+            ], position: RecordActionsPosition::BeforeColumns)
             ->paginated(false);
     }
 }

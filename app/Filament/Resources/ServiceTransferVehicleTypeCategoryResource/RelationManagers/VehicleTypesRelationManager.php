@@ -99,7 +99,9 @@ class VehicleTypesRelationManager extends RelationManager
                 CreateAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
                         $owner = $this->getOwnerRecord();
-                        $data['account_id'] = $data['account_id'] ?? 1;
+                        if (! array_key_exists('account_id', $data) || $data['account_id'] === '' || $data['account_id'] === null) {
+                            $data['account_id'] = null;
+                        }
                         $data['active'] = $data['active'] ?? true;
                         $data['sort_order'] = (int) ($owner->vehicleTypes()->max('sort_order') ?? 0) + 1;
 

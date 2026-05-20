@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class OperatorServiceCatalog extends Model
@@ -14,10 +15,6 @@ class OperatorServiceCatalog extends Model
 
     protected $fillable = [
         'operator_id',
-        'provider_id',
-        'service_id',
-        'service_variant_id',
-        'service_offer_id',
         'status',
         'is_featured',
         'is_public',
@@ -33,23 +30,40 @@ class OperatorServiceCatalog extends Model
         return $this->belongsTo(Account::class, 'operator_id');
     }
 
-    public function provider(): BelongsTo
+    public function translations(): HasMany
     {
-        return $this->belongsTo(Account::class, 'provider_id');
+        return $this->hasMany(OperatorServiceCatalogTranslation::class, 'operator_service_catalog_id');
     }
 
-    public function service(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(Service::class);
+        return $this->hasMany(OperatorPackageItem::class, 'operator_service_catalog_id');
     }
 
-    public function serviceVariant(): BelongsTo
+    /**
+     * Label for admin selects (price lists, etc.) using default-locale translation when available.
+     */
+    public function displayLabel(?int $languageId = null): string
     {
-        return $this->belongsTo(ServiceVariant::class);
-    }
+        $translations = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->with('language.locale')->get();
 
-    public function serviceOffer(): BelongsTo
-    {
-        return $this->belongsTo(ServiceOffer::class);
+        if ($languageId !== null) {
+            $match = $translations->firstWhere('language_id', $languageId);
+            $name = trim((string) ($match?->name ?? ''));
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        foreach ($translations as $translation) {
+            $name = trim((string) ($translation->name ?? ''));
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        return '#'.$this->id;
     }
 }

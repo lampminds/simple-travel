@@ -63,7 +63,7 @@ return [
     'max_retries_reached' => 'Este convite atingiu o máximo de reenvios permitidos.',
     'login_to_accept' => 'Inicie sessão para aceitar este convite.',
     'register_to_accept' => 'Conclua o registo para aceitar este convite.',
-    'accepted_relationship' => 'Relação aceite com sucesso. Pode revê-la em Relações comerciais (/account/relationships).',
+    'accepted_relationship' => 'Relação aceite com sucesso. Pode geri-la a partir do seu painel.',
     'accept_not_available' => 'Não foi possível aceitar este convite com a sua sessão atual.',
     'forbidden_title' => 'Não tem acesso aos convites',
     'forbidden_description' => 'Esta secção está disponível apenas para contas de operador com função owner na conta ativa.',

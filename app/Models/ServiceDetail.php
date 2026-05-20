@@ -10,7 +10,7 @@ class ServiceDetail extends Model
 {
     use AuditTrait;
 
-    protected $table = 'cat_service_details';
+    protected $table = 'service_details';
 
     protected $fillable = [
         'service_id',

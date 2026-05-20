@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Activity/event service profile (1:1 with service) and catalogue type assignments.
+     * Operator packages (catalog))
      *
      * @return void
      */
@@ -18,10 +18,6 @@ return new class extends Migration
 
             $table->id();
             $table->foreignId('operator_id')->constrained('accounts', 'id', 'fkosc_account_id');
-            $table->foreignId('provider_id')->constrained('accounts', 'id', 'fkpsc_account_id');
-            $table->foreignId('service_id')->constrained();
-            $table->foreignId('service_variant_id')->nullable();
-            $table->foreignId('service_offer_id')->constrained();
             $table->enum('status', ['active', 'hidden', 'paused', 'archived'])->default('active');
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_public')->default(false);
@@ -39,6 +35,7 @@ return new class extends Migration
             $table->string('slug')->nullable();
             $table->text('description')->nullable();
 
+            lmpStamps($table);
         });
     }
 
@@ -49,6 +46,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('operator_service_catalog_translations');
         Schema::dropIfExists('operator_service_catalog');
     }
 };

@@ -6,13 +6,12 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Seeds global transfer vehicle type categories (with translations) and system account vehicle types (account_id = 1).
+ * Seeds global transfer vehicle type categories (with translations) and system catalog vehicle types (account_id null).
  *
  * Category labels use the translation table with English, Spanish, and Portuguese names.
  */
 class ServiceTransferVehicleTypesCatalogSeeder extends Seeder
 {
-    private const SYSTEM_ACCOUNT_ID = 1;
 
     /** cat_languages.id for en-US, es-AR, pt-BR (see LanguagesTableSeeder + CatLocalesTableSeeder). */
     private const LANGUAGE_IDS = [1, 2, 3];
@@ -145,7 +144,7 @@ class ServiceTransferVehicleTypesCatalogSeeder extends Seeder
         foreach ($types as $t) {
             DB::table('service_transfer_vehicle_types')->updateOrInsert(
                 [
-                    'account_id' => self::SYSTEM_ACCOUNT_ID,
+                    'account_id' => null,
                     'code' => $t['code'],
                 ],
                 [

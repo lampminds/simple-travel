@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Clones roles, role↔permission pivots, and optional user direct assignments from the template
- * account (default platform id 1) to a new tenant so Spatie team-scoped resolution works.
+ * Clones roles, role↔permission pivots, and optional user direct assignments from the platform
+ * account (config permission.platform_account_id, default 1) to a new tenant.
+ *
+ * Role templates use a real account id (not NULL) because Spatie pivots require a non-null team id.
+ * See docs/account-scoping.md and docs/permissions.md.
  */
 final class ReplicateDefaultRolesToAccountService
 {

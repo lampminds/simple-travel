@@ -53,6 +53,14 @@ return [
     ],
 
     /*
+     * DolarAPI official quotes (ARS per 1 unit of foreign currency). Used by currency:fetch-dolarapi-rates.
+     */
+    'dolarapi' => [
+        'url' => env('DOLARAPI_URL', 'https://dolarapi.com/v1/cotizaciones'),
+        'casa' => env('DOLARAPI_CASA', 'oficial'),
+    ],
+
+    /*
      * Translation API endpoint for wizard auto-translation.
      * Default uses a free public service for modest usage.
      */
@@ -78,12 +86,6 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
-
-    /*
-     * Transfer wizard: account id whose vehicle type catalogue is offered as a template for new accounts (default 1).
-     * Transfer location bootstrap in the website wizard copies from this same account.
-     */
-    'transfer_vehicle_template_account_id' => (int) env('TRANSFER_VEHICLE_TEMPLATE_ACCOUNT_ID', 1),
 
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),

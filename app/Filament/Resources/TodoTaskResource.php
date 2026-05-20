@@ -104,7 +104,7 @@ class TodoTaskResource extends LmpResource
                                     ->relationship('account', 'name')
                                     ->searchable()
                                     ->preload()
-                                    ->required()
+                                    ->nullable()
                                     ->live(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.todo_task_fields.code'))
@@ -114,7 +114,14 @@ class TodoTaskResource extends LmpResource
                                         table: 'todo_tasks',
                                         column: 'code',
                                         ignoreRecord: true,
-                                        modifyRuleUsing: fn ($rule, callable $get) => $rule->where('account_id', (int) $get('account_id')),
+                                        modifyRuleUsing: function ($rule, callable $get) {
+                                            $accountId = $get('account_id');
+                                            if ($accountId === null || $accountId === '') {
+                                                return $rule->whereNull('account_id');
+                                            }
+
+                                            return $rule->where('account_id', (int) $accountId);
+                                        },
                                     ),
                                 Select::make('todo_category_id')
                                     ->label(__('filament.resources.todo_task_fields.todo_category_id'))
@@ -132,11 +139,15 @@ class TodoTaskResource extends LmpResource
                                     ->label(__('filament.resources.todo_task_fields.original_task_id'))
                                     ->options(function (Get $get, $livewire): array {
                                         $accountId = $get('account_id');
-                                        if (! is_numeric($accountId)) {
+                                        $query = TodoTask::query();
+                                        if ($accountId === null || $accountId === '') {
+                                            $query->whereNull('account_id');
+                                        } elseif (is_numeric($accountId)) {
+                                            $query->where('account_id', (int) $accountId);
+                                        } else {
                                             return [];
                                         }
-                                        $query = TodoTask::query()
-                                            ->where('account_id', (int) $accountId)
+                                        $query
                                             ->orderBy('code');
                                         $record = $livewire->record ?? null;
                                         if ($record instanceof TodoTask) {
@@ -221,6 +232,7 @@ class TodoTaskResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('account.name')
                     ->label(__('filament.resources.todo_task_columns.account'))
+                    ->placeholder('—')
                     ->sortable()
                     ->searchable(),
                 IconColumn::make('active')

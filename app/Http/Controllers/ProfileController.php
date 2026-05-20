@@ -266,6 +266,8 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'contact_department_id' => ['required', 'integer', 'exists:cat_contact_departments,id'],
             'contact_position_id' => ['required', 'integer', 'exists:cat_contact_positions,id'],
+            'is_public_contact' => ['nullable', 'boolean'],
+            'is_preferred_contact_mode' => ['nullable', 'boolean'],
         ]);
 
         $person->update([
@@ -274,6 +276,8 @@ class ProfileController extends Controller
         $accountPerson->update([
             'contact_department_id' => (int) $validated['contact_department_id'],
             'contact_position_id' => (int) $validated['contact_position_id'],
+            'is_public_contact' => $request->boolean('is_public_contact'),
+            'is_preferred_contact_mode' => $request->boolean('is_preferred_contact_mode'),
         ]);
 
         return redirect()

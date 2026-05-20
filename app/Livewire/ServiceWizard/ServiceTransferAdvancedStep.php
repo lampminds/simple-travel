@@ -178,7 +178,7 @@ class ServiceTransferAdvancedStep extends Component
     public function selectAllBootstrapCatalogCategories(): void
     {
         $svc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $options = $svc->templateCategoryCheckboxOptions($svc->templateAccountId());
+        $options = $svc->systemCategoryCheckboxOptions();
         $this->bootstrapCatalogCategoryIds = collect(array_keys($options))
             ->map(fn ($k) => (string) $k)
             ->values()
@@ -200,7 +200,7 @@ class ServiceTransferAdvancedStep extends Component
     public function selectAllTypesInBootstrapCategory(int $categoryId): void
     {
         $svc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $types = $svc->templateTypesGrouped($svc->templateAccountId())->get($categoryId, collect());
+        $types = $svc->systemTypesGrouped()->get($categoryId, collect());
         $incoming = $types->pluck('id')->map(fn ($id) => (string) $id)->all();
         $this->bootstrapCatalogTypeIds = collect($this->bootstrapCatalogTypeIds)
             ->merge($incoming)
@@ -213,7 +213,7 @@ class ServiceTransferAdvancedStep extends Component
     public function clearTypesInBootstrapCategory(int $categoryId): void
     {
         $svc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $types = $svc->templateTypesGrouped($svc->templateAccountId())->get($categoryId, collect());
+        $types = $svc->systemTypesGrouped()->get($categoryId, collect());
         $remove = $types->pluck('id')->flip();
         $this->bootstrapCatalogTypeIds = collect($this->bootstrapCatalogTypeIds)
             ->map(fn ($id) => (int) $id)
@@ -241,9 +241,8 @@ class ServiceTransferAdvancedStep extends Component
 
         $service = $this->authorizedService();
         $svc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $templateAccountId = $svc->templateAccountId();
 
-        $allowedIds = $svc->templateVehicleTypes($templateAccountId)->pluck('id')->all();
+        $allowedIds = $svc->systemVehicleTypes()->pluck('id')->all();
 
         Validator::make(
             ['bootstrapCatalogTypeIds' => $this->bootstrapCatalogTypeIds],
@@ -263,7 +262,6 @@ class ServiceTransferAdvancedStep extends Component
             ->all();
 
         $imported = $svc->importTypesIntoAccount(
-            $templateAccountId,
             (int) $service->account_id,
             $selectedInts
         );
@@ -312,7 +310,7 @@ class ServiceTransferAdvancedStep extends Component
             return;
         }
         $svc = app(ServiceTransferLocationCatalogBootstrapService::class);
-        $this->bootstrapCatalogLocationIds = $svc->templateLocationIdStringsInCity($cityId);
+        $this->bootstrapCatalogLocationIds = $svc->systemLocationIdStringsInCity($cityId);
     }
 
     public function clearAllBootstrapCatalogLocations(): void
@@ -326,10 +324,9 @@ class ServiceTransferAdvancedStep extends Component
 
         $service = $this->authorizedService();
         $svc = app(ServiceTransferLocationCatalogBootstrapService::class);
-        $templateAccountId = $svc->templateAccountId();
 
         $cityId = (int) $this->bootstrapLocationCityId;
-        $allowedIds = $svc->templateLocationIdStringsInCity($cityId);
+        $allowedIds = $svc->systemLocationIdStringsInCity($cityId);
 
         Validator::make(
             [
@@ -356,7 +353,6 @@ class ServiceTransferAdvancedStep extends Component
             ->all();
 
         $imported = $svc->importLocationsIntoAccount(
-            $templateAccountId,
             (int) $service->account_id,
             $cityId,
             $selectedInts
@@ -924,7 +920,7 @@ class ServiceTransferAdvancedStep extends Component
             return;
         }
         $svc = app(ServiceTransferLocationCatalogBootstrapService::class);
-        $allowed = collect($svc->templateLocationIdStringsInCity($cityId))->flip();
+        $allowed = collect($svc->systemLocationIdStringsInCity($cityId))->flip();
         $this->bootstrapCatalogLocationIds = collect($this->bootstrapCatalogLocationIds)
             ->map(fn ($id) => (string) $id)
             ->filter(fn (string $id) => $allowed->has($id))
@@ -940,7 +936,7 @@ class ServiceTransferAdvancedStep extends Component
     protected function getVisibleBootstrapCatalogTypeIdStrings(): array
     {
         $svc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $grouped = $svc->templateTypesGrouped($svc->templateAccountId());
+        $grouped = $svc->systemTypesGrouped();
         $categoryIdsInt = collect($this->bootstrapCatalogCategoryIds)
             ->map(fn ($id) => (int) $id)
             ->unique()
@@ -1077,12 +1073,12 @@ class ServiceTransferAdvancedStep extends Component
         $locationRouteGroups = $this->buildLocationRouteGroups($locations);
 
         $locBootstrapSvc = app(ServiceTransferLocationCatalogBootstrapService::class);
-        $transferLocationBootstrapTemplateEmpty = ! $locBootstrapSvc->templateHasImportableLocations();
-        $locationBootstrapCityOptions = $locBootstrapSvc->templateCityOptions();
+        $transferLocationBootstrapTemplateEmpty = ! $locBootstrapSvc->systemCatalogHasImportableLocations();
+        $locationBootstrapCityOptions = $locBootstrapSvc->systemCityOptions();
 
         $bootstrapModalLocations = collect();
         if ($this->showTransferLocationBootstrapModal && (int) $this->bootstrapLocationCityId > 0) {
-            $bootstrapModalLocations = $locBootstrapSvc->templateLocationsInCity((int) $this->bootstrapLocationCityId);
+            $bootstrapModalLocations = $locBootstrapSvc->systemLocationsInCity((int) $this->bootstrapLocationCityId);
         }
 
         $vehicleTypes = ServiceTransferVehicleType::query()
@@ -1098,9 +1094,8 @@ class ServiceTransferAdvancedStep extends Component
         $bootstrapModalGrouped = collect();
         if ($this->showTransferVehicleBootstrapModal) {
             $bootSvc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-            $tid = $bootSvc->templateAccountId();
-            $bootstrapModalCategoryOptions = $bootSvc->templateCategoryCheckboxOptions($tid);
-            $bootstrapModalGrouped = $bootSvc->orderedTemplateTypesGrouped($tid);
+            $bootstrapModalCategoryOptions = $bootSvc->systemCategoryCheckboxOptions();
+            $bootstrapModalGrouped = $bootSvc->orderedSystemTypesGrouped();
         }
 
         return view('livewire.service-wizard.service-transfer-advanced-step', [

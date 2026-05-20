@@ -7,15 +7,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Account-specific transfer locations for Foz do Iguaçu area (cat_cities.id = 11691), account_id = 1.
+ * System-catalog transfer locations for Foz do Iguaçu area (cat_cities.id = 11691), account_id null.
  *
- * Requires {@see ServiceTransferLocationTypesCatalogSeeder} (location type codes) and account 1.
+ * Requires {@see ServiceTransferLocationTypesCatalogSeeder} (location type codes).
  *
  * Run: php artisan db:seed --class=ServiceTransferLocationsFozDoIguacuAccount1Seeder
  */
 class ServiceTransferLocationsFozDoIguacuAccount1Seeder extends Seeder
 {
-    private const ACCOUNT_ID = 1;
 
     private const CITY_ID = 11691;
 
@@ -97,7 +96,7 @@ class ServiceTransferLocationsFozDoIguacuAccount1Seeder extends Seeder
             $now = now();
 
             $row = DB::table('service_transfer_locations')
-                ->where('account_id', self::ACCOUNT_ID)
+                ->whereNull('account_id')
                 ->where('slug', $slug)
                 ->first();
 
@@ -119,7 +118,7 @@ class ServiceTransferLocationsFozDoIguacuAccount1Seeder extends Seeder
             } else {
                 $locationId = (int) DB::table('service_transfer_locations')->insertGetId(array_merge(
                     [
-                        'account_id' => self::ACCOUNT_ID,
+                        'account_id' => null,
                         'slug' => $slug,
                         'created_at' => $now,
                     ],

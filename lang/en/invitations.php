@@ -63,7 +63,7 @@ return [
     'max_retries_reached' => 'This invitation reached the maximum allowed resend attempts.',
     'login_to_accept' => 'Please sign in to accept this invitation.',
     'register_to_accept' => 'Please complete registration to accept this invitation.',
-    'accepted_relationship' => 'Relationship accepted successfully. You can review it on Commercial relationships (/account/relationships).',
+    'accepted_relationship' => 'Relationship accepted successfully. You can manage it from your dashboard.',
     'accept_not_available' => 'This invitation cannot be accepted with your current session.',
     'forbidden_title' => 'You do not have access to invitations',
     'forbidden_description' => 'This section is only available for operator accounts with owner role in the active account.',

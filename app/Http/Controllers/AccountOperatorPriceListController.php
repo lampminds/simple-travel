@@ -5,8 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\OperatorPriceList;
-use App\Models\OperatorServiceCatalog;
+use App\Models\OperatorPackageItem;
+use App\Models\OperatorPriceListItem;
+use App\Models\ServiceOffer;
+use App\Services\OperatorPackageItemSelectOptions;
+use App\Services\OperatorPriceListItemPricingService;
 use App\Services\PriceFormatService;
+use App\Support\AccountBusinessTypeGate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +22,11 @@ use Illuminate\View\View;
 
 final class AccountOperatorPriceListController extends Controller
 {
-    public function __construct(private readonly PriceFormatService $priceFormatService)
-    {
+    public function __construct(
+        private readonly PriceFormatService $priceFormatService,
+        private readonly OperatorPackageItemSelectOptions $packageItemSelectOptions,
+        private readonly OperatorPriceListItemPricingService $itemPricingService,
+    ) {
     }
 
     public function index(Request $request): View
@@ -46,8 +55,9 @@ final class AccountOperatorPriceListController extends Controller
             'account' => $account,
             'priceList' => null,
             'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'catalogOptions' => $this->catalogOptionsForOperatorAccount($account->id),
+            'packageItemOptions' => $this->packageItemSelectOptions->optionsForOperator($account->id),
             'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
+            'itemPreviewUrl' => route('account.operator-price-lists.preview-item'),
             'submitRoute' => route('account.operator-price-lists.store'),
             'submitMethod' => 'POST',
             'cancelRoute' => route('account.operator-price-lists.index'),
@@ -71,8 +81,8 @@ final class AccountOperatorPriceListController extends Controller
 
             $priceList->items()->createMany(array_map(
                 fn (array $item): array => [
-                    'operator_service_catalog_id' => (int) $item['operator_service_catalog_id'],
-                    'pricing_mode' => (string) $item['pricing_mode'],
+                    'operator_package_item_id' => (int) $item['operator_package_item_id'],
+                    'pricing_mode' => $this->itemPricingService->normalizeMode((string) $item['pricing_mode']),
                     'price' => $item['price'],
                 ],
                 $validated['items']
@@ -84,19 +94,57 @@ final class AccountOperatorPriceListController extends Controller
             ->with('status', __('account.operator_price_lists.status_created'));
     }
 
+    public function previewItem(Request $request): JsonResponse
+    {
+        $account = $this->resolveCurrentAccount($request);
+        AccountBusinessTypeGate::assertHasActiveType($account, 'operator');
+
+        $validated = $request->validate([
+            'operator_package_item_id' => ['required', 'integer', 'min:1'],
+            'currency_id' => ['required', 'integer', Rule::exists('cat_currencies', 'id')],
+            'pricing_mode' => ['required', Rule::in([
+                OperatorPriceListItem::MODE_PERCENTAGE,
+                OperatorPriceListItem::MODE_FIXED_DELTA,
+                OperatorPriceListItem::MODE_DIRECT,
+            ])],
+            'price' => ['nullable', 'numeric'],
+        ]);
+
+        $packageItem = $this->findPackageItemForOperator(
+            (int) $validated['operator_package_item_id'],
+            $account->id,
+        );
+
+        $normalizedPrice = $this->priceFormatService->normalizeNumericInput(
+            $validated['price'] ?? 0,
+            $account->id,
+        );
+
+        $result = $this->itemPricingService->calculate(
+            $packageItem,
+            $account->id,
+            (int) $validated['currency_id'],
+            (string) $validated['pricing_mode'],
+            (float) ($normalizedPrice ?? 0),
+        );
+
+        return response()->json($result);
+    }
+
     public function edit(Request $request, OperatorPriceList $operatorPriceList): View
     {
         $account = $this->resolveCurrentAccount($request);
         $this->assertPriceListBelongsToAccount($operatorPriceList, $account->id);
 
-        $operatorPriceList->load('items');
+        $operatorPriceList->load(['items.packageItem']);
 
         return view('account.operator-price-lists.form', [
             'account' => $account,
             'priceList' => $operatorPriceList,
             'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'catalogOptions' => $this->catalogOptionsForOperatorAccount($account->id),
+            'packageItemOptions' => $this->packageItemSelectOptions->optionsForOperator($account->id),
             'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
+            'itemPreviewUrl' => route('account.operator-price-lists.preview-item'),
             'submitRoute' => route('account.operator-price-lists.update', $operatorPriceList),
             'submitMethod' => 'PUT',
             'cancelRoute' => route('account.operator-price-lists.index'),
@@ -159,8 +207,8 @@ final class AccountOperatorPriceListController extends Controller
             $operatorPriceList->items()->delete();
             $operatorPriceList->items()->createMany(array_map(
                 fn (array $item): array => [
-                    'operator_service_catalog_id' => (int) $item['operator_service_catalog_id'],
-                    'pricing_mode' => (string) $item['pricing_mode'],
+                    'operator_package_item_id' => (int) $item['operator_package_item_id'],
+                    'pricing_mode' => $this->itemPricingService->normalizeMode((string) $item['pricing_mode']),
                     'price' => $item['price'],
                 ],
                 $validated['items']
@@ -196,7 +244,7 @@ final class AccountOperatorPriceListController extends Controller
      *   valid_to?:string|null,
      *   is_active?:bool|string|int|null,
      *   items:array<int, array{
-     *      operator_service_catalog_id:int|string,
+     *      operator_package_item_id:int|string,
      *      pricing_mode:string,
      *      price:numeric-string|int|float
      *   }>
@@ -213,24 +261,59 @@ final class AccountOperatorPriceListController extends Controller
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['nullable', 'boolean'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.operator_service_catalog_id' => [
+            'items.*.operator_package_item_id' => [
                 'required',
                 'integer',
-                Rule::exists('operator_service_catalog', 'id')->where(function ($query) use ($accountId) {
-                    $query->where('operator_id', $accountId);
+                'distinct',
+                Rule::exists('operator_package_items', 'id')->where(function ($query) use ($accountId): void {
+                    $query->whereIn('operator_service_catalog_id', function ($sub) use ($accountId): void {
+                        $sub->select('id')
+                            ->from('operator_service_catalog')
+                            ->where('operator_id', $accountId);
+                    });
                 }),
             ],
-            'items.*.pricing_mode' => ['required', Rule::in(['fixed', 'percentage'])],
+            'items.*.pricing_mode' => ['required', Rule::in([
+                OperatorPriceListItem::MODE_PERCENTAGE,
+                OperatorPriceListItem::MODE_FIXED_DELTA,
+                OperatorPriceListItem::MODE_DIRECT,
+            ])],
             'items.*.price' => ['required', 'numeric'],
         ]);
 
         $errors = [];
-        foreach ($validated['items'] as $index => $item) {
-            $pricingMode = (string) ($item['pricing_mode'] ?? '');
-            $price = (float) ($item['price'] ?? 0);
+        $listCurrencyId = (int) $validated['currency_id'];
 
-            if ($pricingMode === 'fixed' && $price < 0) {
-                $errors["items.{$index}.price"] = __('account.operator_price_lists.validation.fixed_amount_must_be_non_negative');
+        foreach ($validated['items'] as $index => $item) {
+            $pricingMode = $this->itemPricingService->normalizeMode((string) ($item['pricing_mode'] ?? ''));
+            $price = (float) ($item['price'] ?? 0);
+            $packageItemId = (int) ($item['operator_package_item_id'] ?? 0);
+
+            $packageItem = $this->findPackageItemForOperator($packageItemId, $accountId);
+            $computed = $this->itemPricingService->calculate(
+                $packageItem,
+                $accountId,
+                $listCurrencyId,
+                $pricingMode,
+                $price,
+            );
+
+            if ($pricingMode === OperatorPriceListItem::MODE_DIRECT) {
+                if ($price <= 0) {
+                    $errors["items.{$index}.price"] = __('account.operator_price_lists.validation.direct_price_must_be_positive');
+                }
+
+                continue;
+            }
+
+            if (! $computed['provider_cost_available']) {
+                $errors["items.{$index}.pricing_mode"] = __('account.operator_price_lists.validation.only_direct_without_provider_cost');
+
+                continue;
+            }
+
+            if ($computed['final_price'] === null) {
+                $errors["items.{$index}.price"] = __('account.operator_price_lists.validation.cannot_compute_final');
             }
         }
 
@@ -241,25 +324,22 @@ final class AccountOperatorPriceListController extends Controller
         return $validated;
     }
 
-    /**
-     * @return array<int, string>
-     */
-    private function catalogOptionsForOperatorAccount(int $operatorAccountId): array
+    private function findPackageItemForOperator(int $packageItemId, int $operatorAccountId): OperatorPackageItem
     {
-        return OperatorServiceCatalog::query()
-            ->where('operator_id', $operatorAccountId)
-            ->with(['provider', 'service', 'serviceVariant'])
-            ->orderBy('id')
-            ->get()
-            ->mapWithKeys(function (OperatorServiceCatalog $row): array {
-                $provider = trim($row->provider?->commercial_name ?? $row->provider?->name ?? '');
-                $service = trim($row->service?->name ?? '');
-                $sku = trim((string) ($row->serviceVariant?->sku ?? ''));
-                $parts = array_filter([$provider !== '' ? $provider : null, $service !== '' ? $service : null, $sku !== '' ? $sku : null]);
-
-                return [$row->id => implode(' — ', $parts) ?: ('#'.$row->id)];
+        $item = OperatorPackageItem::query()
+            ->whereKey($packageItemId)
+            ->whereHas('catalog', function ($query) use ($operatorAccountId): void {
+                $query->where('operator_id', $operatorAccountId);
             })
-            ->all();
+            ->with([
+                'serviceVariant.currency.lmpCurrency',
+                'serviceOffer',
+            ])
+            ->first();
+
+        abort_unless($item instanceof OperatorPackageItem, 404);
+
+        return $item;
     }
 
     private function resolveCurrentAccount(Request $request): Account
@@ -270,6 +350,7 @@ final class AccountOperatorPriceListController extends Controller
 
         $account = $user->currentAccount();
         abort_unless($account instanceof Account, 404);
+        AccountBusinessTypeGate::assertHasActiveType($account, 'operator');
 
         return $account;
     }
@@ -286,22 +367,16 @@ final class AccountOperatorPriceListController extends Controller
      */
     private function linkedAgencyOptionsForOperatorAccount(int $operatorAccountId): array
     {
-        $rows = OperatorServiceCatalog::query()
+        $providerIds = ServiceOffer::query()
             ->where('operator_id', $operatorAccountId)
-            ->with('provider')
-            ->orderBy('provider_id')
-            ->get()
-            ->unique('provider_id');
+            ->where('status', ServiceOffer::STATUS_ACCEPTED)
+            ->distinct()
+            ->pluck('provider_id');
 
         $options = [];
-        foreach ($rows as $row) {
-            $provider = $row->provider;
-            if ($provider === null) {
-                continue;
-            }
+        foreach (Account::query()->whereIn('id', $providerIds)->orderBy('id')->get() as $provider) {
             $id = (int) $provider->id;
-            $label = $provider->commercial_name ?? $provider->name ?? $provider->nick ?? ('#'.$id);
-            $options[$id] = (string) $label;
+            $options[$id] = (string) ($provider->commercial_name ?? $provider->name ?? $provider->nick ?? ('#'.$id));
         }
 
         return $options;

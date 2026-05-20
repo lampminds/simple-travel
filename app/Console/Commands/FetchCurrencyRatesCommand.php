@@ -14,11 +14,7 @@ use Illuminate\Support\Carbon;
  * Config: EXCHANGERATE_URL and EXCHANGERATE_API_KEY in .env. The API key is
  * sent as query param "api_key". Expected JSON: { "success": true, "quotes": { "USDEUR": 0.87, ... } }.
  *
- * Crontab options:
- *   - Run this command daily at 7:00:
- *     0 7 * * * cd /path/to/project && php artisan currency:fetch-rates
- *   - Or use Laravel scheduler (ensure one crontab line runs schedule:run every minute);
- *     this command is already scheduled at 7:00 in routes/console.php.
+ * Legacy: prefer {@see FetchDolarApiCurrencyRatesCommand} (`currency:fetch-dolarapi-rates`) for buy/sell.
  */
 class FetchCurrencyRatesCommand extends Command
 {
@@ -86,9 +82,13 @@ class FetchCurrencyRatesCommand extends Command
             }
 
             CurrencyRate::create([
+                'account_id' => null,
                 'currency_id' => $currency->id,
-                'units_per_usd' => $rate,
+                'source' => null,
+                'units_per_usd_buy' => $rate,
+                'units_per_usd_sell' => $rate,
                 'starting_at' => $startingAt,
+                'is_active' => true,
             ]);
             $saved++;
         }

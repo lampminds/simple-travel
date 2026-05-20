@@ -7,35 +7,34 @@ use Illuminate\View\View;
 
 class DigitalizarOperadorController extends Controller
 {
-    private const EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+    /** Display order (row 2 = Tarifas y prestadores is penultimate). */
+    private const COMPARISON_ROW_ORDER = [1, 3, 4, 2, 5];
+
+    /** @var array<int, string> Content row => filename in public/images/comparison */
+    private const COMPARISON_IMAGES = [
+        1 => '1-quoting.png',
+        2 => '2-pricing-providers.png',
+        3 => '3-profit.png',
+        4 => '4-payments.png',
+        5 => '5-teamwork.png',
+    ];
 
     /**
-     * Resolve image URL for a given row and suffix (wo = without ST, w = with ST).
-     * Accepts exact names like 1-wo-st.jpg or with middle name like 1-cotizaciones-wo-st.jpg.
-     * Returns the web path or null if not found.
+     * Resolve the illustration URL for a comparison row.
      */
-    private function resolveComparisonImage(int $row, string $suffix): ?string
+    private function resolveComparisonImage(int $row): ?string
     {
-        $dir = public_path('images/st-comparison');
-        if (! File::isDirectory($dir)) {
+        $filename = self::COMPARISON_IMAGES[$row] ?? null;
+        if ($filename === null) {
             return null;
         }
-        $baseExact = "{$row}-{$suffix}-st";
-        foreach (self::EXTENSIONS as $ext) {
-            $path = "{$dir}/{$baseExact}.{$ext}";
-            if (File::exists($path)) {
-                return "/images/st-comparison/{$baseExact}.{$ext}";
-            }
-        }
-        // Fallback: match N-*-suffix-st.ext (e.g. 1-cotizaciones-wo-st.jpg)
-        $files = File::glob("{$dir}/{$row}-*-{$suffix}-st.*");
-        if (! empty($files)) {
-            $basename = basename($files[0]);
 
-            return "/images/st-comparison/{$basename}";
+        $path = public_path('images/comparison/'.$filename);
+        if (! File::exists($path)) {
+            return null;
         }
 
-        return null;
+        return '/images/comparison/'.$filename;
     }
 
     /**
@@ -44,13 +43,12 @@ class DigitalizarOperadorController extends Controller
     public function __invoke(): View
     {
         $rows = [];
-        for ($i = 1; $i <= 5; $i++) {
+        foreach (self::COMPARISON_ROW_ORDER as $i) {
             $rows[] = [
-                'title_key' => 'digitalizar.row' . $i . '_title',
-                'sin_key' => 'digitalizar.row' . $i . '_sin',
-                'con_key' => 'digitalizar.row' . $i . '_con',
-                'img_wo' => $this->resolveComparisonImage($i, 'wo'),
-                'img_w' => $this->resolveComparisonImage($i, 'w'),
+                'title_key' => 'digitalizar.row'.$i.'_title',
+                'sin_key' => 'digitalizar.row'.$i.'_sin',
+                'con_key' => 'digitalizar.row'.$i.'_con',
+                'img' => $this->resolveComparisonImage($i),
             ];
         }
 

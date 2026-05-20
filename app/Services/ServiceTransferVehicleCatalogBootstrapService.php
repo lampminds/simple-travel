@@ -9,15 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Website transfer wizard: detect accounts without transfer vehicle setup and
- * copy vehicle types from the template (system) account catalog.
+ * copy vehicle types from the system catalog (account_id null).
  */
 final class ServiceTransferVehicleCatalogBootstrapService
 {
-    public function templateAccountId(): int
-    {
-        return (int) config('services.transfer_vehicle_template_account_id', 1);
-    }
-
     /**
      * True when the account already owns at least one transfer vehicle type row.
      */
@@ -40,26 +35,20 @@ final class ServiceTransferVehicleCatalogBootstrapService
             ->exists();
     }
 
-    public function templateAccountHasVehicleTypes(): bool
+    public function systemCatalogHasVehicleTypes(): bool
     {
-        $tid = $this->templateAccountId();
-
         return ServiceTransferVehicleType::query()
-            ->where('account_id', $tid)
+            ->whereNull('account_id')
             ->where('active', true)
             ->exists();
     }
 
     /**
      * Offer the import dialog when the account has no assignments in service_transfer_vehicles
-     * for its services, no own catalog types yet, and is not the template account.
+     * for its services, no own catalog types yet, and the system catalog has rows to copy.
      */
     public function shouldShowBootstrapModal(int $accountId): bool
     {
-        if ($accountId === $this->templateAccountId()) {
-            return false;
-        }
-
         if ($this->accountOwnsVehicleTypes($accountId)) {
             return false;
         }
@@ -68,18 +57,18 @@ final class ServiceTransferVehicleCatalogBootstrapService
             return false;
         }
 
-        return $this->templateAccountHasVehicleTypes();
+        return $this->systemCatalogHasVehicleTypes();
     }
 
     /**
-     * Active template vehicle types, ordered for display.
+     * Active system-catalog vehicle types, ordered for display.
      *
      * @return Collection<int, ServiceTransferVehicleType>
      */
-    public function templateVehicleTypes(int $templateAccountId): Collection
+    public function systemVehicleTypes(): Collection
     {
         return ServiceTransferVehicleType::query()
-            ->where('account_id', $templateAccountId)
+            ->whereNull('account_id')
             ->where('active', true)
             ->with('category.translations.language.locale')
             ->orderBy('sort_order')
@@ -90,21 +79,21 @@ final class ServiceTransferVehicleCatalogBootstrapService
     /**
      * @return Collection<int, Collection<int, ServiceTransferVehicleType>>
      */
-    public function templateTypesGrouped(int $templateAccountId): Collection
+    public function systemTypesGrouped(): Collection
     {
-        return $this->templateVehicleTypes($templateAccountId)
+        return $this->systemVehicleTypes()
             ->groupBy(fn (ServiceTransferVehicleType $t): int => (int) ($t->service_transfer_vehicle_type_category_id ?? 0));
     }
 
     /**
-     * Same grouping as {@see templateTypesGrouped} with categories ordered by {@see ServiceTransferVehicleTypeCategory::scopeOrdered}
+     * Same grouping as {@see systemTypesGrouped} with categories ordered by {@see ServiceTransferVehicleTypeCategory::scopeOrdered}
      * and uncategorized (0) last — used by the transfer wizard and account website import UI.
      *
      * @return Collection<int, Collection<int, ServiceTransferVehicleType>>
      */
-    public function orderedTemplateTypesGrouped(int $templateAccountId): Collection
+    public function orderedSystemTypesGrouped(): Collection
     {
-        $rawGrouped = $this->templateTypesGrouped($templateAccountId);
+        $rawGrouped = $this->systemTypesGrouped();
         $ordered = collect();
 
         $orderedCategoryIds = ServiceTransferVehicleTypeCategory::query()
@@ -130,9 +119,9 @@ final class ServiceTransferVehicleCatalogBootstrapService
      *
      * @return array<int, string>
      */
-    public function templateCategoryCheckboxOptions(int $templateAccountId): array
+    public function systemCategoryCheckboxOptions(): array
     {
-        $grouped = $this->templateTypesGrouped($templateAccountId);
+        $grouped = $this->systemTypesGrouped();
         $options = [];
         foreach ($grouped->keys() as $categoryId) {
             $cid = (int) $categoryId;
@@ -151,11 +140,11 @@ final class ServiceTransferVehicleCatalogBootstrapService
     }
 
     /**
-     * Copy selected template types into the target account. Skips codes that already exist for the target.
+     * Copy selected system-catalog types into the target account. Skips codes that already exist for the target.
      *
      * @param  list<int>  $sourceTypeIds
      */
-    public function importTypesIntoAccount(int $fromAccountId, int $toAccountId, array $sourceTypeIds): int
+    public function importTypesIntoAccount(int $toAccountId, array $sourceTypeIds): int
     {
         $sourceTypeIds = array_values(array_unique(array_filter(
             array_map(static fn ($id): int => (int) $id, $sourceTypeIds),
@@ -167,7 +156,7 @@ final class ServiceTransferVehicleCatalogBootstrapService
         }
 
         $sources = ServiceTransferVehicleType::query()
-            ->where('account_id', $fromAccountId)
+            ->whereNull('account_id')
             ->whereIn('id', $sourceTypeIds)
             ->where('active', true)
             ->orderBy('sort_order')

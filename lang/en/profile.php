@@ -33,6 +33,12 @@ return [
     'email_changed_verify' => 'Your email was changed. Please confirm the new address using the link we sent you.',
 
     'profile_updated' => 'Your personal profile was updated.',
+
+    'visibility_heading' => 'Visibility for linked companies',
+    'visibility_help' => 'When your company has an approved commercial relationship with another account, these options control whether colleagues there can find and contact you.',
+    'is_public_contact' => 'Public contact',
+    'is_preferred_contact_mode' => 'Preferred contact',
+    'is_preferred_contact_mode_help' => 'Suggests you as the first person to reach out to at your company (optional for the other party).',
     'password_heading' => 'Change password',
     'current_password' => 'Current password',
     'new_password' => 'New password',

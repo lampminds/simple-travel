@@ -2,15 +2,18 @@
 
 This application uses [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission) with **teams** enabled. The team foreign key is **`account_id`** (see `config/permission.php`), aligned with multi-tenant accounts.
 
+For how **`account_id = 1`** (platform account) differs from **`account_id IS NULL`** (system catalog templates), see **[account-scoping.md](account-scoping.md)**.
+
 ## Reserved platform account
 
 A **single reserved account** represents the Spatie “team” for **platform-wide** roles and permissions (staff who can act across tenants). By convention:
 
-- Its primary key is **`1`** by default (configurable via `PLATFORM_ACCOUNT_ID` in `.env`).
+- Its primary key is **`1`** by default (configurable via `PLATFORM_ACCOUNT_ID` in `.env`). **Keep this id reserved**; do not repurpose it as a normal tenant.
 - There is **no** `is_system` flag on `accounts`; the rule is **do not use this row as a normal tenant** for business data.
 - The row is created by migrations when missing (`database/migrations/2026_04_01_000001_ensure_platform_account_exists.php`).
+- Default **tenant role templates** (`owner`, `manager`, …) are stored in `user_roles` with **`account_id` = platform account id**, not `NULL`. New accounts receive **copies** via `App\Services\ReplicateDefaultRolesToAccountService`.
 
-Spatie does not support a `null` team. Using a dedicated account row keeps **one** permission system and avoids a parallel authorization layer.
+Spatie does not support a `null` team on pivots (`user_model_has_roles` / `user_model_has_permissions` use a non-null `account_id` in the primary key). Using a dedicated account row keeps **one** permission system and avoids a parallel authorization layer. The `user_roles.account_id` column is nullable in the schema, but operational templates and assignments use the **platform account id**, not `NULL`.
 
 ## How team resolution works per request
 
@@ -44,7 +47,7 @@ Platform roles are rows in `user_roles` with **`account_id` = platform account i
 
 ## User edit and role sync
 
-In `UserResource`, the form uses a **Accounts & roles** tab with a repeater: **one row per account**, each row selects the account and the **role IDs for that Spatie team** (`account_id` on `user_model_has_roles`). Saving runs `User::syncAccountMemberships()`, which syncs `account_user` and then calls `syncRoles()` with `PermissionRegistrar::setPermissionsTeamId()` for each account. Global role definitions (`user_roles.account_id` null) remain assignable in any team, consistent with registration flows.
+In `UserResource`, the form uses a **Accounts & roles** tab with a repeater: **one row per account**, each row selects the account and the **role IDs for that Spatie team** (`account_id` on `user_model_has_roles`). Saving runs `User::syncAccountMemberships()`, which syncs `account_user` and then calls `syncRoles()` with `PermissionRegistrar::setPermissionsTeamId()` for each account. Role definitions are per team (`user_roles.account_id`); platform templates live on the platform account id and tenant copies on each tenant id.
 
 ## Configuration reference
 

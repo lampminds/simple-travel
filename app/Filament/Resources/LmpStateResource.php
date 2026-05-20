@@ -28,13 +28,23 @@ class LmpStateResource extends BaseResource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map';
 
-    protected static ?string $modelLabel = 'State / Province';
+    protected static ?string $modelLabel = 'filament.resources.lmp_state';
 
-    protected static ?string $pluralModelLabel = 'States / Provinces';
+    protected static ?string $pluralModelLabel = 'filament.resources.lmp_states';
 
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
+
+    public static function getModelLabel(): string
+    {
+        return (string) __(static::$modelLabel);
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return (string) __(static::$pluralModelLabel);
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -56,29 +66,29 @@ class LmpStateResource extends BaseResource
         return [
             Section::make('')->schema([
                 TextInput::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_state_fields.name'))
                     ->required()
                     ->maxLength(255),
                 Select::make('country_id')
-                    ->label('Country')
+                    ->label(__('filament.resources.lmp_state_fields.country_id'))
                     ->options(fn () => LmpCountry::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->preload()
                     ->required(),
                 TextInput::make('level')
-                    ->label('Level')
+                    ->label(__('filament.resources.lmp_state_fields.level'))
                     ->numeric(),
                 TextInput::make('latitude')
-                    ->label('Latitude')
+                    ->label(__('filament.resources.lmp_state_fields.latitude'))
                     ->numeric(),
                 TextInput::make('longitude')
-                    ->label('Longitude')
+                    ->label(__('filament.resources.lmp_state_fields.longitude'))
                     ->numeric(),
                 TextInput::make('timezone_id')
-                    ->label('Timezone ID')
+                    ->label(__('filament.resources.lmp_state_fields.timezone_id'))
                     ->numeric(),
                 Select::make('parent_id')
-                    ->label('Parent State')
+                    ->label(__('filament.resources.lmp_state_fields.parent_id'))
                     ->options(fn () => LmpState::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
@@ -91,27 +101,27 @@ class LmpStateResource extends BaseResource
         return parent::table($table)
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->label(__('filament.resources.lmp_state_columns.id'))
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_state_columns.name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('country.name')
-                    ->label('Country')
+                    ->label(__('filament.resources.lmp_state_columns.country'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('parent.name')
-                    ->label('Parent State')
+                    ->label(__('filament.resources.lmp_state_columns.parent'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('level')
-                    ->label('Level')
+                    ->label(__('filament.resources.lmp_state_columns.level'))
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('country_id')
-                    ->label('Country')
+                    ->label(__('filament.resources.lmp_state_filters.country_id'))
                     ->options(fn () => LmpCountry::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable(),
             ], layout: FiltersLayout::AboveContent)

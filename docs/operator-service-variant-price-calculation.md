@@ -144,4 +144,4 @@ Suggested interpretation:
 
 - How to pick one list when **multiple** assignments match (priority rules).
 - Rounding, taxes, and FX conversion.
-- “Operator takes” **catalog** tables (`operator_catalog_items`, etc.) if pricing is also driven by catalog rows — that would be a separate document.
+- Operator **package** tables (`operator_service_catalog`, `operator_package_items`) if pricing is also driven by package rows — that would be a separate document.

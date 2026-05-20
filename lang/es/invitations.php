@@ -63,7 +63,7 @@ return [
     'max_retries_reached' => 'La invitación alcanzó el máximo de reenvíos permitidos.',
     'login_to_accept' => 'Iniciá sesión para aceptar esta invitación.',
     'register_to_accept' => 'Completá el registro para aceptar esta invitación.',
-    'accepted_relationship' => 'Vínculo aceptado correctamente. Ya podés verlo en Relaciones comerciales (/account/relationships).',
+    'accepted_relationship' => 'Vínculo aceptado correctamente. Ya podés gestionarlo desde tu panel.',
     'accept_not_available' => 'No fue posible aceptar esta invitación con tu sesión actual.',
     'forbidden_title' => 'No tienes acceso a invitaciones',
     'forbidden_description' => 'Esta sección está disponible únicamente para cuentas de operador con rol owner en la cuenta activa.',

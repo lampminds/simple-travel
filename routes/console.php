@@ -920,6 +920,6 @@ Artisan::command('service-feature-scopes:import {--dry-run : Show what would be 
     $this->info("Done. Scope rows: {$created}, Missing features: {$missing}, Skipped unresolved types: {$skippedTypes}.");
 });
 
-// Daily at 7:00: fetch USD exchange rates and save one row per project currency in currency_rates.
-Schedule::command('currency:fetch-rates')->dailyAt('7:00');
+// Daily at 7:00: fetch buy/sell rates from dolarapi.com (official casa) into currency_rates.
+Schedule::command('currency:fetch-dolarapi-rates')->dailyAt('7:00');
 

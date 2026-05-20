@@ -29,13 +29,23 @@ class LmpCityResource extends BaseResource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $modelLabel = 'City';
+    protected static ?string $modelLabel = 'filament.resources.lmp_city';
 
-    protected static ?string $pluralModelLabel = 'Cities';
+    protected static ?string $pluralModelLabel = 'filament.resources.lmp_cities';
 
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
+
+    public static function getModelLabel(): string
+    {
+        return (string) __(static::$modelLabel);
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return (string) __(static::$pluralModelLabel);
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -57,23 +67,23 @@ class LmpCityResource extends BaseResource
         return [
             Section::make('')->schema([
                 TextInput::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_city_fields.name'))
                     ->required()
                     ->maxLength(255),
                 Select::make('state_id')
-                    ->label('State / Province')
+                    ->label(__('filament.resources.lmp_city_fields.state_id'))
                     ->options(fn () => LmpState::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->preload()
                     ->required(),
                 TextInput::make('latitude')
-                    ->label('Latitude')
+                    ->label(__('filament.resources.lmp_city_fields.latitude'))
                     ->numeric(),
                 TextInput::make('longitude')
-                    ->label('Longitude')
+                    ->label(__('filament.resources.lmp_city_fields.longitude'))
                     ->numeric(),
                 TextInput::make('timezone_id')
-                    ->label('Timezone ID')
+                    ->label(__('filament.resources.lmp_city_fields.timezone_id'))
                     ->numeric(),
             ])->columns(2),
         ];
@@ -84,24 +94,24 @@ class LmpCityResource extends BaseResource
         return parent::table($table)
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->label(__('filament.resources.lmp_city_columns.id'))
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_city_columns.name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('state.name')
-                    ->label('State / Province')
+                    ->label(__('filament.resources.lmp_city_columns.state'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('state.country.name')
-                    ->label('Country')
+                    ->label(__('filament.resources.lmp_city_columns.country'))
                     ->searchable()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('country_id')
-                    ->label('Country')
+                    ->label(__('filament.resources.lmp_city_filters.country_id'))
                     ->options(fn () => LmpCountry::query()->orderBy('name')->pluck('name', 'id'))
                     ->query(function ($query, array $data) {
                         $countryId = $data['value'] ?? null;
@@ -114,7 +124,7 @@ class LmpCityResource extends BaseResource
                     })
                     ->searchable(),
                 SelectFilter::make('state_id')
-                    ->label('State / Province')
+                    ->label(__('filament.resources.lmp_city_filters.state_id'))
                     ->options(fn () => LmpState::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable(),
             ], layout: FiltersLayout::AboveContent)

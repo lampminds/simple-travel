@@ -15,7 +15,7 @@
 | **Step 3** | `…/step-3/{service}` | Livewire `ServiceVariantsStep` → `service_variants` (+ variant media via Spatie) |
 | **Step 4 — “features”** | `…/step-4/{service}` | Livewire `ServiceFeaturesStep` → pivot `service_featurables`; catalog driven by `cat_service_feature_scopes`, `cat_service_features`, `cat_service_feature_categories` (`ServiceFeatureSelectionService`) |
 | **Step 5 — media** | `…/step-5/{service}` | Livewire `ServiceMediaStep` → `sys_media` (via `App\Models\Media`) on `Service` |
-| **Step 6 — “details”** | `…/step-6/{service}` | Livewire `ServiceDetailsStep` → `cat_service_details`; topics/categories from `cat_service_detail_topics`, `cat_service_detail_topic_categories` |
+| **Step 6 — “details”** | `…/step-6/{service}` | Livewire `ServiceDetailsStep` → `service_details`; topics/categories from `cat_service_detail_topics`, `cat_service_detail_topic_categories` |
 | **Catalog (account)** | `GET catalog` | Lists `services` (+ type, translations, media, variant counts). **Does not** render feature tags, detail paragraphs, hotel rows, etc. (`CatalogController` + `catalog/*` views) |
 
 So on the **website**, “**features**” and “**details**” are **only** maintained through the wizard (steps 4 and 6). They are **not** shown again on the catalog list as structured data.
@@ -47,7 +47,7 @@ These tables **are in use on the website** for editing; admin also maintains the
 | `cat_service_detail_topic_category_translations` | Labels | **Yes** (via model) |
 | `cat_service_detail_topics` | Topics (per category) | **Yes** — chosen per line in step 6 |
 | `cat_service_detail_topic_translations` | Topic labels | **Yes** (via model) |
-| `cat_service_details` | Per-service, per-language paragraphs | **Yes** — CRUD in `ServiceDetailsStep` |
+| `service_details` | Per-service, per-language paragraphs | **Yes** — CRUD in `ServiceDetailsStep` |
 
 **Gap:** Same as features — **no** public or account “service detail” view composes these rows for display (only wizard + Filament).
 
@@ -135,7 +135,7 @@ Evidence: matches for `service_hotels`, `service_gastronom`, `service_entertainm
 
 ## 7. Summary — what is missing on the website (product/tech)
 
-1. **Display layer:** Persisted **features** (`service_featurables`) and **details** (`cat_service_details`) are **not surfaced** on catalog, dashboards, or a public service page in this codebase.
+1. **Display layer:** Persisted **features** (`service_featurables`) and **details** (`service_details`) are **not surfaced** on catalog, dashboards, or a public service page in this codebase.
 2. **Activities:** **No** wizard or account UI; **Filament-only**.
 3. **Vertical profiles:** Hotel / entertainment / gastronomy / transfer **submodels are unused** on the website; filling them is **admin-only** today.
 4. **If the goal is parity with Filament:** you would add wizard steps (or a single “specialization” step) per `service_type` code, or reuse Filament-only data read-only on a future “service public profile” view.

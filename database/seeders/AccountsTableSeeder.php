@@ -14,12 +14,12 @@ class AccountsTableSeeder extends Seeder
      */
     public function run()
     {
-
+        
 
         \DB::table('accounts')->delete();
-
+        
         \DB::table('accounts')->insert(array (
-            0 =>
+            0 => 
             array (
                 'id' => 1,
                 'nick' => 'system',
@@ -35,8 +35,24 @@ class AccountsTableSeeder extends Seeder
                 'postal_code' => NULL,
                 'status' => 'active',
             ),
+            1 => 
+            array (
+                'id' => 2,
+                'nick' => 'eb-group-srl',
+                'code' => 'eb-group-srl-879',
+                'name' => 'EB Group SRL',
+                'commercial_name' => 'EB Group SRL',
+                'url' => NULL,
+                'email' => 'promocao@ebgrouptravel.com',
+                'phone' => NULL,
+                'address_line1' => NULL,
+                'address_line2' => NULL,
+                'city_id' => NULL,
+                'postal_code' => NULL,
+                'status' => 'active',
+            ),
         ));
-
-
+        
+        
     }
 }

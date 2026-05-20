@@ -9,16 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Website transfer wizard: copy transfer locations from the template (system) account
+ * Website transfer wizard: copy transfer locations from the system catalog (account_id null)
  * into the current account, scoped by city.
  */
 final class ServiceTransferLocationCatalogBootstrapService
 {
-    public function templateAccountId(): int
-    {
-        return (int) config('services.transfer_vehicle_template_account_id', 1);
-    }
-
     public function accountHasCatalogLocations(int $accountId): bool
     {
         return ServiceTransferLocation::query()
@@ -28,42 +23,37 @@ final class ServiceTransferLocationCatalogBootstrapService
     }
 
     /**
-     * True when the template account has at least one active location linked to a city.
+     * True when the system catalog has at least one active location linked to a city.
      */
-    public function templateHasImportableLocations(): bool
+    public function systemCatalogHasImportableLocations(): bool
     {
         return ServiceTransferLocation::query()
-            ->where('account_id', $this->templateAccountId())
+            ->whereNull('account_id')
             ->where('is_active', true)
             ->whereNotNull('city_id')
             ->exists();
     }
 
     /**
-     * Offer the import dialog when the account has no catalogue locations yet, is not the template account,
-     * and the template has at least one city-scoped location to copy from.
+     * Offer the import dialog when the account has no catalogue locations yet
+     * and the system catalog has at least one city-scoped location to copy from.
      */
     public function shouldShowBootstrapModal(int $accountId): bool
     {
-        if ($accountId === $this->templateAccountId()) {
-            return false;
-        }
-
         if ($this->accountHasCatalogLocations($accountId)) {
             return false;
         }
 
-        return $this->templateHasImportableLocations();
+        return $this->systemCatalogHasImportableLocations();
     }
 
     /**
      * @return array<int, string> city id => city name
      */
-    public function templateCityOptions(): array
+    public function systemCityOptions(): array
     {
-        $tid = $this->templateAccountId();
         $ids = ServiceTransferLocation::query()
-            ->where('account_id', $tid)
+            ->whereNull('account_id')
             ->where('is_active', true)
             ->whereNotNull('city_id')
             ->distinct()
@@ -81,18 +71,18 @@ final class ServiceTransferLocationCatalogBootstrapService
     }
 
     /**
-     * Active template locations for a city (for wizard checkboxes).
+     * Active system-catalog locations for a city (for wizard checkboxes).
      *
      * @return Collection<int, ServiceTransferLocation>
      */
-    public function templateLocationsInCity(int $cityId): Collection
+    public function systemLocationsInCity(int $cityId): Collection
     {
         if ($cityId < 1) {
             return collect();
         }
 
         return ServiceTransferLocation::query()
-            ->where('account_id', $this->templateAccountId())
+            ->whereNull('account_id')
             ->where('city_id', $cityId)
             ->where('is_active', true)
             ->with(['translations.language.locale', 'city', 'locationType.translations.language.locale'])
@@ -103,9 +93,9 @@ final class ServiceTransferLocationCatalogBootstrapService
     /**
      * @return list<string>
      */
-    public function templateLocationIdStringsInCity(int $cityId): array
+    public function systemLocationIdStringsInCity(int $cityId): array
     {
-        return $this->templateLocationsInCity($cityId)
+        return $this->systemLocationsInCity($cityId)
             ->pluck('id')
             ->map(fn ($id) => (string) $id)
             ->values()
@@ -113,11 +103,11 @@ final class ServiceTransferLocationCatalogBootstrapService
     }
 
     /**
-     * Copy selected template locations into the target account (same city, new rows, translations duplicated).
+     * Copy selected system-catalog locations into the target account (same city, new rows, translations duplicated).
      *
      * @param  list<int>  $sourceLocationIds
      */
-    public function importLocationsIntoAccount(int $fromAccountId, int $toAccountId, int $cityId, array $sourceLocationIds): int
+    public function importLocationsIntoAccount(int $toAccountId, int $cityId, array $sourceLocationIds): int
     {
         $sourceLocationIds = array_values(array_unique(array_filter(
             array_map(static fn ($id): int => (int) $id, $sourceLocationIds),
@@ -129,7 +119,7 @@ final class ServiceTransferLocationCatalogBootstrapService
         }
 
         $sources = ServiceTransferLocation::query()
-            ->where('account_id', $fromAccountId)
+            ->whereNull('account_id')
             ->where('city_id', $cityId)
             ->whereIn('id', $sourceLocationIds)
             ->where('is_active', true)

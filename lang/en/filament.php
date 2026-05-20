@@ -520,28 +520,122 @@ return [
             'name' => 'Name',
         ],
 
+        'lmp_country' => 'Country',
+        'lmp_countries' => 'Countries',
+
+        'lmp_country_fields' => [
+            'name' => 'Name',
+            'iso_2' => 'ISO 2',
+            'iso_3' => 'ISO 3',
+            'phonecode' => 'Phone code',
+            'capital' => 'Capital',
+            'currency_id' => 'Currency',
+            'tld' => 'Top-level domain',
+            'emoji' => 'Emoji',
+        ],
+
+        'lmp_country_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'iso_2' => 'ISO 2',
+            'iso_3' => 'ISO 3',
+            'capital' => 'Capital',
+            'currency' => 'Currency',
+        ],
+
+        'lmp_state' => 'State / province',
+        'lmp_states' => 'States / provinces',
+
+        'lmp_state_fields' => [
+            'name' => 'Name',
+            'country_id' => 'Country',
+            'level' => 'Level',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'timezone_id' => 'Timezone ID',
+            'parent_id' => 'Parent state',
+        ],
+
+        'lmp_state_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'country' => 'Country',
+            'parent' => 'Parent state',
+            'level' => 'Level',
+        ],
+
+        'lmp_state_filters' => [
+            'country_id' => 'Country',
+        ],
+
+        'lmp_city' => 'City',
+        'lmp_cities' => 'Cities',
+
+        'lmp_city_fields' => [
+            'name' => 'Name',
+            'state_id' => 'State / province',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'timezone_id' => 'Timezone ID',
+        ],
+
+        'lmp_city_columns' => [
+            'id' => 'ID',
+            'name' => 'Name',
+            'state' => 'State / province',
+            'country' => 'Country',
+        ],
+
+        'lmp_city_filters' => [
+            'country_id' => 'Country',
+            'state_id' => 'State / province',
+        ],
+
         'currency_cat_catalog_label' => 'Currency #:id (ref #:ref)',
 
         'currency_rate' => 'Exchange rate',
         'currency_rates' => 'Exchange rates',
 
         'currency_rate_fields' => [
+            'account_id' => 'Account',
+            'account_id_help' => 'Leave empty for official system rates. Set an account for a tenant-specific override.',
             'currency_id' => 'Currency',
-            'units_per_usd' => 'Units per 1 USD',
-            'units_per_usd_help' => 'How many units of this currency equal 1 US dollar. For USD this is always 1.',
+            'source' => 'Source',
+            'source_help' => 'Reserved for future use (different rate providers).',
+            'units_per_usd_buy' => 'Buy (units per 1 USD)',
+            'units_per_usd_sell' => 'Sell (units per 1 USD)',
+            'units_per_usd_help' => 'How many units of this currency equal 1 US dollar. For USD both are always 1.',
             'starting_at' => 'Effective from',
-            'starting_at_help' => 'This rate applies from this date (start of day) until a newer row exists for the same currency.',
+            'starting_at_help' => 'This rate applies from this date (start of day) until a newer row exists for the same scope.',
+            'is_active' => 'Active',
         ],
 
         'currency_rate_columns' => [
             'id' => 'ID',
+            'account' => 'Scope',
             'currency' => 'Currency',
-            'units_per_usd' => 'Units / USD',
+            'units_per_usd_buy' => 'Buy / USD',
+            'units_per_usd_sell' => 'Sell / USD',
             'starting_at' => 'Effective from',
+            'is_active' => 'Active',
+        ],
+
+        'currency_rate_scope' => [
+            'system' => 'System',
+        ],
+
+        'currency_rate_filters' => [
+            'all_active_states' => 'All',
+            'active_only' => 'Active only',
+            'inactive_only' => 'Inactive only',
+            'scope' => 'Scope',
+            'all_scopes' => 'All scopes',
+            'system_only' => 'System only',
+            'tenant_only' => 'Tenant overrides only',
         ],
 
         'currency_rate_validation' => [
-            'duplicate_starting_at' => 'A rate for this currency with the same effective date already exists.',
+            'duplicate_starting_at' => 'A rate for this currency, scope and effective date already exists.',
             'units_must_be_positive' => 'The value must be greater than zero.',
         ],
 
@@ -1553,7 +1647,7 @@ return [
                 'price_list_items' => 'Price list items',
                 'allocations' => 'Allocations',
                 'service_offers' => 'Service offers',
-                'operator_catalog_items' => 'Operator catalog items',
+                'operator_package_items' => 'Operator package items',
                 'media_files' => 'Media library files',
                 'hotel_type_assignments' => 'Hotel type assignments',
                 'service_hotels' => 'Hotel profile rows',

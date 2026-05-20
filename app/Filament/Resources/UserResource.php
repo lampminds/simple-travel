@@ -6,7 +6,7 @@ use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Account;
 use App\Models\User;
-use App\Services\WebsiteImpersonationTokenService;
+use App\Filament\Actions\OpenWebsiteImpersonationAction;
 use BackedEnum;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
@@ -21,9 +21,7 @@ use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\TextSize;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
@@ -280,60 +278,7 @@ class UserResource extends LmpResource
                         ->icon('heroicon-o-eye')
                         ->url(fn (User $record): string => static::getUrl('view', ['record' => $record])),
                     EditAction::make(),
-                    Action::make('openWebsiteImpersonation')
-                        ->label(__('filament.resources.user_actions.open_website_impersonation'))
-                        ->tooltip(__('filament.resources.user_actions.open_website_impersonation_tooltip'))
-                        ->icon('heroicon-o-link')
-                        ->modalHeading(__('filament.resources.user_actions.impersonation_modal_heading'))
-                        ->modalWidth('2xl')
-                        ->fillForm(function (Action $action): array {
-                            $record = $action->getRecord();
-                            if (! $record instanceof User) {
-                                return ['error' => __('filament.resources.user_actions.impersonation_forbidden'), 'url' => ''];
-                            }
-                            $admin = Filament::auth()->user();
-                            if (! $admin instanceof User || ! $admin->belongsToPlatformAccount()) {
-                                return ['error' => __('filament.resources.user_actions.impersonation_forbidden'), 'url' => ''];
-                            }
-                            if ((int) $admin->id === (int) $record->id || $record->belongsToPlatformAccount()) {
-                                return ['error' => __('filament.resources.user_actions.impersonation_invalid_target'), 'url' => ''];
-                            }
-                            try {
-                                $svc = app(WebsiteImpersonationTokenService::class);
-                                $plain = $svc->createToken($record, $admin);
-                                $url = $svc->urlForPlainToken($plain);
-
-                                return ['error' => null, 'url' => $url];
-                            } catch (\InvalidArgumentException $e) {
-                                return ['error' => $e->getMessage(), 'url' => ''];
-                            }
-                        })
-                        ->schema(fn (): array => [
-                            Text::make(fn (Get $get): string => (string) $get('error'))
-                                ->color('danger')
-                                ->visible(fn (Get $get): bool => filled($get('error'))),
-                            Text::make(__('filament.resources.user_actions.impersonation_modal_help'))
-                                ->color('gray')
-                                ->size(TextSize::Small)
-                                ->visible(fn (Get $get): bool => blank($get('error'))),
-                            TextInput::make('url')
-                                ->hiddenLabel()
-                                ->readOnly()
-                                ->copyable()
-                                ->extraInputAttributes([
-                                    'aria-label' => __('filament.resources.user_actions.impersonation_link_aria'),
-                                ])
-                                ->visible(fn (Get $get): bool => blank($get('error'))),
-                            Text::make(__('filament.resources.user_actions.impersonation_copy_hint'))
-                                ->color('gray')
-                                ->size(TextSize::Small)
-                                ->visible(fn (Get $get): bool => blank($get('error'))),
-                        ])
-                        ->modalCancelActionLabel(__('filament.common.close'))
-                        ->modalSubmitAction(false)
-                        ->action(fn () => null)
-                        ->visible(fn (): bool => Filament::auth()->user() instanceof User
-                            && Filament::auth()->user()->belongsToPlatformAccount()),
+                    OpenWebsiteImpersonationAction::make(),
                 ]),
             ], position: RecordActionsPosition::BeforeColumns);
     }

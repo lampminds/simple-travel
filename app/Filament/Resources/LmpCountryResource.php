@@ -24,15 +24,25 @@ class LmpCountryResource extends BaseResource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?string $modelLabel = 'Country';
+    protected static ?string $modelLabel = 'filament.resources.lmp_country';
 
-    protected static ?string $pluralModelLabel = 'Countries';
+    protected static ?string $pluralModelLabel = 'filament.resources.lmp_countries';
 
     protected static ?string $recordTitleAttribute = 'name';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
 
     protected static ?string $cluster = AdministrationCluster::class;
+
+    public static function getModelLabel(): string
+    {
+        return (string) __(static::$modelLabel);
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return (string) __(static::$pluralModelLabel);
+    }
 
     public static function getNavigationGroup(): ?string
     {
@@ -60,31 +70,31 @@ class LmpCountryResource extends BaseResource
         return [
             Section::make('')->schema([
                 TextInput::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_country_fields.name'))
                     ->required()
                     ->maxLength(255),
                 TextInput::make('iso_2')
-                    ->label('ISO 2')
+                    ->label(__('filament.resources.lmp_country_fields.iso_2'))
                     ->maxLength(2),
                 TextInput::make('iso_3')
-                    ->label('ISO 3')
+                    ->label(__('filament.resources.lmp_country_fields.iso_3'))
                     ->maxLength(3),
                 TextInput::make('phonecode')
-                    ->label('Phone Code')
+                    ->label(__('filament.resources.lmp_country_fields.phonecode'))
                     ->maxLength(20),
                 TextInput::make('capital')
-                    ->label('Capital')
+                    ->label(__('filament.resources.lmp_country_fields.capital'))
                     ->maxLength(255),
                 Select::make('currency_id')
-                    ->label('Currency')
+                    ->label(__('filament.resources.lmp_country_fields.currency_id'))
                     ->options(fn () => LmpCurrency::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->preload(),
                 TextInput::make('tld')
-                    ->label('Top Level Domain')
+                    ->label(__('filament.resources.lmp_country_fields.tld'))
                     ->maxLength(10),
                 TextInput::make('emoji')
-                    ->label('Emoji')
+                    ->label(__('filament.resources.lmp_country_fields.emoji'))
                     ->maxLength(20),
             ])->columns(2),
         ];
@@ -95,26 +105,26 @@ class LmpCountryResource extends BaseResource
         return parent::table($table)
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->label(__('filament.resources.lmp_country_columns.id'))
                     ->sortable(),
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label(__('filament.resources.lmp_country_columns.name'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('iso_2')
-                    ->label('ISO 2')
+                    ->label(__('filament.resources.lmp_country_columns.iso_2'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('iso_3')
-                    ->label('ISO 3')
+                    ->label(__('filament.resources.lmp_country_columns.iso_3'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('capital')
-                    ->label('Capital')
+                    ->label(__('filament.resources.lmp_country_columns.capital'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('currency.name')
-                    ->label('Currency')
+                    ->label(__('filament.resources.lmp_country_columns.currency'))
                     ->searchable()
                     ->sortable(),
             ])

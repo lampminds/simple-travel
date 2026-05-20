@@ -35,11 +35,16 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('operator_price_list_id')->constrained();
-            $table->foreignId('operator_service_catalog_id')
-                ->constrained('operator_service_catalog', 'id', 'pl_items_catalog_fk');
+            $table->foreignId('operator_package_item_id')
+                ->constrained('operator_package_items', 'id', 'pl_items_op_fk');
 
             $table->decimal('price', 10, 2);
-            $table->enum('pricing_mode', ['fixed', 'percentage'])->default('fixed');
+            $table->enum('pricing_mode', ['fixed_delta', 'percentage', 'direct'])->default('direct');
+
+            $table->unique(
+                ['operator_price_list_id', 'operator_package_item_id'],
+                'opl_items_list_package_unique'
+            );
         });
 
         Schema::create('operator_price_list_assignments', function (Blueprint $table) {

@@ -30,12 +30,12 @@ class InvitationLinkController extends Controller
 
             if ($accepted) {
                 return redirect()
-                    ->route('account.relationships.index')
+                    ->route('account.dashboard')
                     ->with('status', __('invitations.accepted_relationship'));
             }
 
             return redirect()
-                ->route('account.relationships.index')
+                ->route('account.dashboard')
                 ->with('status', __('invitations.accept_not_available'));
         }
 

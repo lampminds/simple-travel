@@ -22,7 +22,7 @@ class TodoTasksTableSeeder extends Seeder
             0 => 
             array (
                 'id' => 1,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'complete_profile',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -36,7 +36,7 @@ class TodoTasksTableSeeder extends Seeder
             1 => 
             array (
                 'id' => 2,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'create_first_service',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -50,7 +50,7 @@ class TodoTasksTableSeeder extends Seeder
             2 => 
             array (
                 'id' => 3,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'complete_user_profile',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -64,7 +64,7 @@ class TodoTasksTableSeeder extends Seeder
             3 => 
             array (
                 'id' => 4,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'add_availability',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -78,7 +78,7 @@ class TodoTasksTableSeeder extends Seeder
             4 => 
             array (
                 'id' => 5,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'set_pricing',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -92,7 +92,7 @@ class TodoTasksTableSeeder extends Seeder
             5 => 
             array (
                 'id' => 6,
-                'account_id' => 1,
+                'account_id' => null,
                 'code' => 'upload_images',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('service_transfer_vehicle_types', function (Blueprint $table) {
 
             $table->id();
-            $table->foreignId('account_id')->constrained();
+            $table->foreignId('account_id')->nullable()->constrained();
             $table->string('code')->nullable();
             $table->unsignedBigInteger('service_transfer_vehicle_type_category_id')->nullable();
             $table->foreign('service_transfer_vehicle_type_category_id', 'stvt_category_fk')

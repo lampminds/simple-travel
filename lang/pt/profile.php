@@ -33,6 +33,12 @@ return [
     'email_changed_verify' => 'O seu e-mail foi alterado. Confirme o novo endereço através da ligação que lhe enviámos.',
 
     'profile_updated' => 'O seu perfil pessoal foi atualizado.',
+
+    'visibility_heading' => 'Visibilidade para empresas ligadas',
+    'visibility_help' => 'Quando a sua empresa tem uma relação comercial aprovada com outra conta, estas opções definem se os utilizadores dessa conta podem encontrá-lo e contactá-lo.',
+    'is_public_contact' => 'Contacto público',
+    'is_preferred_contact_mode' => 'Contacto preferido',
+    'is_preferred_contact_mode_help' => 'Sugere que seja a primeira pessoa a contactar na sua empresa (é apenas uma recomendação para a outra parte).',
     'password_heading' => 'Alterar palavra-passe',
     'current_password' => 'Palavra-passe atual',
     'new_password' => 'Nova palavra-passe',

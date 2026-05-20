@@ -34,7 +34,7 @@ final class ServiceCascadeDeletion
 
         $add('filament.resources.service_delete_cascade.labels.translations', (int) DB::table('service_translations')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.experience_assignments', (int) DB::table('service_experience_assignments')->where('service_id', $serviceId)->count());
-        $add('filament.resources.service_delete_cascade.labels.details', (int) DB::table('cat_service_details')->where('service_id', $serviceId)->count());
+        $add('filament.resources.service_delete_cascade.labels.details', (int) DB::table('service_details')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.feature_links', (int) DB::table('service_featurables')
             ->where('service_featurable_type', Service::class)
             ->where('service_featurable_id', $serviceId)
@@ -60,7 +60,7 @@ final class ServiceCascadeDeletion
             ->count());
 
         $add('filament.resources.service_delete_cascade.labels.service_offers', self::countServiceOffers($serviceId, $variantIds));
-        $add('filament.resources.service_delete_cascade.labels.operator_catalog_items', self::countOperatorCatalogItems($serviceId, $variantIds));
+        $add('filament.resources.service_delete_cascade.labels.operator_package_items', self::countOperatorPackageItems($serviceId, $variantIds));
 
         $serviceMorph = $service->getMorphClass();
         $variantMorph = (new ServiceVariant)->getMorphClass();
@@ -135,7 +135,7 @@ final class ServiceCascadeDeletion
                 DB::table('service_variant_availability_rules')->whereIn('service_variant_id', $variantIds)->delete();
             }
 
-            self::deleteOperatorCatalogItems($serviceId, $variantIds);
+            self::deleteOperatorPackageItems($serviceId, $variantIds);
             self::deleteServiceOffers($serviceId, $variantIds);
 
             if ($variantIds->isNotEmpty()) {
@@ -168,7 +168,7 @@ final class ServiceCascadeDeletion
             DB::table('service_hotels')->where('service_id', $serviceId)->delete();
             DB::table('service_activities')->where('service_id', $serviceId)->delete();
 
-            DB::table('cat_service_details')->where('service_id', $serviceId)->delete();
+            DB::table('service_details')->where('service_id', $serviceId)->delete();
             DB::table('service_experience_assignments')->where('service_id', $serviceId)->delete();
             DB::table('service_featurables')
                 ->where('service_featurable_type', Service::class)
@@ -206,9 +206,9 @@ final class ServiceCascadeDeletion
     /**
      * @param  Collection<int, int>  $variantIds
      */
-    private static function countOperatorCatalogItems(int $serviceId, Collection $variantIds): int
+    private static function countOperatorPackageItems(int $serviceId, Collection $variantIds): int
     {
-        return (int) DB::table('operator_catalog_items')
+        return (int) DB::table('operator_package_items')
             ->where(function ($q) use ($serviceId, $variantIds): void {
                 $q->where('service_id', $serviceId);
                 if ($variantIds->isNotEmpty()) {
@@ -236,9 +236,9 @@ final class ServiceCascadeDeletion
     /**
      * @param  Collection<int, int>  $variantIds
      */
-    private static function deleteOperatorCatalogItems(int $serviceId, Collection $variantIds): void
+    private static function deleteOperatorPackageItems(int $serviceId, Collection $variantIds): void
     {
-        DB::table('operator_catalog_items')
+        DB::table('operator_package_items')
             ->where(function ($q) use ($serviceId, $variantIds): void {
                 $q->where('service_id', $serviceId);
                 if ($variantIds->isNotEmpty()) {

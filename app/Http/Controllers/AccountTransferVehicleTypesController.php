@@ -32,14 +32,12 @@ final class AccountTransferVehicleTypesController extends Controller
             ->paginate(25);
 
         $bootstrapSvc = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $templateAccountId = $bootstrapSvc->templateAccountId();
-        $importCatalogAvailable = (int) $account->id !== $templateAccountId
-            && $bootstrapSvc->templateAccountHasVehicleTypes();
+        $importCatalogAvailable = $bootstrapSvc->systemCatalogHasVehicleTypes();
         $importCatalogCategoryOptions = [];
         $importCatalogGrouped = collect();
         if ($importCatalogAvailable) {
-            $importCatalogCategoryOptions = $bootstrapSvc->templateCategoryCheckboxOptions($templateAccountId);
-            $importCatalogGrouped = $bootstrapSvc->orderedTemplateTypesGrouped($templateAccountId);
+            $importCatalogCategoryOptions = $bootstrapSvc->systemCategoryCheckboxOptions();
+            $importCatalogGrouped = $bootstrapSvc->orderedSystemTypesGrouped();
         }
 
         return view('account.transfer-vehicle-types.index', [
@@ -55,17 +53,14 @@ final class AccountTransferVehicleTypesController extends Controller
     {
         $account = $this->resolveCurrentAccount($request);
         $bootstrap = app(ServiceTransferVehicleCatalogBootstrapService::class);
-        $templateId = $bootstrap->templateAccountId();
 
-        abort_if((int) $account->id === $templateId, 403);
-
-        if (! $bootstrap->templateAccountHasVehicleTypes()) {
+        if (! $bootstrap->systemCatalogHasVehicleTypes()) {
             return redirect()
                 ->route('account.transfer-vehicle-types.index')
                 ->with('error', __('account.transfer_vehicle_types.import_template_empty'));
         }
 
-        $allowedIds = $bootstrap->templateVehicleTypes($templateId)->pluck('id')->all();
+        $allowedIds = $bootstrap->systemVehicleTypes()->pluck('id')->all();
 
         $validated = $request->validate(
             [
@@ -79,7 +74,6 @@ final class AccountTransferVehicleTypesController extends Controller
         );
 
         $imported = $bootstrap->importTypesIntoAccount(
-            $templateId,
             (int) $account->id,
             $validated['template_type_ids']
         );

@@ -479,28 +479,122 @@ return [
             'name' => 'Nome',
         ],
 
+        'lmp_country' => 'País',
+        'lmp_countries' => 'Países',
+
+        'lmp_country_fields' => [
+            'name' => 'Nome',
+            'iso_2' => 'ISO 2',
+            'iso_3' => 'ISO 3',
+            'phonecode' => 'Código telefónico',
+            'capital' => 'Capital',
+            'currency_id' => 'Moeda',
+            'tld' => 'Domínio de nível superior',
+            'emoji' => 'Emoji',
+        ],
+
+        'lmp_country_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'iso_2' => 'ISO 2',
+            'iso_3' => 'ISO 3',
+            'capital' => 'Capital',
+            'currency' => 'Moeda',
+        ],
+
+        'lmp_state' => 'Estado / província',
+        'lmp_states' => 'Estados / províncias',
+
+        'lmp_state_fields' => [
+            'name' => 'Nome',
+            'country_id' => 'País',
+            'level' => 'Nível',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'timezone_id' => 'ID do fuso horário',
+            'parent_id' => 'Estado pai',
+        ],
+
+        'lmp_state_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'country' => 'País',
+            'parent' => 'Estado pai',
+            'level' => 'Nível',
+        ],
+
+        'lmp_state_filters' => [
+            'country_id' => 'País',
+        ],
+
+        'lmp_city' => 'Cidade',
+        'lmp_cities' => 'Cidades',
+
+        'lmp_city_fields' => [
+            'name' => 'Nome',
+            'state_id' => 'Estado / província',
+            'latitude' => 'Latitude',
+            'longitude' => 'Longitude',
+            'timezone_id' => 'ID do fuso horário',
+        ],
+
+        'lmp_city_columns' => [
+            'id' => 'ID',
+            'name' => 'Nome',
+            'state' => 'Estado / província',
+            'country' => 'País',
+        ],
+
+        'lmp_city_filters' => [
+            'country_id' => 'País',
+            'state_id' => 'Estado / província',
+        ],
+
         'currency_cat_catalog_label' => 'Moeda #:id (ref #:ref)',
 
         'currency_rate' => 'Taxa de câmbio',
         'currency_rates' => 'Taxas de câmbio',
 
         'currency_rate_fields' => [
+            'account_id' => 'Conta',
+            'account_id_help' => 'Deixe vazio para taxas oficiais do sistema. Indique uma conta para override do cliente.',
             'currency_id' => 'Moeda',
-            'units_per_usd' => 'Unidades por 1 USD',
-            'units_per_usd_help' => 'Quantas unidades desta moeda equivalem a 1 dólar americano. Para USD é sempre 1.',
+            'source' => 'Fonte',
+            'source_help' => 'Reservado para uso futuro (diferentes fontes de cotação).',
+            'units_per_usd_buy' => 'Compra (unidades por 1 USD)',
+            'units_per_usd_sell' => 'Venda (unidades por 1 USD)',
+            'units_per_usd_help' => 'Quantas unidades desta moeda equivalem a 1 dólar. Para USD ambos são 1.',
             'starting_at' => 'Válido a partir de',
-            'starting_at_help' => 'Esta taxa vale a partir desta data (início do dia) até existir um registro mais recente para a mesma moeda.',
+            'starting_at_help' => 'Válido a partir desta data (início do dia) até um registro mais recente do mesmo âmbito.',
+            'is_active' => 'Ativo',
         ],
 
         'currency_rate_columns' => [
             'id' => 'ID',
+            'account' => 'Âmbito',
             'currency' => 'Moeda',
-            'units_per_usd' => 'Unid. / USD',
+            'units_per_usd_buy' => 'Compra / USD',
+            'units_per_usd_sell' => 'Venda / USD',
             'starting_at' => 'Válido a partir de',
+            'is_active' => 'Ativo',
+        ],
+
+        'currency_rate_scope' => [
+            'system' => 'Sistema',
+        ],
+
+        'currency_rate_filters' => [
+            'all_active_states' => 'Todos',
+            'active_only' => 'Somente ativos',
+            'inactive_only' => 'Somente inativos',
+            'scope' => 'Âmbito',
+            'all_scopes' => 'Todos os âmbitos',
+            'system_only' => 'Somente sistema',
+            'tenant_only' => 'Somente overrides de conta',
         ],
 
         'currency_rate_validation' => [
-            'duplicate_starting_at' => 'Já existe uma taxa para esta moeda com a mesma data de vigência.',
+            'duplicate_starting_at' => 'Já existe uma taxa para esta moeda, âmbito e data de vigência.',
             'units_must_be_positive' => 'O valor deve ser maior que zero.',
         ],
 
@@ -1480,7 +1574,7 @@ return [
                 'price_list_items' => 'Itens de listas de preços',
                 'allocations' => 'Alocações',
                 'service_offers' => 'Ofertas entre fornecedor e operador',
-                'operator_catalog_items' => 'Itens do catálogo do operador',
+                'operator_package_items' => 'Itens de pacotes do operador',
                 'media_files' => 'Ficheiros na biblioteca de média',
                 'hotel_type_assignments' => 'Atribuições de tipos de hotel',
                 'service_hotels' => 'Linhas de perfil hoteleiro',
