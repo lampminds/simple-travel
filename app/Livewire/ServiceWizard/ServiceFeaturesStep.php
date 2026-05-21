@@ -53,7 +53,7 @@ class ServiceFeaturesStep extends Component
     public function selectAllCategories(): void
     {
         $catalog = app(ServiceFeatureSelectionService::class);
-        $this->categoryIds = collect(array_keys($catalog->categoryCheckboxOptions()))
+        $this->categoryIds = collect(array_keys($catalog->categoryCheckboxOptionsForServiceType($this->serviceTypeId)))
             ->map(fn ($k) => (string) $k)
             ->values()
             ->all();
@@ -230,7 +230,7 @@ class ServiceFeaturesStep extends Component
         }
 
         return view('livewire.service-wizard.service-features-step', [
-            'categoryOptions' => $catalog->categoryCheckboxOptions(),
+            'categoryOptions' => $catalog->categoryCheckboxOptionsForServiceType($this->serviceTypeId),
             'scopedCount' => $scoped->count(),
             'groupedFeatures' => $orderedGrouped,
         ]);

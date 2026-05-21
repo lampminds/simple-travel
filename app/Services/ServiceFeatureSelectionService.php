@@ -55,8 +55,49 @@ class ServiceFeatureSelectionService
      */
     public function categoryCheckboxOptions(): array
     {
+        return $this->categoryLabelsForIds($this->allActiveCategoryIds());
+    }
+
+    /**
+     * Category filter options for a service type: only categories with at least one scoped, selectable feature.
+     *
+     * @return array<string, string> id => label
+     */
+    public function categoryCheckboxOptionsForServiceType(int $serviceTypeId): array
+    {
+        $scoped = $this->scopedFeatureIdsForServiceType($serviceTypeId);
+        if ($scoped->isEmpty()) {
+            return [];
+        }
+
+        $categoryIds = ServiceFeature::query()
+            ->where('active', true)
+            ->where('is_selectable', true)
+            ->whereIn('id', $scoped->all())
+            ->distinct()
+            ->pluck('service_feature_category_id')
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        return $this->categoryLabelsForIds($categoryIds);
+    }
+
+    /**
+     * @param  array<int>  $categoryIds
+     * @return array<string, string>
+     */
+    private function categoryLabelsForIds(array $categoryIds): array
+    {
+        if ($categoryIds === []) {
+            return [];
+        }
+
         return ServiceFeatureCategory::query()
             ->where('active', true)
+            ->whereIn('id', $categoryIds)
             ->with(['translations.language.locale'])
             ->ordered()
             ->get()
