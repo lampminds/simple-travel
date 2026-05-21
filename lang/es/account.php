@@ -393,7 +393,20 @@ return [
         'page_title' => 'Relaciones comerciales — Prompt',
         'heading' => 'Relaciones comerciales',
         'intro' => 'Vínculos comerciales activos o históricos para :account.',
+        'intro_provider' => 'Operadores vinculados a :account como prestador (aprobadas, suspendidas o finalizadas).',
+        'intro_operator' => 'Prestadores vinculados a :account como operador (aprobadas, suspendidas o finalizadas).',
         'empty' => 'No hay relaciones comerciales para esta cuenta.',
+        'empty_invite' => 'Invitar una empresa',
+        'hub_page_title' => 'Relaciones comerciales — Prompt',
+        'hub_heading' => '¿Cómo querés ver las relaciones?',
+        'hub_intro' => 'Esta cuenta es prestador y operador a la vez. Elegí qué vínculos listar.',
+        'hub_card_provider_title' => 'Como prestador',
+        'hub_card_provider_desc' => 'Operadores con los que trabaja tu empresa.',
+        'hub_card_provider_button' => 'Ver vínculos con operadores',
+        'hub_card_operator_title' => 'Como operador',
+        'hub_card_operator_desc' => 'Prestadores con los que trabaja tu empresa.',
+        'hub_card_operator_button' => 'Ver vínculos con prestadores',
+        'hub_back' => 'Cambiar vista',
         'columns' => [
             'role' => 'Tu rol',
             'counterpart' => 'Cuenta vinculada',
@@ -418,6 +431,7 @@ return [
         ],
         'actions' => [
             'manage_offers' => 'Gestionar ofertas de catálogo',
+            'view_offers' => 'Propuestas de catálogo entrantes',
         ],
     ],
 

@@ -314,11 +314,48 @@ return [
     'service_offers_nav' => 'Disponibilidade do catálogo',
 
     'relationships' => [
+        'page_title' => 'Relações comerciais — Prompt',
+        'heading' => 'Relações comerciais',
+        'intro' => 'Vínculos comerciais ativos ou históricos para :account.',
+        'intro_provider' => 'Operadores ligados a :account como prestador (aprovadas, suspensas ou terminadas).',
+        'intro_operator' => 'Prestadores ligados a :account como operador (aprovadas, suspensas ou terminadas).',
+        'empty' => 'Não há relações comerciais para esta conta.',
+        'empty_invite' => 'Convidar uma empresa',
+        'hub_page_title' => 'Relações comerciais — Prompt',
+        'hub_heading' => 'Como pretende ver as relações?',
+        'hub_intro' => 'Esta conta é prestador e operador. Escolha que vínculos listar.',
+        'hub_card_provider_title' => 'Como prestador',
+        'hub_card_provider_desc' => 'Operadores com os quais a sua empresa trabalha.',
+        'hub_card_provider_button' => 'Ver vínculos com operadores',
+        'hub_card_operator_title' => 'Como operador',
+        'hub_card_operator_desc' => 'Prestadores com os quais a sua empresa trabalha.',
+        'hub_card_operator_button' => 'Ver vínculos com prestadores',
+        'hub_back' => 'Mudar vista',
         'columns' => [
+            'role' => 'O seu papel',
+            'counterpart' => 'Conta ligada',
+            'status' => 'Estado',
+            'created_via' => 'Origem',
+            'approved_at' => 'Aprovada em',
             'actions' => 'Ações',
+        ],
+        'role' => [
+            'operator' => 'Operador',
+            'provider' => 'Prestador',
+        ],
+        'status' => [
+            'approved' => 'Aprovada',
+            'suspended' => 'Suspensa',
+            'terminated' => 'Terminada',
+        ],
+        'created_via' => [
+            'invitation' => 'Convite',
+            'manual' => 'Manual',
+            'system' => 'Sistema',
         ],
         'actions' => [
             'manage_offers' => 'Gerir ofertas do catálogo',
+            'view_offers' => 'Propostas de catálogo recebidas',
         ],
     ],
 

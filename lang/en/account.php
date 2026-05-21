@@ -393,7 +393,20 @@ return [
         'page_title' => 'Commercial relationships — Prompt',
         'heading' => 'Commercial relationships',
         'intro' => 'Active or historical commercial links for :account.',
+        'intro_provider' => 'Operators linked to :account as a provider (approved, suspended, or ended).',
+        'intro_operator' => 'Providers linked to :account as an operator (approved, suspended, or ended).',
         'empty' => 'There are no commercial relationships for this account.',
+        'empty_invite' => 'Invite a company',
+        'hub_page_title' => 'Commercial relationships — Prompt',
+        'hub_heading' => 'How do you want to view relationships?',
+        'hub_intro' => 'This account is both provider and operator. Choose which links to list.',
+        'hub_card_provider_title' => 'As provider',
+        'hub_card_provider_desc' => 'Operators your company works with.',
+        'hub_card_provider_button' => 'View operator links',
+        'hub_card_operator_title' => 'As operator',
+        'hub_card_operator_desc' => 'Providers your company works with.',
+        'hub_card_operator_button' => 'View provider links',
+        'hub_back' => 'Change view',
         'columns' => [
             'role' => 'Your role',
             'counterpart' => 'Linked account',
@@ -418,6 +431,7 @@ return [
         ],
         'actions' => [
             'manage_offers' => 'Manage catalog offers',
+            'view_offers' => 'Incoming catalog proposals',
         ],
     ],
 

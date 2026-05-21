@@ -9,7 +9,6 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\AccountSelectionController;
 use App\Http\Controllers\OperatorDashboardController;
 use App\Http\Controllers\AgencyDashboardController;
-use App\Http\Controllers\RelationshipsDemoController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Controllers\SelectDashboardLaneController;
@@ -18,6 +17,7 @@ use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\AccountContactsController;
+use App\Http\Controllers\AccountRelationshipController;
 use App\Http\Controllers\AccountProviderPriceListController;
 use App\Http\Controllers\AccountOperatorPriceListController;
 use App\Http\Controllers\AccountOperatorPackageController;
@@ -113,6 +113,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/notifications/{notification}/read', [AccountNotificationsController::class, 'markAsRead'])
         ->name('account.notifications.read');
 
+    Route::get('account/relationships', [AccountRelationshipController::class, 'index'])->name('account.relationships.index');
+
     Route::get('account/contacts', [AccountContactsController::class, 'index'])->name('account.contacts.index');
     Route::get('account/contacts/{accountPerson}', [AccountContactsController::class, 'show'])->name('account.contacts.show');
     Route::post('account/contacts/{accountPerson}/message', [AccountContactsController::class, 'storeMessage'])
@@ -197,7 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('account/transfer-vehicle-types/{transfer_vehicle_type}', [AccountTransferVehicleTypesController::class, 'destroy'])
         ->name('account.transfer-vehicle-types.destroy');
 
-    Route::get('relationships', [RelationshipsDemoController::class, 'index'])->name('relationships');
+    Route::get('relationships', fn () => redirect()->route('account.relationships.index'))->name('relationships');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
     // Account dashboards by account category (must be protected against public catch-alls).
@@ -207,7 +209,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('dashboard', [ProviderDashboardController::class, 'show'])
                 ->defaults('menu_type_id', AccountTypeCategoryIds::PROVIDER)
                 ->name('dashboard');
-            Route::get('relationships', [RelationshipsDemoController::class, 'provider'])
+            Route::get('relationships', fn () => redirect()->route('account.relationships.index', ['as' => 'provider']))
                 ->defaults('menu_type_id', AccountTypeCategoryIds::PROVIDER)
                 ->name('relationships');
         });
@@ -218,7 +220,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('dashboard', [OperatorDashboardController::class, 'show'])
                 ->defaults('menu_type_id', AccountTypeCategoryIds::OPERATOR)
                 ->name('dashboard');
-            Route::get('relationships', [RelationshipsDemoController::class, 'operator'])
+            Route::get('relationships', fn () => redirect()->route('account.relationships.index', ['as' => 'operator']))
                 ->defaults('menu_type_id', AccountTypeCategoryIds::OPERATOR)
                 ->name('relationships');
         });
