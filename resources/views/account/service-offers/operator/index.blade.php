@@ -39,8 +39,9 @@
                                         <tbody>
                                             @foreach ($offers as $offer)
                                                 @php
+                                                    $isWholeService = $offer->service_id !== null && $offer->service_variant_id === null;
                                                     $v = $offer->serviceVariant;
-                                                    $svc = $v?->service;
+                                                    $svc = $isWholeService ? $offer->service : $v?->service;
                                                     $providerLabel = $offer->providerAccount?->commercial_name
                                                         ?? $offer->providerAccount?->name
                                                         ?? ('#' . $offer->provider_id);
@@ -48,7 +49,13 @@
                                                 <tr>
                                                     <td class="fw-medium">{{ $providerLabel }}</td>
                                                     <td>{{ $svc && $svc->name !== '' ? $svc->name : ('—') }}</td>
-                                                    <td>{{ $v && $v->name !== '' ? $v->name : ($v?->sku ?? '—') }}</td>
+                                                    <td>
+                                                        @if ($isWholeService)
+                                                            <span class="text-muted">{{ __('account.service_offers.whole_service_label') }}</span>
+                                                        @else
+                                                            {{ $v && $v->name !== '' ? $v->name : ($v?->sku ?? '—') }}
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $offer->offered_at?->format('Y-m-d H:i') ?? '—' }}</td>
                                                     <td class="text-end text-nowrap">
                                                         <form method="POST" action="{{ route('account.service-offers.accept', $offer) }}" class="d-inline">

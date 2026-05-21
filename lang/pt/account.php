@@ -383,6 +383,10 @@ return [
         'provider_edit_col_operator_price' => 'Preço operador (hoje)',
         'provider_edit_price_breakdown_aria' => 'Ver detalhe do preço',
         'provider_edit_col_propose' => 'Propor',
+        'provider_edit_empty_services' => 'Não há serviços no catálogo que correspondam ao filtro atual.',
+        'provider_edit_whole_service_row' => 'Serviço completo (todas as variantes)',
+        'provider_edit_price_varies_by_variant' => 'Conforme variante',
+        'whole_service_label' => 'Serviço completo',
         'price_breakdown' => [
             'base' => 'Base: :amount :currency',
             'list_with_effect' => 'Lista «:name» (:effect): :amount :currency',

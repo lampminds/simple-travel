@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\PriceListAssignment;
 use App\Models\PriceListItem;
+use App\Models\Service;
 use App\Models\ServiceVariant;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -94,6 +95,89 @@ final class OperatorVariantPriceResolver
         }
 
         if ($afterLine === null) {
+            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
+
+            return $this->pack(null, $code, $lines, $providerAccountId);
+        }
+
+        $final = $this->applyAssignmentAdjustment($afterLine, $assignment);
+        $adjType = (string) ($assignment->adjustment_type ?? 'none');
+        $adjVal = (float) ($assignment->adjustment_value ?? 0.0);
+
+        if ($adjType === 'percentage' && abs($adjVal) > 1.0e-9) {
+            $effect = $this->signedPercentLabel($adjVal);
+            $lines[] = __('account.service_offers.price_breakdown.adjustment', [
+                'effect' => $effect,
+                'amount' => $this->formatMoney($final, $providerAccountId),
+                'currency' => $code,
+            ]);
+        } elseif ($adjType === 'fixed' && abs($adjVal) > 1.0e-9) {
+            $effect = $this->signedNumberLabel($adjVal);
+            $lines[] = __('account.service_offers.price_breakdown.adjustment', [
+                'effect' => $effect,
+                'amount' => $this->formatMoney($final, $providerAccountId),
+                'currency' => $code,
+            ]);
+        }
+
+        return $this->pack($final, $code, $lines, $providerAccountId);
+    }
+
+    /**
+     * Operator price for a whole-service offer (no variant), from service-wide price list lines only.
+     *
+     * @return array{
+     *     amount: float|null,
+     *     has_amount: bool,
+     *     formatted: string,
+     *     breakdown_html: string
+     * }
+     */
+    public function resolveForService(
+        Service $service,
+        int $providerAccountId,
+        int $operatorAccountId,
+        ?CarbonInterface $pricingDate = null,
+    ): array {
+        $d = Carbon::parse($pricingDate ?? Carbon::today())->startOfDay();
+        $code = '—';
+        $lines = [];
+
+        $assignment = $this->findActiveAssignment($providerAccountId, $operatorAccountId, $d);
+        if ($assignment === null) {
+            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
+
+            return $this->pack(null, $code, $lines, $providerAccountId);
+        }
+
+        $list = $assignment->priceList;
+        $item = $this->findPriceListItemForService($list->id, (int) $service->id);
+
+        if ($item === null) {
+            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
+
+            return $this->pack(null, $code, $lines, $providerAccountId);
+        }
+
+        $afterLine = $this->computeAfterListLine(null, $item);
+        if ($afterLine === null) {
+            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
+
+            return $this->pack(null, $code, $lines, $providerAccountId);
+        }
+
+        $listName = (string) $list->name;
+        if ($item->pricing_mode === 'fixed') {
+            $lines[] = __('account.service_offers.price_breakdown.list_final', [
+                'name' => $listName,
+                'amount' => $this->formatMoney($afterLine, $providerAccountId),
+                'currency' => $code,
+            ]);
+        } elseif ($item->pricing_mode === 'percentage') {
+            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
+
+            return $this->pack(null, $code, $lines, $providerAccountId);
+        } else {
             $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
 
             return $this->pack(null, $code, $lines, $providerAccountId);
@@ -221,6 +305,16 @@ final class OperatorVariantPriceResolver
                     });
             })
             ->orderByRaw('CASE WHEN service_variant_id IS NOT NULL THEN 1 ELSE 0 END DESC')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    private function findPriceListItemForService(int $priceListId, int $serviceId): ?PriceListItem
+    {
+        return PriceListItem::query()
+            ->where('provider_price_list_id', $priceListId)
+            ->where('service_id', $serviceId)
+            ->whereNull('service_variant_id')
             ->orderByDesc('id')
             ->first();
     }

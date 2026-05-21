@@ -46,12 +46,20 @@ final class AccountProviderServiceOfferController extends Controller
             404
         );
 
-        $offers = ServiceOffer::query()
+        $variantOffers = ServiceOffer::query()
             ->where('provider_id', $account->id)
             ->where('operator_id', $operator->id)
             ->whereNotNull('service_variant_id')
             ->get()
             ->keyBy(fn (ServiceOffer $o) => (int) $o->service_variant_id);
+
+        $serviceOffers = ServiceOffer::query()
+            ->where('provider_id', $account->id)
+            ->where('operator_id', $operator->id)
+            ->whereNull('service_variant_id')
+            ->whereNotNull('service_id')
+            ->get()
+            ->keyBy(fn (ServiceOffer $o) => (int) $o->service_id);
 
         $serviceStatusOptions = $this->eligibleServiceStatusesForOperatorOffers($account);
         $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
@@ -75,13 +83,22 @@ final class AccountProviderServiceOfferController extends Controller
                     ]),
             ])
             ->orderBy('id')
-            ->get()
-            ->filter(fn (Service $service) => $service->serviceVariants->isNotEmpty())
-            ->values();
+            ->get();
 
         foreach ($services as $service) {
+            $serviceOffer = $serviceOffers->get((int) $service->id);
+            $service->setAttribute('offer_status', $serviceOffer?->status ?? 'none');
+            $service->setAttribute('has_variants', $service->serviceVariants->isNotEmpty());
+
+            if ($service->serviceVariants->isEmpty()) {
+                $service->setAttribute(
+                    'operator_price',
+                    $priceResolver->resolveForService($service, (int) $account->id, (int) $operator->id),
+                );
+            }
+
             foreach ($service->serviceVariants as $variant) {
-                $offer = $offers->get((int) $variant->id);
+                $offer = $variantOffers->get((int) $variant->id);
                 $variant->setAttribute('offer_status', $offer?->status ?? 'none');
                 $variant->setAttribute(
                     'operator_price',
@@ -119,20 +136,33 @@ final class AccountProviderServiceOfferController extends Controller
             $serviceStatusRules[] = Rule::in($allowedServiceStatuses);
         }
 
+        $omittedServiceStatuses = Service::catalogStatusesOmittedFromOperatorOffers();
+
         $validated = $request->validate([
             'propose' => ['nullable', 'array'],
             'propose.*' => [
                 'integer',
                 'distinct',
-                Rule::exists('service_variants', 'id')->where(function ($query) use ($account): void {
+                Rule::exists('service_variants', 'id')->where(function ($query) use ($account, $omittedServiceStatuses): void {
                     $query->where('status', 'active')
                         ->whereIn(
                             'service_id',
                             Service::query()
                                 ->where('account_id', $account->id)
                                 ->where('status', 'active')
+                                ->whereNotIn('status', $omittedServiceStatuses)
                                 ->select('id')
                         );
+                }),
+            ],
+            'propose_services' => ['nullable', 'array'],
+            'propose_services.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('services', 'id')->where(function ($query) use ($account, $omittedServiceStatuses): void {
+                    $query->where('account_id', $account->id)
+                        ->where('status', 'active')
+                        ->whereNotIn('status', $omittedServiceStatuses);
                 }),
             ],
             'service_status' => $serviceStatusRules,
@@ -141,10 +171,11 @@ final class AccountProviderServiceOfferController extends Controller
         $user = $request->user();
         abort_unless($user !== null, 401);
 
-        $syncService->syncVariantProposals(
+        $syncService->syncProposals(
             (int) $account->id,
             (int) $operator->id,
             $validated['propose'] ?? [],
+            $validated['propose_services'] ?? [],
             $user,
         );
 
@@ -160,16 +191,25 @@ final class AccountProviderServiceOfferController extends Controller
     }
 
     /**
-     * Distinct service.status values that appear in the operator-offers picker (omitted catalog states excluded; at least one non-omitted variant).
+     * Distinct service.status values in the operator-offers picker (services with or without variants).
      *
      * @return Collection<int, string>
      */
     private function eligibleServiceStatusesForOperatorOffers(Account $account): Collection
     {
+        $omittedServiceStatuses = Service::catalogStatusesOmittedFromOperatorOffers();
+        $omittedVariantStatuses = ServiceVariant::catalogStatusesOmittedFromOperatorOffers();
+
         return Service::query()
             ->where('account_id', $account->id)
-            ->whereNotIn('status', Service::catalogStatusesOmittedFromOperatorOffers())
-            ->whereHas('serviceVariants', fn ($q) => $q->whereNotIn('status', ServiceVariant::catalogStatusesOmittedFromOperatorOffers()))
+            ->whereNotIn('status', $omittedServiceStatuses)
+            ->where(function ($q) use ($omittedVariantStatuses): void {
+                $q->whereDoesntHave('serviceVariants')
+                    ->orWhereHas(
+                        'serviceVariants',
+                        fn ($vq) => $vq->whereNotIn('status', $omittedVariantStatuses)
+                    );
+            })
             ->distinct()
             ->orderBy('status')
             ->pluck('status')

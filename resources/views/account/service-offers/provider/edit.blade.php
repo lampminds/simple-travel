@@ -53,9 +53,15 @@
                 @endif
 
                 @if ($services->isEmpty())
-                    <div class="alert alert-light border">{{ __('wizard.variants_none') }}</div>
+                    <div class="alert alert-light border">{{ __('account.service_offers.provider_edit_empty_services') }}</div>
                 @else
                     @foreach ($services as $service)
+                        @php
+                            $hasVariants = (bool) ($service->has_variants ?? $service->serviceVariants->isNotEmpty());
+                            $serviceStatus = $service->offer_status ?? 'none';
+                            $serviceCatalogSelectable = $service->catalogSelectableForOperatorOffers();
+                            $svcCatalog = \App\Support\ServiceCatalogStatus::forService($service->status);
+                        @endphp
                         <div class="card mb-3">
                             <div class="card-header fw-semibold">
                                 {{ $service->name !== '' ? $service->name : ('Service #' . $service->id) }}
@@ -74,6 +80,91 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @if ($hasVariants)
+                                                <tr class="table-secondary">
+                                                    @php
+                                                        $serviceOpPrice = ['has_amount' => false, 'formatted' => __('account.service_offers.provider_edit_price_varies_by_variant')];
+                                                    @endphp
+                                                    <td class="fw-semibold">{{ __('account.service_offers.provider_edit_whole_service_row') }}</td>
+                                                    <td>—</td>
+                                                    <td class="small">
+                                                        <span class="text-muted me-1">{{ __('account.service_offers.provider_edit_catalog_service_prefix') }}</span>
+                                                        <span class="badge text-bg-{{ $svcCatalog['badge'] }}">{{ $svcCatalog['label'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                                            {{ __('account.service_offers.provider_edit_state_' . $serviceStatus) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end text-muted small">{{ $serviceOpPrice['formatted'] }}</td>
+                                                    <td class="text-center">
+                                                        @if ($serviceStatus === 'accepted')
+                                                            <span class="text-muted">—</span>
+                                                        @else
+                                                            <input
+                                                                type="checkbox"
+                                                                class="form-check-input"
+                                                                @if ($serviceCatalogSelectable) name="propose_services[]" @endif
+                                                                value="{{ $service->id }}"
+                                                                @checked($serviceStatus === 'pending')
+                                                                @disabled(! $serviceCatalogSelectable)
+                                                                @if (! $serviceCatalogSelectable) title="{{ __('account.service_offers.provider_edit_catalog_selectable_hint') }}" @endif
+                                                            >
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                            @if (! $hasVariants)
+                                                @php
+                                                    $serviceOpPrice = $service->operator_price ?? [
+                                                        'has_amount' => false,
+                                                        'formatted' => '—',
+                                                        'breakdown_html' => '<div class="price-breakdown-popover text-start small"><div>—</div></div>',
+                                                    ];
+                                                    $serviceBdId = 'operator-price-bd-service-' . $service->id;
+                                                @endphp
+                                                <tr>
+                                                    <td class="fw-medium">{{ $service->name !== '' ? $service->name : ('Service #' . $service->id) }}</td>
+                                                    <td>—</td>
+                                                    <td class="small">
+                                                        <span class="text-muted me-1">{{ __('account.service_offers.provider_edit_catalog_service_prefix') }}</span>
+                                                        <span class="badge text-bg-{{ $svcCatalog['badge'] }}">{{ $svcCatalog['label'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                                            {{ __('account.service_offers.provider_edit_state_' . $serviceStatus) }}
+                                                        </span>
+                                                        @if ($serviceStatus === 'accepted')
+                                                            <div class="small text-muted mt-1">{{ __('account.service_offers.provider_edit_accepted_note') }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-link p-0 border-0 text-end text-decoration-underline d-inline-block @if ($serviceOpPrice['has_amount']) fw-medium text-body @else text-muted @endif js-operator-price-popover"
+                                                            data-bs-placement="left"
+                                                            data-operator-price-popover="{{ $serviceBdId }}"
+                                                            aria-label="{{ __('account.service_offers.provider_edit_price_breakdown_aria') }}"
+                                                        >{{ $serviceOpPrice['formatted'] }}</button>
+                                                        <div id="{{ $serviceBdId }}" class="d-none">{!! $serviceOpPrice['breakdown_html'] !!}</div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if ($serviceStatus === 'accepted')
+                                                            <span class="text-muted">—</span>
+                                                        @else
+                                                            <input
+                                                                type="checkbox"
+                                                                class="form-check-input"
+                                                                @if ($serviceCatalogSelectable) name="propose_services[]" @endif
+                                                                value="{{ $service->id }}"
+                                                                @checked($serviceStatus === 'pending')
+                                                                @disabled(! $serviceCatalogSelectable)
+                                                                @if (! $serviceCatalogSelectable) title="{{ __('account.service_offers.provider_edit_catalog_selectable_hint') }}" @endif
+                                                            >
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endif
                                             @foreach ($service->serviceVariants as $variant)
                                                 @php
                                                     $status = $variant->offer_status ?? 'none';

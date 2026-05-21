@@ -18,9 +18,15 @@ final class AccountOperatorServiceOfferController extends Controller
         $offers = ServiceOffer::query()
             ->where('operator_id', $account->id)
             ->where('status', ServiceOffer::STATUS_PENDING)
-            ->whereNotNull('service_variant_id')
+            ->where(function ($q): void {
+                $q->whereNotNull('service_variant_id')
+                    ->orWhere(function ($q2): void {
+                        $q2->whereNotNull('service_id')->whereNull('service_variant_id');
+                    });
+            })
             ->with([
                 'providerAccount',
+                'service.translations',
                 'serviceVariant.service.translations',
                 'serviceVariant.translations.language.locale',
             ])
@@ -94,14 +100,14 @@ final class AccountOperatorServiceOfferController extends Controller
     {
         abort_unless((int) $offer->operator_id === (int) $operatorAccountId, 404);
         abort_unless($offer->status === ServiceOffer::STATUS_PENDING, 404);
-        abort_unless($offer->service_variant_id !== null, 404);
+        abort_unless($offer->targetsVariant() || $offer->targetsWholeService(), 404);
     }
 
     private function assertAcceptedOfferForOperator(ServiceOffer $offer, int $operatorAccountId): void
     {
         abort_unless((int) $offer->operator_id === (int) $operatorAccountId, 404);
         abort_unless($offer->status === ServiceOffer::STATUS_ACCEPTED, 404);
-        abort_unless($offer->service_variant_id !== null, 404);
+        abort_unless($offer->targetsVariant() || $offer->targetsWholeService(), 404);
     }
 
     private function resolveOperatorAccount(Request $request): Account

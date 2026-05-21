@@ -273,5 +273,13 @@ class Service extends Model implements HasMedia
     {
         return ['discontinued', 'terminated'];
     }
+
+    /**
+     * Whether this service may be proposed to operators as a whole-service offer (active catalog).
+     */
+    public function catalogSelectableForOperatorOffers(): bool
+    {
+        return $this->status === 'active';
+    }
 }
 

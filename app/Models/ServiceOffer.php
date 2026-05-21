@@ -59,4 +59,14 @@ class ServiceOffer extends Model
     {
         return $this->belongsTo(ServiceVariant::class);
     }
+
+    public function targetsVariant(): bool
+    {
+        return $this->service_variant_id !== null;
+    }
+
+    public function targetsWholeService(): bool
+    {
+        return $this->service_id !== null && $this->service_variant_id === null;
+    }
 }

@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Account;
 use App\Models\ServiceOffer;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Accepted, active variant offers an operator may add to commercial packages.
+ * Accepted, active service and variant offers an operator may add to commercial packages.
  */
 final class OperatorPackageOfferCatalog
 {
@@ -43,38 +45,31 @@ final class OperatorPackageOfferCatalog
         $offers = $this->eligibleOffersQuery($operatorAccountId)
             ->where('provider_id', $providerAccountId)
             ->with([
+                'service.translations.language.locale',
                 'serviceVariant.service.translations.language.locale',
                 'serviceVariant.translations.language.locale',
             ])
+            ->orderBy('service_id')
             ->orderBy('service_variant_id')
             ->get();
 
         $out = [];
         foreach ($offers as $offer) {
-            $variant = $offer->serviceVariant;
-            $service = $variant?->service;
-            if ($variant === null || $service === null) {
+            $label = $this->labelForOffer($offer);
+            if ($label === null) {
                 continue;
             }
 
-            $serviceName = trim((string) ($service->name ?? ''));
-            if ($serviceName === '') {
-                $serviceName = '#'.$service->id;
-            }
-
-            $variantLabel = trim((string) ($variant->sku ?? ''));
-            if ($variantLabel === '') {
-                $variantLabel = trim((string) ($variant->name ?? ''));
-            }
-            if ($variantLabel === '') {
-                $variantLabel = '#'.$variant->id;
+            $serviceId = (int) ($offer->service_id ?? $offer->serviceVariant?->service_id ?? 0);
+            if ($serviceId < 1) {
+                continue;
             }
 
             $out[] = [
                 'offer_id' => (int) $offer->id,
-                'service_id' => (int) $service->id,
-                'service_variant_id' => (int) $variant->id,
-                'label' => $serviceName.' — '.$variantLabel,
+                'service_id' => $serviceId,
+                'service_variant_id' => $offer->service_variant_id !== null ? (int) $offer->service_variant_id : null,
+                'label' => $label,
             ];
         }
 
@@ -108,13 +103,57 @@ final class OperatorPackageOfferCatalog
             ->first();
     }
 
-    private function eligibleOffersQuery(int $operatorAccountId)
+    private function eligibleOffersQuery(int $operatorAccountId): Builder
     {
         return ServiceOffer::query()
             ->where('operator_id', $operatorAccountId)
             ->where('status', ServiceOffer::STATUS_ACCEPTED)
             ->where('availability', ServiceOffer::AVAILABILITY_ACTIVE)
-            ->whereNotNull('service_variant_id')
-            ->whereHas('serviceVariant');
+            ->where(function (Builder $q): void {
+                $q->where(function (Builder $q2): void {
+                    $q2->whereNotNull('service_variant_id')->whereHas('serviceVariant');
+                })->orWhere(function (Builder $q2): void {
+                    $q2->whereNotNull('service_id')
+                        ->whereNull('service_variant_id')
+                        ->whereHas('service');
+                });
+            });
+    }
+
+    private function labelForOffer(ServiceOffer $offer): ?string
+    {
+        if ($offer->targetsWholeService()) {
+            $service = $offer->service;
+            if ($service === null) {
+                return null;
+            }
+            $serviceName = trim((string) ($service->name ?? ''));
+            if ($serviceName === '') {
+                $serviceName = '#'.$service->id;
+            }
+
+            return $serviceName.' — '.__('account.service_offers.whole_service_label');
+        }
+
+        $variant = $offer->serviceVariant;
+        $service = $variant?->service;
+        if ($variant === null || $service === null) {
+            return null;
+        }
+
+        $serviceName = trim((string) ($service->name ?? ''));
+        if ($serviceName === '') {
+            $serviceName = '#'.$service->id;
+        }
+
+        $variantLabel = trim((string) ($variant->sku ?? ''));
+        if ($variantLabel === '') {
+            $variantLabel = trim((string) ($variant->name ?? ''));
+        }
+        if ($variantLabel === '') {
+            $variantLabel = '#'.$variant->id;
+        }
+
+        return $serviceName.' — '.$variantLabel;
     }
 }
