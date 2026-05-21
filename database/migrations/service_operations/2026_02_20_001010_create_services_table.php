@@ -24,7 +24,7 @@ return new class extends Migration
             $table->boolean('is_bookable')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_public')->default(false)->comment('Visible in website');
-            $table->enum('booking_mode', ['instant', 'request', 'external', 'quote'])->nullable();
+            $table->enum('booking_mode', ['instant', 'request', 'external', 'quote'])->default('instant');
             $table->integer('confirmation_time_hours')->nullable()->comment('Confirmation time in hours');
             $table->enum('status', ['active', 'suspended', 'discontinued', 'onhold', 'terminated'])->default('active');
             $table->enum('ownership_type', ['provider', 'operator'])

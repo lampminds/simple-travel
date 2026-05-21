@@ -17,9 +17,8 @@
         </div>
 
         <div class="col-md-6">
-            <label class="form-label">{{ __('wizard.step2_fields.booking_mode') }}</label>
+            <label class="form-label required-label">{{ __('wizard.step2_fields.booking_mode') }}</label>
             <select class="form-select @error('form.booking_mode') is-invalid @enderror" wire:model.live="form.booking_mode">
-                <option value="">{{ __('wizard.step2_booking_mode.none') }}</option>
                 @foreach (['instant', 'request', 'external', 'quote'] as $mode)
                     <option value="{{ $mode }}">{{ __('wizard.step2_booking_mode.'.$mode) }}</option>
                 @endforeach

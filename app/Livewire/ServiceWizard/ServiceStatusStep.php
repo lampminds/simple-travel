@@ -31,7 +31,7 @@ class ServiceStatusStep extends Component
             'is_bookable' => (bool) $service->is_bookable,
             'is_featured' => (bool) $service->is_featured,
             'is_public' => (bool) $service->is_public,
-            'booking_mode' => $service->booking_mode !== null ? (string) $service->booking_mode : '',
+            'booking_mode' => (string) ($service->booking_mode ?: 'instant'),
             'confirmation_time_hours' => $service->confirmation_time_hours !== null
                 ? (string) $service->confirmation_time_hours
                 : '',
@@ -49,7 +49,7 @@ class ServiceStatusStep extends Component
             'is_bookable' => (bool) $validated['form']['is_bookable'],
             'is_featured' => (bool) $validated['form']['is_featured'],
             'is_public' => (bool) $validated['form']['is_public'],
-            'booking_mode' => $validated['form']['booking_mode'] === '' ? null : $validated['form']['booking_mode'],
+            'booking_mode' => $validated['form']['booking_mode'],
             'confirmation_time_hours' => $validated['form']['confirmation_time_hours'] === ''
                 ? null
                 : (int) $validated['form']['confirmation_time_hours'],
@@ -76,7 +76,7 @@ class ServiceStatusStep extends Component
             'form.is_bookable' => ['required', 'boolean'],
             'form.is_featured' => ['required', 'boolean'],
             'form.is_public' => ['required', 'boolean'],
-            'form.booking_mode' => ['nullable', Rule::in(['instant', 'request', 'external', 'quote'])],
+            'form.booking_mode' => ['required', Rule::in(['instant', 'request', 'external', 'quote'])],
             'form.confirmation_time_hours' => ['nullable', 'integer', 'min:0'],
         ];
     }
