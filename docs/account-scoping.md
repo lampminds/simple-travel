@@ -38,7 +38,7 @@ When a new account is created, roles are **replicated** from the platform accoun
 |-------|-------------------|---------------------|
 | `todo_tasks` | `TodoTasksTableSeeder` | `AccountStartupService` → `TodoCategoryCopyTasksToAccountService::copyFromSystemCatalog()` |
 | `service_transfer_vehicle_types` | `ServiceTransferVehicleTypesCatalogSeeder` | Wizard / account UI via `ServiceTransferVehicleCatalogBootstrapService` |
-| `service_transfer_locations` | `ServiceTransferLocationsFozDoIguacuAccount1Seeder` | Wizard via `ServiceTransferLocationCatalogBootstrapService` |
+| `service_transfer_locations` | `ServiceTransferLocationsFozDoIguacuAccount1Seeder`, `ServiceTransferLocationsSanMartinDeLosAndesSeeder` | Wizard via `ServiceTransferLocationCatalogBootstrapService` |
 | `parameter_values` | `ParameterValuesTableSeeder` (system scope) | Per-parameter reader logic |
 | `currency_rates` | System rates | Tenant overrides use non-null `account_id` |
 
@@ -61,6 +61,7 @@ Migrations for these tables define `account_id` as **nullable** where applicable
 
 ## Related documentation and config
 
+- [transfer-location-types.md](transfer-location-types.md) — how to extend `service_transfer_location_types` when seeding new cities
 - [permissions.md](permissions.md) — Spatie teams, middleware, Filament authorization
 - `config/permission.php` — `platform_account_id`, `platform_template_user_id`
 - `.env.example` — `PLATFORM_ACCOUNT_ID=1`

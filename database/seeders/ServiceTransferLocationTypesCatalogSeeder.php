@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * Seeds global transfer location type categories (with translations) and location types.
  *
+ * When a city location seeder needs a type that does not exist yet, add it here first (with EN/ES/PT
+ * labels), re-run this seeder, then use the new `code` in the location seeder.
+ *
  * Category and type names use the translation table with English, Spanish, and Portuguese labels.
  */
 class ServiceTransferLocationTypesCatalogSeeder extends Seeder
@@ -234,6 +237,9 @@ class ServiceTransferLocationTypesCatalogSeeder extends Seeder
             'waterfall' => ['en' => 'Waterfall', 'es' => 'Cascada', 'pt' => 'Cachoeira'],
             'volcano' => ['en' => 'Volcano', 'es' => 'Volcán', 'pt' => 'Vulcão'],
             'trailhead' => ['en' => 'Trailhead', 'es' => 'Inicio de sendero', 'pt' => 'Início da trilha'],
+            'park' => ['en' => 'Park', 'es' => 'Parque', 'pt' => 'Parque'],
+            'scenic_route' => ['en' => 'Scenic Route', 'es' => 'Ruta panorámica', 'pt' => 'Rota cênica'],
+            'geological_site' => ['en' => 'Geological Site', 'es' => 'Sitio geológico', 'pt' => 'Sítio geológico'],
         ]);
 
         $add('urban', [
@@ -263,6 +269,7 @@ class ServiceTransferLocationTypesCatalogSeeder extends Seeder
         ]);
 
         $add('outdoor_adventure', [
+            'mountain' => ['en' => 'Mountain', 'es' => 'Montaña', 'pt' => 'Montanha'],
             'basecamp' => ['en' => 'Base Camp', 'es' => 'Campamento base', 'pt' => 'Acampamento base'],
             'campsite' => ['en' => 'Campsite', 'es' => 'Campamento', 'pt' => 'Acampamento'],
             'refuge' => ['en' => 'Mountain Refuge', 'es' => 'Refugio de montaña', 'pt' => 'Abrigo de montanha'],

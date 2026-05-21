@@ -336,5 +336,62 @@ class TranslationService
             ];
         }
     }
+
+    /**
+     * Translate a single display name from one source language into every configured language row.
+     *
+     * @return array<int, string> language_id => name (source language included; missing targets fall back to source)
+     */
+    public function translateNameToAllLanguages(int $sourceLanguageId, string $name): array
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return [];
+        }
+
+        $languages = Language::query()->with('locale')->get();
+        $sourceLanguage = $languages->firstWhere('id', $sourceLanguageId);
+        if ($sourceLanguage === null) {
+            return [];
+        }
+
+        $sourceCode = $this->resolveLanguageCode($sourceLanguage);
+        $result = [(int) $sourceLanguageId => $name];
+
+        if ($sourceCode === null) {
+            foreach ($languages as $language) {
+                $result[(int) $language->id] = $name;
+            }
+
+            return $result;
+        }
+
+        foreach ($languages as $language) {
+            $langId = (int) $language->id;
+            if ($langId === (int) $sourceLanguageId) {
+                continue;
+            }
+
+            $targetCode = $this->resolveLanguageCode($language);
+            if ($targetCode === null || $targetCode === $sourceCode) {
+                $result[$langId] = $name;
+
+                continue;
+            }
+
+            if ($this->shouldCopyWithoutTranslation($name)) {
+                $result[$langId] = $name;
+
+                continue;
+            }
+
+            $translated = $this->translateText($name, $sourceCode, $targetCode);
+            $result[$langId] = trim((string) ($translated['translated'] ?? '')) !== ''
+                ? (string) $translated['translated']
+                : $name;
+        }
+
+        return $result;
+    }
 }
 

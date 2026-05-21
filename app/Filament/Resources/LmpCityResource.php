@@ -4,15 +4,21 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\AdministrationCluster;
 use App\Filament\Resources\LmpCityResource\Pages;
+use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\LmpCountry;
 use App\Models\LmpState;
+use App\Services\CitySystemTransferLocationsGeneratorService;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -20,6 +26,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Throwable;
 
 class LmpCityResource extends BaseResource
 {
@@ -108,6 +115,11 @@ class LmpCityResource extends BaseResource
                     ->label(__('filament.resources.lmp_city_columns.country'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('system_transfer_locations_count')
+                    ->label(__('filament.resources.lmp_city_columns.system_transfer_locations'))
+                    ->getStateUsing(fn (LmpCity $record): int => app(CitySystemTransferLocationsGeneratorService::class)
+                        ->systemCatalogCountForCity((int) $record->getKey()))
+                    ->sortable(false),
             ])
             ->filters([
                 SelectFilter::make('country_id')
@@ -132,6 +144,108 @@ class LmpCityResource extends BaseResource
             ->modifyQueryUsing(fn ($query) => $query->with(['state.country']))
             ->recordActions([
                 ActionGroup::make([
+                    Action::make('generateTransferLocations')
+                        ->label(__('filament.resources.lmp_city_actions.generate_transfer_locations'))
+                        ->icon('heroicon-o-sparkles')
+                        ->modalHeading(__('filament.resources.lmp_city_actions.generate_transfer_locations_heading'))
+                        ->modalDescription(__('filament.resources.lmp_city_actions.generate_transfer_locations_description'))
+                        ->form([
+                            Toggle::make('replace_existing')
+                                ->label(__('filament.resources.lmp_city_actions.replace_existing'))
+                                ->helperText(__('filament.resources.lmp_city_actions.replace_existing_help'))
+                                ->default(false),
+                            Toggle::make('translate_to_other_languages')
+                                ->label(__('filament.resources.lmp_city_actions.translate_to_other_languages'))
+                                ->helperText(__('filament.resources.lmp_city_actions.translate_to_other_languages_help'))
+                                ->default(true),
+                            Select::make('source_language_id')
+                                ->label(__('filament.resources.lmp_city_actions.source_language'))
+                                ->options(fn (): array => Language::query()
+                                    ->with('locale')
+                                    ->orderBy('list_order')
+                                    ->orderBy('id')
+                                    ->get()
+                                    ->mapWithKeys(fn (Language $lang) => [$lang->id => $lang->display_name])
+                                    ->all())
+                                ->default(fn (): ?int => Language::query()
+                                    ->with('locale')
+                                    ->get()
+                                    ->first(fn (Language $lang): bool => str_starts_with(
+                                        strtolower((string) ($lang->locale?->tag ?? '')),
+                                        'es'
+                                    ))?->id)
+                                ->required(),
+                            TextInput::make('max_suggestions')
+                                ->label(__('filament.resources.lmp_city_actions.max_suggestions'))
+                                ->numeric()
+                                ->minValue(5)
+                                ->maxValue(50)
+                                ->default(30)
+                                ->required(),
+                            Textarea::make('additional_context')
+                                ->label(__('filament.resources.lmp_city_actions.additional_context'))
+                                ->rows(3)
+                                ->maxLength(2000),
+                        ])
+                        ->action(function (array $data, LmpCity $record): void {
+                            $service = app(CitySystemTransferLocationsGeneratorService::class);
+
+                            try {
+                                $result = $service->generateFromAi(
+                                    $record,
+                                    (bool) ($data['replace_existing'] ?? false),
+                                    (bool) ($data['translate_to_other_languages'] ?? true),
+                                    isset($data['source_language_id']) ? (int) $data['source_language_id'] : null,
+                                    (int) ($data['max_suggestions'] ?? 30),
+                                    $data['additional_context'] ?? null,
+                                );
+                            } catch (Throwable $e) {
+                                Notification::make()
+                                    ->title(__('filament.resources.lmp_city_actions.generate_failed_title'))
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $created = (int) ($result['created'] ?? 0);
+                            $skipped = (int) ($result['skipped'] ?? 0);
+                            $removed = (int) ($result['removed'] ?? 0);
+                            $fallbacks = (int) ($result['translation_fallbacks'] ?? 0);
+
+                            if ($created === 0) {
+                                Notification::make()
+                                    ->title(__('filament.resources.lmp_city_actions.generate_none_title'))
+                                    ->body(__('filament.resources.lmp_city_actions.generate_none_body', [
+                                        'skipped' => $skipped,
+                                    ]))
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $body = __('filament.resources.lmp_city_actions.generate_success_body', [
+                                'created' => $created,
+                                'skipped' => $skipped,
+                                'removed' => $removed,
+                                'ai' => (int) ($result['ai_count'] ?? 0),
+                                'openai_calls' => (int) ($result['openai_calls'] ?? 1),
+                            ]);
+
+                            if ($fallbacks > 0) {
+                                $body .= ' '.__('filament.resources.lmp_city_actions.generate_translation_fallbacks', [
+                                    'count' => $fallbacks,
+                                ]);
+                            }
+
+                            Notification::make()
+                                ->title(__('filament.resources.lmp_city_actions.generate_success_title'))
+                                ->body($body)
+                                ->success()
+                                ->send();
+                        }),
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),

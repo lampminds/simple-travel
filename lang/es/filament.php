@@ -21,6 +21,11 @@ return [
         'transport' => 'Transporte',
     ],
 
+    'panel' => [
+        'cluster_subnav_hide' => 'Ocultar menú del módulo',
+        'cluster_subnav_show' => 'Mostrar menú del módulo',
+    ],
+
     'common' => [
         'active' => 'Activo',
         'view' => 'Ver',
@@ -586,11 +591,36 @@ return [
             'name' => 'Nombre',
             'state' => 'Estado / provincia',
             'country' => 'País',
+            'system_transfer_locations' => 'POI traslados (sistema)',
         ],
 
         'lmp_city_filters' => [
             'country_id' => 'País',
             'state_id' => 'Estado / provincia',
+        ],
+
+        'lmp_city_actions' => [
+            'generate_transfer_locations' => 'Generar ubicaciones de traslado',
+            'generate_transfer_locations_heading' => 'Generar catálogo de traslados (sistema)',
+            'generate_transfer_locations_description' => 'Usa OpenAI para proponer puntos de recogida/entrega de esta ciudad (account_id null). Con traducción: una llamada para la lista y una o dos llamadas en lote para traducir todos los nombres (sin MyMemory/Google por cada punto).',
+            'replace_existing' => 'Reemplazar catálogo existente de esta ciudad',
+            'replace_existing_help' => 'Elimina todas las ubicaciones de sistema vinculadas a esta ciudad antes de insertar las nuevas.',
+            'translate_to_other_languages' => 'Traducir a los demás idiomas activos',
+            'translate_to_other_languages_help' => 'Segunda solicitud a OpenAI: traduce todos los nombres a los demás idiomas activos en una o dos llamadas por lote.',
+            'source_language' => 'Idioma origen para etiquetas de la IA',
+            'max_suggestions' => 'Máximo de sugerencias',
+            'additional_context' => 'Contexto adicional (opcional)',
+            'generate_failed_title' => 'No se pudieron generar ubicaciones',
+            'generate_none_title' => 'No se crearon ubicaciones',
+            'generate_none_body' => 'La IA no generó filas nuevas (duplicados omitidos: :skipped).',
+            'generate_success_title' => 'Catálogo de traslados actualizado',
+            'generate_success_body' => 'Se crearon :created ubicación(es). La IA sugirió :ai. Omitidas :skipped duplicada(s). Eliminadas :removed fila(s) previa(s). Llamadas OpenAI: :openai_calls.',
+            'generate_translation_fallbacks' => ':count nombre(s) quedaron en el idioma origen porque falló la traducción.',
+            'openai_rate_limit' => 'OpenAI alcanzó el límite de solicitudes (request limit exceeded). Esperá unos minutos y volvé a intentar, o revisá el uso en platform.openai.com. Los embeddings y esta acción comparten la misma API key.',
+            'openai_quota' => 'Se agotó la cuota o el crédito de OpenAI. Cargá saldo o revisá el plan en platform.openai.com — no se guardó nada.',
+            'openai_invalid_key' => 'OpenAI rechazó la API key. Revisá OPENAI_API_KEY en el .env.',
+            'openai_model' => 'El modelo de chat ":model" no está disponible para esta clave. Configurá OPENAI_CHAT_MODEL en .env (ej. gpt-4o-mini).',
+            'openai_generic' => 'Falló la solicitud a OpenAI: :detail',
         ],
 
         'currency_cat_catalog_label' => 'Moneda #:id (ref #:ref)',

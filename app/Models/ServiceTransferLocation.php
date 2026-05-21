@@ -14,12 +14,15 @@ class ServiceTransferLocation extends Model
     protected $table = 'service_transfer_locations';
 
     protected $fillable = [
+        'account_id',
         'service_transfer_location_type_id',
         'address',
         'city_id',
+        'slug',
         'latitude',
         'longitude',
         'airport_code',
+        'parent_id',
         'is_active',
     ];
 
@@ -45,6 +48,34 @@ class ServiceTransferLocation extends Model
     }
 
     /**
+     * Translated display name for the current app locale (from {@see translations}).
+     */
+    public function getNameAttribute(): string
+    {
+        if (! $this->relationLoaded('translations')) {
+            $this->load('translations.language.locale');
+        }
+
+        $locale = app()->getLocale();
+        foreach ($this->translations as $translation) {
+            $lang = $translation->language;
+            if ($lang) {
+                $lang->loadMissing('locale');
+            }
+            if ($lang?->locale && Locale::primaryTagMatches($lang->locale, $locale)) {
+                $name = trim((string) ($translation->name ?? ''));
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        $fallback = trim((string) ($this->translations->first()?->name ?? ''));
+
+        return $fallback !== '' ? $fallback : ('#'.$this->id);
+    }
+
+    /**
      * Label for selects (name for current locale, then airport / city hints).
      */
     public function getWizardLabelAttribute(): string
@@ -62,28 +93,10 @@ class ServiceTransferLocation extends Model
 
     private function resolveWizardLabel(bool $includeCityHint): string
     {
-        if (! $this->relationLoaded('translations')) {
-            $this->load('translations.language.locale');
-        }
+        $name = $this->name;
 
         if ($includeCityHint) {
             $this->loadMissing('city');
-        }
-
-        $locale = app()->getLocale();
-        $name = '';
-        foreach ($this->translations as $translation) {
-            $lang = $translation->language;
-            if ($lang) {
-                $lang->loadMissing('locale');
-            }
-            if ($lang?->locale && Locale::primaryTagMatches($lang->locale, $locale)) {
-                $name = (string) ($translation->name ?? '');
-                break;
-            }
-        }
-        if ($name === '' && $this->translations->isNotEmpty()) {
-            $name = (string) ($this->translations->first()?->name ?? '');
         }
 
         $hints = array_filter([

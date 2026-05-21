@@ -63,12 +63,19 @@ class SmplAdmPanelProvider extends PanelProvider
             })
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => view(
                 'filament.styles.filament-help-tooltip',
+            )->render().view(
+                'filament.styles.cluster-sub-navigation-toggle',
+            )->render())
+            ->renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE, fn (): string => view(
+                'filament.components.cluster-sub-navigation-toggle',
             )->render())
             ->renderHook(PanelsRenderHook::SCRIPTS_BEFORE, fn (): string => view(
                 'filament.scripts.copy-text-to-clipboard',
             )->render())
             ->renderHook(PanelsRenderHook::SCRIPTS_AFTER, fn (): string => view(
                 'filament.scripts.auto-collapse-main-sidebar-when-sub-navigation',
+            )->render().view(
+                'filament.scripts.cluster-sub-navigation-toggle',
             )->render())
             ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, function (): string {
                 $languages = Language::with('locale')->get();

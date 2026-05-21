@@ -19,6 +19,11 @@ return [
         'transport' => 'Transport',
     ],
 
+    'panel' => [
+        'cluster_subnav_hide' => 'Hide module menu',
+        'cluster_subnav_show' => 'Show module menu',
+    ],
+
     'common' => [
         'active' => 'Active',
         'view' => 'View',
@@ -584,11 +589,36 @@ return [
             'name' => 'Name',
             'state' => 'State / province',
             'country' => 'Country',
+            'system_transfer_locations' => 'System transfer POIs',
         ],
 
         'lmp_city_filters' => [
             'country_id' => 'Country',
             'state_id' => 'State / province',
+        ],
+
+        'lmp_city_actions' => [
+            'generate_transfer_locations' => 'Generate transfer locations',
+            'generate_transfer_locations_heading' => 'Generate system transfer catalog',
+            'generate_transfer_locations_description' => 'Uses OpenAI to suggest pickup/drop-off points for this city (account_id null). With translation enabled: one API call for the list and one or two batch calls to translate all names (no per-location MyMemory/Google requests).',
+            'replace_existing' => 'Replace existing system catalog for this city',
+            'replace_existing_help' => 'Deletes all system transfer locations linked to this city before inserting new ones.',
+            'translate_to_other_languages' => 'Translate to other active languages',
+            'translate_to_other_languages_help' => 'Second OpenAI request translates every name into the other active languages in one or two batch calls.',
+            'source_language' => 'Source language for AI labels',
+            'max_suggestions' => 'Maximum suggestions',
+            'additional_context' => 'Additional context (optional)',
+            'generate_failed_title' => 'Could not generate locations',
+            'generate_none_title' => 'No locations created',
+            'generate_none_body' => 'The AI returned no new rows (skipped duplicates: :skipped).',
+            'generate_success_title' => 'Transfer catalog updated',
+            'generate_success_body' => 'Created :created location(s). AI suggested :ai. Skipped :skipped duplicate(s). Removed :removed previous row(s). OpenAI calls: :openai_calls.',
+            'generate_translation_fallbacks' => ':count name(s) kept the source language because translation failed.',
+            'openai_rate_limit' => 'OpenAI rate limit reached (request limit exceeded). Wait a few minutes and try again, or check usage at platform.openai.com. Embeddings and this action share the same API key.',
+            'openai_quota' => 'OpenAI quota or billing limit reached. Add credits or upgrade the plan at platform.openai.com — nothing was saved.',
+            'openai_invalid_key' => 'OpenAI rejected the API key. Check OPENAI_API_KEY in .env.',
+            'openai_model' => 'Chat model ":model" is not available for this key. Set OPENAI_CHAT_MODEL in .env (e.g. gpt-4o-mini).',
+            'openai_generic' => 'OpenAI request failed: :detail',
         ],
 
         'currency_cat_catalog_label' => 'Currency #:id (ref #:ref)',

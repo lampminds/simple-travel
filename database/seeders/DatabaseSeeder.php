@@ -35,8 +35,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call(AccountsTableSeeder::class);
         $this->call(ServiceTransferLocationTypesCatalogSeeder::class);
-        // Default transfer locations for system catalog (account_id null), Foz do Iguaçu area (city_id=11691).
-        $this->call(ServiceTransferLocationsFozDoIguacuAccount1Seeder::class);
+        // Default transfer locations for system catalog (account_id null).
+        $this->call(ServiceTransferLocationsFozDoIguacuAccount1Seeder::class); // city_id=11691
+        $this->call(ServiceTransferLocationsSanMartinDeLosAndesSeeder::class); // city_id=1425
         $this->call(ServiceTransferVehicleTypesCatalogSeeder::class);
         $this->call(AccountUserTableSeeder::class);
 
