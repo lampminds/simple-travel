@@ -19,7 +19,10 @@ return new class extends Migration
 
         Schema::table('service_details', function (Blueprint $table) {
             $table->boolean('is_mandatory')->default(false)->after('active');
-            $table->foreignId('condition_key_id')->constrained('cat_service_detail_condition_keys')->after('is_mandatory');
+            $table->foreignId('condition_key_id')
+                ->nullable()
+                ->constrained('cat_service_detail_condition_keys')
+                ->after('is_mandatory');
         }
         );
     }
