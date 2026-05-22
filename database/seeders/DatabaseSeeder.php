@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(ServiceDetailTopicCategoriesTableSeeder::class);
         $this->call(ServiceDetailTopicCategoryTranslationsTableSeeder::class);
+        $this->call(CatServiceDetailConditionKeysTableSeeder::class);
         $this->call(ServiceDetailTopicsTableSeeder::class);
         $this->call(ServiceDetailTopicTranslationsTableSeeder::class);
 

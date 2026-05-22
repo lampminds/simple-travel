@@ -1527,6 +1527,35 @@ return [
             'active' => 'Active',
         ],
 
+        'service_detail_condition_key' => 'Condition key',
+        'service_detail_condition_keys' => 'Condition keys',
+
+        'service_detail_condition_key_categories' => [
+            'payment' => 'Payment',
+            'operation' => 'Operation',
+            'transport' => 'Transport',
+            'accommodation' => 'Accommodation',
+            'safety' => 'Safety',
+            'legal' => 'Legal',
+            'inclusions' => 'Inclusions',
+            'traveler' => 'Traveler',
+            'service' => 'Service',
+        ],
+
+        'service_detail_condition_key_fields' => [
+            'category' => 'Category',
+            'code' => 'Code',
+            'code_help' => 'Short identifier in English (e.g. cancellation_policy).',
+            'description' => 'Description',
+        ],
+
+        'service_detail_condition_key_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'category' => 'Category',
+            'description' => 'Description',
+        ],
+
         'service_detail_topic_category' => 'Condition category',
         'service_detail_topic_categories' => 'Condition categories',
 

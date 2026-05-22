@@ -27,9 +27,9 @@
                             <p class="text-muted small mb-3">{{ __('profile.avatar_help') }}</p>
 
                             <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
-                                <img src="{{ $profilePerson?->avatarDisplayUrl() ?? $user->avatarDisplayUrl() }}" width="128" height="128"
-                                     class="rounded-circle border shadow-sm bg-light" alt="{{ $profilePerson?->name ?? $user->name }}"
-                                     style="object-fit: cover;"/>
+                                <img src="{{ $profilePerson?->avatarDisplayUrl() ?? $user->avatarDisplayUrl() }}"
+                                     class="border shadow-sm bg-light rounded" alt="{{ $profilePerson?->name ?? $user->name }}"
+                                     style="max-width: 128px; max-height: 128px; width: auto; height: auto; object-fit: contain;"/>
                                 <div class="flex-grow-1">
                                     <form method="post" action="{{ route('account.profile.avatar') }}" enctype="multipart/form-data" class="mb-2">
                                         @csrf

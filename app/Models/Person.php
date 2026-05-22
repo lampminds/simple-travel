@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
@@ -77,16 +78,17 @@ class Person extends Model implements HasMedia
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
     }
 
+    /**
+     * Max dimension conversions; preserve aspect ratio (no stretch).
+     */
     public function registerMediaConversions(?MediaModel $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->width(80)
-            ->height(80)
+            ->fit(Fit::Max, 80, 80)
             ->nonQueued();
 
         $this->addMediaConversion('preview')
-            ->width(256)
-            ->height(256)
+            ->fit(Fit::Max, 256, 256)
             ->nonQueued();
     }
 

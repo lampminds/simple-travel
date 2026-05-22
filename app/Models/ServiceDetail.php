@@ -19,10 +19,13 @@ class ServiceDetail extends Model
         'description',
         'sort_order',
         'active',
+        'is_mandatory',
+        'condition_key_id',
     ];
 
     protected $casts = [
         'active' => 'boolean',
+        'is_mandatory' => 'boolean',
         'sort_order' => 'integer',
     ];
 
@@ -39,5 +42,10 @@ class ServiceDetail extends Model
     public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class);
+    }
+
+    public function conditionKey(): BelongsTo
+    {
+        return $this->belongsTo(ServiceDetailConditionKey::class, 'condition_key_id');
     }
 }

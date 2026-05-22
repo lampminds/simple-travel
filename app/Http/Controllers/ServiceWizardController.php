@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
@@ -50,18 +51,13 @@ class ServiceWizardController extends Controller
 
         $languages = $this->languagesForStepOneValidation();
 
-        $cityDisplayLabel = '';
-        if ($service?->city_id) {
-            $city = LmpCity::query()->with(['state.country'])->find($service->city_id);
-            if ($city) {
-                $cityDisplayLabel = $this->formatCitySearchLabel($city);
-            }
-        }
+        [$defaultCityId, $cityDisplayLabel] = $this->defaultCityForStepOne($request, $service);
 
         return view('services.wizard.step-1', [
             'serviceType' => $serviceType,
             'languages' => $languages,
             'service' => $service,
+            'defaultCityId' => $defaultCityId,
             'cityDisplayLabel' => $cityDisplayLabel,
             'catalogHelperAccountTypeId' => \App\Support\CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
         ]);
@@ -339,6 +335,34 @@ class ServiceWizardController extends Controller
         }
 
         return $attrs;
+    }
+
+    /**
+     * Default city for step 1: service city when editing, account address city when creating.
+     *
+     * @return array{0: int|null, 1: string}
+     */
+    private function defaultCityForStepOne(Request $request, ?Service $service): array
+    {
+        $cityId = $service?->city_id;
+
+        if ($cityId === null && $service === null) {
+            $account = $request->user()?->currentAccount();
+            if ($account instanceof Account && $account->city_id !== null) {
+                $cityId = (int) $account->city_id;
+            }
+        }
+
+        if ($cityId === null || $cityId < 1) {
+            return [null, ''];
+        }
+
+        $city = LmpCity::query()->with(['state.country'])->find($cityId);
+        if ($city === null) {
+            return [null, ''];
+        }
+
+        return [(int) $city->id, $this->formatCitySearchLabel($city)];
     }
 
     /**

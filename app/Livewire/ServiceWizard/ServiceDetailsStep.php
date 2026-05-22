@@ -6,6 +6,7 @@ use App\Models\Language;
 use App\Models\Locale;
 use App\Models\Service;
 use App\Models\ServiceDetail;
+use App\Models\ServiceDetailConditionKey;
 use App\Models\ServiceDetailTopic;
 use App\Models\ServiceDetailTopicCategory;
 use App\Services\Translation\TranslationService;
@@ -20,14 +21,22 @@ use Livewire\Component;
 
 class ServiceDetailsStep extends Component
 {
+    /** @var list<string> */
+    public const VISIBILITY_TABS = ['public', 'operator', 'internal'];
+
     public int $serviceId;
 
     public int $serviceTypeId;
 
+    public string $activeVisibilityTab = 'public';
+
+    /** Visibility context for the add/edit modal (public | operator | internal). */
+    public string $modalVisibility = 'public';
+
     /**
      * Each line is one logical detail (all languages share sort_order and active).
      *
-     * @var list<array{sort_order: int, topic_id: int|null, category_id: int|null, active: bool, translations: array<int, array{description: string}>}>
+     * @var list<array{sort_order: int, topic_id: int|null, category_id: int|null, condition_key_id: int|null, is_mandatory: bool, active: bool, translations: array<int, array{description: string}>}>
      */
     public array $lines = [];
 
@@ -39,7 +48,7 @@ class ServiceDetailsStep extends Component
     /**
      * Working copy for the modal form.
      *
-     * @var array{sort_order?: int, topic_id: int|null, category_id: int|null, active: bool, translations: array<int, array{description: string}>}
+     * @var array{sort_order?: int, topic_id: int|null, category_id: int|null, condition_key_id: int|null, is_mandatory: bool, active: bool, translations: array<int, array{description: string}>}
      */
     public array $modalLine = [];
 
@@ -75,6 +84,9 @@ class ServiceDetailsStep extends Component
                     'sort_order' => $ord,
                     'topic_id' => $tid,
                     'category_id' => $topic !== null ? (int) $topic->service_detail_topic_category_id : null,
+                    'condition_key_id' => $detail->condition_key_id !== null ? (int) $detail->condition_key_id : null,
+                    'is_mandatory' => (bool) $detail->is_mandatory,
+                    'visibility' => $this->normalizeVisibility($topic?->visibility),
                     'active' => (bool) $detail->active,
                     'translations' => [],
                 ];
@@ -95,12 +107,26 @@ class ServiceDetailsStep extends Component
             ->all();
 
         $this->modalLine = $this->blankLine();
+        $this->modalVisibility = $this->activeVisibilityTab;
+    }
+
+    public function setVisibilityTab(string $visibility): void
+    {
+        if (! in_array($visibility, self::VISIBILITY_TABS, true)) {
+            return;
+        }
+
+        $this->activeVisibilityTab = $visibility;
+        if ($this->showModal) {
+            $this->closeModal();
+        }
     }
 
     public function openAddModal(): void
     {
         $this->resetValidation();
         $this->modalLineIndex = null;
+        $this->modalVisibility = $this->activeVisibilityTab;
         $this->modalLine = $this->blankLine();
         $this->showModal = true;
     }
@@ -112,6 +138,8 @@ class ServiceDetailsStep extends Component
         }
         $this->resetValidation();
         $this->modalLineIndex = $index;
+        $this->modalVisibility = $this->lineVisibility($this->lines[$index]);
+        $this->activeVisibilityTab = $this->modalVisibility;
         $this->modalLine = $this->duplicateLine($this->lines[$index]);
         $this->showModal = true;
     }
@@ -171,6 +199,8 @@ class ServiceDetailsStep extends Component
         $rules = [
             'modalLine.topic_id' => ['required', 'integer', Rule::exists('cat_service_detail_topics', 'id')],
             'modalLine.category_id' => ['required', 'integer', Rule::exists('cat_service_detail_topic_categories', 'id')],
+            'modalLine.condition_key_id' => ['required', 'integer', Rule::exists('cat_service_detail_condition_keys', 'id')],
+            'modalLine.is_mandatory' => ['boolean'],
             'modalLine.active' => ['boolean'],
         ];
         foreach ($languages as $lang) {
@@ -180,7 +210,11 @@ class ServiceDetailsStep extends Component
         $this->validate($rules, [], $this->modalValidationAttributes($languages));
 
         $this->assertTopicMatchesCategory($this->modalLine, 'modalLine');
+        $this->assertTopicMatchesVisibility($this->modalLine, 'modalLine');
         $this->assertModalHasText($languages);
+
+        $topic = ServiceDetailTopic::query()->find((int) $this->modalLine['topic_id']);
+        $this->modalLine['visibility'] = $this->normalizeVisibility($topic?->visibility);
 
         if ($this->modalLineIndex === null) {
             $this->lines[] = $this->modalLine;
@@ -201,28 +235,12 @@ class ServiceDetailsStep extends Component
 
     public function moveLineUp(int $index): void
     {
-        if ($index < 1 || ! isset($this->lines[$index])) {
-            return;
-        }
-        $tmp = $this->lines[$index - 1];
-        $this->lines[$index - 1] = $this->lines[$index];
-        $this->lines[$index] = $tmp;
-        $this->lines = array_values($this->lines);
-        $this->renumberSortOrders();
-        $this->persistAll();
+        $this->moveLineWithinVisibility($index, -1);
     }
 
     public function moveLineDown(int $index): void
     {
-        if (! isset($this->lines[$index + 1])) {
-            return;
-        }
-        $tmp = $this->lines[$index + 1];
-        $this->lines[$index + 1] = $this->lines[$index];
-        $this->lines[$index] = $tmp;
-        $this->lines = array_values($this->lines);
-        $this->renumberSortOrders();
-        $this->persistAll();
+        $this->moveLineWithinVisibility($index, 1);
     }
 
     public function toggleLineActive(int $index): void
@@ -281,12 +299,122 @@ class ServiceDetailsStep extends Component
         }
     }
 
+    /**
+     * @param  array{topic_id?: int|null}  $row
+     */
+    protected function assertTopicMatchesVisibility(array $row, string $prefix): void
+    {
+        $tid = (int) ($row['topic_id'] ?? 0);
+        if ($tid < 1) {
+            return;
+        }
+        $topic = ServiceDetailTopic::query()->find($tid);
+        if ($topic === null) {
+            return;
+        }
+        if ($this->normalizeVisibility($topic->visibility) !== $this->modalVisibility) {
+            throw ValidationException::withMessages([
+                $prefix.'.topic_id' => __('wizard.step6_topic_visibility_mismatch'),
+            ]);
+        }
+    }
+
+    protected function moveLineWithinVisibility(int $index, int $direction): void
+    {
+        if (! isset($this->lines[$index])) {
+            return;
+        }
+
+        $visibility = $this->lineVisibility($this->lines[$index]);
+        $swapIndex = null;
+
+        if ($direction < 0) {
+            for ($i = $index - 1; $i >= 0; $i--) {
+                if ($this->lineVisibility($this->lines[$i]) === $visibility) {
+                    $swapIndex = $i;
+                    break;
+                }
+            }
+        } else {
+            for ($i = $index + 1, $count = count($this->lines); $i < $count; $i++) {
+                if ($this->lineVisibility($this->lines[$i]) === $visibility) {
+                    $swapIndex = $i;
+                    break;
+                }
+            }
+        }
+
+        if ($swapIndex === null) {
+            return;
+        }
+
+        $tmp = $this->lines[$swapIndex];
+        $this->lines[$swapIndex] = $this->lines[$index];
+        $this->lines[$index] = $tmp;
+        $this->lines = array_values($this->lines);
+        $this->renumberSortOrders();
+        $this->persistAll();
+    }
+
+    protected function lineVisibility(array $line): string
+    {
+        if (isset($line['visibility']) && is_string($line['visibility'])) {
+            return $this->normalizeVisibility($line['visibility']);
+        }
+
+        return $this->normalizeVisibility(
+            ServiceDetailTopic::query()->find((int) ($line['topic_id'] ?? 0))?->visibility
+        );
+    }
+
+    protected function normalizeVisibility(?string $visibility): string
+    {
+        return in_array($visibility, self::VISIBILITY_TABS, true) ? $visibility : 'public';
+    }
+
+    public function lineMatchesActiveTab(array $line): bool
+    {
+        return $this->lineVisibility($line) === $this->activeVisibilityTab;
+    }
+
+    public function canMoveLineUp(int $index): bool
+    {
+        if (! isset($this->lines[$index])) {
+            return false;
+        }
+        $visibility = $this->lineVisibility($this->lines[$index]);
+        for ($i = $index - 1; $i >= 0; $i--) {
+            if ($this->lineVisibility($this->lines[$i]) === $visibility) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function canMoveLineDown(int $index): bool
+    {
+        if (! isset($this->lines[$index])) {
+            return false;
+        }
+        $visibility = $this->lineVisibility($this->lines[$index]);
+        $count = count($this->lines);
+        for ($i = $index + 1; $i < $count; $i++) {
+            if ($this->lineVisibility($this->lines[$i]) === $visibility) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function renumberSortOrders(): void
     {
-        $order = 10;
+        $orderByVisibility = array_fill_keys(self::VISIBILITY_TABS, 10);
         foreach (array_keys($this->lines) as $i) {
-            $this->lines[$i]['sort_order'] = $order;
-            $order += 10;
+            $visibility = $this->lineVisibility($this->lines[$i]);
+            $this->lines[$i]['sort_order'] = $orderByVisibility[$visibility];
+            $orderByVisibility[$visibility] += 10;
         }
     }
 
@@ -318,6 +446,8 @@ class ServiceDetailsStep extends Component
 
                 $sort = (int) ($row['sort_order'] ?? 9999);
                 $active = (bool) ($row['active'] ?? true);
+                $conditionKeyId = (int) ($row['condition_key_id'] ?? 0);
+                $isMandatory = (bool) ($row['is_mandatory'] ?? false);
 
                 foreach ($languages as $lang) {
                     $text = trim((string) data_get($row, 'translations.'.$lang->id.'.description'));
@@ -328,6 +458,8 @@ class ServiceDetailsStep extends Component
                         'description' => $text === '' ? null : $text,
                         'sort_order' => $sort,
                         'active' => $active,
+                        'is_mandatory' => $isMandatory,
+                        'condition_key_id' => $conditionKeyId,
                     ]);
                 }
             }
@@ -357,6 +489,9 @@ class ServiceDetailsStep extends Component
             'sort_order' => (int) ($line['sort_order'] ?? 0),
             'topic_id' => isset($line['topic_id']) ? (int) $line['topic_id'] : null,
             'category_id' => isset($line['category_id']) ? (int) $line['category_id'] : null,
+            'condition_key_id' => isset($line['condition_key_id']) ? (int) $line['condition_key_id'] : null,
+            'is_mandatory' => (bool) ($line['is_mandatory'] ?? false),
+            'visibility' => $this->lineVisibility($line),
             'active' => (bool) ($line['active'] ?? true),
             'translations' => $translations,
         ];
@@ -376,9 +511,51 @@ class ServiceDetailsStep extends Component
             'sort_order' => 0,
             'topic_id' => null,
             'category_id' => null,
+            'condition_key_id' => null,
+            'is_mandatory' => false,
+            'visibility' => $this->modalVisibility,
             'active' => true,
             'translations' => $translations,
         ];
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, ServiceDetailTopicCategory>  $categories
+     * @param  \Illuminate\Support\Collection<int|string, \Illuminate\Support\Collection<int, ServiceDetailTopic>>  $topicsByCategory
+     * @return \Illuminate\Support\Collection<int, ServiceDetailTopicCategory>
+     */
+    public function categoriesForVisibility(Collection $categories, Collection $topicsByCategory, string $visibility): Collection
+    {
+        $visibility = $this->normalizeVisibility($visibility);
+
+        return $categories->filter(function (ServiceDetailTopicCategory $cat) use ($topicsByCategory, $visibility): bool {
+            $topics = $topicsByCategory->get((int) $cat->id, collect());
+
+            return $topics->contains(
+                fn (ServiceDetailTopic $topic): bool => $this->normalizeVisibility($topic->visibility) === $visibility
+            );
+        })->values();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, ServiceDetailTopic>  $topics
+     * @return \Illuminate\Support\Collection<int, ServiceDetailTopic>
+     */
+    public function topicsForCategoryAndVisibility(Collection $topics, string $visibility): Collection
+    {
+        $visibility = $this->normalizeVisibility($visibility);
+
+        return $topics
+            ->filter(fn (ServiceDetailTopic $topic): bool => $this->normalizeVisibility($topic->visibility) === $visibility)
+            ->values();
+    }
+
+    public function hasCatalogForVisibility(string $visibility): bool
+    {
+        return ServiceDetailTopic::query()
+            ->where('active', true)
+            ->where('visibility', $this->normalizeVisibility($visibility))
+            ->exists();
     }
 
     /**
@@ -390,6 +567,8 @@ class ServiceDetailsStep extends Component
         $attrs = [
             'modalLine.topic_id' => __('wizard.step6_topic'),
             'modalLine.category_id' => __('wizard.step6_category'),
+            'modalLine.condition_key_id' => __('wizard.step6_condition_key'),
+            'modalLine.is_mandatory' => __('wizard.step6_is_mandatory'),
             'modalLine.translations' => __('wizard.step6_translations'),
         ];
         foreach ($languages as $lang) {
@@ -397,6 +576,14 @@ class ServiceDetailsStep extends Component
         }
 
         return $attrs;
+    }
+
+    public function conditionKeyCategoryLabel(string $category): string
+    {
+        $key = 'filament.resources.service_detail_condition_key_categories.'.$category;
+        $label = __($key);
+
+        return $label !== $key ? $label : $category;
     }
 
     public function excerptForLine(array $line): string
@@ -468,11 +655,25 @@ class ServiceDetailsStep extends Component
                 ->get()
                 ->keyBy('id');
 
+        $conditionKeys = ServiceDetailConditionKey::query()
+            ->orderBy('category')
+            ->orderBy('code')
+            ->get()
+            ->groupBy('category');
+
+        $conditionKeysById = ServiceDetailConditionKey::query()
+            ->get()
+            ->keyBy('id');
+
         return view('livewire.service-wizard.service-details-step', [
             'categories' => $categories,
             'topicsByCategory' => $topics,
             'topicsById' => $topicsById,
             'languages' => $this->wizardLanguages(),
+            'visibilityTabs' => self::VISIBILITY_TABS,
+            'modalCategories' => $this->categoriesForVisibility($categories, $topics, $this->modalVisibility),
+            'conditionKeysByCategory' => $conditionKeys,
+            'conditionKeysById' => $conditionKeysById,
         ]);
     }
 }

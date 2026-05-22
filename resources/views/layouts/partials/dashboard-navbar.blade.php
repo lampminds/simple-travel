@@ -140,7 +140,8 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
                                     <img src="{{ auth()->user()->avatarThumbUrl() }}"
-                                         class="avatar avatar-xs rounded-circle me-2" alt="{{ auth()->user()->name }}"/>
+                                         class="avatar me-2" alt="{{ auth()->user()->name }}"
+                                         style="width: 2.5rem; height: 2.5rem; object-fit: contain;"/>
                                 </div>
                                 <div class="flex-grow-1 ms-1 lh-base">
                                     <span class="fw-semibold fs-13 d-block line-height-normal">{{ auth()->user()->name }}</span>

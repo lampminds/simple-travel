@@ -105,7 +105,7 @@
                                                 @unless ($isEdit) autofocus @endunless
                                             >
                                             <small id="city-search-hint" class="form-text text-muted">La búsqueda empieza con 4 caracteres (hay muchas ciudades).</small>
-                                            <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $isEdit ? $service->city_id : '') }}">
+                                            <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $defaultCityId ?? '') }}">
                                             <input type="hidden" id="city_name" name="city_name" value="{{ old('city_name', $cityDisplayLabel ?? '') }}">
                                             <div id="city-results" class="list-group mt-2 overflow-auto" style="max-height: 22rem;"></div>
                                             @error('city_name')
