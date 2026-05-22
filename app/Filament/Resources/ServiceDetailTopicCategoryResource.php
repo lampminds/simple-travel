@@ -115,8 +115,12 @@ class ServiceDetailTopicCategoryResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('name')
                     ->label(__('filament.resources.service_detail_topic_category_columns.name'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $term = '%'.$search.'%';
+                        $query->whereHas('translations', function (Builder $q) use ($term): void {
+                            $q->where('name', 'like', $term);
+                        });
+                    }),
                 IconColumn::make('active')
                     ->label(__('filament.resources.service_detail_topic_category_columns.active'))
                     ->boolean()

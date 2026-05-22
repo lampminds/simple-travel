@@ -144,8 +144,12 @@ class ServiceDetailTopicResource extends LmpResource
                     ->placeholder('—'),
                 TextColumn::make('name')
                     ->label(__('filament.resources.service_detail_topic_columns.name'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $term = '%'.$search.'%';
+                        $query->whereHas('translations', function (Builder $q) use ($term): void {
+                            $q->where('name', 'like', $term);
+                        });
+                    }),
                 TextColumn::make('visibility')
                     ->label(__('filament.resources.service_detail_topic_columns.visibility'))
                     ->formatStateUsing(fn (?string $state) => $state ? __("filament.resources.service_detail_topic_visibility.{$state}") : '—')
