@@ -31,6 +31,8 @@ return new class extends Migration
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('text')->nullable();
 
+            $table->unique(['module_feature_id', 'language_id'], 'feature_trans_lang_unique');
+
             lmpStamps($table);
         });
     }

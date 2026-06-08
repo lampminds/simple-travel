@@ -3,12 +3,12 @@
 namespace App\Livewire\ServiceWizard;
 
 use App\Models\Service;
-use App\Models\ServiceFeature;
 use App\Models\ServiceFeatureCategory;
 use App\Models\ServiceType;
 use App\Services\ServiceFeatureSelectionService;
 use App\Support\ServiceWizardSkipsVariantsStep;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -20,10 +20,10 @@ class ServiceFeaturesStep extends Component
     public int $serviceTypeId;
 
     /** @var array<string> */
-    public array $categoryIds = [];
-
-    /** @var array<string> */
     public array $selectedFeatureIds = [];
+
+    /** @var array<int> Category accordion panels currently expanded. */
+    public array $openAccordionCategoryIds = [];
 
     public function mount(int $serviceId, int $serviceTypeId): void
     {
@@ -31,9 +31,6 @@ class ServiceFeaturesStep extends Component
         $this->serviceTypeId = $serviceTypeId;
 
         $service = $this->authorizedService();
-        $catalog = app(ServiceFeatureSelectionService::class);
-
-        $this->categoryIds = [];
 
         $service->load('features');
         $this->selectedFeatureIds = $service->features
@@ -42,28 +39,23 @@ class ServiceFeaturesStep extends Component
             ->values()
             ->all();
 
-        $this->pruneSelectionToCategories();
+        $this->pruneSelectionToScope();
     }
 
-    public function updatedCategoryIds(): void
+    public function toggleAccordion(int $categoryId): void
     {
-        $this->pruneSelectionToCategories();
-    }
+        if ($categoryId < 1) {
+            return;
+        }
 
-    public function selectAllCategories(): void
-    {
-        $catalog = app(ServiceFeatureSelectionService::class);
-        $this->categoryIds = collect(array_keys($catalog->categoryCheckboxOptionsForServiceType($this->serviceTypeId)))
-            ->map(fn ($k) => (string) $k)
-            ->values()
-            ->all();
-        $this->pruneSelectionToCategories();
-    }
-
-    public function clearAllCategories(): void
-    {
-        $this->categoryIds = [];
-        $this->pruneSelectionToCategories();
+        if (in_array($categoryId, $this->openAccordionCategoryIds, true)) {
+            $this->openAccordionCategoryIds = array_values(array_filter(
+                $this->openAccordionCategoryIds,
+                fn (int $id) => $id !== $categoryId
+            ));
+        } else {
+            $this->openAccordionCategoryIds[] = $categoryId;
+        }
     }
 
     /**
@@ -89,10 +81,6 @@ class ServiceFeaturesStep extends Component
 
     public function selectAllFeaturesInCategory(int $categoryId): void
     {
-        if (! $this->categoryFilterContains($categoryId)) {
-            return;
-        }
-
         $newIds = $this->getFeatureIdStringsForCategory($categoryId);
         if ($newIds === []) {
             return;
@@ -107,10 +95,6 @@ class ServiceFeaturesStep extends Component
 
     public function clearFeaturesInCategory(int $categoryId): void
     {
-        if (! $this->categoryFilterContains($categoryId)) {
-            return;
-        }
-
         $inCategory = collect($this->getFeatureIdStringsForCategory($categoryId))->flip();
         if ($inCategory->isEmpty()) {
             return;
@@ -122,34 +106,67 @@ class ServiceFeaturesStep extends Component
             ->all();
     }
 
-    protected function categoryFilterContains(int $categoryId): bool
-    {
-        return collect($this->categoryIds)
-            ->contains(fn (string|int $id) => (int) $id === $categoryId);
-    }
-
     /**
-     * Drop selected features that are no longer visible under the current category filter.
-     * When no category is selected, keep in-memory selections (e.g. loaded from the DB) unchanged.
+     * Drop selected features that are no longer in scope for this service type.
      */
-    protected function pruneSelectionToCategories(): void
+    protected function pruneSelectionToScope(): void
     {
         $catalog = app(ServiceFeatureSelectionService::class);
         $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
-        $allowed = collect($this->categoryIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
-
-        if ($allowed === []) {
-            return;
-        }
-
-        $valid = $catalog->selectableFeaturesInCategories($allowed, $scoped)->pluck('id')->flip();
+        $valid = $scoped->flip();
 
         $this->selectedFeatureIds = collect($this->selectedFeatureIds)
-            ->map(fn ($id) => (int) $id)
-            ->filter(fn (int $id) => $valid->has($id))
-            ->map(fn (int $id) => (string) $id)
+            ->filter(fn (string $id) => $valid->has((int) $id))
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array<int>
+     */
+    protected function scopedCategoryIdsForServiceType(): array
+    {
+        $catalog = app(ServiceFeatureSelectionService::class);
+
+        return collect(array_keys($catalog->categoryCheckboxOptionsForServiceType($this->serviceTypeId)))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Features grouped by category id, ordered by category list_order.
+     *
+     * @return Collection<int, Collection<int, ServiceFeature>>
+     */
+    protected function groupedFeaturesForServiceType(): Collection
+    {
+        $catalog = app(ServiceFeatureSelectionService::class);
+        $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
+        $categoryIds = $this->scopedCategoryIdsForServiceType();
+
+        $features = $catalog->selectableFeaturesInCategories($categoryIds, $scoped);
+        $grouped = $features->groupBy(fn ($f) => (int) $f->service_feature_category_id);
+        $orderedGrouped = collect();
+
+        if ($grouped->isEmpty()) {
+            return $orderedGrouped;
+        }
+
+        $categoryOrder = ServiceFeatureCategory::query()
+            ->whereIn('id', $grouped->keys()->map(fn ($k) => (int) $k)->all())
+            ->ordered()
+            ->pluck('id');
+
+        foreach ($categoryOrder as $cid) {
+            if ($grouped->has($cid)) {
+                $orderedGrouped->put($cid, $grouped->get($cid));
+            }
+        }
+
+        return $orderedGrouped;
     }
 
     public function save(): void
@@ -158,21 +175,8 @@ class ServiceFeaturesStep extends Component
         $catalog = app(ServiceFeatureSelectionService::class);
         $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
 
-        $categoryIds = collect($this->categoryIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
+        $categoryIds = $this->scopedCategoryIdsForServiceType();
         $requested = collect($this->selectedFeatureIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
-
-        if ($categoryIds === [] && $requested !== []) {
-            $categoryIds = ServiceFeature::query()
-                ->whereIn('id', $requested)
-                ->where('active', true)
-                ->where('is_selectable', true)
-                ->whereIn('id', $scoped->all())
-                ->pluck('service_feature_category_id')
-                ->map(fn ($id) => (int) $id)
-                ->unique()
-                ->values()
-                ->all();
-        }
 
         $final = $catalog->filterFeatureIdsToCategoriesAndScope($requested, $categoryIds, $scoped);
 
@@ -190,7 +194,7 @@ class ServiceFeaturesStep extends Component
 
         $this->redirectRoute($nextRoute, [
             'serviceType' => $serviceType->code,
-            'service' => $service->id,
+            'service' => $service,
         ]);
     }
 
@@ -212,27 +216,9 @@ class ServiceFeaturesStep extends Component
         $catalog = app(ServiceFeatureSelectionService::class);
         $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
 
-        $categoryIdsInt = collect($this->categoryIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
-        $features = $catalog->selectableFeaturesInCategories($categoryIdsInt, $scoped);
-
-        $grouped = $features->groupBy(fn ($f) => (int) $f->service_feature_category_id);
-        $orderedGrouped = collect();
-        if ($grouped->isNotEmpty()) {
-            $categoryOrder = ServiceFeatureCategory::query()
-                ->whereIn('id', $grouped->keys()->map(fn ($k) => (int) $k)->all())
-                ->ordered()
-                ->pluck('id');
-            foreach ($categoryOrder as $cid) {
-                if ($grouped->has($cid)) {
-                    $orderedGrouped->put($cid, $grouped->get($cid));
-                }
-            }
-        }
-
         return view('livewire.service-wizard.service-features-step', [
-            'categoryOptions' => $catalog->categoryCheckboxOptionsForServiceType($this->serviceTypeId),
             'scopedCount' => $scoped->count(),
-            'groupedFeatures' => $orderedGrouped,
+            'groupedFeatures' => $this->groupedFeaturesForServiceType(),
         ]);
     }
 }

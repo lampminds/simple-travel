@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Clusters\CatalogCluster;
 use App\Filament\Resources\ServiceDetailTopicResource\Pages;
 use App\Models\Language;
+use App\Models\ServiceDetailConditionKey;
 use App\Models\ServiceDetailTopic;
 use App\Models\ServiceDetailTopicCategory;
 use BackedEnum;
@@ -116,6 +117,30 @@ class ServiceDetailTopicResource extends LmpResource
                                     ])
                                     ->default('public')
                                     ->nullable(),
+                                Select::make('scope')
+                                    ->label(__('filament.resources.service_detail_topic_fields.scope'))
+                                    ->options([
+                                        'informational' => __('filament.resources.service_detail_topic_scopes.informational'),
+                                        'service' => __('filament.resources.service_detail_topic_scopes.service'),
+                                        'commercial' => __('filament.resources.service_detail_topic_scopes.commercial'),
+                                        'legal' => __('filament.resources.service_detail_topic_scopes.legal'),
+                                    ])
+                                    ->default('informational')
+                                    ->required(),
+                                Select::make('condition_key_id')
+                                    ->label(__('filament.resources.service_detail_topic_fields.condition_key'))
+                                    ->relationship(
+                                        name: 'conditionKey',
+                                        titleAttribute: 'code',
+                                        modifyQueryUsing: fn ($query) => $query->orderBy('category')->orderBy('code')
+                                    )
+                                    ->getOptionLabelFromRecordUsing(
+                                        fn (ServiceDetailConditionKey $record): string => $record->category.'.'.$record->code
+                                    )
+                                    ->placeholder(__('filament.common.select_option'))
+                                    ->searchable()
+                                    ->preload()
+                                    ->nullable(),
                                 Toggle::make('active')
                                     ->label(__('filament.resources.service_detail_topic_fields.active'))
                                     ->default(true),
@@ -154,6 +179,16 @@ class ServiceDetailTopicResource extends LmpResource
                     ->label(__('filament.resources.service_detail_topic_columns.visibility'))
                     ->formatStateUsing(fn (?string $state) => $state ? __("filament.resources.service_detail_topic_visibility.{$state}") : '—')
                     ->sortable(),
+                TextColumn::make('scope')
+                    ->label(__('filament.resources.service_detail_topic_columns.scope'))
+                    ->formatStateUsing(fn (?string $state) => $state ? __("filament.resources.service_detail_topic_scopes.{$state}") : '—')
+                    ->sortable(),
+                TextColumn::make('conditionKey.code')
+                    ->label(__('filament.resources.service_detail_topic_columns.condition_key'))
+                    ->formatStateUsing(fn ($state, ServiceDetailTopic $record): string => $record->conditionKey
+                        ? $record->conditionKey->category.'.'.$record->conditionKey->code
+                        : '—')
+                    ->sortable(query: fn ($query, string $direction) => $query->orderBy('condition_key_id', $direction)),
                 IconColumn::make('active')
                     ->label(__('filament.resources.service_detail_topic_columns.active'))
                     ->boolean()
@@ -181,7 +216,11 @@ class ServiceDetailTopicResource extends LmpResource
             ], layout: FiltersLayout::AboveContent)
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale', 'category.translations.language.locale']));
+            ->modifyQueryUsing(fn ($query) => $query->with([
+                'translations.language.locale',
+                'category.translations.language.locale',
+                'conditionKey',
+            ]));
     }
 
     public static function getGloballySearchableAttributes(): array

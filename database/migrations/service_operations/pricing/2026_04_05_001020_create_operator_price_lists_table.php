@@ -16,6 +16,7 @@ return new class extends Migration
     {
         Schema::create('operator_price_lists', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
 
             $table->foreignId('operator_id')->constrained('accounts', 'id', 'pl_account_fk');
 
@@ -38,8 +39,8 @@ return new class extends Migration
             $table->foreignId('operator_package_item_id')
                 ->constrained('operator_package_items', 'id', 'pl_items_op_fk');
 
-            $table->decimal('price', 10, 2);
-            $table->enum('pricing_mode', ['fixed_delta', 'percentage', 'direct'])->default('direct');
+            $table->decimal('price', 10, 2)->nullable();
+            $table->enum('pricing_mode', ['fixed_delta', 'percentage', 'fixed_price'])->nullable();
 
             $table->unique(
                 ['operator_price_list_id', 'operator_package_item_id'],
@@ -72,6 +73,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('agency_id', 'assigned_to_index');
+
+            $table->unique(
+                ['operator_price_list_id', 'agency_id'],
+                'operator_price_list_assignments_unique'
+            );
         });
 
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Services\PendingInvitationUserCleanup;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
@@ -30,6 +31,7 @@ class UserInvitation extends Model
         'account_inviting',
         'email',
         'name',
+        'company_name',
         'role_id',
         'token',
         'send_attempts',
@@ -41,6 +43,7 @@ class UserInvitation extends Model
         'status',
         'invited_user_id',
         'invited_person_id',
+        'invited_account_id',
     ];
 
     protected $casts = [
@@ -81,6 +84,43 @@ class UserInvitation extends Model
     public function invitedPerson(): BelongsTo
     {
         return $this->belongsTo(Person::class, 'invited_person_id');
+    }
+
+    /**
+     * Target company when the invitee is an existing platform user (external company invite).
+     */
+    public function invitedAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'invited_account_id');
+    }
+
+    /**
+     * Commercial relationship created when this external invitation was accepted.
+     */
+    public function establishedRelationship(): HasOne
+    {
+        return $this->hasOne(AccountRelationship::class, 'source_invitation_id');
+    }
+
+    /**
+     * Whether the invited company is an agency or provider (external invitations only).
+     */
+    public function resolveInviteeCompanyKind(): ?string
+    {
+        if ($this->type !== self::TYPE_EXTERNAL) {
+            return null;
+        }
+
+        if ($this->invitedAccount instanceof Account) {
+            return $this->companyKindFromAccount($this->invitedAccount);
+        }
+
+        $providerAccount = $this->establishedRelationship?->providerAccount;
+        if ($providerAccount instanceof Account) {
+            return $this->companyKindFromAccount($providerAccount);
+        }
+
+        return null;
     }
 
     /**
@@ -134,5 +174,22 @@ class UserInvitation extends Model
     public function markRevoked(): void
     {
         $this->forceFill(['status' => self::STATUS_REVOKED])->save();
+    }
+
+    private function companyKindFromAccount(Account $account): ?string
+    {
+        $codes = $account->accountTypes
+            ->where('active', true)
+            ->pluck('code');
+
+        if ($codes->contains('agency')) {
+            return 'agency';
+        }
+
+        if ($codes->contains('provider')) {
+            return 'provider';
+        }
+
+        return null;
     }
 }

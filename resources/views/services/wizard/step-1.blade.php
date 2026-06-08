@@ -84,7 +84,7 @@
                         <div class="card-body">
                             <form
                                 method="POST"
-                                action="{{ $isEdit ? route('services.wizard.step1.update', ['serviceType' => $serviceType->code, 'service' => $service->id]) : route('services.wizard.step1.store', ['serviceType' => $serviceType->code]) }}"
+                                action="{{ $isEdit ? route('services.wizard.step1.update', ['serviceType' => $serviceType->code, 'service' => $service]) : route('services.wizard.step1.store', ['serviceType' => $serviceType->code]) }}"
                             >
                                 @csrf
                                 @if ($isEdit)

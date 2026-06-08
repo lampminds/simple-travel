@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\AccountDocument;
 use App\Models\AccountType;
-use App\Models\AccountTaxId;
+use App\Models\CatDocument;
 use App\Models\LmpCity;
 use App\Models\TodoTask;
 use App\Models\TodoTaskUserAssignment;
@@ -19,6 +19,10 @@ use Illuminate\View\View;
 
 final class AccountCompanyController extends Controller
 {
+    private const MIN_CITY_SEARCH_LENGTH = 4;
+
+    private const MAX_CITY_SEARCH_RESULTS = 2000;
+
     public function edit(Request $request): View
     {
         $user = $request->user();
@@ -56,14 +60,14 @@ final class AccountCompanyController extends Controller
             'currentCity' => $currentCity,
             'companyTypes' => $companyTypes,
             'selectedCompanyTypeIds' => $selectedCompanyTypeIds,
-            'taxIdCategories' => AccountCategory::query()
+            'taxIdCategories' => CatDocument::query()
                 ->byGroup('tax_id')
                 ->where('active', true)
                 ->with(['translations.language'])
                 ->ordered()
                 ->get(),
-            'taxIds' => $account->taxIds()
-                ->with(['category.translations.language'])
+            'taxIds' => $account->documents()
+                ->with(['document.translations.language'])
                 ->orderBy('id')
                 ->get(),
         ]);
@@ -89,6 +93,40 @@ final class AccountCompanyController extends Controller
         ]);
     }
 
+    public function searchCities(Request $request): JsonResponse
+    {
+        abort_unless($request->user() !== null, 401);
+
+        $query = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($query) < self::MIN_CITY_SEARCH_LENGTH) {
+            return response()->json([]);
+        }
+
+        $cities = LmpCity::query()
+            ->with(['state.country'])
+            ->where('name', 'like', '%'.$query.'%')
+            ->orderBy('name')
+            ->limit(self::MAX_CITY_SEARCH_RESULTS + 1)
+            ->get(['id', 'name', 'state_id']);
+
+        $truncated = $cities->count() > self::MAX_CITY_SEARCH_RESULTS;
+        if ($truncated) {
+            $cities = $cities->take(self::MAX_CITY_SEARCH_RESULTS);
+        }
+
+        $results = $cities->map(fn (LmpCity $city) => [
+            'id' => $city->id,
+            'name' => $city->name,
+            'label' => $this->formatCitySearchLabel($city),
+        ])->values();
+
+        return response()->json([
+            'results' => $results,
+            'truncated' => $truncated,
+        ]);
+    }
+
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -109,18 +147,18 @@ final class AccountCompanyController extends Controller
                 'city_id' => ['required', 'integer', Rule::exists(LmpCity::class, 'id')],
                 'postal_code' => ['required', 'string', 'max:255'],
                 'tax_ids' => ['array'],
-                'tax_ids.*.id' => ['nullable', 'integer', 'exists:account_tax_ids,id'],
-                'tax_ids.*.account_category_id' => [
+                'tax_ids.*.id' => ['nullable', 'integer', 'exists:account_documents,id'],
+                'tax_ids.*.document_id' => [
                     'nullable',
                     'integer',
-                    Rule::exists('cat_account_categories', 'id')->where('group', 'tax_id'),
+                    Rule::exists('cat_documents', 'id')->where('group', 'tax_id'),
                     'required_with:tax_ids.*.value',
                 ],
-                'tax_ids.*.value' => ['nullable', 'string', 'max:255', 'required_with:tax_ids.*.account_category_id'],
+                'tax_ids.*.value' => ['nullable', 'string', 'max:255', 'required_with:tax_ids.*.document_id'],
                 'tax_ids.*.delete' => ['nullable', 'boolean'],
             ],
             [
-                'tax_ids.*.account_category_id.required_with' => 'Seleccioná un tipo fiscal.',
+                'tax_ids.*.document_id.required_with' => 'Seleccioná un tipo fiscal.',
                 'tax_ids.*.value.required_with' => 'Ingresá el valor fiscal.',
             ]
         );
@@ -148,41 +186,41 @@ final class AccountCompanyController extends Controller
     /**
      * Sync account tax IDs from form rows (create, update, delete).
      *
-     * @param  array<int, array{id?: int|null, account_category_id?: int|null, value?: string|null, delete?: bool|null}>  $rows
+     * @param  array<int, array{id?: int|null, document_id?: int|null, value?: string|null, delete?: bool|null}>  $rows
      */
     private function syncTaxIds(Account $account, array $rows): void
     {
         foreach ($rows as $row) {
             $id = isset($row['id']) ? (int) $row['id'] : null;
             $delete = (bool) ($row['delete'] ?? false);
-            $categoryId = isset($row['account_category_id']) ? (int) $row['account_category_id'] : 0;
+            $documentId = isset($row['document_id']) ? (int) $row['document_id'] : 0;
             $value = trim((string) ($row['value'] ?? ''));
 
             if ($id !== null) {
-                $existing = $account->taxIds()->whereKey($id)->first();
-                if (! $existing instanceof AccountTaxId) {
+                $existing = $account->documents()->whereKey($id)->first();
+                if (! $existing instanceof AccountDocument) {
                     continue;
                 }
                 if ($delete) {
                     $existing->delete();
                     continue;
                 }
-                if ($categoryId < 1 || $value === '') {
+                if ($documentId < 1 || $value === '') {
                     continue;
                 }
                 $existing->update([
-                    'account_category_id' => $categoryId,
+                    'document_id' => $documentId,
                     'value' => $value,
                 ]);
                 continue;
             }
 
-            if ($delete || $categoryId < 1 || $value === '') {
+            if ($delete || $documentId < 1 || $value === '') {
                 continue;
             }
 
-            $account->taxIds()->create([
-                'account_category_id' => $categoryId,
+            $account->documents()->create([
+                'document_id' => $documentId,
                 'value' => $value,
             ]);
         }
@@ -191,29 +229,29 @@ final class AccountCompanyController extends Controller
     /**
      * Prevent duplicate tax-id category rows in the same submit.
      *
-     * @param  array<int, array{account_category_id?: int|null, delete?: bool|null}>  $rows
+     * @param  array<int, array{document_id?: int|null, delete?: bool|null}>  $rows
      */
     private function assertNoDuplicateTaxIdTypes(array $rows): void
     {
-        $firstIndexByCategory = [];
+        $firstIndexByDocument = [];
 
         foreach ($rows as $idx => $row) {
             if ((bool) ($row['delete'] ?? false)) {
                 continue;
             }
 
-            $categoryId = isset($row['account_category_id']) ? (int) $row['account_category_id'] : 0;
-            if ($categoryId < 1) {
+            $documentId = isset($row['document_id']) ? (int) $row['document_id'] : 0;
+            if ($documentId < 1) {
                 continue;
             }
 
-            if (! isset($firstIndexByCategory[$categoryId])) {
-                $firstIndexByCategory[$categoryId] = $idx;
+            if (! isset($firstIndexByDocument[$documentId])) {
+                $firstIndexByDocument[$documentId] = $idx;
                 continue;
             }
 
             throw ValidationException::withMessages([
-                "tax_ids.$idx.account_category_id" => 'No podés repetir el mismo tipo fiscal.',
+                "tax_ids.$idx.document_id" => 'No podés repetir el mismo tipo fiscal.',
             ]);
         }
     }
@@ -253,5 +291,17 @@ final class AccountCompanyController extends Controller
             ]
         );
     }
-}
 
+    private function formatCitySearchLabel(LmpCity $city): string
+    {
+        $stateName = $city->state?->name;
+        $countryName = $city->state?->country?->name;
+        $tail = array_filter([$stateName, $countryName], fn ($v) => $v !== null && $v !== '');
+
+        if ($tail === []) {
+            return $city->name;
+        }
+
+        return $city->name.' — '.implode(', ', $tail);
+    }
+}

@@ -20,20 +20,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">
-                            {{ ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
-                                ? __('invitations.section_title_company')
-                                : __('invitations.section_title_employee') }}
-                        </h3>
-                        <p class="mt-1 fw-medium">
-                            @if(($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
-                                {{ __('invitations.section_intro_external', ['days' => $invitationExpirationDays ?? 7]) }}
-                            @else
-                                {{ __('invitations.section_intro_internal', ['days' => $invitationExpirationDays ?? 7]) }}
-                            @endif
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
+                            ? __('invitations.section_title_company')
+                            : __('invitations.section_title_employee')"
+                        :instructions="($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
+                            ? __('invitations.section_intro_external', ['days' => $invitationExpirationDays ?? 7])
+                            : __('invitations.section_intro_internal', ['days' => $invitationExpirationDays ?? 7])"
+                    />
                 </div>
             </div>
 
@@ -52,18 +46,54 @@
                                 @csrf
                                 <x-form-validation-summary />
                                 <div class="row g-2 align-items-end">
-                                    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-                                        <label for="invite_name" class="form-label">{{ __('invitations.name') }}</label>
-                                        <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
-                                               value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
-                                        <x-form-field-error name="name" />
-                                    </div>
+                                    @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_company_name" class="form-label">{{ __('invitations.company_name') }}</label>
+                                            <input type="text" name="company_name" id="invite_company_name"
+                                                   class="form-control @error('company_name') is-invalid @enderror"
+                                                   value="{{ old('company_name') }}" autocomplete="organization" maxlength="255"/>
+                                            <x-form-field-error name="company_name" />
+                                        </div>
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_name" class="form-label">{{ __('invitations.invitee_name') }}</label>
+                                            <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
+                                                   value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
+                                            <x-form-field-error name="name" />
+                                        </div>
+                                    @else
+                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                                            <label for="invite_name" class="form-label">{{ __('invitations.name') }}</label>
+                                            <input type="text" name="name" id="invite_name" class="form-control @error('name') is-invalid @enderror"
+                                                   value="{{ old('name') }}" required autocomplete="name" maxlength="255"/>
+                                            <x-form-field-error name="name" />
+                                        </div>
+                                    @endif
                                     <div class="col-12 col-md-6 col-lg-4 col-xl-3">
                                         <label for="invite_email" class="form-label">{{ __('invitations.email') }}</label>
                                         <input type="email" name="email" id="invite_email" class="form-control @error('email') is-invalid @enderror"
                                                value="{{ old('email') }}" required autocomplete="off"/>
                                         <x-form-field-error name="email" />
                                     </div>
+                                    @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL && ! empty($targetAccountChoices))
+                                        <div class="col-12">
+                                            <div class="alert alert-info py-2 mb-0">
+                                                {{ __('invitations.choose_target_account_help') }}
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-8 col-lg-6">
+                                            <label for="invited_account_id" class="form-label">{{ __('invitations.target_account') }}</label>
+                                            <select name="invited_account_id" id="invited_account_id"
+                                                    class="form-select @error('invited_account_id') is-invalid @enderror" required>
+                                                <option value="">{{ __('invitations.target_account_placeholder') }}</option>
+                                                @foreach ($targetAccountChoices as $choice)
+                                                    <option value="{{ $choice['id'] }}" @selected((string) old('invited_account_id') === (string) $choice['id'])>
+                                                        {{ $choice['label'] }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="invited_account_id" />
+                                        </div>
+                                    @endif
                                     @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_INTERNAL)
                                         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
                                             <label for="invite_role_id" class="form-label">{{ __('invitations.role') }}</label>
@@ -166,8 +196,17 @@
                                 <table class="table table-invitations-compact align-middle mb-0">
                                     <thead>
                                         <tr>
-                                            <th>{{ __('invitations.col_name') }}</th>
+                                            @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
+                                                <th>{{ __('invitations.col_company_name') }}</th>
+                                                <th class="text-nowrap">{{ __('invitations.col_company_kind') }}</th>
+                                                <th>{{ __('invitations.col_invitee_name') }}</th>
+                                            @else
+                                                <th>{{ __('invitations.col_name') }}</th>
+                                            @endif
                                             <th>{{ __('invitations.col_email') }}</th>
+                                            @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
+                                                <th class="text-nowrap">{{ __('invitations.col_target_company') }}</th>
+                                            @endif
                                             <th class="text-nowrap">{{ __('invitations.col_role') }}</th>
                                             <th class="text-nowrap">{{ __('invitations.col_retries') }}</th>
                                             <th class="text-nowrap">{{ __('invitations.col_status') }}</th>
@@ -181,8 +220,32 @@
                                                 $isSoon = $inv->status === \App\Models\UserInvitation::STATUS_PENDING && $inv->isExpiringSoon();
                                             @endphp
                                             <tr @class(['table-warning' => $isSoon])>
-                                                <td>{{ $inv->name ?? '—' }}</td>
+                                                @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
+                                                    <td>{{ $inv->company_name ?? '—' }}</td>
+                                                    <td class="text-nowrap">
+                                                        @php $inviteeKind = $inv->resolveInviteeCompanyKind(); @endphp
+                                                        @if ($inviteeKind === 'agency')
+                                                            {{ __('invitations.company_kind_agency') }}
+                                                        @elseif ($inviteeKind === 'provider')
+                                                            {{ __('invitations.company_kind_provider') }}
+                                                        @else
+                                                            <span class="text-muted">{{ __('invitations.company_kind_pending') }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $inv->name ?? '—' }}</td>
+                                                @else
+                                                    <td>{{ $inv->name ?? '—' }}</td>
+                                                @endif
                                                 <td>{{ $inv->email }}</td>
+                                                @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
+                                                    <td class="text-nowrap">
+                                                        @if ($inv->invitedAccount)
+                                                            {{ $inv->invitedAccount->commercial_name ?? $inv->invitedAccount->name ?? '#'.$inv->invitedAccount->id }}
+                                                        @else
+                                                            —
+                                                        @endif
+                                                    </td>
+                                                @endif
                                                 <td class="text-nowrap">{{ $inv->role?->name ?? '—' }}</td>
                                                 <td class="text-nowrap">
                                                     {{ (int) ($inv->send_attempts ?? 1) }} {{ __('invitations.retries_of') }} {{ (int) ($maxInvitationsRetries ?? 3) }}
@@ -197,7 +260,7 @@
                                                 </td>
                                                 <td class="text-nowrap">
                                                     @if ($inv->expires_at)
-                                                        <span title="{{ $inv->expires_at->timezone(config('app.timezone'))->format('Y-m-d H:i') }}">
+                                                        <span title="{{ locale_datetime($inv->expires_at->timezone(config('app.timezone'))) }}">
                                                             {{ $inv->expires_at->diffForHumans() }}
                                                         </span>
                                                     @else
@@ -227,7 +290,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="text-muted">
+                                                <td colspan="{{ ($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL ? 10 : 7 }}" class="text-muted">
                                                     @if (($statusFilter ?? \App\Models\UserInvitation::STATUS_PENDING) === \App\Models\UserInvitation::STATUS_PENDING)
                                                         {{ __('invitations.empty') }}
                                                     @else

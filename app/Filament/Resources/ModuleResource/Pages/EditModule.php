@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ModuleResource\Pages;
 use App\Filament\Resources\ModuleResource;
 use App\Models\Language;
 use App\Models\Module;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpEditRecord;
 
@@ -36,27 +37,23 @@ class EditModule extends LmpEditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        return Arr::except($data, ['translations']);
+        return Arr::except($data, ['translations', 'accountTypes']);
+    }
+
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
+        $record = parent::handleRecordUpdate($record, $data);
+        $this->form->model($record)->saveRelationships();
+
+        return $record;
     }
 
     protected function afterSave(): void
     {
-        $this->syncTranslations($this->getRecord(), $this->form->getState()['translations'] ?? []);
-    }
-
-    protected function syncTranslations(Module $record, array $translations): void
-    {
-        $record->translations()->delete();
-        foreach ($translations as $languageId => $row) {
-            $name = $row['name'] ?? '';
-            $description = $row['description'] ?? null;
-            if ($name !== '' || $description !== null) {
-                $record->translations()->create([
-                    'language_id' => $languageId,
-                    'name' => $name,
-                    'description' => $description,
-                ]);
-            }
-        }
+        /** @var Module $record */
+        $record = $this->getRecord();
+        $state = $this->form->getState();
+        ModuleResource::syncTranslationsFromForm($record, $state['translations'] ?? []);
+        ModuleResource::syncAllFeatureTranslationsFromFormState($record, $state['features'] ?? []);
     }
 }

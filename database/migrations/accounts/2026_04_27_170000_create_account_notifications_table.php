@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('account_notifications', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('recipient_user_id')
                 ->nullable()

@@ -315,7 +315,7 @@
                                                 foreach ($taxIds as $taxId) {
                                                     $taxRows[] = [
                                                         'id' => $taxId->id,
-                                                        'account_category_id' => $taxId->account_category_id,
+                                                        'document_id' => $taxId->document_id,
                                                         'value' => $taxId->value,
                                                         'delete' => false,
                                                     ];
@@ -333,15 +333,15 @@
                                                     @endif
                                                     <div class="col-md-4">
                                                         <label class="form-label">Tipo fiscal</label>
-                                                        <select name="tax_ids[{{ $idx }}][account_category_id]" class="form-select @error("tax_ids.$idx.account_category_id") is-invalid @enderror">
+                                                        <select name="tax_ids[{{ $idx }}][document_id]" class="form-select @error("tax_ids.$idx.document_id") is-invalid @enderror">
                                                             <option value="">Seleccioná un tipo</option>
                                                             @foreach($taxIdCategories as $category)
-                                                                <option value="{{ $category->id }}" @selected((int) ($row['account_category_id'] ?? 0) === (int) $category->id)>
+                                                                <option value="{{ $category->id }}" @selected((int) ($row['document_id'] ?? 0) === (int) $category->id)>
                                                                     {{ $category->name ?: $category->code }}
                                                                 </option>
                                                             @endforeach
                                                         </select>
-                                                        @error("tax_ids.$idx.account_category_id")
+                                                        @error("tax_ids.$idx.document_id")
                                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                                         @enderror
                                                     </div>
@@ -443,8 +443,7 @@
 
             function selectCity(city) {
                 cityIdInput.value = city.id;
-                const displayName = city.name || '';
-                searchInput.value = displayName;
+                searchInput.value = city.label || city.name || '';
                 clearResults();
                 applyCityDetails(city.id);
             }
@@ -468,7 +467,7 @@
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'list-group-item list-group-item-action';
-                    button.textContent = city.name;
+                    button.textContent = city.label || city.name || '';
                     button.addEventListener('click', () => selectCity(city));
                     resultsBox.appendChild(button);
                 });
@@ -479,7 +478,7 @@
                     currentAbortController.abort();
                 }
                 currentAbortController = new AbortController();
-                const response = await fetch(`{{ route('services.cities.search') }}?q=${encodeURIComponent(query)}`, {
+                const response = await fetch(`{{ route('account.cities.search') }}?q=${encodeURIComponent(query)}`, {
                     signal: currentAbortController.signal,
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
@@ -560,7 +559,7 @@
                     row.innerHTML =
                         '<div class="col-md-4">' +
                             '<label class="form-label">Tipo fiscal</label>' +
-                            '<select name="tax_ids[' + idx + '][account_category_id]" class="form-select">' +
+                            '<select name="tax_ids[' + idx + '][document_id]" class="form-select">' +
                                 buildTaxCategoryOptions() +
                             '</select>' +
                         '</div>' +

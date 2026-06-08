@@ -44,7 +44,7 @@ return [
     // Starter plan
     'plan_starter_price' => '150mil',
     'plan_starter_feature1' => 'Montagem de pacotes dinâmicos',
-    'plan_starter_feature2' => 'Serviços individuais (hotel, traslado, excursão)',
+    'plan_starter_feature2' => 'Serviços individuais (alojamento, traslado, excursão)',
     'plan_starter_feature3' => 'Calendário operativo',
     'plan_starter_feature4' => 'Estados de reserva',
     'plan_starter_feature5' => 'Voucher automático',

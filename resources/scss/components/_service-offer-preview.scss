@@ -1,0 +1,26 @@
+//
+// Operator service-offer preview modal (compact tables and sections)
+//
+
+.service-offer-preview {
+    .card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .service-offer-preview-table-block {
+        &:not(:last-child) {
+            margin-bottom: 0.625rem;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid var(--#{$prefix}border-color);
+        }
+    }
+
+    .service-offer-preview-table-title {
+        margin-bottom: 0.25rem;
+    }
+
+    .service-offer-preview-meta {
+        --#{$prefix}gutter-y: 0.5rem;
+        --#{$prefix}gutter-x: 0.75rem;
+    }
+}

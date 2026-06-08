@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class ServiceTransferVehicleType extends Model
 {
-    use AuditTrait;
+    use AuditTrait, HasUuid;
 
     protected $table = 'service_transfer_vehicle_types';
 

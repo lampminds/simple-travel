@@ -11,6 +11,7 @@ use App\Models\ServiceGastronomyMenu;
 use App\Models\ServiceGastronomyType;
 use App\Models\ServiceGastronomyVenue;
 use App\Services\Geocoding\NominatimGeocoder;
+use App\Support\ServiceWizardStepEight;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -360,7 +361,9 @@ class ServiceGastronomyAdvancedStep extends Component
         $this->latitude = $latFloat !== null ? (string) $latFloat : null;
         $this->longitude = $lonFloat !== null ? (string) $lonFloat : null;
 
-        $this->saveMessage = __('wizard.step7_saved');
+        session()->flash('status', __('wizard.step7_saved'));
+
+        $this->redirect(ServiceWizardStepEight::catalogServicesListUrl());
     }
 
     protected function normalizeOptionalCoordinate(mixed $value): ?float

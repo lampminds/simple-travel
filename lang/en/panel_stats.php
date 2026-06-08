@@ -3,6 +3,10 @@
 return [
     'section_invitations' => 'Invitations',
     'section_catalog' => 'Catalog',
+    'section_packages' => 'Packages',
+    'section_service_offers' => 'Catalog proposals',
+    'card_service_offers_pending' => 'Pending catalog proposals',
+    'card_operator_packages' => 'Commercial packages',
     'card_employee_invites' => 'Employee invites pending',
     'card_company_invites' => 'Company invites pending',
     'card_catalog_items' => 'Items in catalog',

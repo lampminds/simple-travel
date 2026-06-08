@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,9 @@ use Illuminate\Support\Facades\DB;
  */
 class ServiceTransferLocationTypesCatalogSeeder extends Seeder
 {
-    /** cat_languages.id for en-US, es-AR, pt-BR (see LanguagesTableSeeder + CatLocalesTableSeeder). */
+    use DisablesForeignKeyChecks;
+
+    /** cat_languages.id for en-US, es-AR, pt-BR (see CatLanguagesTableSeeder + CatLocalesTableSeeder). */
     private const LANGUAGE_IDS = [1, 2, 3];
 
     /**
@@ -36,6 +39,13 @@ class ServiceTransferLocationTypesCatalogSeeder extends Seeder
     }
 
     public function run(): void
+    {
+        $this->withoutForeignKeyChecks(function (): void {
+            $this->seedCatalog();
+        });
+    }
+
+    private function seedCatalog(): void
     {
         $categories = [
             [
@@ -213,7 +223,7 @@ class ServiceTransferLocationTypesCatalogSeeder extends Seeder
         ]);
 
         $add('hospitality', [
-            'hotel' => ['en' => 'Hotel', 'es' => 'Hotel', 'pt' => 'Hotel'],
+            'hotel' => ['en' => 'Accommodation', 'es' => 'Alojamiento', 'pt' => 'Alojamento'],
             'hostel' => ['en' => 'Hostel', 'es' => 'Hostal', 'pt' => 'Hostel'],
             'resort' => ['en' => 'Resort', 'es' => 'Resort', 'pt' => 'Resort'],
             'lodge' => ['en' => 'Lodge', 'es' => 'Lodge', 'pt' => 'Lodge'],

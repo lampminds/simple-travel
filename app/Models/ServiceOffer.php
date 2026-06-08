@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class ServiceOffer extends Model
 {
-    use AuditTrait;
+    use AuditTrait, HasUuid;
 
     public const STATUS_PENDING = 'pending';
 
@@ -27,7 +29,6 @@ class ServiceOffer extends Model
     protected $fillable = [
         'provider_id',
         'operator_id',
-        'service_id',
         'service_variant_id',
         'status',
         'availability',
@@ -50,23 +51,20 @@ class ServiceOffer extends Model
         return $this->belongsTo(Account::class, 'operator_id');
     }
 
-    public function service(): BelongsTo
-    {
-        return $this->belongsTo(Service::class);
-    }
-
     public function serviceVariant(): BelongsTo
     {
         return $this->belongsTo(ServiceVariant::class);
     }
 
-    public function targetsVariant(): bool
+    public function service(): HasOneThrough
     {
-        return $this->service_variant_id !== null;
-    }
-
-    public function targetsWholeService(): bool
-    {
-        return $this->service_id !== null && $this->service_variant_id === null;
+        return $this->hasOneThrough(
+            Service::class,
+            ServiceVariant::class,
+            'id',
+            'id',
+            'service_variant_id',
+            'service_id',
+        );
     }
 }

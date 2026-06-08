@@ -22,14 +22,11 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">
-                            {{ $isEdit ? __('account.transfer_vehicle_types.edit_heading', ['name' => $vehicleType->name]) : __('account.transfer_vehicle_types.create_heading') }}
-                        </h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ __('account.transfer_vehicle_types.form_intro') }}
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="$isEdit ? __('account.transfer_vehicle_types.edit_title') : __('account.transfer_vehicle_types.create_heading')"
+                        :subtitle="$isEdit ? $vehicleType->name : null"
+                        :instructions="__('account.transfer_vehicle_types.form_instructions')"
+                    />
                 </div>
             </div>
 
@@ -92,23 +89,6 @@
                                             @endforeach
                                         </select>
                                         @error('service_transfer_vehicle_type_category_id')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <label class="form-label" for="tvt-sort">{{ __('account.transfer_vehicle_types.fields.sort_order') }}</label>
-                                        <input
-                                            type="number"
-                                            class="form-control @error('sort_order') is-invalid @enderror"
-                                            id="tvt-sort"
-                                            name="sort_order"
-                                            value="{{ old('sort_order', $vehicleType?->sort_order ?? 9999) }}"
-                                            required
-                                            min="0"
-                                            max="99999"
-                                            step="1"
-                                        >
-                                        @error('sort_order')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                     </div>

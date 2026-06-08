@@ -8,12 +8,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('account.notifications.heading') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ __('account.notifications.intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('account.notifications.heading')"
+                        :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
+                        :instructions="__('account.notifications.intro_instructions')"
+                    />
                 </div>
             </div>
 

@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CatServiceTypeTranslationsTableSeeder extends Seeder
 {
+    use DisablesForeignKeyChecks;
 
     /**
      * Auto generated seed file
@@ -14,17 +17,16 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
+        $this->withoutForeignKeyChecks(function (): void {
+            DB::table('cat_service_type_translations')->delete();
 
-
-        \DB::table('cat_service_type_translations')->delete();
-
-        \DB::table('cat_service_type_translations')->insert(array (
+            DB::table('cat_service_type_translations')->insert(array (
             0 =>
             array (
                 'id' => 13,
                 'service_type_id' => 1,
                 'language_id' => 1,
-                'name' => 'Hotel',
+                'name' => 'Accommodation',
                 'description' => 'Hotels, hostels, cabins',
             ),
             1 =>
@@ -32,16 +34,16 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'id' => 14,
                 'service_type_id' => 1,
                 'language_id' => 2,
-                'name' => 'Hotel',
-                'description' => 'Hotel, hostel, cabaña, apart',
+                'name' => 'Alojamiento',
+                'description' => 'Hoteles, hostel, cabaña, apart',
             ),
             2 =>
             array (
                 'id' => 15,
                 'service_type_id' => 1,
                 'language_id' => 3,
-                'name' => 'Hotel',
-                'description' => NULL,
+                'name' => 'Alojamento',
+                'description' => 'Hoteles, hostels, cabanas',
             ),
             3 =>
             array (
@@ -228,7 +230,6 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'description' => NULL,
             ),
         ));
-
-
+        });
     }
 }

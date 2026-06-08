@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class OperatorServiceCatalog extends Model
 {
-    use AuditTrait;
+    use AuditTrait, HasUuid;
 
     protected $table = 'operator_service_catalog';
 
@@ -38,6 +39,16 @@ class OperatorServiceCatalog extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OperatorPackageItem::class, 'operator_service_catalog_id');
+    }
+
+    public function conditionOverrides(): HasMany
+    {
+        return $this->hasMany(OperatorPackageConditionOverride::class, 'operator_package_id');
+    }
+
+    public function packageOffers(): HasMany
+    {
+        return $this->hasMany(PackageOffer::class, 'operator_service_catalog_id');
     }
 
     /**

@@ -35,14 +35,14 @@
                             </div>
                             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-2">
                                 @foreach ($category->serviceHotelTypes as $type)
-                                    <div class="col">
+                                    <div class="col" wire:key="hotel-type-{{ $type->id }}">
                                         <div class="form-check">
                                             <input
-                                                class="form-check-input @error('hotelTypeIds') is-invalid @enderror"
+                                                class="form-check-input @error('hotelTypeIds') is-invalid @enderror @error('hotelTypeIds.*') is-invalid @enderror"
                                                 type="checkbox"
                                                 id="hotel-type-{{ (int) $type->id }}"
-                                                value="{{ (int) $type->id }}"
-                                                wire:model="hotelTypeIds"
+                                                value="{{ (string) $type->id }}"
+                                                wire:model.live="hotelTypeIds"
                                             >
                                             <label class="form-check-label" for="hotel-type-{{ (int) $type->id }}">
                                                 {{ $type->name !== '' ? $type->name : $type->code }}
@@ -96,35 +96,6 @@
                     wire:model="checkOutTime"
                 >
                 @error('checkOutTime')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="col-12 col-md-6 col-lg-4">
-                <label class="form-label" for="hotel-rooms">{{ __('wizard.step7_hotel_field_rooms') }}</label>
-                <input
-                    id="hotel-rooms"
-                    type="number"
-                    class="form-control @error('roomsCount') is-invalid @enderror"
-                    wire:model="roomsCount"
-                    min="0"
-                    step="1"
-                >
-                @error('roomsCount')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="col-12 col-lg-8">
-                <label class="form-label" for="hotel-chain">{{ __('wizard.step7_hotel_field_chain') }}</label>
-                <input
-                    id="hotel-chain"
-                    type="text"
-                    class="form-control @error('chainName') is-invalid @enderror"
-                    wire:model.live="chainName"
-                    maxlength="255"
-                >
-                @error('chainName')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>

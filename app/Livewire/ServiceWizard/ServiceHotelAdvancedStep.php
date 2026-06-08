@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\ServiceHotel;
 use App\Models\ServiceHotelType;
 use App\Models\ServiceHotelTypeCategory;
+use App\Support\ServiceWizardStepEight;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ class ServiceHotelAdvancedStep extends Component
 
     public int $serviceTypeId;
 
-    /** Selected catalogue type ids (checkboxes). */
+    /** @var list<string> Selected catalogue type ids (checkboxes; strings for Livewire binding). */
     public array $hotelTypeIds = [];
 
     /** Empty string = not set (HTML select). */
@@ -28,11 +29,6 @@ class ServiceHotelAdvancedStep extends Component
     public ?string $checkInTime = null;
 
     public ?string $checkOutTime = null;
-
-    /** @var int|string|null */
-    public $roomsCount = null;
-
-    public string $chainName = '';
 
     public ?string $saveMessage = null;
 
@@ -53,17 +49,20 @@ class ServiceHotelAdvancedStep extends Component
             return;
         }
 
-        $this->hotelTypeIds = $row->hotelTypes->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
+        $this->hotelTypeIds = $row->hotelTypes
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->values()
+            ->all();
         $this->stars = $row->stars !== null ? (string) (int) $row->stars : '';
         $this->checkInTime = $this->normalizeTimeForInput($row->check_in_time);
         $this->checkOutTime = $this->normalizeTimeForInput($row->check_out_time);
-        $this->roomsCount = $row->rooms_count !== null ? (int) $row->rooms_count : null;
-        $this->chainName = (string) ($row->chain_name ?? '');
     }
 
     public function save(): void
     {
         $this->saveMessage = null;
+        $this->resetErrorBag();
 
         $typeIds = collect($this->hotelTypeIds)
             ->map(fn ($id) => (int) $id)
@@ -73,14 +72,6 @@ class ServiceHotelAdvancedStep extends Component
             ->all();
 
         $starsInt = $this->stars === '' || $this->stars === null ? null : (int) $this->stars;
-
-        $roomsCountVal = $this->roomsCount;
-        if ($roomsCountVal === '' || $roomsCountVal === null) {
-            $roomsCountVal = null;
-        } else {
-            $roomsCountVal = (int) $roomsCountVal;
-        }
-        $this->roomsCount = $roomsCountVal;
 
         $checkInVal = ($this->checkInTime === null || $this->checkInTime === '') ? null : $this->checkInTime;
         $checkOutVal = ($this->checkOutTime === null || $this->checkOutTime === '') ? null : $this->checkOutTime;
@@ -93,8 +84,6 @@ class ServiceHotelAdvancedStep extends Component
                 'stars' => $starsInt,
                 'checkInTime' => $checkInVal,
                 'checkOutTime' => $checkOutVal,
-                'roomsCount' => $roomsCountVal,
-                'chainName' => $this->chainName,
             ],
             [
                 'hotelTypeIds' => ['required', 'array', 'min:1'],
@@ -102,8 +91,6 @@ class ServiceHotelAdvancedStep extends Component
                 'stars' => ['nullable', 'integer', 'min:1', 'max:5'],
                 'checkInTime' => ['nullable', 'date_format:H:i'],
                 'checkOutTime' => ['nullable', 'date_format:H:i'],
-                'roomsCount' => ['nullable', 'integer', 'min:0', 'max:100000'],
-                'chainName' => ['nullable', 'string', 'max:255'],
             ],
             [],
             [
@@ -112,30 +99,28 @@ class ServiceHotelAdvancedStep extends Component
                 'stars' => __('wizard.step7_hotel_field_stars'),
                 'checkInTime' => __('wizard.step7_hotel_field_check_in'),
                 'checkOutTime' => __('wizard.step7_hotel_field_check_out'),
-                'roomsCount' => __('wizard.step7_hotel_field_rooms'),
-                'chainName' => __('wizard.step7_hotel_field_chain'),
             ]
         )->validate();
 
-        $this->hotelTypeIds = $typeIds;
+        $this->hotelTypeIds = collect($typeIds)->map(fn (int $id) => (string) $id)->values()->all();
 
         $service = $this->authorizedService();
 
-        DB::transaction(function () use ($service, $typeIds, $starsInt, $checkInVal, $checkOutVal, $roomsCountVal): void {
+        DB::transaction(function () use ($service, $typeIds, $starsInt, $checkInVal, $checkOutVal): void {
             $hotel = ServiceHotel::query()->updateOrCreate(
                 ['service_id' => $service->id],
                 [
                     'stars' => $starsInt,
                     'check_in_time' => $checkInVal,
                     'check_out_time' => $checkOutVal,
-                    'rooms_count' => $roomsCountVal,
-                    'chain_name' => trim($this->chainName) !== '' ? trim($this->chainName) : null,
                 ]
             );
             $hotel->hotelTypes()->sync($typeIds);
         });
 
-        $this->saveMessage = __('wizard.step7_hotel_saved');
+        session()->flash('status', __('wizard.step7_hotel_saved'));
+
+        $this->redirect(ServiceWizardStepEight::catalogServicesListUrl());
     }
 
     /**

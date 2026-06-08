@@ -14,6 +14,29 @@
         <div class="alert alert-success py-2 small" role="status">{{ $saveMessage }}</div>
     @endif
 
+    @if ($variants->count() > 1)
+        <div class="mb-3">
+            <label class="form-label" for="xfer-variant">{{ __('wizard.step7_transfer_field_variant') }}</label>
+            <select
+                id="xfer-variant"
+                class="form-select"
+                wire:model.live="selectedVariantId"
+            >
+                @foreach ($variants as $variant)
+                    <option value="{{ $variant->id }}" @selected((int) $selectedVariantId === (int) $variant->id)>
+                        {{ $variant->name !== '' ? $variant->name : ($variant->sku !== '' ? $variant->sku : '#'.$variant->id) }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="form-text mb-0">{{ __('wizard.step7_transfer_variant_help') }}</p>
+        </div>
+    @elseif ($variants->count() === 1)
+        <p class="text-muted small mb-3">
+            <span class="fw-semibold">{{ __('wizard.step7_transfer_field_variant') }}:</span>
+            {{ $variants->first()->name !== '' ? $variants->first()->name : ($variants->first()->sku !== '' ? $variants->first()->sku : '#'.$variants->first()->id) }}
+        </p>
+    @endif
+
     <ul class="nav nav-tabs flex-wrap gap-1 gap-md-0 mb-3" role="tablist">
         <li class="nav-item" role="presentation">
             <button type="button" class="nav-link @if ($activeTab === 'basics') active @endif" wire:click="setTab('basics')">
@@ -52,14 +75,6 @@
             <div class="col-12 col-md-6 col-lg-4">
                 <label class="form-label" for="xfer-def-dur">{{ __('wizard.step7_transfer_field_default_duration') }}</label>
                 <input id="xfer-def-dur" type="number" class="form-control" wire:model="default_duration_minutes" min="0" step="1">
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <label class="form-label" for="xfer-max-pax">{{ __('wizard.step7_transfer_field_max_passengers') }}</label>
-                <input id="xfer-max-pax" type="number" class="form-control" wire:model="max_passengers" min="0" step="1">
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <label class="form-label" for="xfer-max-lug">{{ __('wizard.step7_transfer_field_max_luggage') }}</label>
-                <input id="xfer-max-lug" type="number" class="form-control" wire:model="max_luggage" min="0" step="1">
             </div>
             <div class="col-12">
                 <div class="form-check">

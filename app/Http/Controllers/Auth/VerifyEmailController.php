@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\EmailVerificationRequest;
 use App\Models\Account;
 use App\Models\AccountType;
 use App\Models\UserInvitation;
-use App\Services\AccountStartupService;
-use App\Services\AccountRelationshipService;
 use App\Providers\RouteServiceProvider;
+use App\Services\AccountRelationshipService;
+use App\Services\AccountStartupService;
 use App\Support\CurrentAccountSession;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 
@@ -25,7 +25,7 @@ class VerifyEmailController extends Controller
     /**
      * Mark the authenticated user's email address as verified.
      *
-     * @param  \Illuminate\Foundation\Auth\EmailVerificationRequest  $request
+     * @param  \App\Http\Requests\Auth\EmailVerificationRequest  $request
      */
     public function __invoke(
         EmailVerificationRequest $request,

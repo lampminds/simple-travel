@@ -51,7 +51,7 @@ class LatestLoginsWidget extends BaseTableWidget
                         }
 
                         return new \Illuminate\Support\HtmlString(
-                            e($state->format('d/m/Y H:i')) . '<br><span class="text-muted text-sm">' . e($state->diffForHumans()) . '</span>'
+                            e(locale_datetime($state)).'<br><span class="text-muted text-sm">'.e($state->diffForHumans()).'</span>'
                         );
                     })
                     ->sortable(),

@@ -8,10 +8,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('account.contacts.heading') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">{{ __('account.contacts.intro') }}</p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('account.contacts.heading')"
+                        :instructions="__('account.contacts.intro')"
+                    />
                 </div>
             </div>
 

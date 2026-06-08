@@ -103,7 +103,7 @@ class ServiceWizardController extends Controller
         return redirect()
             ->route('services.wizard.step2', [
                 'serviceType' => $serviceType->code,
-                'service' => $service->id,
+                'service' => $service,
             ])
             ->with('status', __('wizard.step1_updated'));
     }
@@ -155,7 +155,7 @@ class ServiceWizardController extends Controller
         return redirect()
             ->route('services.wizard.step2', [
                 'serviceType' => $serviceType->code,
-                'service' => $service->id,
+                'service' => $service,
             ])
             ->with('status', __('wizard.step1_completed'));
     }
@@ -170,6 +170,7 @@ class ServiceWizardController extends Controller
         return view('services.wizard.step-2', [
             'serviceType' => $serviceType,
             'service' => $service,
+            'catalogHelperAccountTypeId' => \App\Support\CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
         ]);
     }
 
@@ -193,7 +194,7 @@ class ServiceWizardController extends Controller
         if (ServiceWizardSkipsVariantsStep::isSkippedForServiceTypeCode($serviceType->code)) {
             return redirect()->route('services.wizard.step5', [
                 'serviceType' => $serviceType->code,
-                'service' => $service->id,
+                'service' => $service,
             ]);
         }
 
@@ -230,6 +231,7 @@ class ServiceWizardController extends Controller
         return view('services.wizard.step-6', [
             'serviceType' => $serviceType,
             'service' => $service,
+            'catalogHelperAccountTypeId' => \App\Support\CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
         ]);
     }
 

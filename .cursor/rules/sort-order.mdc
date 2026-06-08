@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+whenever you build a resource for a table that has a "sort_order" column, enable the use of the Filament sortable() feature, do not allow editing of that field (keep it hidden) and do not show it in the index list.

@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Service;
 use App\Models\ServiceType;
 use App\Support\AccountBusinessTypeGate;
+use App\Support\CatalogServiceStatusFilter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,12 +33,15 @@ class CatalogController extends Controller
             ->get();
 
         $typeFilter = $this->resolveCatalogTypeFilter($request, $serviceTypes);
+        $statusFilter = CatalogServiceStatusFilter::resolveFromRequest($request);
         $catalogFilterView = [
             'catalogTypeFilter' => $typeFilter,
+            'catalogStatusFilter' => $statusFilter,
             'catalogServiceTypeOptions' => $this->catalogServiceTypeOptions($serviceTypes),
+            'catalogServiceStatusOptions' => $this->catalogServiceStatusOptions(),
         ];
 
-        return $this->accountServicesCatalog($account, 'provider', $typeFilter, $catalogFilterView, $serviceTypes);
+        return $this->accountServicesCatalog($account, 'provider', $typeFilter, $statusFilter, $catalogFilterView, $serviceTypes);
     }
 
     /** Service type `code` for catalog list filter; null means all types. */
@@ -72,16 +76,41 @@ class CatalogController extends Controller
      * @param  array<string, mixed>  $catalogFilterView
      * @param  Collection<int, ServiceType>  $serviceTypes
      */
-    private function accountServicesCatalog(Account $account, string $mode, ?string $typeFilter, array $catalogFilterView, Collection $serviceTypes): View
+    /**
+     * @return array<string, string>
+     */
+    private function catalogServiceStatusOptions(): array
     {
+        $out = [];
+        foreach (CatalogServiceStatusFilter::selectableStatuses() as $status) {
+            $key = 'filament.resources.service_status.'.$status;
+            $label = __($key);
+            $out[$status] = $label !== $key ? $label : $status;
+        }
+
+        return $out;
+    }
+
+    private function accountServicesCatalog(
+        Account $account,
+        string $mode,
+        ?string $typeFilter,
+        ?string $statusFilter,
+        array $catalogFilterView,
+        Collection $serviceTypes,
+    ): View {
         $typeId = null;
         if ($typeFilter !== null) {
             $typeId = $serviceTypes->firstWhere('code', $typeFilter)?->id;
         }
 
-        $services = Service::query()
+        $servicesQuery = Service::query()
             ->where('account_id', $account->id)
-            ->when($typeId !== null, fn ($query) => $query->where('service_type_id', $typeId))
+            ->when($typeId !== null, fn ($query) => $query->where('service_type_id', $typeId));
+
+        CatalogServiceStatusFilter::applyToQuery($servicesQuery, $statusFilter);
+
+        $services = $servicesQuery
             ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
             ->withCount('serviceVariants')
             ->orderByDesc('id')

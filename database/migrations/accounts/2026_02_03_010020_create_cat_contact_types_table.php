@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('cat_contact_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
+            $table->string('code')->unique();
             $table->boolean('is_unique_per_person')->default(true);
             $table->string('mask')->nullable()->comment('Mask for formatting the value');
             $table->string('validation')->nullable()->comment('Validation for the value');
@@ -33,6 +33,8 @@ return new class extends Migration
             $table->string('name');
 
             lmpStamps($table);
+
+            $table->unique(['contact_type_id', 'language_id'], 'cat_contact_type_trans_lang_unique');
         });
     }
 

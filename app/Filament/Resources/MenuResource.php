@@ -73,10 +73,10 @@ class MenuResource extends BaseResource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with([
+            'parent.translations.language.locale',
             'excludedAccountTypes' => fn (BelongsToMany $query): BelongsToMany => $query
                 ->with(['translations.language.locale'])
-                ->orderBy('sort_order')
-                ->orderBy('id'),
+                ->ordered(),
         ]);
     }
 
@@ -128,7 +128,7 @@ class MenuResource extends BaseResource
         }
 
         return [
-            'slug' => static::nextCopySlug((string) $source->slug),
+            'slug' => $source->slug,
             'icon' => $source->icon,
             'route' => $source->route,
             'parent_id' => $source->parent_id,
@@ -136,24 +136,6 @@ class MenuResource extends BaseResource
             'translations' => $translations,
             'excludedAccountTypes' => $source->excludedAccountTypes->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
         ];
-    }
-
-    private static function nextCopySlug(string $baseSlug): string
-    {
-        $normalized = trim($baseSlug);
-        if ($normalized === '') {
-            $normalized = 'menu';
-        }
-
-        $candidate = $normalized.'-copy';
-        $counter = 2;
-
-        while (Menu::query()->where('slug', $candidate)->exists()) {
-            $candidate = $normalized.'-copy-'.$counter;
-            $counter++;
-        }
-
-        return $candidate;
     }
 
     /**
@@ -168,8 +150,7 @@ class MenuResource extends BaseResource
         $roots = Menu::query()
             ->whereNull('parent_id')
             ->with(['translations.language.locale'])
-            ->orderBy('sort_order')
-            ->orderBy('id')
+            ->ordered()
             ->get();
         foreach ($roots as $m) {
             $opts[(string) $m->id] = __('filament.resources.menu_filter.children_of', [
@@ -310,6 +291,10 @@ class MenuResource extends BaseResource
                     ->label(__('filament.resources.menu_columns.label'))
                     ->getStateUsing(fn (Menu $record): string => str_repeat('· ', $record->depth).$record->admin_label)
                     ->description(fn (Menu $record): string => $record->slug),
+                TextColumn::make('parent.admin_label')
+                    ->label(__('filament.resources.menu_columns.parent'))
+                    ->placeholder(__('filament.resources.menu_columns.parent_none'))
+                    ->description(fn (Menu $record): ?string => $record->parent?->slug),
                 TextColumn::make('route')
                     ->label(__('filament.resources.menu_columns.route'))
                     ->toggleable(),
@@ -328,10 +313,6 @@ class MenuResource extends BaseResource
                     })
                     ->placeholder(__('filament.resources.menu_columns.excluded_account_types_none'))
                     ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('parent.admin_label')
-                    ->label(__('filament.resources.menu_columns.parent'))
-                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -402,7 +383,7 @@ class MenuResource extends BaseResource
             ], position: RecordActionsPosition::BeforeColumns)
             ->reorderable(
                 'sort_order',
-                fn ($livewire): bool => static::siblingScopeAllowsReorder($livewire),
+                condition: fn ($livewire): bool => static::siblingScopeAllowsReorder($livewire),
             )
             ->defaultSort('sort_order');
     }

@@ -30,7 +30,8 @@ final class ServiceTransferVehicleCatalogBootstrapService
     {
         return DB::table('service_transfer_vehicles as stv')
             ->join('service_transfers as st', 'st.id', '=', 'stv.service_transfer_id')
-            ->join('services as s', 's.id', '=', 'st.service_id')
+            ->join('service_variants as sv', 'sv.id', '=', 'st.service_variant_id')
+            ->join('services as s', 's.id', '=', 'sv.service_id')
             ->where('s.account_id', $accountId)
             ->exists();
     }

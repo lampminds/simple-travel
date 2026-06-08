@@ -43,6 +43,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name');
+
+            $table->unique(['service_transfer_location_id', 'language_id'], 'stl_trans_lang_unique');
         });
     }
     /**

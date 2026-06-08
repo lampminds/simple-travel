@@ -36,7 +36,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => NULL,
                 'parent_id' => NULL,
-                'sort_order' => 2,
+                'sort_order' => 3,
                 'active' => 1,
             ),
             2 => 
@@ -46,7 +46,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => NULL,
                 'parent_id' => NULL,
-                'sort_order' => 3,
+                'sort_order' => 2,
                 'active' => 1,
             ),
             3 => 
@@ -55,8 +55,8 @@ class CatMenusTableSeeder extends Seeder
                 'slug' => 'operations',
                 'icon' => NULL,
                 'route' => 'operations',
-                'parent_id' => NULL,
-                'sort_order' => 6,
+                'parent_id' => 25,
+                'sort_order' => 7,
                 'active' => 1,
             ),
             4 => 
@@ -65,8 +65,8 @@ class CatMenusTableSeeder extends Seeder
                 'slug' => 'finances',
                 'icon' => NULL,
                 'route' => 'finances',
-                'parent_id' => NULL,
-                'sort_order' => 9,
+                'parent_id' => 25,
+                'sort_order' => 10,
                 'active' => 1,
             ),
             5 => 
@@ -75,8 +75,8 @@ class CatMenusTableSeeder extends Seeder
                 'slug' => 'integrations',
                 'icon' => NULL,
                 'route' => 'integrations',
-                'parent_id' => NULL,
-                'sort_order' => 10,
+                'parent_id' => 25,
+                'sort_order' => 11,
                 'active' => 1,
             ),
             6 => 
@@ -86,7 +86,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.service-offers.index',
                 'parent_id' => NULL,
-                'sort_order' => 4,
+                'sort_order' => 5,
                 'active' => 1,
             ),
             7 => 
@@ -95,8 +95,8 @@ class CatMenusTableSeeder extends Seeder
                 'slug' => 'reservations',
                 'icon' => NULL,
                 'route' => 'reservations',
-                'parent_id' => NULL,
-                'sort_order' => 7,
+                'parent_id' => 25,
+                'sort_order' => 8,
                 'active' => 1,
             ),
             8 => 
@@ -106,7 +106,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'clients',
                 'parent_id' => NULL,
-                'sort_order' => 8,
+                'sort_order' => 7,
                 'active' => 1,
             ),
             9 => 
@@ -116,7 +116,7 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.invitations.employee',
                 'parent_id' => 2,
-                'sort_order' => 2,
+                'sort_order' => 11,
                 'active' => 1,
             ),
             10 => 
@@ -126,117 +126,117 @@ class CatMenusTableSeeder extends Seeder
                 'icon' => NULL,
                 'route' => 'account.invitations.company',
                 'parent_id' => 2,
-                'sort_order' => 3,
+                'sort_order' => 13,
                 'active' => 1,
             ),
             11 => 
-            array (
-                'id' => 13,
-                'slug' => 'invitations',
-                'icon' => NULL,
-                'route' => 'account.invitations.index',
-                'parent_id' => 2,
-                'sort_order' => 4,
-                'active' => 1,
-            ),
-            12 => 
             array (
                 'id' => 14,
                 'slug' => 'website',
                 'icon' => NULL,
                 'route' => NULL,
                 'parent_id' => NULL,
-                'sort_order' => 11,
+                'sort_order' => 12,
                 'active' => 1,
             ),
-            13 => 
+            12 => 
             array (
                 'id' => 15,
                 'slug' => 'website_configuration',
                 'icon' => NULL,
                 'route' => 'website_configuration',
                 'parent_id' => 14,
-                'sort_order' => 1,
+                'sort_order' => 8,
                 'active' => 1,
             ),
-            14 => 
+            13 => 
             array (
                 'id' => 16,
                 'slug' => 'browse_website',
                 'icon' => NULL,
                 'route' => 'browse_website',
                 'parent_id' => 14,
-                'sort_order' => 2,
+                'sort_order' => 10,
                 'active' => 1,
             ),
-            15 => 
+            14 => 
             array (
                 'id' => 17,
                 'slug' => 'prices',
                 'icon' => NULL,
                 'route' => NULL,
                 'parent_id' => NULL,
-                'sort_order' => 5,
+                'sort_order' => 4,
                 'active' => 1,
             ),
-            16 => 
+            15 => 
             array (
                 'id' => 18,
                 'slug' => 'relationships',
                 'icon' => NULL,
                 'route' => 'account.relationships.index',
                 'parent_id' => 2,
-                'sort_order' => 1,
+                'sort_order' => 5,
                 'active' => 1,
             ),
-            17 => 
+            16 => 
             array (
                 'id' => 19,
                 'slug' => 'vehicles',
                 'icon' => NULL,
                 'route' => 'account.transfer-vehicle-types.index',
                 'parent_id' => 3,
-                'sort_order' => 2,
+                'sort_order' => 9,
                 'active' => 1,
             ),
-            18 => 
+            17 => 
             array (
                 'id' => 20,
                 'slug' => 'services',
                 'icon' => NULL,
                 'route' => 'catalog',
                 'parent_id' => 3,
-                'sort_order' => 1,
+                'sort_order' => 2,
                 'active' => 1,
             ),
-            19 => 
+            18 => 
             array (
                 'id' => 22,
                 'slug' => 'prices_provider',
                 'icon' => NULL,
                 'route' => 'account.provider-price-lists.index',
                 'parent_id' => 17,
-                'sort_order' => 1,
+                'sort_order' => 4,
                 'active' => 1,
             ),
-            20 => 
+            19 => 
             array (
                 'id' => 23,
                 'slug' => 'prices_operator-copy',
                 'icon' => NULL,
                 'route' => 'account.operator-price-lists.index',
                 'parent_id' => 17,
-                'sort_order' => 2,
+                'sort_order' => 7,
                 'active' => 1,
             ),
-            21 => 
+            20 => 
             array (
                 'id' => 24,
                 'slug' => 'packages',
                 'icon' => NULL,
                 'route' => 'account.operator-packages.index',
-                'parent_id' => 3,
-                'sort_order' => 3,
+                'parent_id' => NULL,
+                'sort_order' => 6,
+                'active' => 1,
+            ),
+            21 => 
+            array (
+                'id' => 25,
+                'slug' => 'tbd',
+                'icon' => NULL,
+                'route' => NULL,
+                'parent_id' => NULL,
+                'sort_order' => 8,
                 'active' => 1,
             ),
         ));

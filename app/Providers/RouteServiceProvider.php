@@ -33,7 +33,7 @@ class RouteServiceProvider extends ServiceProvider
 
             return ServiceTransferVehicleType::query()
                 ->where('account_id', $accountId)
-                ->whereKey((int) $value)
+                ->where('uuid', $value)
                 ->firstOrFail();
         });
 

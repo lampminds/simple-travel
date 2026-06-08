@@ -7,6 +7,7 @@ use App\Models\Language;
 use App\Models\Service;
 use App\Models\ServiceVariant;
 use App\Services\PriceFormatService;
+use App\Services\Translation\TranslationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -59,14 +60,30 @@ class ServiceVariantsStep extends Component
     /** @var array<int, mixed> */
     public array $galleryImages = [];
 
-    /** Resolved catalog helper HTML for variant descriptions (from parent step-4 view). */
-    public ?string $catalogVariantDescriptionHelpHtml = null;
+    /**
+     * Catalog helper HTML keyed by variant field (see {@see ServiceWizardVariantCatalogHelpers::FORM_FIELD_KEYS}).
+     *
+     * @var array<string, string|null>
+     */
+    public array $catalogVariantFieldHelpHtml = [];
 
-    public function mount(int $serviceId, int $serviceTypeId, ?string $catalogVariantDescriptionHelpHtml = null): void
+    /** Snapshot when the variant modal opens; used to detect unsaved edits. */
+    public array $variantFormSnapshot = [];
+
+    public bool $showDiscardConfirm = false;
+
+    /**
+     * Action to run after the user confirms discarding unsaved changes.
+     *
+     * @var array{action: string, variantId?: int}|null
+     */
+    public ?array $pendingVariantNavigation = null;
+
+    public function mount(int $serviceId, int $serviceTypeId, array $catalogVariantFieldHelpHtml = []): void
     {
         $this->serviceId = $serviceId;
         $this->serviceTypeId = $serviceTypeId;
-        $this->catalogVariantDescriptionHelpHtml = $catalogVariantDescriptionHelpHtml;
+        $this->catalogVariantFieldHelpHtml = $catalogVariantFieldHelpHtml;
         $this->mode = self::MODE_LIST;
         $this->form = [];
         $this->editingVariantId = null;
@@ -90,6 +107,7 @@ class ServiceVariantsStep extends Component
     public function startCreate(): void
     {
         $this->clearFlash();
+        $this->resetValidation();
         $this->mode = self::MODE_LIST;
         $this->showVariantFormModal = true;
         $this->editingVariantId = null;
@@ -98,11 +116,25 @@ class ServiceVariantsStep extends Component
         $this->variantTabsWithErrors = [];
         $this->resetImageUploads();
         $this->form = $this->defaultVariantRow();
+        $this->captureVariantFormSnapshot();
+    }
+
+    public function requestStartCreate(): void
+    {
+        if ($this->showVariantFormModal && $this->hasUnsavedVariantChanges()) {
+            $this->pendingVariantNavigation = ['action' => 'create'];
+            $this->showDiscardConfirm = true;
+
+            return;
+        }
+
+        $this->startCreate();
     }
 
     public function startEdit(int $variantId): void
     {
         $this->clearFlash();
+        $this->resetValidation();
         $service = $this->authorizedService();
         $variant = ServiceVariant::query()
             ->where('service_id', $service->id)
@@ -118,6 +150,19 @@ class ServiceVariantsStep extends Component
         $this->variantTabsWithErrors = [];
         $this->resetImageUploads();
         $this->form = $this->variantToRow($variant);
+        $this->captureVariantFormSnapshot();
+    }
+
+    public function requestStartEdit(int $variantId): void
+    {
+        if ($this->showVariantFormModal && $this->hasUnsavedVariantChanges()) {
+            $this->pendingVariantNavigation = ['action' => 'edit', 'variantId' => $variantId];
+            $this->showDiscardConfirm = true;
+
+            return;
+        }
+
+        $this->startEdit($variantId);
     }
 
     /**
@@ -126,6 +171,7 @@ class ServiceVariantsStep extends Component
     public function copyFrom(int $variantId): void
     {
         $this->clearFlash();
+        $this->resetValidation();
         $service = $this->authorizedService();
         $variant = ServiceVariant::query()
             ->where('service_id', $service->id)
@@ -145,6 +191,19 @@ class ServiceVariantsStep extends Component
         $this->variantTabsWithErrors = [];
         $this->resetImageUploads();
         $this->form = $row;
+        $this->captureVariantFormSnapshot();
+    }
+
+    public function requestCopyFrom(int $variantId): void
+    {
+        if ($this->showVariantFormModal && $this->hasUnsavedVariantChanges()) {
+            $this->pendingVariantNavigation = ['action' => 'copy', 'variantId' => $variantId];
+            $this->showDiscardConfirm = true;
+
+            return;
+        }
+
+        $this->copyFrom($variantId);
     }
 
     /**
@@ -177,9 +236,49 @@ class ServiceVariantsStep extends Component
         return mb_substr($originalSku, 0, 200).'-copy-'.uniqid();
     }
 
+    public function requestCancel(): void
+    {
+        if ($this->showVariantFormModal && $this->hasUnsavedVariantChanges()) {
+            $this->pendingVariantNavigation = ['action' => 'cancel'];
+            $this->showDiscardConfirm = true;
+
+            return;
+        }
+
+        $this->cancel();
+    }
+
+    public function dismissDiscardConfirm(): void
+    {
+        $this->showDiscardConfirm = false;
+        $this->pendingVariantNavigation = null;
+    }
+
+    public function confirmDiscard(): void
+    {
+        $pending = $this->pendingVariantNavigation;
+        $this->showDiscardConfirm = false;
+        $this->pendingVariantNavigation = null;
+
+        if ($pending === null) {
+            $this->cancel();
+
+            return;
+        }
+
+        match ($pending['action']) {
+            'cancel' => $this->cancel(),
+            'create' => $this->startCreate(),
+            'edit' => $this->startEdit((int) ($pending['variantId'] ?? 0)),
+            'copy' => $this->copyFrom((int) ($pending['variantId'] ?? 0)),
+            default => $this->cancel(),
+        };
+    }
+
     public function cancel(): void
     {
         $this->clearFlash();
+        $this->resetValidation();
         $this->mode = self::MODE_LIST;
         $this->showVariantFormModal = false;
         $this->editingVariantId = null;
@@ -187,7 +286,19 @@ class ServiceVariantsStep extends Component
         $this->form = [];
         $this->variantFormTab = 'general';
         $this->variantTabsWithErrors = [];
+        $this->variantFormSnapshot = [];
+        $this->showDiscardConfirm = false;
+        $this->pendingVariantNavigation = null;
         $this->resetImageUploads();
+    }
+
+    public function hasUnsavedVariantChanges(): bool
+    {
+        if (! $this->showVariantFormModal || $this->variantFormSnapshot === []) {
+            return false;
+        }
+
+        return json_encode($this->variantFormSnapshot) !== json_encode($this->currentVariantFormState());
     }
 
     public function deleteVariant(int $variantId): void
@@ -250,9 +361,49 @@ class ServiceVariantsStep extends Component
         }
     }
 
+    public function translateDescriptions(int $sourceLanguageId): void
+    {
+        $payload = [];
+        foreach ($this->wizardLanguages() as $lang) {
+            $id = (int) $lang->id;
+            $payload[$id] = [
+                'name' => (string) data_get($this->form, "translations.$id.name", ''),
+                'description' => (string) data_get($this->form, "translations.$id.description", ''),
+            ];
+        }
+
+        $result = app(TranslationService::class)->translateFromLanguage(
+            sourceLanguageId: $sourceLanguageId,
+            translationsPayload: $payload,
+            userId: Auth::id()
+        );
+
+        if (! $result['ok']) {
+            throw ValidationException::withMessages([
+                'form.translations' => $result['message'],
+            ]);
+        }
+
+        foreach ($result['translations'] as $langId => $data) {
+            $id = (int) $langId;
+            if (! isset($this->form['translations'][$id])) {
+                $this->form['translations'][$id] = ['name' => '', 'description' => ''];
+            }
+            $name = trim((string) ($data['name'] ?? ''));
+            if ($name !== '') {
+                $this->form['translations'][$id]['name'] = $name;
+            }
+            $description = trim((string) ($data['description'] ?? ''));
+            if ($description !== '') {
+                $this->form['translations'][$id]['description'] = $description;
+            }
+        }
+    }
+
     public function save(): void
     {
         $this->clearFlash();
+        $this->normalizeFormBeforeValidation();
         $service = $this->authorizedService();
 
         $languages = $this->wizardLanguages();
@@ -333,6 +484,7 @@ class ServiceVariantsStep extends Component
         });
 
         $this->resetImageUploads();
+        $this->resetValidation();
 
         $this->flashMessage = __('wizard.variants_saved');
         $this->mode = self::MODE_LIST;
@@ -341,6 +493,68 @@ class ServiceVariantsStep extends Component
         $this->isCopy = false;
         $this->form = [];
         $this->variantFormTab = 'general';
+        $this->variantFormSnapshot = [];
+    }
+
+    protected function captureVariantFormSnapshot(): void
+    {
+        $this->variantFormSnapshot = $this->currentVariantFormState();
+    }
+
+    /**
+     * @return array{form: array<string, mixed>, mainImage: bool, galleryImages: bool}
+     */
+    protected function currentVariantFormState(): array
+    {
+        return [
+            'form' => $this->normalizeFormForComparison($this->form),
+            'mainImage' => $this->mainImage !== null,
+            'galleryImages' => count(array_filter($this->galleryImages)) > 0,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $form
+     * @return array<string, mixed>
+     */
+    protected function normalizeFormForComparison(array $form): array
+    {
+        $normalized = [];
+
+        foreach ($form as $key => $value) {
+            if ($key === 'id') {
+                continue;
+            }
+
+            if ($key === 'translations' && is_array($value)) {
+                $translations = [];
+                foreach ($value as $langId => $data) {
+                    if (! is_array($data)) {
+                        continue;
+                    }
+                    $translations[(int) $langId] = [
+                        'name' => trim((string) ($data['name'] ?? '')),
+                        'description' => trim((string) ($data['description'] ?? '')),
+                    ];
+                }
+                ksort($translations);
+                $normalized['translations'] = $translations;
+
+                continue;
+            }
+
+            if (is_string($value)) {
+                $normalized[$key] = trim($value);
+
+                continue;
+            }
+
+            $normalized[$key] = $value;
+        }
+
+        ksort($normalized);
+
+        return $normalized;
     }
 
     protected function resetImageUploads(): void
@@ -370,6 +584,25 @@ class ServiceVariantsStep extends Component
     protected function clearFlash(): void
     {
         $this->flashMessage = null;
+    }
+
+    /**
+     * Apply defaults for select fields that may not sync when their tab is hidden in the DOM.
+     */
+    protected function normalizeFormBeforeValidation(): void
+    {
+        $defaults = $this->defaultVariantRow();
+
+        foreach (['status', 'pricing_type', 'inventory_type'] as $key) {
+            $value = $this->form[$key] ?? null;
+            if ($value === null || $value === '') {
+                $this->form[$key] = $defaults[$key];
+            }
+        }
+
+        if (($this->form['currency_id'] ?? '') === '' && ($defaults['currency_id'] ?? '') !== '') {
+            $this->form['currency_id'] = $defaults['currency_id'];
+        }
     }
 
     /**
@@ -505,7 +738,7 @@ class ServiceVariantsStep extends Component
      */
     protected function validationRulesForSingle(Service $service): array
     {
-        $statuses = ['active', 'suspended', 'discontinued', 'inactive', 'hidden'];
+        $statuses = ['active', 'suspended', 'discontinued'];
         $pricing = ['per_person', 'per_unit', 'per_room', 'per_vehicle', 'per_group'];
         $inventory = ['unlimited', 'per_day', 'per_timeslot', 'per_departure'];
 

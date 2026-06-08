@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\AccountRelationship;
 use App\Models\Currency;
 use App\Models\OperatorPriceList;
 use App\Models\OperatorPackageItem;
 use App\Models\OperatorPriceListItem;
-use App\Models\ServiceOffer;
+use App\Services\AccountRelationshipsListingService;
 use App\Services\OperatorPackageItemSelectOptions;
 use App\Services\OperatorPriceListItemPricingService;
 use App\Services\PriceFormatService;
@@ -26,6 +27,7 @@ final class AccountOperatorPriceListController extends Controller
         private readonly PriceFormatService $priceFormatService,
         private readonly OperatorPackageItemSelectOptions $packageItemSelectOptions,
         private readonly OperatorPriceListItemPricingService $itemPricingService,
+        private readonly AccountRelationshipsListingService $relationshipsListing,
     ) {
     }
 
@@ -80,11 +82,7 @@ final class AccountOperatorPriceListController extends Controller
             ]);
 
             $priceList->items()->createMany(array_map(
-                fn (array $item): array => [
-                    'operator_package_item_id' => (int) $item['operator_package_item_id'],
-                    'pricing_mode' => $this->itemPricingService->normalizeMode((string) $item['pricing_mode']),
-                    'price' => $item['price'],
-                ],
+                fn (array $item): array => $this->normalizedItemRow($item),
                 $validated['items']
             ));
         });
@@ -102,10 +100,11 @@ final class AccountOperatorPriceListController extends Controller
         $validated = $request->validate([
             'operator_package_item_id' => ['required', 'integer', 'min:1'],
             'currency_id' => ['required', 'integer', Rule::exists('cat_currencies', 'id')],
-            'pricing_mode' => ['required', Rule::in([
+            'pricing_mode' => ['nullable', Rule::in([
                 OperatorPriceListItem::MODE_PERCENTAGE,
                 OperatorPriceListItem::MODE_FIXED_DELTA,
-                OperatorPriceListItem::MODE_DIRECT,
+                OperatorPriceListItem::MODE_FIXED_PRICE,
+                '',
             ])],
             'price' => ['nullable', 'numeric'],
         ]);
@@ -115,6 +114,7 @@ final class AccountOperatorPriceListController extends Controller
             $account->id,
         );
 
+        $pricingMode = $this->itemPricingService->normalizeMode($validated['pricing_mode'] ?? null);
         $normalizedPrice = $this->priceFormatService->normalizeNumericInput(
             $validated['price'] ?? 0,
             $account->id,
@@ -124,7 +124,7 @@ final class AccountOperatorPriceListController extends Controller
             $packageItem,
             $account->id,
             (int) $validated['currency_id'],
-            (string) $validated['pricing_mode'],
+            $pricingMode,
             (float) ($normalizedPrice ?? 0),
         );
 
@@ -206,11 +206,7 @@ final class AccountOperatorPriceListController extends Controller
 
             $operatorPriceList->items()->delete();
             $operatorPriceList->items()->createMany(array_map(
-                fn (array $item): array => [
-                    'operator_package_item_id' => (int) $item['operator_package_item_id'],
-                    'pricing_mode' => $this->itemPricingService->normalizeMode((string) $item['pricing_mode']),
-                    'price' => $item['price'],
-                ],
+                fn (array $item): array => $this->normalizedItemRow($item),
                 $validated['items']
             ));
         });
@@ -245,14 +241,15 @@ final class AccountOperatorPriceListController extends Controller
      *   is_active?:bool|string|int|null,
      *   items:array<int, array{
      *      operator_package_item_id:int|string,
-     *      pricing_mode:string,
-     *      price:numeric-string|int|float
+     *      pricing_mode?:string|null,
+     *      price?:numeric-string|int|float|null
      *   }>
      * }
      */
     private function validatePayload(Request $request, int $accountId): array
     {
         $this->normalizePriceItemInputs($request, $accountId);
+        normalize_request_locale_dates($request, ['valid_from', 'valid_to']);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -273,20 +270,42 @@ final class AccountOperatorPriceListController extends Controller
                     });
                 }),
             ],
-            'items.*.pricing_mode' => ['required', Rule::in([
+            'items.*.pricing_mode' => ['nullable', Rule::in([
                 OperatorPriceListItem::MODE_PERCENTAGE,
                 OperatorPriceListItem::MODE_FIXED_DELTA,
-                OperatorPriceListItem::MODE_DIRECT,
+                OperatorPriceListItem::MODE_FIXED_PRICE,
+                '',
             ])],
-            'items.*.price' => ['required', 'numeric'],
+            'items.*.price' => ['nullable', 'numeric'],
         ]);
 
         $errors = [];
         $listCurrencyId = (int) $validated['currency_id'];
 
         foreach ($validated['items'] as $index => $item) {
-            $pricingMode = $this->itemPricingService->normalizeMode((string) ($item['pricing_mode'] ?? ''));
-            $price = (float) ($item['price'] ?? 0);
+            $pricingMode = $this->itemPricingService->normalizeMode($item['pricing_mode'] ?? null);
+
+            if ($pricingMode === null) {
+                continue;
+            }
+
+            if (! in_array($pricingMode, [
+                OperatorPriceListItem::MODE_PERCENTAGE,
+                OperatorPriceListItem::MODE_FIXED_DELTA,
+                OperatorPriceListItem::MODE_FIXED_PRICE,
+            ], true)) {
+                $errors["items.{$index}.pricing_mode"] = __('account.operator_price_lists.validation.pricing_mode_invalid');
+
+                continue;
+            }
+
+            if (! array_key_exists('price', $item) || $item['price'] === '' || $item['price'] === null) {
+                $errors["items.{$index}.price"] = __('account.operator_price_lists.validation.price_required_for_mode');
+
+                continue;
+            }
+
+            $price = (float) $item['price'];
             $packageItemId = (int) ($item['operator_package_item_id'] ?? 0);
 
             $packageItem = $this->findPackageItemForOperator($packageItemId, $accountId);
@@ -298,7 +317,7 @@ final class AccountOperatorPriceListController extends Controller
                 $price,
             );
 
-            if ($pricingMode === OperatorPriceListItem::MODE_DIRECT) {
+            if ($pricingMode === OperatorPriceListItem::MODE_FIXED_PRICE) {
                 if ($price <= 0) {
                     $errors["items.{$index}.price"] = __('account.operator_price_lists.validation.direct_price_must_be_positive');
                 }
@@ -322,6 +341,21 @@ final class AccountOperatorPriceListController extends Controller
         }
 
         return $validated;
+    }
+
+    /**
+     * @param  array{operator_package_item_id:int|string, pricing_mode?:string|null, price?:mixed}  $item
+     * @return array{operator_package_item_id:int, pricing_mode:string|null, price:mixed|null}
+     */
+    private function normalizedItemRow(array $item): array
+    {
+        $pricingMode = $this->itemPricingService->normalizeMode($item['pricing_mode'] ?? null);
+
+        return [
+            'operator_package_item_id' => (int) ($item['operator_package_item_id'] ?? 0),
+            'pricing_mode' => $pricingMode,
+            'price' => $pricingMode === null ? null : $item['price'],
+        ];
     }
 
     private function findPackageItemForOperator(int $packageItemId, int $operatorAccountId): OperatorPackageItem
@@ -361,22 +395,22 @@ final class AccountOperatorPriceListController extends Controller
     }
 
     /**
-     * Partner accounts (distinct providers from this operator's service catalogue) allowed as assignment targets.
+     * Approved agency accounts linked to this operator (commercial relationships).
      *
      * @return array<int, string> agency_account_id => display label
      */
     private function linkedAgencyOptionsForOperatorAccount(int $operatorAccountId): array
     {
-        $providerIds = ServiceOffer::query()
-            ->where('operator_id', $operatorAccountId)
-            ->where('status', ServiceOffer::STATUS_ACCEPTED)
-            ->distinct()
-            ->pluck('provider_id');
-
         $options = [];
-        foreach (Account::query()->whereIn('id', $providerIds)->orderBy('id')->get() as $provider) {
-            $id = (int) $provider->id;
-            $options[$id] = (string) ($provider->commercial_name ?? $provider->name ?? $provider->nick ?? ('#'.$id));
+
+        foreach ($this->relationshipsListing->forAccount($operatorAccountId, 'operator', 'agency') as $row) {
+            if ($row['relationship']->status !== AccountRelationship::STATUS_APPROVED) {
+                continue;
+            }
+
+            $agency = $row['counterpart'];
+            $id = (int) $agency->id;
+            $options[$id] = $row['counterpart_label'];
         }
 
         return $options;
@@ -473,9 +507,19 @@ final class AccountOperatorPriceListController extends Controller
 
             $validFrom = $row['valid_from'] ?? null;
             $validTo = $row['valid_to'] ?? null;
-            $validFromStr = ($validFrom === '' || $validFrom === null) ? null : (string) $validFrom;
-            $validToStr = ($validTo === '' || $validTo === null) ? null : (string) $validTo;
+            $validFromStr = ($validFrom === '' || $validFrom === null) ? null : parse_date_input((string) $validFrom);
+            $validToStr = ($validTo === '' || $validTo === null) ? null : parse_date_input((string) $validTo);
 
+            if ($validFrom !== null && $validFrom !== '' && $validFromStr === null) {
+                $errors["assignments.{$index}.valid_from"] = __('account.operator_price_lists.validation.date_invalid');
+
+                continue;
+            }
+            if ($validTo !== null && $validTo !== '' && $validToStr === null) {
+                $errors["assignments.{$index}.valid_to"] = __('account.operator_price_lists.validation.date_invalid');
+
+                continue;
+            }
             if ($validFromStr !== null && strtotime($validFromStr) === false) {
                 $errors["assignments.{$index}.valid_from"] = __('account.operator_price_lists.validation.date_invalid');
 
@@ -541,6 +585,13 @@ final class AccountOperatorPriceListController extends Controller
 
         foreach ($items as $index => $item) {
             if (! is_array($item) || ! array_key_exists('price', $item)) {
+                continue;
+            }
+
+            $pricingMode = $this->itemPricingService->normalizeMode($item['pricing_mode'] ?? null);
+            if ($pricingMode === null) {
+                $items[$index]['price'] = '';
+
                 continue;
             }
 

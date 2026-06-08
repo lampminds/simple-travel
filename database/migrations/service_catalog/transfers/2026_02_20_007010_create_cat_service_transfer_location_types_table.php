@@ -32,6 +32,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id', 'stltcat_lang_fk')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
+
+            $table->unique(['service_transfer_location_type_category_id', 'language_id'], 'cat_stltcat_trans_lang_unique');
         });
 
         Schema::create('service_transfer_location_types', function (Blueprint $table) {
@@ -57,6 +59,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
+
+            $table->unique(['service_transfer_location_type_id', 'language_id'], 'cat_stlt_trans_lang_unique');
         });
     }
 

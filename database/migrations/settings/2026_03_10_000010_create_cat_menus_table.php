@@ -34,6 +34,8 @@ return new class extends Migration
             $table->string('tip')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['menu_id', 'language_id'], 'cat_menu_trans_lang_unique');
         });
 
         Schema::create('cat_menu_account_type_exclusions', function (Blueprint $table) {

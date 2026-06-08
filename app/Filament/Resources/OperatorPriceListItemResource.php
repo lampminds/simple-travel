@@ -107,15 +107,15 @@ class OperatorPriceListItemResource extends LmpResource
                         ->label(__('filament.resources.operator_price_list_item_fields.price'))
                         ->numeric()
                         ->step(0.01)
-                        ->required(),
+                        ->nullable(),
                     Select::make('pricing_mode')
                         ->label(__('filament.resources.operator_price_list_item_fields.pricing_mode'))
                         ->options([
-                            'fixed' => __('filament.resources.operator_price_list_item_pricing_mode.fixed'),
+                            'fixed_delta' => __('filament.resources.operator_price_list_item_pricing_mode.fixed_delta'),
                             'percentage' => __('filament.resources.operator_price_list_item_pricing_mode.percentage'),
+                            'fixed_price' => __('filament.resources.operator_price_list_item_pricing_mode.fixed_price'),
                         ])
-                        ->required()
-                        ->default('fixed'),
+                        ->nullable(),
                 ])
                 ->columns(2),
         ];

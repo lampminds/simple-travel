@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
 class Account extends Model
 {
-    use HasFactory, AuditTrait;
+    use HasFactory, AuditTrait, HasUuid;
 
     protected $fillable = [
         'nick',
@@ -52,19 +53,33 @@ class Account extends Model
     }
 
     /**
-     * Get the tax IDs that belong to the account.
+     * Documents stored for this account (e.g. tax IDs, group tax_id in cat_documents).
      */
-    public function taxIds(): HasMany
+    public function documents(): HasMany
     {
-        return $this->hasMany(AccountTaxId::class);
+        return $this->hasMany(AccountDocument::class);
     }
 
     /**
-     * Get the clients that belong to the account.
+     * Company clients (organizations) owned by this agency account.
      */
-    public function clients(): HasMany
+    public function clientOrganizations(): HasMany
     {
-        return $this->hasMany(\App\Models\Client::class);
+        return $this->hasMany(Organization::class, 'agency_id');
+    }
+
+    /**
+     * Individual person clients managed by this account (account_person with link_type client).
+     */
+    public function clientPersons(): BelongsToMany
+    {
+        return $this->belongsToMany(Person::class, 'account_person')
+            ->wherePivot('link_type', AccountPerson::LINK_CLIENT)
+            ->withPivot([
+                'link_type',
+                'is_active',
+            ])
+            ->withTimestamps();
     }
 
     /**
@@ -103,6 +118,7 @@ class Account extends Model
     {
         return $this->belongsToMany(Person::class, 'account_person')
             ->withPivot([
+                'link_type',
                 'contact_department_id',
                 'contact_position_id',
                 'is_primary',
@@ -111,6 +127,14 @@ class Account extends Model
                 'is_preferred_contact_mode',
             ])
             ->withTimestamps();
+    }
+
+    /**
+     * Staff / member persons linked to this account (excludes client links).
+     */
+    public function memberPersons(): BelongsToMany
+    {
+        return $this->persons()->wherePivot('link_type', AccountPerson::LINK_MEMBER);
     }
 
     /**

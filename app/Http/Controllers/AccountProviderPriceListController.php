@@ -8,7 +8,10 @@ use App\Models\Currency;
 use App\Models\PriceList;
 use App\Models\Service;
 use App\Models\ServiceVariant;
+use App\Models\User;
 use App\Services\PriceFormatService;
+use App\Services\ProviderPriceListActiveAssignmentService;
+use App\Services\ProviderPriceListChangeNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,8 +21,11 @@ use Illuminate\View\View;
 
 final class AccountProviderPriceListController extends Controller
 {
-    public function __construct(private readonly PriceFormatService $priceFormatService)
-    {
+    public function __construct(
+        private readonly PriceFormatService $priceFormatService,
+        private readonly ProviderPriceListActiveAssignmentService $activeAssignments,
+        private readonly ProviderPriceListChangeNotificationService $changeNotifier,
+    ) {
     }
 
     public function index(Request $request): View
@@ -44,17 +50,15 @@ final class AccountProviderPriceListController extends Controller
     {
         $account = $this->resolveCurrentAccount($request);
 
-        return view('account.provider-price-lists.form', [
-            'account' => $account,
-            'priceList' => null,
-            'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'serviceVariantOptions' => $this->serviceVariantOptionsForAccount($account->id),
-            'serviceOptions' => $this->serviceOptionsForAccount($account->id),
-            'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
-            'submitRoute' => route('account.provider-price-lists.store'),
-            'submitMethod' => 'POST',
-            'cancelRoute' => route('account.provider-price-lists.index'),
-        ]);
+        return view('account.provider-price-lists.form', array_merge(
+            $this->formSharedViewData($account),
+            [
+                'priceList' => null,
+                'submitRoute' => route('account.provider-price-lists.store'),
+                'submitMethod' => 'POST',
+                'cancelRoute' => route('account.provider-price-lists.index'),
+            ],
+        ));
     }
 
     public function store(Request $request): RedirectResponse
@@ -88,19 +92,23 @@ final class AccountProviderPriceListController extends Controller
         $account = $this->resolveCurrentAccount($request);
         $this->assertPriceListBelongsToAccount($priceList, $account->id);
 
-        $priceList->load('items');
+        $priceList->load(['items', 'assignments.operator']);
 
-        return view('account.provider-price-lists.form', [
-            'account' => $account,
-            'priceList' => $priceList,
-            'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'serviceVariantOptions' => $this->serviceVariantOptionsForAccount($account->id),
-            'serviceOptions' => $this->serviceOptionsForAccount($account->id),
-            'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
-            'submitRoute' => route('account.provider-price-lists.update', $priceList),
-            'submitMethod' => 'PUT',
-            'cancelRoute' => route('account.provider-price-lists.index'),
-        ]);
+        $requiresNotificationTab = $this->activeAssignments->hasActiveOperatorAssignments($priceList);
+
+        return view('account.provider-price-lists.form', array_merge(
+            $this->formSharedViewData($account),
+            [
+                'priceList' => $priceList,
+                'requiresNotificationTab' => $requiresNotificationTab,
+                'activeOperatorLabels' => $requiresNotificationTab
+                    ? $this->activeAssignments->activeOperatorLabels($priceList)
+                    : [],
+                'submitRoute' => route('account.provider-price-lists.update', $priceList),
+                'submitMethod' => 'PUT',
+                'cancelRoute' => route('account.provider-price-lists.index'),
+            ],
+        ));
     }
 
     public function editAssignments(Request $request, PriceList $priceList): View
@@ -145,7 +153,9 @@ final class AccountProviderPriceListController extends Controller
     {
         $account = $this->resolveCurrentAccount($request);
         $this->assertPriceListBelongsToAccount($priceList, $account->id);
-        $validated = $this->validatePayload($request, $account->id);
+
+        $requiresNotificationTab = $this->activeAssignments->hasActiveOperatorAssignments($priceList);
+        $validated = $this->validatePayload($request, $account->id, $requiresNotificationTab);
 
         DB::transaction(function () use ($priceList, $validated): void {
             $priceList->update([
@@ -162,6 +172,23 @@ final class AccountProviderPriceListController extends Controller
                 $validated['items']
             ));
         });
+
+        if ($requiresNotificationTab) {
+            $user = $request->user();
+            abort_unless($user instanceof User, 401);
+
+            $this->changeNotifier->notifyIfRequested(
+                priceList: $priceList->fresh(),
+                providerAccount: $account,
+                actingUser: $user,
+                notificationChoice: (string) $validated['notification_choice'],
+                customMessage: isset($validated['notification_message'])
+                    ? (string) $validated['notification_message']
+                    : null,
+                sendEmail: (bool) ($validated['notification_send_email'] ?? false),
+                ccActingUser: (bool) ($validated['notification_cc_me'] ?? false),
+            );
+        }
 
         return redirect()
             ->route('account.provider-price-lists.index')
@@ -199,26 +226,20 @@ final class AccountProviderPriceListController extends Controller
      *   }>
      * }
      */
-    private function validatePayload(Request $request, int $accountId): array
+    private function validatePayload(Request $request, int $accountId, bool $requiresNotificationTab = false): array
     {
         $this->normalizePriceItemInputs($request, $accountId);
+        normalize_request_locale_dates($request, ['valid_from', 'valid_to']);
 
-        $validated = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'currency_id' => ['required', Rule::exists('cat_currencies', 'id')],
             'valid_from' => ['nullable', 'date'],
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['nullable', 'boolean'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.service_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('services', 'id')->where(function ($query) use ($accountId) {
-                    $query->where('account_id', $accountId);
-                }),
-            ],
             'items.*.service_variant_id' => [
-                'nullable',
+                'required',
                 'integer',
                 Rule::exists('service_variants', 'id')->where(function ($query) use ($accountId) {
                     $query->whereExists(function ($subQuery) use ($accountId) {
@@ -229,25 +250,49 @@ final class AccountProviderPriceListController extends Controller
                     });
                 }),
             ],
-            'items.*.pricing_mode' => ['required', Rule::in(['fixed', 'percentage'])],
-            'items.*.price' => ['required', 'numeric'],
+            'items.*.pricing_mode' => ['nullable', Rule::in(['fixed', 'percentage', ''])],
+            'items.*.price' => ['nullable', 'numeric'],
+        ];
+
+        if ($requiresNotificationTab) {
+            $rules['notification_choice'] = ['required', Rule::in(['notify', 'dont_notify'])];
+            $rules['notification_message'] = ['nullable', 'string', 'max:4000'];
+            $rules['notification_send_email'] = ['nullable', 'boolean'];
+            $rules['notification_cc_me'] = ['nullable', 'boolean'];
+        }
+
+        $validated = $request->validate($rules, [
+            'notification_choice.required' => __('account.price_lists.validation.notification_choice_required'),
+            'notification_choice.in' => __('account.price_lists.validation.notification_choice_required'),
         ]);
 
         $errors = [];
         foreach ($validated['items'] as $index => $item) {
-            $sid = (int) ($item['service_id'] ?? 0);
             $vid = (int) ($item['service_variant_id'] ?? 0);
 
-            if ($sid > 0 && $vid > 0) {
-                $errors["items.{$index}.service_id"] = __('account.price_lists.validation.service_or_variant_not_both');
-                $errors["items.{$index}.service_variant_id"] = __('account.price_lists.validation.service_or_variant_not_both');
-            } elseif ($sid <= 0 && $vid <= 0) {
-                $errors["items.{$index}.service_id"] = __('account.price_lists.validation.service_or_variant_required');
-                $errors["items.{$index}.service_variant_id"] = __('account.price_lists.validation.service_or_variant_required');
+            if ($vid <= 0) {
+                $errors["items.{$index}.service_variant_id"] = __('account.price_lists.validation.variant_required');
             }
 
             $pricingMode = (string) ($item['pricing_mode'] ?? '');
-            $price = (float) ($item['price'] ?? 0);
+
+            if ($pricingMode === '') {
+                continue;
+            }
+
+            if (! in_array($pricingMode, ['fixed', 'percentage'], true)) {
+                $errors["items.{$index}.pricing_mode"] = __('account.price_lists.validation.pricing_mode_invalid');
+
+                continue;
+            }
+
+            if (! array_key_exists('price', $item) || $item['price'] === '' || $item['price'] === null) {
+                $errors["items.{$index}.price"] = __('account.price_lists.validation.price_required_for_mode');
+
+                continue;
+            }
+
+            $price = (float) $item['price'];
 
             if ($pricingMode === 'fixed' && $price < 0) {
                 $errors["items.{$index}.price"] = __('account.price_lists.validation.fixed_amount_must_be_non_negative');
@@ -259,6 +304,41 @@ final class AccountProviderPriceListController extends Controller
         }
 
         return $validated;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formSharedViewData(Account $account): array
+    {
+        $currencies = Currency::query()->with('lmpCurrency')->orderBy('id')->get();
+
+        return [
+            'account' => $account,
+            'currencies' => $currencies,
+            'serviceVariantOptions' => $this->serviceVariantOptionsForAccount($account->id),
+            'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
+            'variantBasePrices' => $this->variantBasePricesForAccount($account->id),
+            'currencyCodesById' => $currencies->mapWithKeys(
+                fn (Currency $currency): array => [$currency->id => $currency->currency_code],
+            )->all(),
+        ];
+    }
+
+    /**
+     * @return array<int, array{amount: float|null}>
+     */
+    private function variantBasePricesForAccount(int $accountId): array
+    {
+        return ServiceVariant::query()
+            ->whereHas('service', fn ($query) => $query->where('account_id', $accountId))
+            ->get(['id', 'base_price'])
+            ->mapWithKeys(fn (ServiceVariant $variant): array => [
+                $variant->id => [
+                    'amount' => $variant->base_price !== null ? (float) $variant->base_price : null,
+                ],
+            ])
+            ->all();
     }
 
     /**
@@ -285,37 +365,17 @@ final class AccountProviderPriceListController extends Controller
     }
 
     /**
-     * @return array<int, string>
-     */
-    private function serviceOptionsForAccount(int $accountId): array
-    {
-        return Service::query()
-            ->where('account_id', $accountId)
-            ->orderBy('id')
-            ->get()
-            ->mapWithKeys(function (Service $service): array {
-                $label = trim($service->name ?? '');
-                $label = $label !== '' ? $label : ('Service #'.$service->id);
-
-                return [$service->id => $label];
-            })
-            ->all();
-    }
-
-    /**
-     * @param  array{service_id?:int|string|null, service_variant_id?:int|string|null, pricing_mode:string, price:mixed}  $item
-     * @return array{service_id:int|null, service_variant_id:int|null, pricing_mode:string, price:mixed}
+     * @param  array{service_variant_id:int|string, pricing_mode?:string|null, price:mixed}  $item
+     * @return array{service_variant_id:int, pricing_mode:string|null, price:mixed|null}
      */
     private function normalizedItemRow(array $item): array
     {
-        $sid = (int) ($item['service_id'] ?? 0);
-        $vid = (int) ($item['service_variant_id'] ?? 0);
+        $pricingMode = (string) ($item['pricing_mode'] ?? '');
 
         return [
-            'service_id' => $vid > 0 ? null : ($sid > 0 ? $sid : null),
-            'service_variant_id' => $vid > 0 ? $vid : null,
-            'pricing_mode' => (string) $item['pricing_mode'],
-            'price' => $item['price'],
+            'service_variant_id' => (int) ($item['service_variant_id'] ?? 0),
+            'pricing_mode' => $pricingMode === '' ? null : $pricingMode,
+            'price' => $pricingMode === '' ? null : $item['price'],
         ];
     }
 
@@ -455,9 +515,19 @@ final class AccountProviderPriceListController extends Controller
 
             $validFrom = $row['valid_from'] ?? null;
             $validTo = $row['valid_to'] ?? null;
-            $validFromStr = ($validFrom === '' || $validFrom === null) ? null : (string) $validFrom;
-            $validToStr = ($validTo === '' || $validTo === null) ? null : (string) $validTo;
+            $validFromStr = ($validFrom === '' || $validFrom === null) ? null : parse_date_input((string) $validFrom);
+            $validToStr = ($validTo === '' || $validTo === null) ? null : parse_date_input((string) $validTo);
 
+            if ($validFrom !== null && $validFrom !== '' && $validFromStr === null) {
+                $errors["assignments.{$index}.valid_from"] = __('account.price_lists.validation.date_invalid');
+
+                continue;
+            }
+            if ($validTo !== null && $validTo !== '' && $validToStr === null) {
+                $errors["assignments.{$index}.valid_to"] = __('account.price_lists.validation.date_invalid');
+
+                continue;
+            }
             if ($validFromStr !== null && strtotime($validFromStr) === false) {
                 $errors["assignments.{$index}.valid_from"] = __('account.price_lists.validation.date_invalid');
 

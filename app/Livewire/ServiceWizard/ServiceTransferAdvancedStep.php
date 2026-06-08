@@ -4,6 +4,7 @@ namespace App\Livewire\ServiceWizard;
 
 use App\Models\Currency;
 use App\Models\Service;
+use App\Models\ServiceVariant;
 use App\Models\ServiceTransfer;
 use App\Models\ServiceTransferLocation;
 use App\Models\ServiceTransferLocationTypeCategory;
@@ -30,6 +31,8 @@ class ServiceTransferAdvancedStep extends Component
 
     public int $serviceTransferId;
 
+    public int $selectedVariantId = 0;
+
     public string $activeTab = 'basics';
 
     public string $transfer_type = ServiceTransfer::TRANSFER_ONE_WAY;
@@ -43,12 +46,6 @@ class ServiceTransferAdvancedStep extends Component
     public bool $requires_pickup_time = false;
 
     public bool $requires_dropoff_time = false;
-
-    /** @var int|string|null */
-    public $max_passengers = null;
-
-    /** @var int|string|null */
-    public $max_luggage = null;
 
     /** @var int|string|null */
     public $default_duration_minutes = null;
@@ -120,18 +117,11 @@ class ServiceTransferAdvancedStep extends Component
         $this->serviceTypeId = $serviceTypeId;
 
         $service = $this->authorizedService();
+        $variants = $this->serviceVariantsForWizard($service);
+        abort_if($variants->isEmpty(), 404);
 
-        $transfer = ServiceTransfer::query()->firstOrCreate(
-            ['service_id' => $service->id],
-            [
-                'transfer_type' => ServiceTransfer::TRANSFER_ONE_WAY,
-                'modality' => ServiceTransfer::MODALITY_PRIVATE,
-                'allows_multiple_stops' => false,
-                'requires_flight_info' => false,
-                'requires_pickup_time' => false,
-                'requires_dropoff_time' => false,
-            ]
-        );
+        $this->selectedVariantId = (int) $variants->first()->id;
+        $transfer = $this->ensureTransferForSelectedVariant();
 
         $this->serviceTransferId = (int) $transfer->id;
         $this->hydrateBasicsFromTransfer($transfer);
@@ -163,6 +153,38 @@ class ServiceTransferAdvancedStep extends Component
         $this->showAddPriceModal = false;
         $this->resetNewRouteForm();
         $this->resetPriceModalForm();
+    }
+
+    public function updatedSelectedVariantId(): void
+    {
+        if ($this->selectedVariantId < 1) {
+            return;
+        }
+
+        $this->selectVariant($this->selectedVariantId);
+    }
+
+    public function selectVariant(int $variantId): void
+    {
+        $service = $this->authorizedService();
+        abort_unless(
+            ServiceVariant::query()
+                ->where('service_id', $service->id)
+                ->whereKey($variantId)
+                ->exists(),
+            404
+        );
+
+        $this->selectedVariantId = $variantId;
+        $this->saveMessage = null;
+        $this->showAddRouteModal = false;
+        $this->showAddPriceModal = false;
+        $this->resetNewRouteForm();
+        $this->resetPriceModalForm();
+
+        $transfer = $this->ensureTransferForSelectedVariant();
+        $this->serviceTransferId = (int) $transfer->id;
+        $this->hydrateBasicsFromTransfer($transfer);
     }
 
     public function updatedBootstrapCatalogCategoryIds(): void
@@ -385,8 +407,6 @@ class ServiceTransferAdvancedStep extends Component
     {
         $this->saveMessage = null;
 
-        $maxPax = $this->normalizeOptionalUInt($this->max_passengers);
-        $maxLug = $this->normalizeOptionalUInt($this->max_luggage);
         $defDur = $this->normalizeOptionalUInt($this->default_duration_minutes);
 
         Validator::make(
@@ -397,8 +417,6 @@ class ServiceTransferAdvancedStep extends Component
                 'requires_flight_info' => $this->requires_flight_info,
                 'requires_pickup_time' => $this->requires_pickup_time,
                 'requires_dropoff_time' => $this->requires_dropoff_time,
-                'max_passengers' => $maxPax,
-                'max_luggage' => $maxLug,
                 'default_duration_minutes' => $defDur,
             ],
             [
@@ -408,16 +426,12 @@ class ServiceTransferAdvancedStep extends Component
                 'requires_flight_info' => ['boolean'],
                 'requires_pickup_time' => ['boolean'],
                 'requires_dropoff_time' => ['boolean'],
-                'max_passengers' => ['nullable', 'integer', 'min:0', 'max:500'],
-                'max_luggage' => ['nullable', 'integer', 'min:0', 'max:500'],
                 'default_duration_minutes' => ['nullable', 'integer', 'min:0', 'max:100000'],
             ],
             [],
             [
                 'transfer_type' => __('wizard.step7_transfer_field_transfer_type'),
                 'modality' => __('wizard.step7_transfer_field_modality'),
-                'max_passengers' => __('wizard.step7_transfer_field_max_passengers'),
-                'max_luggage' => __('wizard.step7_transfer_field_max_luggage'),
                 'default_duration_minutes' => __('wizard.step7_transfer_field_default_duration'),
             ]
         )->validate();
@@ -430,13 +444,9 @@ class ServiceTransferAdvancedStep extends Component
             'requires_flight_info' => $this->requires_flight_info,
             'requires_pickup_time' => $this->requires_pickup_time,
             'requires_dropoff_time' => $this->requires_dropoff_time,
-            'max_passengers' => $maxPax,
-            'max_luggage' => $maxLug,
             'default_duration_minutes' => $defDur,
         ]);
 
-        $this->max_passengers = $maxPax;
-        $this->max_luggage = $maxLug;
         $this->default_duration_minutes = $defDur;
 
         $this->saveMessage = __('wizard.step7_transfer_saved_basics');
@@ -804,18 +814,54 @@ class ServiceTransferAdvancedStep extends Component
         $this->requires_flight_info = (bool) $transfer->requires_flight_info;
         $this->requires_pickup_time = (bool) $transfer->requires_pickup_time;
         $this->requires_dropoff_time = (bool) $transfer->requires_dropoff_time;
-        $this->max_passengers = $transfer->max_passengers;
-        $this->max_luggage = $transfer->max_luggage;
         $this->default_duration_minutes = $transfer->default_duration_minutes;
+    }
+
+    protected function ensureTransferForSelectedVariant(): ServiceTransfer
+    {
+        abort_if($this->selectedVariantId < 1, 404);
+
+        return ServiceTransfer::query()->firstOrCreate(
+            ['service_variant_id' => $this->selectedVariantId],
+            [
+                'transfer_type' => ServiceTransfer::TRANSFER_ONE_WAY,
+                'modality' => ServiceTransfer::MODALITY_PRIVATE,
+                'allows_multiple_stops' => false,
+                'operation_mode' => ServiceTransfer::OPERATION_ON_DEMAND,
+                'requires_flight_info' => false,
+                'requires_pickup_time' => false,
+                'requires_dropoff_time' => false,
+            ]
+        );
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, ServiceVariant>
+     */
+    protected function serviceVariantsForWizard(Service $service): \Illuminate\Support\Collection
+    {
+        return ServiceVariant::query()
+            ->where('service_id', $service->id)
+            ->with(['translations.language.locale'])
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
     }
 
     protected function loadAuthorizedTransfer(): ServiceTransfer
     {
         $service = $this->authorizedService();
+        abort_unless(
+            ServiceVariant::query()
+                ->where('service_id', $service->id)
+                ->whereKey($this->selectedVariantId)
+                ->exists(),
+            404
+        );
 
         return ServiceTransfer::query()
             ->whereKey($this->serviceTransferId)
-            ->where('service_id', $service->id)
+            ->where('service_variant_id', $this->selectedVariantId)
             ->firstOrFail();
     }
 
@@ -1043,9 +1089,11 @@ class ServiceTransferAdvancedStep extends Component
     {
         $service = $this->authorizedService();
 
+        $variants = $this->serviceVariantsForWizard($service);
+
         $transfer = ServiceTransfer::query()
             ->whereKey($this->serviceTransferId)
-            ->where('service_id', $service->id)
+            ->where('service_variant_id', $this->selectedVariantId)
             ->with([
                 'routes.origin.translations.language.locale',
                 'routes.destination.translations.language.locale',
@@ -1100,6 +1148,7 @@ class ServiceTransferAdvancedStep extends Component
 
         return view('livewire.service-wizard.service-transfer-advanced-step', [
             'transfer' => $transfer,
+            'variants' => $variants,
             'serviceCityId' => $service->city_id,
             'locations' => $locations,
             'locationRouteGroups' => $locationRouteGroups,

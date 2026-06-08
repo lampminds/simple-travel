@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\OperatorCurrencyRatesChartService;
 use App\Support\AccountDashboardLane;
 use App\Support\AccountPanelStats;
 use Illuminate\Http\RedirectResponse;
@@ -13,7 +14,7 @@ class OperatorDashboardController extends Controller
     /**
      * Operator account dashboard shell (content TBD).
      */
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request, OperatorCurrencyRatesChartService $currencyRatesChart): View|RedirectResponse
     {
         $account = $request->user()?->currentAccount();
 
@@ -35,7 +36,8 @@ class OperatorDashboardController extends Controller
         }
 
         return view('operator.dashboard', [
-            'panelStats' => AccountPanelStats::forAccount($account),
+            'panelStats' => AccountPanelStats::forOperator($account),
+            'currencyRatesChart' => $currencyRatesChart->build(),
         ]);
     }
 }

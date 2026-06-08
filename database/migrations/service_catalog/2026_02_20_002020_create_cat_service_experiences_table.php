@@ -16,8 +16,6 @@ return new class extends Migration
         Schema::create('cat_service_experiences', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique()->comment('Short name, in English');
-            $table->foreignId('service_experience_category_id')
-                ->constrained('cat_service_experience_categories', 'id', 'secc_fk');
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
 
@@ -32,6 +30,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
+
+            $table->unique(['service_experience_id', 'language_id'], 'cat_se_trans_lang_unique');
         });
     }
 

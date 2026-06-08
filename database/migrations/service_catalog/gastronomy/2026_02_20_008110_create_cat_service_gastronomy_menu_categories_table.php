@@ -31,6 +31,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id', 'sgmc_translations_lang_fk')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
+
+            $table->unique(['service_gastronomy_menu_category_id', 'language_id'], 'cat_sgmc_trans_lang_unique');
         });
     }
 

@@ -13,13 +13,13 @@
         <div class="d-flex align-items-center flex-wrap gap-2">
             <h6 class="mb-0">{{ __('wizard.variants_list_heading') }}</h6>
             <x-catalog-helper-icon
-                :html="$catalogVariantDescriptionHelpHtml"
+                :html="$catalogVariantFieldHelpHtml['description'] ?? null"
                 trigger-id="step4-catalog-helper-variant-description"
                 content-id="step4-catalog-helper-variant-description-html"
                 :aria-label="__('wizard.catalog_helper.aria_label_variant')"
             />
         </div>
-        <button type="button" class="btn btn-sm btn-primary" wire:click="startCreate">
+        <button type="button" class="btn btn-sm btn-primary" wire:click="requestStartCreate">
             {{ __('wizard.variants_new') }}
         </button>
     </div>
@@ -67,7 +67,7 @@
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-outline-secondary me-1"
-                                    wire:click="copyFrom({{ $variant->id }})"
+                                    wire:click="requestCopyFrom({{ $variant->id }})"
                                     title="{{ __('wizard.variants_copy_hint') }}"
                                 >
                                     {{ __('wizard.variants_copy') }}
@@ -75,7 +75,7 @@
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-outline-primary me-1"
-                                    wire:click="startEdit({{ $variant->id }})"
+                                    wire:click="requestStartEdit({{ $variant->id }})"
                                 >
                                     {{ __('wizard.variants_edit') }}
                                 </button>
@@ -101,35 +101,59 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="wizardVariantFormModalTitle"
-            wire:key="wizard-variant-form-modal"
+            wire:key="wizard-variant-form-modal-{{ $editingVariantId ?? 'new' }}"
             style="background-color: rgba(33, 37, 41, 0.5);"
-            wire:click.self="cancel"
+            wire:click.self="requestCancel"
         >
             <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered" wire:click.stop>
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title d-flex align-items-center flex-wrap gap-2 mb-0" id="wizardVariantFormModalTitle">
-                            <span>
-                                @if ($editingVariantId)
-                                    {{ __('wizard.variants_form_edit_title') }}
-                                @elseif ($isCopy)
-                                    {{ __('wizard.variants_form_copy_title') }}
-                                @else
-                                    {{ __('wizard.variants_form_create_title') }}
-                                @endif
-                            </span>
-                            <x-catalog-helper-icon
-                                :html="$catalogVariantDescriptionHelpHtml"
-                                trigger-id="wizard-variant-catalog-helper-btn"
-                                content-id="wizard-variant-catalog-helper-html"
-                                :aria-label="__('wizard.catalog_helper.aria_label_variant')"
-                                wire:click.stop
-                            />
+                            @if ($editingVariantId)
+                                {{ __('wizard.variants_form_edit_title') }}
+                            @elseif ($isCopy)
+                                {{ __('wizard.variants_form_copy_title') }}
+                            @else
+                                {{ __('wizard.variants_form_create_title') }}
+                            @endif
                         </h5>
-                        <button type="button" class="btn-close" wire:click="cancel" aria-label="{{ __('filament.common.close') }}"></button>
+                        <button type="button" class="btn-close" wire:click="requestCancel" aria-label="{{ __('filament.common.close') }}"></button>
                     </div>
                     <div class="modal-body">
                         @include('livewire.service-wizard.partials.variant-form-fields')
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($showDiscardConfirm)
+        <div
+            class="modal fade show d-block"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wizardVariantDiscardModalTitle"
+            style="background-color: rgba(33, 37, 41, 0.65); z-index: 1065;"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title mb-0" id="wizardVariantDiscardModalTitle">
+                            {{ __('wizard.variants_discard_confirm_title') }}
+                        </h5>
+                        <button type="button" class="btn-close" wire:click="dismissDiscardConfirm" aria-label="{{ __('filament.common.close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">{{ __('wizard.variants_discard_confirm') }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="dismissDiscardConfirm">
+                            {{ __('wizard.variants_discard_confirm_no') }}
+                        </button>
+                        <button type="button" class="btn btn-danger" wire:click="confirmDiscard">
+                            {{ __('wizard.variants_discard_confirm_yes') }}
+                        </button>
                     </div>
                 </div>
             </div>

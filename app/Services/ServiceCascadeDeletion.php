@@ -47,16 +47,14 @@ final class ServiceCascadeDeletion
             $add('filament.resources.service_delete_cascade.labels.variant_translations', (int) DB::table('service_variant_translations')->whereIn('service_variant_id', $variantIds)->count());
             $add('filament.resources.service_delete_cascade.labels.variant_availability_rules', (int) DB::table('service_variant_availability_rules')->whereIn('service_variant_id', $variantIds)->count());
             $add('filament.resources.service_delete_cascade.labels.variant_availability_overrides', (int) DB::table('service_variant_availability_overrides')->whereIn('service_variant_id', $variantIds)->count());
-            $add('filament.resources.service_delete_cascade.labels.allocations', (int) DB::table('allocations')->whereIn('service_variant_id', $variantIds)->count());
         }
 
+        $add('filament.resources.service_delete_cascade.labels.allocations', (int) DB::table('allocations')
+            ->whereIn('service_variant_id', $variantIds)
+            ->count());
+
         $add('filament.resources.service_delete_cascade.labels.price_list_items', (int) DB::table('provider_price_list_items')
-            ->where(function ($q) use ($serviceId, $variantIds): void {
-                $q->where('service_id', $serviceId);
-                if ($variantIds->isNotEmpty()) {
-                    $q->orWhereIn('service_variant_id', $variantIds);
-                }
-            })
+            ->whereIn('service_variant_id', $variantIds)
             ->count());
 
         $add('filament.resources.service_delete_cascade.labels.service_offers', self::countServiceOffers($serviceId, $variantIds));
@@ -121,19 +119,17 @@ final class ServiceCascadeDeletion
             $variantIds = self::variantIds($serviceId);
 
             DB::table('provider_price_list_items')
-                ->where(function ($q) use ($serviceId, $variantIds): void {
-                    $q->where('service_id', $serviceId);
-                    if ($variantIds->isNotEmpty()) {
-                        $q->orWhereIn('service_variant_id', $variantIds);
-                    }
-                })
+                ->whereIn('service_variant_id', $variantIds)
                 ->delete();
 
             if ($variantIds->isNotEmpty()) {
-                DB::table('allocations')->whereIn('service_variant_id', $variantIds)->delete();
                 DB::table('service_variant_availability_overrides')->whereIn('service_variant_id', $variantIds)->delete();
                 DB::table('service_variant_availability_rules')->whereIn('service_variant_id', $variantIds)->delete();
             }
+
+            DB::table('allocations')
+                ->whereIn('service_variant_id', $variantIds)
+                ->delete();
 
             self::deleteOperatorPackageItems($serviceId, $variantIds);
             self::deleteServiceOffers($serviceId, $variantIds);
@@ -193,13 +189,12 @@ final class ServiceCascadeDeletion
      */
     private static function countServiceOffers(int $serviceId, Collection $variantIds): int
     {
+        if ($variantIds->isEmpty()) {
+            return 0;
+        }
+
         return (int) DB::table('service_offers')
-            ->where(function ($q) use ($serviceId, $variantIds): void {
-                $q->where('service_id', $serviceId);
-                if ($variantIds->isNotEmpty()) {
-                    $q->orWhereIn('service_variant_id', $variantIds);
-                }
-            })
+            ->whereIn('service_variant_id', $variantIds)
             ->count();
     }
 
@@ -208,13 +203,12 @@ final class ServiceCascadeDeletion
      */
     private static function countOperatorPackageItems(int $serviceId, Collection $variantIds): int
     {
+        if ($variantIds->isEmpty()) {
+            return 0;
+        }
+
         return (int) DB::table('operator_package_items')
-            ->where(function ($q) use ($serviceId, $variantIds): void {
-                $q->where('service_id', $serviceId);
-                if ($variantIds->isNotEmpty()) {
-                    $q->orWhereIn('service_variant_id', $variantIds);
-                }
-            })
+            ->whereIn('service_variant_id', $variantIds)
             ->count();
     }
 
@@ -223,13 +217,12 @@ final class ServiceCascadeDeletion
      */
     private static function deleteServiceOffers(int $serviceId, Collection $variantIds): void
     {
+        if ($variantIds->isEmpty()) {
+            return;
+        }
+
         DB::table('service_offers')
-            ->where(function ($q) use ($serviceId, $variantIds): void {
-                $q->where('service_id', $serviceId);
-                if ($variantIds->isNotEmpty()) {
-                    $q->orWhereIn('service_variant_id', $variantIds);
-                }
-            })
+            ->whereIn('service_variant_id', $variantIds)
             ->delete();
     }
 
@@ -238,13 +231,12 @@ final class ServiceCascadeDeletion
      */
     private static function deleteOperatorPackageItems(int $serviceId, Collection $variantIds): void
     {
+        if ($variantIds->isEmpty()) {
+            return;
+        }
+
         DB::table('operator_package_items')
-            ->where(function ($q) use ($serviceId, $variantIds): void {
-                $q->where('service_id', $serviceId);
-                if ($variantIds->isNotEmpty()) {
-                    $q->orWhereIn('service_variant_id', $variantIds);
-                }
-            })
+            ->whereIn('service_variant_id', $variantIds)
             ->delete();
     }
 
@@ -292,12 +284,20 @@ final class ServiceCascadeDeletion
      */
     private static function transferCounts(int $serviceId): array
     {
-        $transferIds = DB::table('service_transfers')->where('service_id', $serviceId)->pluck('id');
+        $variantIds = self::variantIds($serviceId);
+        if ($variantIds->isEmpty()) {
+            return [];
+        }
+
+        $transferIds = DB::table('service_transfers')
+            ->whereIn('service_variant_id', $variantIds)
+            ->pluck('id');
         if ($transferIds->isEmpty()) {
             return [];
         }
 
         return [
+            'filament.resources.service_delete_cascade.labels.transfer_schedules' => (int) DB::table('service_transfer_schedules')->whereIn('service_transfer_id', $transferIds)->count(),
             'filament.resources.service_delete_cascade.labels.transfer_routes' => (int) DB::table('service_transfer_routes')->whereIn('service_transfer_id', $transferIds)->count(),
             'filament.resources.service_delete_cascade.labels.transfer_vehicles' => (int) DB::table('service_transfer_vehicles')->whereIn('service_transfer_id', $transferIds)->count(),
             'filament.resources.service_delete_cascade.labels.transfer_prices' => (int) DB::table('service_transfer_prices')->whereIn('service_transfer_id', $transferIds)->count(),
@@ -307,14 +307,22 @@ final class ServiceCascadeDeletion
 
     private static function deleteTransferSubtree(int $serviceId): void
     {
-        $transferIds = DB::table('service_transfers')->where('service_id', $serviceId)->pluck('id');
+        $variantIds = self::variantIds($serviceId);
+        if ($variantIds->isEmpty()) {
+            return;
+        }
+
+        $transferIds = DB::table('service_transfers')
+            ->whereIn('service_variant_id', $variantIds)
+            ->pluck('id');
         if ($transferIds->isEmpty()) {
             return;
         }
 
+        DB::table('service_transfer_schedules')->whereIn('service_transfer_id', $transferIds)->delete();
         DB::table('service_transfer_routes')->whereIn('service_transfer_id', $transferIds)->delete();
         DB::table('service_transfer_vehicles')->whereIn('service_transfer_id', $transferIds)->delete();
         DB::table('service_transfer_prices')->whereIn('service_transfer_id', $transferIds)->delete();
-        DB::table('service_transfers')->where('service_id', $serviceId)->delete();
+        DB::table('service_transfers')->whereIn('service_variant_id', $variantIds)->delete();
     }
 }

@@ -40,7 +40,7 @@
                     <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Company</h6>
                     <ul class="list-unstyled">
                         <li class="my-3"><a href="{{ route('pages.about') }}" class="text-muted">About Us</a></li>
-                        <li class="my-3"><span class="text-muted">FAQ</span></li>
+                        <li class="my-3"><a href="{{ route('pages.faq') }}" class="text-muted">{{ __('faq.nav') }}</a></li>
                         <li class="my-3"><a href="#" class="text-muted">Contact Us</a></li>
                     </ul>
                 </div>

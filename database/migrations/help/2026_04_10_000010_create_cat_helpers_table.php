@@ -41,6 +41,8 @@ return new class extends Migration
             $table->text('text')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['helper_id', 'language_id'], 'cat_helper_trans_lang_unique');
         });
     }
 

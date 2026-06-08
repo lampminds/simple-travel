@@ -34,6 +34,8 @@ return new class extends Migration
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
             $table->text('description')->nullable();
+
+            $table->unique(['service_feature_id', 'language_id'], 'cat_sf_trans_lang_unique');
         });
 
         // add a parent_id column to cat_service_features foreign to itself

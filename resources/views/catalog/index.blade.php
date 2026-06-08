@@ -7,18 +7,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('catalog.title') }}</h3>
-                        <p class="mt-1 fw-medium">
-                            @if ($mode === 'provider')
-                                {{ __('catalog.provider_intro') }}
-                            @elseif ($mode === 'agency')
-                                {{ __('catalog.agency_intro') }}
-                            @elseif ($mode === 'operator')
-                                {{ __('catalog.operator_intro') }}
-                            @endif
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('catalog.title')"
+                        :instructions="$mode === 'provider'
+                            ? __('catalog.provider_intro')
+                            : ($mode === 'agency'
+                                ? __('catalog.agency_intro')
+                                : __('catalog.operator_intro'))"
+                    />
                 </div>
             </div>
 
@@ -34,30 +30,44 @@
             @endif
 
             @php
-                $catalogHideFilterAndOwnServicesList = ($catalogTypeFilter ?? null) === null && $services->isEmpty();
+                $catalogHideFilterAndOwnServicesList = ($catalogTypeFilter ?? null) === null
+                    && ($catalogStatusFilter ?? null) === null
+                    && $services->isEmpty();
             @endphp
 
             @unless ($catalogHideFilterAndOwnServicesList)
-                <div class="row mt-3">
+                <form method="get" action="{{ route('catalog') }}" id="catalog-filter-form" class="row mt-3 g-3">
                     <div class="col-md-6 col-lg-4">
-                        <form method="get" action="{{ route('catalog') }}" id="catalog-type-filter-form">
-                            <label for="catalog-type-filter" class="form-label mb-1">{{ __('catalog.filter_by_type') }}</label>
-                            <select
-                                name="type"
-                                id="catalog-type-filter"
-                                class="form-select"
-                                style="max-width: 100%;"
-                                aria-label="{{ __('catalog.filter_by_type') }}"
-                                onchange="document.getElementById('catalog-type-filter-form').submit()"
-                            >
-                                <option value="all" @selected(($catalogTypeFilter ?? null) === null)>{{ __('catalog.filter_type_all') }}</option>
-                                @foreach ($catalogServiceTypeOptions ?? [] as $code => $label)
-                                    <option value="{{ $code }}" @selected(($catalogTypeFilter ?? null) === $code)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </form>
+                        <label for="catalog-type-filter" class="form-label mb-1">{{ __('catalog.filter_by_type') }}</label>
+                        <select
+                            name="type"
+                            id="catalog-type-filter"
+                            class="form-select w-100"
+                            aria-label="{{ __('catalog.filter_by_type') }}"
+                            onchange="document.getElementById('catalog-filter-form').submit()"
+                        >
+                            <option value="all" @selected(($catalogTypeFilter ?? null) === null)>{{ __('catalog.filter_type_all') }}</option>
+                            @foreach ($catalogServiceTypeOptions ?? [] as $code => $label)
+                                <option value="{{ $code }}" @selected(($catalogTypeFilter ?? null) === $code)>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                </div>
+                    <div class="col-md-6 col-lg-4">
+                        <label for="catalog-status-filter" class="form-label mb-1">{{ __('catalog.filter_by_status') }}</label>
+                        <select
+                            name="status"
+                            id="catalog-status-filter"
+                            class="form-select w-100"
+                            aria-label="{{ __('catalog.filter_by_status') }}"
+                            onchange="document.getElementById('catalog-filter-form').submit()"
+                        >
+                            <option value="all" @selected(($catalogStatusFilter ?? null) === null)>{{ __('catalog.filter_status_default') }}</option>
+                            @foreach ($catalogServiceStatusOptions ?? [] as $status => $label)
+                                <option value="{{ $status }}" @selected(($catalogStatusFilter ?? null) === $status)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </form>
             @endunless
 
             @if ($mode === 'provider')
@@ -96,4 +106,21 @@
     </section>
 
     <x-site-footer-simple />
+@endsection
+
+@section('script-bottom')
+    @include('partials.feather-livewire-refresh')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.location.hash !== '#provider-services-list') {
+                return;
+            }
+            const servicesList = document.getElementById('provider-services-list');
+            if (servicesList === null) {
+                return;
+            }
+            servicesList.scrollIntoView({ block: 'start' });
+            servicesList.focus({ preventScroll: true });
+        });
+    </script>
 @endsection

@@ -64,6 +64,12 @@ class UserInvitationResource extends LmpResource
                         ->preload()
                         ->helperText(__('filament.resources.user_invitation_fields.account_inviting_helper'))
                         ->nullable(),
+                    Select::make('invited_account_id')
+                        ->label(__('filament.resources.user_invitation_fields.invited_account_id'))
+                        ->relationship('invitedAccount', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->nullable(),
                     TextInput::make('email')
                         ->label(__('filament.resources.user_invitation_fields.email'))
                         ->email()
@@ -73,6 +79,10 @@ class UserInvitationResource extends LmpResource
                         ->label(__('filament.resources.user_invitation_fields.name'))
                         ->required()
                         ->maxLength(255),
+                    TextInput::make('company_name')
+                        ->label(__('filament.resources.user_invitation_fields.company_name'))
+                        ->maxLength(255)
+                        ->visible(fn (Get $get): bool => ($get('type') ?? UserInvitation::TYPE_INTERNAL) === UserInvitation::TYPE_EXTERNAL),
                     Select::make('type')
                         ->label(__('filament.resources.user_invitation_fields.type'))
                         ->options([
@@ -187,6 +197,11 @@ class UserInvitationResource extends LmpResource
                     ->label(__('filament.resources.user_invitation_columns.name'))
                     ->searchable()
                     ->default('—'),
+                TextColumn::make('company_name')
+                    ->label(__('filament.resources.user_invitation_columns.company_name'))
+                    ->searchable()
+                    ->default('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('role.name')
                     ->label(__('filament.resources.user_invitation_columns.role'))
                     ->default('—'),
@@ -198,7 +213,7 @@ class UserInvitationResource extends LmpResource
                     ->badge(),
                 TextColumn::make('expires_at')
                     ->label(__('filament.resources.user_invitation_columns.expires_at'))
-                    ->dateTime('Y-m-d H:i')
+                    ->formatStateUsing(fn ($state) => $state ? locale_datetime($state) : '—')
                     ->sortable(),
                 TextColumn::make('invitedBy.name')
                     ->label(__('filament.resources.user_invitation_columns.invited_by'))

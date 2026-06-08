@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\SeederUuid;
 use Illuminate\Database\Seeder;
 
 class PersonsTableSeeder extends Seeder
@@ -18,7 +19,7 @@ class PersonsTableSeeder extends Seeder
 
         \DB::table('persons')->delete();
         
-        \DB::table('persons')->insert(array (
+        \DB::table('persons')->insert(SeederUuid::assign(array (
             0 => 
             array (
                 'id' => 1,
@@ -29,7 +30,7 @@ class PersonsTableSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Gabriel Schillaci',
             ),
-        ));
+        )));
         
         
     }

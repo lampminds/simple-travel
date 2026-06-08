@@ -159,8 +159,8 @@ class ServiceResource extends LmpResource
                                         ->label(__('filament.resources.service_variant_fields.status'))
                                         ->options([
                                             'active' => __('filament.resources.service_variant_status.active'),
-                                            'inactive' => __('filament.resources.service_variant_status.inactive'),
-                                            'hidden' => __('filament.resources.service_variant_status.hidden'),
+                                            'suspended' => __('filament.resources.service_variant_status.suspended'),
+                                            'discontinued' => __('filament.resources.service_variant_status.discontinued'),
                                         ])
                                         ->default('active')
                                         ->required(),
@@ -174,11 +174,6 @@ class ServiceResource extends LmpResource
                                         ->numeric()
                                         ->minValue(0)
                                         ->nullable(),
-                                    TextInput::make('duration_minutes')
-                                        ->label(__('filament.resources.service_variant_fields.duration_minutes'))
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->nullable(),
                                     Select::make('pricing_type')
                                         ->label(__('filament.resources.service_variant_fields.pricing_type'))
                                         ->options([
@@ -186,6 +181,7 @@ class ServiceResource extends LmpResource
                                             'per_unit' => __('filament.resources.service_variant_pricing_type.per_unit'),
                                             'per_room' => __('filament.resources.service_variant_pricing_type.per_room'),
                                             'per_vehicle' => __('filament.resources.service_variant_pricing_type.per_vehicle'),
+                                            'per_group' => __('filament.resources.service_variant_pricing_type.per_group'),
                                         ])
                                         ->required(),
                                     TextInput::make('base_price')
@@ -209,8 +205,9 @@ class ServiceResource extends LmpResource
                                         ->label(__('filament.resources.service_variant_fields.inventory_type'))
                                         ->options([
                                             'unlimited' => __('filament.resources.service_variant_inventory_type.unlimited'),
-                                            'fixed' => __('filament.resources.service_variant_inventory_type.fixed'),
-                                            'request' => __('filament.resources.service_variant_inventory_type.request'),
+                                            'per_day' => __('filament.resources.service_variant_inventory_type.per_day'),
+                                            'per_timeslot' => __('filament.resources.service_variant_inventory_type.per_timeslot'),
+                                            'per_departure' => __('filament.resources.service_variant_inventory_type.per_departure'),
                                         ])
                                         ->required()
                                         ->live(),
@@ -219,20 +216,7 @@ class ServiceResource extends LmpResource
                                         ->numeric()
                                         ->minValue(0)
                                         ->nullable()
-                                        ->visible(fn ($get) => $get('inventory_type') === 'fixed'),
-                                    Select::make('booking_type')
-                                        ->label(__('filament.resources.service_variant_fields.booking_type'))
-                                        ->options([
-                                            'instant' => __('filament.resources.service_variant_booking_type.instant'),
-                                            'request' => __('filament.resources.service_variant_booking_type.request'),
-                                        ])
-                                        ->default('request')
-                                        ->afterStateHydrated(function (Select $component, $state): void {
-                                            if (blank($state)) {
-                                                $component->state('request');
-                                            }
-                                        })
-                                        ->required(),
+                                        ->visible(fn ($get) => in_array($get('inventory_type'), ['per_day', 'per_timeslot', 'per_departure'], true)),
                                     TextInput::make('min_advance_booking_hours')
                                         ->label(__('filament.resources.service_variant_fields.min_advance_booking_hours'))
                                         ->numeric()

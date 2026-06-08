@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
@@ -16,7 +15,6 @@ class ServiceExperience extends Model
 
     protected $fillable = [
         'code',
-        'service_experience_category_id',
         'sort_order',
         'active',
     ];
@@ -25,14 +23,6 @@ class ServiceExperience extends Model
         'active' => 'boolean',
         'sort_order' => 'integer',
     ];
-
-    /**
-     * Get the category this experience belongs to.
-     */
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(ServiceExperienceCategory::class, 'service_experience_category_id');
-    }
 
     /**
      * Get the translations for this experience (one per language).

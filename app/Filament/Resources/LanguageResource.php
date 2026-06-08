@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Clusters\AdministrationCluster;
+use App\Filament\Clusters\SystemTablesCluster;
 use App\Filament\Resources\LanguageResource\Pages;
 use App\Models\Language;
 use BackedEnum;
@@ -27,7 +27,7 @@ class LanguageResource extends LmpResource
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_parameters';
 
-    protected static ?string $cluster = AdministrationCluster::class;
+    protected static ?string $cluster = SystemTablesCluster::class;
 
     public static function getModelLabel(): string
     {

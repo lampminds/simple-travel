@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('cat_account_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->comment('Short name, in English');
+            $table->string('code')->unique()->comment('Short name, in English');
             $table->boolean('active')->default(true);
             $table->smallInteger('sort_order')->default(9999)->comment('Order for listing');
 
@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['account_type_id', 'language_id'], 'cat_account_type_trans_lang_unique');
         });
     }
 

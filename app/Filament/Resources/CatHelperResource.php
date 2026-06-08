@@ -24,7 +24,9 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
@@ -213,6 +215,17 @@ class CatHelperResource extends BaseResource
                     ->sortable(),
             ])
             ->defaultSort('screen_code')
+            ->filters([
+                SelectFilter::make('screen_code')
+                    ->label(__('filament.resources.cat_helper_fields.screen_code'))
+                    ->options(fn (): array => CatHelper::query()
+                        ->select('screen_code')
+                        ->distinct()
+                        ->orderBy('screen_code')
+                        ->pluck('screen_code', 'screen_code')
+                        ->all())
+                    ->searchable(),
+            ], layout: FiltersLayout::AboveContent)
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'translations',
                 'accountType',
@@ -249,40 +262,13 @@ class CatHelperResource extends BaseResource
 
         return [
             'screen_code' => $source->screen_code,
-            'code' => static::nextCopyCode($source),
+            'code' => $source->code,
             'account_type_id' => $source->account_type_id,
             'service_type_id' => $source->service_type_id,
             'active' => (bool) $source->active,
             'notes' => $source->notes,
             'translations' => $translations,
         ];
-    }
-
-    /**
-     * Unique helper key within the same screen / scope tuple when copying.
-     */
-    private static function nextCopyCode(CatHelper $source): string
-    {
-        $base = trim((string) $source->code);
-        if ($base === '') {
-            $base = 'helper';
-        }
-
-        $candidate = $base.'-copy';
-        $counter = 2;
-
-        while (CatHelper::query()
-            ->where('screen_code', $source->screen_code)
-            ->where('code', $candidate)
-            ->where('service_type_id', $source->service_type_id)
-            ->where('account_type_id', $source->account_type_id)
-            ->exists()
-        ) {
-            $candidate = $base.'-copy-'.$counter;
-            $counter++;
-        }
-
-        return $candidate;
     }
 
     public static function getPages(): array

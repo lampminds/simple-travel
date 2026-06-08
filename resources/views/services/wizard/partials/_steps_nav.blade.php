@@ -48,7 +48,7 @@
                         >{{ $nav['label'] }}</span>
                     @else
                         <a
-                            href="{{ route($nav['route'], ['serviceType' => $serviceType->code, 'service' => $service->id]) }}"
+                            href="{{ route($nav['route'], ['serviceType' => $serviceType->code, 'service' => $service]) }}"
                             class="btn btn-sm btn-outline-primary"
                         >{{ $nav['label'] }}</a>
                     @endif

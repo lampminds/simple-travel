@@ -24,7 +24,7 @@ return [
         ],
     ],
 
-    'account_category' => [
+    'cat_document' => [
         'list' => [
             'intro_tooltip_html' => '',
         ],
@@ -337,6 +337,12 @@ return [
     ],
 
     'todo_category' => [
+        'list' => [
+            'intro_tooltip_html' => '',
+        ],
+    ],
+
+    'cat_booking_status' => [
         'list' => [
             'intro_tooltip_html' => '',
         ],

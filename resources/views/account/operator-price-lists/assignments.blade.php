@@ -60,12 +60,14 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('account.operator_price_lists.assignments_heading') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ __('account.operator_price_lists.assignments_intro', ['name' => $priceList->name]) }}
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('account.operator_price_lists.assignments_heading')"
+                        :subtitle="__('account.operator_price_lists.assignments_subtitle', ['name' => $priceList->name])"
+                        :instructions="[
+                            __('account.operator_price_lists.assignments_instructions'),
+                            __('account.operator_price_lists.assignments_help'),
+                        ]"
+                    />
                 </div>
             </div>
 
@@ -78,7 +80,6 @@
                                     @csrf
                                     @method('PUT')
 
-                                    <p class="small text-muted mb-3">{{ __('account.operator_price_lists.assignments_help') }}</p>
                                     <p class="small text-muted mb-3">
                                         {{ __('account.operator_price_lists.fields.adjustment_value') }}: 12{{ $thousandsSeparator }}345{{ $decimalSeparator }}{{ str_repeat('0', max(1, $priceDecimals)) }}
                                     </p>
@@ -143,13 +144,19 @@
                                                             @enderror
                                                         </td>
                                                         <td>
-                                                            <input type="date" name="assignments[{{ $aIndex }}][valid_from]" class="form-control" value="{{ $arow['valid_from'] ?? '' }}">
+                                                            <x-locale-date-input
+                                                                name="assignments[{{ $aIndex }}][valid_from]"
+                                                                :value="$arow['valid_from'] ?? ''"
+                                                            />
                                                             @error('assignments.'.$aIndex.'.valid_from')
                                                                 <div class="text-danger small">{{ $message }}</div>
                                                             @enderror
                                                         </td>
                                                         <td>
-                                                            <input type="date" name="assignments[{{ $aIndex }}][valid_to]" class="form-control" value="{{ $arow['valid_to'] ?? '' }}">
+                                                            <x-locale-date-input
+                                                                name="assignments[{{ $aIndex }}][valid_to]"
+                                                                :value="$arow['valid_to'] ?? ''"
+                                                            />
                                                             @error('assignments.'.$aIndex.'.valid_to')
                                                                 <div class="text-danger small">{{ $message }}</div>
                                                             @enderror
@@ -218,6 +225,18 @@
                 const removeAssignmentLabel = @json(__('account.operator_price_lists.remove_assignment_button'));
                 const priceStep = @json($priceStep);
 
+                const datePattern = @json(locale_date_input_js_format()['pattern']);
+                const datePlaceholder = @json(locale_date_input_placeholder());
+
+                function localeDateFieldHtml(index, fieldName) {
+                    return `
+                        <div class="locale-date-input" data-locale-date-wrap data-date-pattern="${datePattern}">
+                            <input type="text" class="form-control js-locale-date-display" value="" placeholder="${datePlaceholder}" inputmode="numeric" autocomplete="off" maxlength="10">
+                            <input type="hidden" name="assignments[${index}][${fieldName}]" value="" class="js-locale-date-iso">
+                        </div>
+                    `;
+                }
+
                 function assignmentRowsCount() {
                     return assignmentsBody.querySelectorAll('tr').length;
                 }
@@ -256,12 +275,8 @@
                         <td>
                             <input type="number" step="${priceStep}" name="assignments[${index}][adjustment_value]" class="form-control" value="" placeholder="${adjustmentValuePlaceholder}">
                         </td>
-                        <td>
-                            <input type="date" name="assignments[${index}][valid_from]" class="form-control" value="">
-                        </td>
-                        <td>
-                            <input type="date" name="assignments[${index}][valid_to]" class="form-control" value="">
-                        </td>
+                        <td>${localeDateFieldHtml(index, 'valid_from')}</td>
+                        <td>${localeDateFieldHtml(index, 'valid_to')}</td>
                         <td>
                             <div class="form-check form-switch">
                                 <input type="hidden" name="assignments[${index}][is_active]" value="0">
@@ -273,6 +288,9 @@
                         </td>
                     `;
                     assignmentsBody.appendChild(row);
+                    if (window.LocaleDateInput) {
+                        window.LocaleDateInput.initAll(row);
+                    }
                 }
 
                 addAssignmentBtn.addEventListener('click', addAssignmentRow);

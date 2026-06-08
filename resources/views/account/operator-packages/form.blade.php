@@ -6,13 +6,12 @@
     $items = is_array($itemsOld)
         ? $itemsOld
         : ($isEdit
-            ? $package->items->map(fn ($item) => [
+            ? $package->items->sortBy('sort_order')->values()->map(fn ($item) => [
+                'id' => (string) $item->id,
                 'provider_id' => (string) ($item->serviceOffer?->provider_id ?? ''),
                 'service_offer_id' => (string) $item->service_offer_id,
-                'service_id' => (string) $item->service_id,
-                'service_variant_id' => (string) ($item->service_variant_id ?? ''),
+                'service_variant_id' => (string) $item->service_variant_id,
                 'day_number' => $item->day_number,
-                'sort_order' => $item->sort_order,
                 'quantity' => $item->quantity,
                 'inclusion_mode' => $item->inclusion_mode,
                 'notes' => $item->notes,
@@ -20,24 +19,41 @@
             : [[
                 'provider_id' => '',
                 'service_offer_id' => '',
-                'service_id' => '',
                 'service_variant_id' => '',
                 'day_number' => '',
-                'sort_order' => 9999,
                 'quantity' => 1,
                 'inclusion_mode' => 'included',
                 'notes' => '',
             ]]);
+    $packageConditionsOld = old('package_conditions');
+    $packageConditions = is_array($packageConditionsOld)
+        ? $packageConditionsOld
+        : ($packageConditions ?? []);
+    $editItemIds = $editItemIds ?? [];
     $activeTab = 'header';
     if ($errors->any()) {
         foreach (array_keys($errors->getMessages()) as $errorKey) {
+            if ($errorKey === 'package_conditions' || str_starts_with((string) $errorKey, 'package_conditions.')) {
+                $activeTab = 'conditions';
+                break;
+            }
+            if (str_contains((string) $errorKey, 'condition_overrides')) {
+                $activeTab = 'conditions';
+                break;
+            }
             if ($errorKey === 'items' || str_starts_with((string) $errorKey, 'items.')) {
                 $activeTab = 'items';
-                break;
             }
         }
     }
     $statusValue = old('status', $package->status ?? 'active');
+    $actionLabels = [
+        '' => __('account.operator_packages.conditions.action_inherit'),
+        'append_top' => __('account.operator_packages.conditions.action_append_top'),
+        'append_bottom' => __('account.operator_packages.conditions.action_append_bottom'),
+        'replace' => __('account.operator_packages.conditions.action_replace'),
+        'suppress' => __('account.operator_packages.conditions.action_suppress'),
+    ];
 @endphp
 
 @extends('layouts.base', ['title' => $isEdit ? __('account.operator_packages.edit_page_title') : __('account.operator_packages.create_page_title')])
@@ -61,14 +77,11 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">
-                            {{ $isEdit ? __('account.operator_packages.edit_heading') : __('account.operator_packages.create_heading') }}
-                        </h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ __('account.operator_packages.form_intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="$isEdit ? __('account.operator_packages.edit_title') : __('account.operator_packages.create_heading')"
+                        :subtitle="$isEdit ? ($package->name ?? $package->title ?? ('#' . $package->id)) : ($account->commercial_name ?? $account->name ?? $account->nick)"
+                        :instructions="__('account.operator_packages.form_instructions')"
+                    />
                 </div>
             </div>
 
@@ -97,6 +110,11 @@
                                     <li class="nav-item" role="presentation">
                                         <a class="nav-link @if ($activeTab === 'items') active @endif" data-bs-toggle="tab" href="#package-tab-items" role="tab">
                                             {{ __('account.operator_packages.tab_items') }}
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link @if ($activeTab === 'conditions') active @endif" data-bs-toggle="tab" href="#package-tab-conditions" role="tab">
+                                            {{ __('account.operator_packages.tab_conditions') }}
                                         </a>
                                     </li>
                                 </ul>
@@ -206,7 +224,7 @@
                                                         <th>{{ __('account.operator_packages.fields.provider') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.offer') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.day_number') }}</th>
-                                                        <th>{{ __('account.operator_packages.fields.sort_order') }}</th>
+                                                        <th class="text-center text-nowrap" style="width: 1%;">{{ __('account.operator_packages.fields.sort_order') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.quantity') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.inclusion_mode') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.notes') }}</th>
@@ -229,6 +247,14 @@
                                             {{ __('account.operator_packages.add_item_button') }}
                                         </button>
                                     </div>
+
+                                    @include('account.operator-packages.partials.conditions-tab', [
+                                        'activeTab' => $activeTab,
+                                        'packageConditions' => $packageConditions,
+                                        'packageTopicOptions' => $packageTopicOptions ?? [],
+                                        'languages' => $languages,
+                                        'itemConditionsUrl' => $itemConditionsUrl ?? '',
+                                    ])
                                 </div>
 
                                 <div class="d-flex flex-wrap gap-2 mt-4">
@@ -251,10 +277,8 @@
             'item' => [
                 'provider_id' => '',
                 'service_offer_id' => '',
-                'service_id' => '',
                 'service_variant_id' => '',
                 'day_number' => '',
-                'sort_order' => 9999,
                 'quantity' => 1,
                 'inclusion_mode' => 'included',
                 'notes' => '',
@@ -287,7 +311,6 @@
             function bindRow(row) {
                 const providerSelect = row.querySelector('.package-item-provider');
                 const offerSelect = row.querySelector('.package-item-offer');
-                const serviceIdInput = row.querySelector('.package-item-service-id');
                 const variantIdInput = row.querySelector('.package-item-variant-id');
 
                 function syncOfferOptions() {
@@ -300,11 +323,9 @@
                 function syncHiddenIds() {
                     const opt = offerSelect.selectedOptions[0];
                     if (!opt || !opt.value) {
-                        serviceIdInput.value = '';
                         variantIdInput.value = '';
                         return;
                     }
-                    serviceIdInput.value = opt.dataset.serviceId || '';
                     variantIdInput.value = opt.dataset.variantId || '';
                 }
 
@@ -317,7 +338,41 @@
                 syncOfferOptions();
             }
 
+            function reindexPackageRows() {
+                const rows = document.querySelectorAll('#package-items-body tr.package-item-row');
+                rows.forEach((row, index) => {
+                    row.querySelectorAll('[name^="items["]').forEach((input) => {
+                        input.name = input.name.replace(/items\[\d+\]/, `items[${index}]`);
+                    });
+
+                    const upBtn = row.querySelector('.package-item-move-up');
+                    const downBtn = row.querySelector('.package-item-move-down');
+                    if (upBtn) upBtn.disabled = index === 0;
+                    if (downBtn) downBtn.disabled = index === rows.length - 1;
+                });
+                nextIndex = rows.length;
+                if (typeof window.packageConditionsReindexItems === 'function') {
+                    window.packageConditionsReindexItems();
+                }
+            }
+
+            function movePackageRow(row, direction) {
+                const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+                if (!sibling?.classList.contains('package-item-row')) {
+                    return;
+                }
+
+                if (direction < 0) {
+                    row.parentNode.insertBefore(row, sibling);
+                } else {
+                    row.parentNode.insertBefore(sibling, row);
+                }
+
+                reindexPackageRows();
+            }
+
             document.querySelectorAll('#package-items-body tr.package-item-row').forEach(bindRow);
+            reindexPackageRows();
 
             document.getElementById('package-add-item')?.addEventListener('click', () => {
                 const template = document.getElementById('package-item-row-template');
@@ -327,19 +382,43 @@
                 tbody.insertAdjacentHTML('beforeend', html);
                 const row = tbody.lastElementChild;
                 if (row) bindRow(row);
-                nextIndex += 1;
+                reindexPackageRows();
             });
 
             document.getElementById('package-items-body')?.addEventListener('click', (event) => {
+                const moveUpBtn = event.target.closest('.package-item-move-up');
+                if (moveUpBtn) {
+                    const row = moveUpBtn.closest('tr.package-item-row');
+                    if (row) movePackageRow(row, -1);
+                    return;
+                }
+
+                const moveDownBtn = event.target.closest('.package-item-move-down');
+                if (moveDownBtn) {
+                    const row = moveDownBtn.closest('tr.package-item-row');
+                    if (row) movePackageRow(row, 1);
+                    return;
+                }
+
                 const btn = event.target.closest('.package-item-remove');
                 if (!btn) return;
                 const row = btn.closest('tr.package-item-row');
                 const rows = document.querySelectorAll('#package-items-body tr.package-item-row');
                 if (rows.length <= 1) return;
                 row?.remove();
+                reindexPackageRows();
             });
         })();
     </script>
+    @include('account.operator-packages.partials.conditions-script', [
+        'itemConditionsUrl' => $itemConditionsUrl ?? route('account.operator-packages.item-conditions'),
+        'languagesForConditions' => $languages->map(fn ($language) => [
+            'id' => (int) $language->id,
+            'display_name' => $language->display_name,
+        ])->values(),
+        'actionLabels' => $actionLabels,
+        'editItemIds' => $editItemIds,
+    ])
     @include('partials.translation-from-language-script', [
         'translateRoute' => route('account.operator-packages.translate-translations'),
         'formSelector' => '#operator-package-form',

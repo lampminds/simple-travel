@@ -52,32 +52,46 @@
     </li>
 </ul>
 
-@if ($variantFormTab === 'general')
+<div @class(['d-none' => $variantFormTab !== 'general'])>
     <div class="row g-2">
         <div class="col-md-6">
-            <label class="form-label required-label">{{ __('filament.resources.service_variant_fields.sku') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'sku',
+                'label' => __('filament.resources.service_variant_fields.sku'),
+                'required' => true,
+            ])
             <input type="text" class="form-control @error('form.sku') is-invalid @enderror" wire:model.blur="form.sku">
             @error('form.sku')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.status') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'status',
+                'label' => __('filament.resources.service_variant_fields.status'),
+            ])
             <select class="form-select @error('form.status') is-invalid @enderror" wire:model.live="form.status">
-                @foreach (['active', 'suspended', 'discontinued', 'inactive', 'hidden'] as $st)
+                @foreach (['active', 'suspended', 'discontinued'] as $st)
                     <option value="{{ $st }}">{{ __('wizard.variant_status.'.$st) }}</option>
                 @endforeach
             </select>
             @error('form.status')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.inventory_type') }}</label>
-            <select class="form-select" wire:model.live="form.inventory_type">
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'inventory_type',
+                'label' => __('filament.resources.service_variant_fields.inventory_type'),
+            ])
+            <select class="form-select @error('form.inventory_type') is-invalid @enderror" wire:model.live="form.inventory_type">
                 @foreach (['unlimited', 'per_day', 'per_timeslot', 'per_departure'] as $it)
                     <option value="{{ $it }}">{{ __('wizard.variant_inventory.'.$it) }}</option>
                 @endforeach
             </select>
+            @error('form.inventory_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.inventory_total') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'inventory_total',
+                'label' => __('filament.resources.service_variant_fields.inventory_total'),
+            ])
             <input
                 type="number"
                 min="0"
@@ -88,49 +102,79 @@
             @error('form.inventory_total')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.capacity_min') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'capacity_min',
+                'label' => __('filament.resources.service_variant_fields.capacity_min'),
+            ])
             <input type="number" min="0" class="form-control" wire:model.blur="form.capacity_min">
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.capacity_max') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'capacity_max',
+                'label' => __('filament.resources.service_variant_fields.capacity_max'),
+            ])
             <input type="number" min="0" class="form-control" wire:model.blur="form.capacity_max">
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.min_advance_booking_hours') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'min_advance_booking_hours',
+                'label' => __('filament.resources.service_variant_fields.min_advance_booking_hours'),
+            ])
             <input type="number" min="0" class="form-control" wire:model.blur="form.min_advance_booking_hours">
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.max_advance_booking_days') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'max_advance_booking_days',
+                'label' => __('filament.resources.service_variant_fields.max_advance_booking_days'),
+            ])
             <input type="number" min="0" class="form-control" wire:model.blur="form.max_advance_booking_days">
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.start_time') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'start_time',
+                'label' => __('filament.resources.service_variant_fields.start_time'),
+            ])
             <input type="time" class="form-control @error('form.start_time') is-invalid @enderror" wire:model.blur="form.start_time">
             @error('form.start_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.end_time') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'end_time',
+                'label' => __('filament.resources.service_variant_fields.end_time'),
+            ])
             <input type="time" class="form-control @error('form.end_time') is-invalid @enderror" wire:model.blur="form.end_time">
             @error('form.end_time')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     </div>
-@elseif ($variantFormTab === 'pricing')
+</div>
+
+<div @class(['d-none' => $variantFormTab !== 'pricing'])>
     <div class="row g-2">
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.pricing_type') }}</label>
-            <select class="form-select" wire:model.live="form.pricing_type">
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'pricing_type',
+                'label' => __('filament.resources.service_variant_fields.pricing_type'),
+            ])
+            <select class="form-select @error('form.pricing_type') is-invalid @enderror" wire:model.live="form.pricing_type">
                 @foreach (['per_person', 'per_unit', 'per_room', 'per_vehicle', 'per_group'] as $pt)
                     <option value="{{ $pt }}">{{ __('wizard.variant_pricing.'.$pt) }}</option>
                 @endforeach
             </select>
+            @error('form.pricing_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.base_price') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'base_price',
+                'label' => __('filament.resources.service_variant_fields.base_price'),
+            ])
             <input type="text" inputmode="decimal" class="form-control @error('form.base_price') is-invalid @enderror" wire:model.blur="form.base_price">
             @error('form.base_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('filament.resources.service_variant_fields.currency') }}</label>
+            @include('livewire.service-wizard.partials.variant-field-label', [
+                'fieldKey' => 'currency_id',
+                'label' => __('filament.resources.service_variant_fields.currency'),
+            ])
             <select class="form-select @error('form.currency_id') is-invalid @enderror" wire:model.live="form.currency_id">
                 <option value="">—</option>
                 @foreach ($currencies as $currency)
@@ -140,15 +184,36 @@
             @error('form.currency_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     </div>
-@elseif ($variantFormTab === 'descriptions')
+</div>
+
+<div @class(['d-none' => $variantFormTab !== 'descriptions'])>
     <p class="text-muted small mb-3">{{ __('wizard.variants_descriptions_help') }}</p>
     <div class="row g-3">
         @foreach ($languages as $language)
             <div class="col-12 col-md-6 col-lg-4" wire:key="variant-lang-{{ $language->id }}">
                 <div class="border rounded p-3 bg-white h-100">
-                    <h6 class="mb-3">{{ $language->display_name }}</h6>
+                    <div class="d-flex align-items-center justify-content-between mb-3 gap-2 flex-wrap">
+                        <h6 class="mb-0">{{ $language->display_name }}</h6>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            title="{{ __('wizard.step6_translate') }}"
+                            wire:click="translateDescriptions({{ $language->id }})"
+                            wire:loading.attr="disabled"
+                            wire:target="translateDescriptions({{ $language->id }})"
+                        >
+                            <span wire:loading.remove wire:target="translateDescriptions({{ $language->id }})">🌐</span>
+                            <span wire:loading wire:target="translateDescriptions({{ $language->id }})" class="spinner-border spinner-border-sm" role="status"></span>
+                            <span class="visually-hidden">{{ __('wizard.step6_translate') }}</span>
+                        </button>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label required-label">{{ __('wizard.variants_translation_name') }}</label>
+                        @include('livewire.service-wizard.partials.variant-field-label', [
+                            'fieldKey' => 'name',
+                            'label' => __('wizard.variants_translation_name'),
+                            'required' => true,
+                            'uniqueSuffix' => 'lang-'.$language->id,
+                        ])
                         <input
                             type="text"
                             class="form-control @error('form.translations.'.$language->id.'.name') is-invalid @enderror"
@@ -159,7 +224,11 @@
                         @enderror
                     </div>
                     <div>
-                        <label class="form-label">{{ __('wizard.variants_translation_description') }}</label>
+                        @include('livewire.service-wizard.partials.variant-field-label', [
+                            'fieldKey' => 'description',
+                            'label' => __('wizard.variants_translation_description'),
+                            'uniqueSuffix' => 'lang-'.$language->id,
+                        ])
                         <textarea
                             class="form-control @error('form.translations.'.$language->id.'.description') is-invalid @enderror"
                             rows="4"
@@ -173,11 +242,22 @@
             </div>
         @endforeach
     </div>
-@else
+</div>
+
+<div @class(['d-none' => $variantFormTab !== 'images'])>
     <p class="text-muted small mb-3">{{ __('wizard.variant_media_help') }}</p>
     <div class="row g-4">
         <div class="col-md-6">
-            <h6 class="small text-uppercase text-muted mb-2">{{ __('wizard.variant_media_main_heading') }}</h6>
+            <div class="d-flex align-items-center gap-1 mb-2">
+                <h6 class="small text-uppercase text-muted mb-0">{{ __('wizard.variant_media_main_heading') }}</h6>
+                <x-catalog-helper-icon
+                    :html="$catalogVariantFieldHelpHtml['main'] ?? null"
+                    trigger-id="step4-variant-helper-main"
+                    content-id="step4-variant-helper-main-html"
+                    :aria-label="__('wizard.catalog_helper.aria_label_variant_field', ['field' => __('wizard.variant_media_main_heading')])"
+                    wire:click.stop
+                />
+            </div>
             @if ($editingVariantId && $variantMainMedia)
                 <div class="mb-3">
                     <img
@@ -209,7 +289,16 @@
             @endif
         </div>
         <div class="col-md-6">
-            <h6 class="small text-uppercase text-muted mb-2">{{ __('wizard.variant_media_gallery_heading') }}</h6>
+            <div class="d-flex align-items-center gap-1 mb-2">
+                <h6 class="small text-uppercase text-muted mb-0">{{ __('wizard.variant_media_gallery_heading') }}</h6>
+                <x-catalog-helper-icon
+                    :html="$catalogVariantFieldHelpHtml['gallery'] ?? null"
+                    trigger-id="step4-variant-helper-gallery"
+                    content-id="step4-variant-helper-gallery-html"
+                    :aria-label="__('wizard.catalog_helper.aria_label_variant_field', ['field' => __('wizard.variant_media_gallery_heading')])"
+                    wire:click.stop
+                />
+            </div>
             @if ($editingVariantId && $variantGalleryMedia->isNotEmpty())
                 <ul class="list-group list-group-flush border rounded mb-3">
                     @foreach ($variantGalleryMedia as $item)
@@ -252,9 +341,12 @@
             <div wire:loading wire:target="galleryImages" class="text-muted small">{{ __('wizard.media_uploading') }}</div>
         </div>
     </div>
-@endif
+</div>
 
 <div class="mt-4 pt-2 border-top">
+    <button type="button" class="btn btn-outline-secondary me-2" wire:click="requestCancel">
+        {{ __('wizard.variants_back_to_list') }}
+    </button>
     <button type="button" class="btn btn-primary" wire:click="save" wire:loading.attr="disabled">
         <span wire:loading.remove wire:target="save">{{ __('wizard.variants_save') }}</span>
         <span wire:loading wire:target="save" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

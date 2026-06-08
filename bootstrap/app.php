@@ -3,6 +3,9 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Livewire\Mechanisms\HandleComponents\MaxNestingDepthExceededException;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,5 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (MaxNestingDepthExceededException $e, Request $request): ?Response {
+            if (! $request->is('livewire/update')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => __('filament.resources.cat_helper_fields.text_nesting_depth_exceeded'),
+            ], 422);
+        });
     })->create();

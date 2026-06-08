@@ -143,12 +143,17 @@
                                          class="avatar me-2" alt="{{ auth()->user()->name }}"
                                          style="width: 2.5rem; height: 2.5rem; object-fit: contain;"/>
                                 </div>
-                                <div class="flex-grow-1 ms-1 lh-base">
-                                    <span class="fw-semibold fs-13 d-block line-height-normal">{{ auth()->user()->name }}</span>
-                                    <span class="text-muted fs-13">{{ auth()->user()->roleNamesForCurrentAccount()->first() ?? __('profile.menu_subtitle') }}</span>
-                                    @if($currentAccount)
-                                        <span class="text-muted fs-12 d-block">
-                                            {{ \Illuminate\Support\Str::limit($currentAccount->commercial_name ?? $currentAccount->name ?? $currentAccount->nick ?? '', 12, '') }}
+                                @php
+                                    $currentAccountLabel = $currentAccount
+                                        ? trim((string) ($currentAccount->commercial_name ?? $currentAccount->name ?? $currentAccount->nick ?? ''))
+                                        : '';
+                                @endphp
+                                <div class="flex-grow-1 ms-1 lh-base min-w-0" style="max-width: 11rem;">
+                                    <span class="fw-semibold fs-13 d-block line-height-normal text-truncate" title="{{ auth()->user()->name }}">{{ auth()->user()->name }}</span>
+                                    <span class="text-muted fs-13 d-block text-truncate" title="{{ auth()->user()->roleNamesForCurrentAccount()->first() ?? __('profile.menu_subtitle') }}">{{ auth()->user()->roleNamesForCurrentAccount()->first() ?? __('profile.menu_subtitle') }}</span>
+                                    @if($currentAccountLabel !== '')
+                                        <span class="text-muted fs-12 d-block text-truncate" title="{{ $currentAccountLabel }}">
+                                            {{ $currentAccountLabel }}
                                         </span>
                                     @endif
                                 </div>

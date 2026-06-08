@@ -31,6 +31,8 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['service_type_id', 'language_id'], 'cat_service_type_trans_lang_unique');
         });
     }
 

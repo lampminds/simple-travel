@@ -6,9 +6,7 @@ use App\Filament\Clusters\CatalogCluster;
 use App\Filament\Resources\ServiceExperienceResource\Pages;
 use App\Models\Language;
 use App\Models\ServiceExperience;
-use App\Models\ServiceExperienceCategory;
 use BackedEnum;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -17,8 +15,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
@@ -45,7 +41,7 @@ class ServiceExperienceResource extends LmpResource
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_catalog_experiences';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $cluster = CatalogCluster::class;
 
@@ -86,18 +82,6 @@ class ServiceExperienceResource extends LmpResource
                     Tab::make(__('filament.resources.service_experience_tabs.general'))
                         ->schema([
                             Section::make('')->schema([
-                                Select::make('service_experience_category_id')
-                                    ->label(__('filament.resources.service_experience_fields.category'))
-                                    ->options(
-                                        fn () => ServiceExperienceCategory::query()
-                                            ->with(['translations.language.locale'])
-                                            ->ordered()
-                                            ->where('active', true)
-                                            ->get()
-                                            ->mapWithKeys(fn (ServiceExperienceCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
-                                    )
-                                    ->searchable()
-                                    ->nullable(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.service_experience_fields.code'))
                                     ->placeholder(__('filament.resources.service_experience_fields.code'))
@@ -125,10 +109,6 @@ class ServiceExperienceResource extends LmpResource
                     ->label(__('filament.common.active'))
                     ->boolean()
                     ->sortable(),
-                TextColumn::make('category.name')
-                    ->label(__('filament.resources.service_experience_columns.category'))
-                    ->sortable(query: fn ($query, string $direction) => $query->orderBy('service_experience_category_id', $direction))
-                    ->placeholder('—'),
                 TextColumn::make('code')
                     ->label(__('filament.resources.service_experience_columns.code'))
                     ->searchable()
@@ -141,22 +121,9 @@ class ServiceExperienceResource extends LmpResource
                         });
                     }),
             ])
-            ->filters([
-                SelectFilter::make('service_experience_category_id')
-                    ->label(__('filament.resources.service_experience_columns.category'))
-                    ->options(
-                        fn () => ServiceExperienceCategory::query()
-                            ->with(['translations.language.locale'])
-                            ->ordered()
-                            ->where('active', true)
-                            ->get()
-                            ->mapWithKeys(fn (ServiceExperienceCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
-                    )
-                    ->searchable(),
-            ], layout: FiltersLayout::AboveContent)
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale', 'category']));
+            ->modifyQueryUsing(fn ($query) => $query->with(['translations.language.locale']));
     }
 
     public static function getGloballySearchableAttributes(): array

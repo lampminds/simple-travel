@@ -426,8 +426,16 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 var dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
 var dropdownList = dropdownTriggerList.map(function (dropdownTriggerEl) {
+    var options = {};
 
-    return new bootstrap.Dropdown(dropdownTriggerEl);
+    // Menus inside scrollable tables are clipped unless Popper uses fixed positioning.
+    if (dropdownTriggerEl.closest('.table-responsive') !== null) {
+        options.popperConfig = function (defaultBsPopperConfig) {
+            return Object.assign({}, defaultBsPopperConfig, { strategy: 'fixed' });
+        };
+    }
+
+    return new bootstrap.Dropdown(dropdownTriggerEl, options);
 });
 
 
@@ -468,7 +476,7 @@ function markRequiredLabels() {
     const requiredFields = document.querySelectorAll('input[required], select[required], textarea[required]');
 
     requiredFields.forEach(function (field) {
-        if (field.disabled || field.type === 'hidden') {
+        if (field.disabled || field.type === 'hidden' || field.type === 'radio') {
             return;
         }
 

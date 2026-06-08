@@ -77,7 +77,7 @@
                                                 <label for="company_name" class="form-label">{{ __('auth.register.company_name') }}</label>
                                                 <input type="text" class="form-control @error('company_name') is-invalid @enderror" id="company_name"
                                                        placeholder="{{ __('auth.register.placeholder_company_name') }}" name="company_name"
-                                                       value="{{ old('company_name') }}" required
+                                                       value="{{ old('company_name', $mode === 'external' ? $inv?->company_name : null) }}" required
                                                        @if($mode !== 'internal') autofocus @endif />
                                                 <x-form-field-error name="company_name" />
                                             </div>

@@ -136,7 +136,7 @@ class AccountRelationshipResource extends LmpResource
                     ->badge(),
                 TextColumn::make('approved_at')
                     ->label(__('filament.resources.account_relationship_columns.approved_at'))
-                    ->dateTime('Y-m-d H:i')
+                    ->formatStateUsing(fn ($state) => $state ? locale_datetime($state) : '—')
                     ->sortable(),
             ])
             ->filters([

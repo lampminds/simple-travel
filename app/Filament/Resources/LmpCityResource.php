@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Clusters\AdministrationCluster;
+use App\Filament\Clusters\SystemTablesCluster;
 use App\Filament\Resources\LmpCityResource\Pages;
 use App\Models\Language;
 use App\Models\LmpCity;
@@ -32,7 +32,7 @@ class LmpCityResource extends BaseResource
 {
     protected static ?string $model = LmpCity::class;
 
-    protected static ?string $cluster = AdministrationCluster::class;
+    protected static ?string $cluster = SystemTablesCluster::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 

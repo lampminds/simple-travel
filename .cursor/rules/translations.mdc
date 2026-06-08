@@ -1,0 +1,6 @@
+---
+description: 
+alwaysApply: true
+---
+
+To edit translations inside Filament resources forms, we need the interface to be as optimized as possible to fit inside a wide viewport. Example: if for each language one has to ask for 2 or 3 differnet fields, let's make it all fit one language per row.

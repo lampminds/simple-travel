@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Notifications\VerifyEmailNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -23,7 +24,7 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class User extends BaseUser implements FilamentUser, MustVerifyEmail
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, HasUuid, LogsActivity;
 
     public const ACTIVATION_ACTIVE = 'active';
 
@@ -364,6 +365,7 @@ class User extends BaseUser implements FilamentUser, MustVerifyEmail
         if ($currentAccountId !== null) {
             $accountPerson = AccountPerson::query()
                 ->where('account_id', $currentAccountId)
+                ->members()
                 ->whereIn('person_id', $personIds->all())
                 ->orderByDesc('is_primary')
                 ->orderBy('id')
@@ -385,7 +387,7 @@ class User extends BaseUser implements FilamentUser, MustVerifyEmail
     {
         $seed = substr(hash('sha256', (string) $this->getKey().'|'.$this->email), 0, 32);
 
-        return 'https://api.dicebear.com/9.x/avataaars/svg?'
+        return 'https://api.dicebear.com/9.x/pixel-art/svg?'
             .http_build_query([
                 'seed' => $seed,
                 'size' => $size,

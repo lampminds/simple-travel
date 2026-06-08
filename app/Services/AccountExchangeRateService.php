@@ -104,7 +104,7 @@ final class AccountExchangeRateService
         foreach ($grouped->take($limit) as $date => $dayRows) {
             $summaries[] = [
                 'date' => $date,
-                'label' => Carbon::parse($date)->translatedFormat('d M Y'),
+                'label' => locale_date($date),
                 'active_count' => $dayRows->where('is_active', true)->count(),
                 'total' => $dayRows->count(),
             ];

@@ -15,12 +15,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3">
-                        <div class="page-title">
-                            <h3 class="my-0">{{ __('account.price_lists.heading') }}</h3>
-                            <p class="mt-1 fw-medium text-muted mb-0">
-                                {{ __('account.price_lists.intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                            </p>
-                        </div>
+                        <x-account-page-header
+                            class="flex-grow-1"
+                            :title="__('account.price_lists.heading')"
+                            :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
+                            :instructions="__('account.price_lists.intro_instructions')"
+                        />
                         <div>
                             <a href="{{ route('account.provider-price-lists.create') }}" class="btn btn-primary">
                                 {{ __('account.price_lists.create_button') }}
@@ -60,7 +60,7 @@
                                                 <td>{{ $priceList->currency?->display_name ?? '—' }}</td>
                                                 <td>
                                                     @if ($priceList->valid_from || $priceList->valid_to)
-                                                        {{ $priceList->valid_from?->format('Y-m-d') ?? '—' }} → {{ $priceList->valid_to?->format('Y-m-d') ?? '—' }}
+                                                        {{ locale_date_range($priceList->valid_from, $priceList->valid_to) }}
                                                     @else
                                                         —
                                                     @endif
@@ -87,18 +87,55 @@
                                                         {{ $priceList->is_active ? __('account.price_lists.active_yes') : __('account.price_lists.active_no') }}
                                                     </span>
                                                 </td>
-                                                <td>
-                                                    <div class="d-flex justify-content-end gap-2">
-                                                        <a href="{{ route('account.provider-price-lists.edit', $priceList) }}" class="btn btn-sm btn-outline-primary">
-                                                            {{ __('account.price_lists.edit_button') }}
-                                                        </a>
-                                                        <form method="POST" action="{{ route('account.provider-price-lists.destroy', $priceList) }}" onsubmit="return confirm('{{ __('account.price_lists.delete_confirm') }}')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                                {{ __('account.price_lists.delete_button') }}
-                                                            </button>
-                                                        </form>
+                                                <td class="text-end">
+                                                    <div class="dropdown d-inline-block">
+                                                        <button
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            type="button"
+                                                            id="providerPriceListActions{{ $priceList->id }}"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-popper-config='{"strategy":"fixed"}'
+                                                            aria-expanded="false"
+                                                            aria-label="{{ __('account.price_lists.actions_menu') }}"
+                                                        >
+                                                            <i class="icon icon-xs text-primary" data-feather="more-horizontal" aria-hidden="true"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="providerPriceListActions{{ $priceList->id }}">
+                                                            <li>
+                                                                <a
+                                                                    href="{{ route('account.provider-price-lists.assignments.edit', $priceList) }}"
+                                                                    class="dropdown-item"
+                                                                >
+                                                                    <i class="icon-xxs icon me-2 text-primary" data-feather="users" aria-hidden="true"></i>
+                                                                    {{ __('account.price_lists.columns.assignments') }}
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a
+                                                                    href="{{ route('account.provider-price-lists.edit', $priceList) }}"
+                                                                    class="dropdown-item"
+                                                                >
+                                                                    <i class="icon-xxs icon me-2 text-primary" data-feather="edit-3" aria-hidden="true"></i>
+                                                                    {{ __('account.price_lists.edit_button') }}
+                                                                </a>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li>
+                                                                <form
+                                                                    method="POST"
+                                                                    action="{{ route('account.provider-price-lists.destroy', $priceList) }}"
+                                                                    class="d-inline w-100"
+                                                                    onsubmit="return confirm(@json(__('account.price_lists.delete_confirm')));"
+                                                                >
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="dropdown-item text-danger w-100 text-start">
+                                                                        <i class="icon-xxs icon me-2" data-feather="trash-2" aria-hidden="true"></i>
+                                                                        {{ __('account.price_lists.delete_button') }}
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
                                                     </div>
                                                 </td>
                                             </tr>

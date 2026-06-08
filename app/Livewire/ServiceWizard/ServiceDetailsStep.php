@@ -6,7 +6,6 @@ use App\Models\Language;
 use App\Models\Locale;
 use App\Models\Service;
 use App\Models\ServiceDetail;
-use App\Models\ServiceDetailConditionKey;
 use App\Models\ServiceDetailTopic;
 use App\Models\ServiceDetailTopicCategory;
 use App\Services\Translation\TranslationService;
@@ -27,6 +26,11 @@ class ServiceDetailsStep extends Component
     public int $serviceId;
 
     public int $serviceTypeId;
+
+    /** @var array<string, string|null> */
+    public array $catalogVisibilityTabHelpHtml = [];
+
+    public ?string $catalogMandatoryHelpHtml = null;
 
     public string $activeVisibilityTab = 'public';
 
@@ -52,10 +56,19 @@ class ServiceDetailsStep extends Component
      */
     public array $modalLine = [];
 
-    public function mount(int $serviceId, int $serviceTypeId): void
-    {
+    /**
+     * @param  array<string, string|null>  $catalogVisibilityTabHelpHtml
+     */
+    public function mount(
+        int $serviceId,
+        int $serviceTypeId,
+        array $catalogVisibilityTabHelpHtml = [],
+        ?string $catalogMandatoryHelpHtml = null,
+    ): void {
         $this->serviceId = $serviceId;
         $this->serviceTypeId = $serviceTypeId;
+        $this->catalogVisibilityTabHelpHtml = $catalogVisibilityTabHelpHtml;
+        $this->catalogMandatoryHelpHtml = $catalogMandatoryHelpHtml;
 
         $service = $this->authorizedService();
         $langIds = $this->wizardLanguages()->pluck('id')->map(fn ($id) => (int) $id)->all();
@@ -84,7 +97,9 @@ class ServiceDetailsStep extends Component
                     'sort_order' => $ord,
                     'topic_id' => $tid,
                     'category_id' => $topic !== null ? (int) $topic->service_detail_topic_category_id : null,
-                    'condition_key_id' => $detail->condition_key_id !== null ? (int) $detail->condition_key_id : null,
+                    'condition_key_id' => $detail->condition_key_id !== null
+                        ? (int) $detail->condition_key_id
+                        : $this->conditionKeyIdForTopic($topic),
                     'is_mandatory' => (bool) $detail->is_mandatory,
                     'visibility' => $this->normalizeVisibility($topic?->visibility),
                     'active' => (bool) $detail->active,
@@ -199,7 +214,6 @@ class ServiceDetailsStep extends Component
         $rules = [
             'modalLine.topic_id' => ['required', 'integer', Rule::exists('cat_service_detail_topics', 'id')],
             'modalLine.category_id' => ['required', 'integer', Rule::exists('cat_service_detail_topic_categories', 'id')],
-            'modalLine.condition_key_id' => ['required', 'integer', Rule::exists('cat_service_detail_condition_keys', 'id')],
             'modalLine.is_mandatory' => ['boolean'],
             'modalLine.active' => ['boolean'],
         ];
@@ -215,6 +229,7 @@ class ServiceDetailsStep extends Component
 
         $topic = ServiceDetailTopic::query()->find((int) $this->modalLine['topic_id']);
         $this->modalLine['visibility'] = $this->normalizeVisibility($topic?->visibility);
+        $this->modalLine['condition_key_id'] = $this->conditionKeyIdForTopic($topic);
 
         if ($this->modalLineIndex === null) {
             $this->lines[] = $this->modalLine;
@@ -446,7 +461,8 @@ class ServiceDetailsStep extends Component
 
                 $sort = (int) ($row['sort_order'] ?? 9999);
                 $active = (bool) ($row['active'] ?? true);
-                $conditionKeyId = (int) ($row['condition_key_id'] ?? 0);
+                $topic = ServiceDetailTopic::query()->find($topicId);
+                $conditionKeyId = $this->conditionKeyIdForTopic($topic);
                 $isMandatory = (bool) ($row['is_mandatory'] ?? false);
 
                 foreach ($languages as $lang) {
@@ -459,7 +475,7 @@ class ServiceDetailsStep extends Component
                         'sort_order' => $sort,
                         'active' => $active,
                         'is_mandatory' => $isMandatory,
-                        'condition_key_id' => $conditionKeyId,
+                        'condition_key_id' => $conditionKeyId > 0 ? $conditionKeyId : null,
                     ]);
                 }
             }
@@ -567,7 +583,6 @@ class ServiceDetailsStep extends Component
         $attrs = [
             'modalLine.topic_id' => __('wizard.step6_topic'),
             'modalLine.category_id' => __('wizard.step6_category'),
-            'modalLine.condition_key_id' => __('wizard.step6_condition_key'),
             'modalLine.is_mandatory' => __('wizard.step6_is_mandatory'),
             'modalLine.translations' => __('wizard.step6_translations'),
         ];
@@ -578,12 +593,13 @@ class ServiceDetailsStep extends Component
         return $attrs;
     }
 
-    public function conditionKeyCategoryLabel(string $category): string
+    protected function conditionKeyIdForTopic(?ServiceDetailTopic $topic): ?int
     {
-        $key = 'filament.resources.service_detail_condition_key_categories.'.$category;
-        $label = __($key);
+        if ($topic === null || $topic->condition_key_id === null) {
+            return null;
+        }
 
-        return $label !== $key ? $label : $category;
+        return (int) $topic->condition_key_id;
     }
 
     public function excerptForLine(array $line): string
@@ -655,16 +671,6 @@ class ServiceDetailsStep extends Component
                 ->get()
                 ->keyBy('id');
 
-        $conditionKeys = ServiceDetailConditionKey::query()
-            ->orderBy('category')
-            ->orderBy('code')
-            ->get()
-            ->groupBy('category');
-
-        $conditionKeysById = ServiceDetailConditionKey::query()
-            ->get()
-            ->keyBy('id');
-
         return view('livewire.service-wizard.service-details-step', [
             'categories' => $categories,
             'topicsByCategory' => $topics,
@@ -672,8 +678,6 @@ class ServiceDetailsStep extends Component
             'languages' => $this->wizardLanguages(),
             'visibilityTabs' => self::VISIBILITY_TABS,
             'modalCategories' => $this->categoriesForVisibility($categories, $topics, $this->modalVisibility),
-            'conditionKeysByCategory' => $conditionKeys,
-            'conditionKeysById' => $conditionKeysById,
         ]);
     }
 }

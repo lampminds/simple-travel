@@ -78,6 +78,7 @@ final class AccountPublicContactsService
 
         $memberships = AccountPerson::query()
             ->whereIn('account_id', $counterpartIds)
+            ->members()
             ->where('is_active', true)
             ->where('is_public_contact', true)
             ->with([

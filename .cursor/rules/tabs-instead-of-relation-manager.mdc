@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+For Filament resources, do not use relation managers to edit relations. Instead, use tabs in the create/edit forms. there are some example in teh project already to use as reference.

@@ -6,6 +6,7 @@ use App\Models\Service;
 use App\Models\ServiceActivity;
 use App\Models\ServiceActivityType;
 use App\Models\ServiceActivityTypeCategory;
+use App\Support\ServiceWizardStepEight;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -146,7 +147,9 @@ class ServiceActivityAdvancedStep extends Component
 
         $this->activityTypeIds = collect($syncIds)->map(fn (int $id) => (string) $id)->values()->all();
 
-        $this->saveMessage = __('wizard.step7_activity_saved');
+        session()->flash('status', __('wizard.step7_activity_saved'));
+
+        $this->redirect(ServiceWizardStepEight::catalogServicesListUrl());
     }
 
     protected function authorizedService(): Service

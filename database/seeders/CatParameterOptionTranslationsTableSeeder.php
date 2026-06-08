@@ -236,6 +236,69 @@ class CatParameterOptionTranslationsTableSeeder extends Seeder
                 'language_id' => 3,
                 'name' => 'Coma',
             ),
+            31 => 
+            array (
+                'id' => 92,
+                'parameter_option_id' => 36,
+                'language_id' => 1,
+                'name' => 'en',
+            ),
+            32 => 
+            array (
+                'id' => 93,
+                'parameter_option_id' => 36,
+                'language_id' => 2,
+                'name' => 'en',
+            ),
+            33 => 
+            array (
+                'id' => 94,
+                'parameter_option_id' => 36,
+                'language_id' => 3,
+                'name' => 'en',
+            ),
+            34 => 
+            array (
+                'id' => 95,
+                'parameter_option_id' => 37,
+                'language_id' => 1,
+                'name' => 'es',
+            ),
+            35 => 
+            array (
+                'id' => 96,
+                'parameter_option_id' => 37,
+                'language_id' => 2,
+                'name' => 'es',
+            ),
+            36 => 
+            array (
+                'id' => 97,
+                'parameter_option_id' => 37,
+                'language_id' => 3,
+                'name' => 'es',
+            ),
+            37 => 
+            array (
+                'id' => 98,
+                'parameter_option_id' => 38,
+                'language_id' => 1,
+                'name' => 'pt',
+            ),
+            38 => 
+            array (
+                'id' => 99,
+                'parameter_option_id' => 38,
+                'language_id' => 2,
+                'name' => 'pt',
+            ),
+            39 => 
+            array (
+                'id' => 100,
+                'parameter_option_id' => 38,
+                'language_id' => 3,
+                'name' => 'pt',
+            ),
         ));
         
         

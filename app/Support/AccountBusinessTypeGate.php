@@ -45,4 +45,12 @@ final class AccountBusinessTypeGate
 
         return $account;
     }
+
+    public static function assertAgencyAccount(Request $request): Account
+    {
+        $account = self::resolveCurrentAccount($request);
+        self::assertHasActiveType($account, 'agency');
+
+        return $account;
+    }
 }

@@ -35,6 +35,8 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['service_hotel_type_id', 'language_id'], 'cat_sht_trans_lang_unique');
         });
     }
 

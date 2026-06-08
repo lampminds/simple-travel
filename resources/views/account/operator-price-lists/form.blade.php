@@ -11,7 +11,7 @@
             'price' => $item->price,
         ])->toArray() : [[
             'operator_package_item_id' => '',
-            'pricing_mode' => 'direct',
+            'pricing_mode' => '',
             'price' => '',
         ]]);
     $activePriceListTab = 'general';
@@ -50,19 +50,17 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">
-                            {{ $isEdit ? __('account.operator_price_lists.edit_heading', ['name' => $priceList->name]) : __('account.operator_price_lists.create_heading') }}
-                        </h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ __('account.operator_price_lists.form_intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                        </p>
+                    <x-account-page-header
+                        :title="$isEdit ? __('account.operator_price_lists.edit_title') : __('account.operator_price_lists.create_heading')"
+                        :subtitle="$isEdit ? $priceList->name : ($account->commercial_name ?? $account->name ?? $account->nick)"
+                        :instructions="__('account.operator_price_lists.form_instructions')"
+                    >
                         @if ($isEdit)
                             <p class="mt-2 mb-0 small">
                                 <a href="{{ route('account.operator-price-lists.assignments.edit', $priceList) }}">{{ __('account.operator_price_lists.assignments_link_from_edit') }}</a>
                             </p>
                         @endif
-                    </div>
+                    </x-account-page-header>
                 </div>
             </div>
 
@@ -149,13 +147,12 @@
                                             <div class="col-lg-4">
                                                 <div class="mb-3">
                                                     <label for="valid_from" class="form-label">{{ __('account.price_lists.fields.valid_from') }}</label>
-                                                    <input
+                                                    <x-locale-date-input
                                                         id="valid_from"
                                                         name="valid_from"
-                                                        type="date"
-                                                        class="form-control @error('valid_from') is-invalid @enderror"
-                                                        value="{{ old('valid_from', optional($priceList?->valid_from)->format('Y-m-d')) }}"
-                                                    >
+                                                        :value="old('valid_from', $priceList?->valid_from)"
+                                                        class="{{ $errors->has('valid_from') ? 'is-invalid' : '' }}"
+                                                    />
                                                     @error('valid_from')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
@@ -165,13 +162,12 @@
                                             <div class="col-lg-4">
                                                 <div class="mb-3">
                                                     <label for="valid_to" class="form-label">{{ __('account.price_lists.fields.valid_to') }}</label>
-                                                    <input
+                                                    <x-locale-date-input
                                                         id="valid_to"
                                                         name="valid_to"
-                                                        type="date"
-                                                        class="form-control @error('valid_to') is-invalid @enderror"
-                                                        value="{{ old('valid_to', optional($priceList?->valid_to)->format('Y-m-d')) }}"
-                                                    >
+                                                        :value="old('valid_to', $priceList?->valid_to)"
+                                                        class="{{ $errors->has('valid_to') ? 'is-invalid' : '' }}"
+                                                    />
                                                     @error('valid_to')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
@@ -262,7 +258,7 @@
     <template id="price-list-item-row-template">
         @include('account.operator-price-lists.partials.item-row', [
             'index' => '__INDEX__',
-            'item' => ['operator_package_item_id' => '', 'pricing_mode' => 'direct', 'price' => ''],
+            'item' => ['operator_package_item_id' => '', 'pricing_mode' => '', 'price' => ''],
             'packageItemOptions' => $packageItemOptions,
             'priceStep' => $priceStep,
         ])
@@ -283,12 +279,11 @@
 
             const hintPercentage = @json(__('account.operator_price_lists.hints.percentage_on_provider_cost'));
             const hintFixedDelta = @json(__('account.operator_price_lists.hints.fixed_delta_on_provider_cost'));
-            const hintDirect = @json(__('account.operator_price_lists.hints.direct_price'));
-            const modeLabels = {
-                percentage: @json(__('account.operator_price_lists.item_pricing_mode.percentage')),
-                fixed_delta: @json(__('account.operator_price_lists.item_pricing_mode.fixed_delta')),
-                direct: @json(__('account.operator_price_lists.item_pricing_mode.direct')),
-            };
+            const hintFixedPrice = @json(__('account.operator_price_lists.hints.fixed_price'));
+            const hintProviderCost = @json(__('account.operator_price_lists.hints.provider_cost'));
+            const providerCostUnavailable = @json(__('account.operator_price_lists.provider_cost_unavailable'));
+            const modeProviderCost = '';
+            const modeFixedPrice = 'fixed_price';
 
             let previewTimer = null;
 
@@ -310,18 +305,44 @@
 
             function applyPricingBehavior(row) {
                 const pricingModeSelect = row.querySelector('[data-role="pricing-mode-select"]');
+                const priceInput = row.querySelector('[data-role="item-price"]');
+                const priceDisplay = row.querySelector('[data-role="item-price-provider-cost"]');
                 const priceHelp = row.querySelector('[data-role="item-price-help"]');
-                if (!pricingModeSelect || !priceHelp) {
+                if (!pricingModeSelect || !priceInput || !priceHelp) {
                     return;
                 }
 
                 const mode = pricingModeSelect.value;
-                if (mode === 'percentage') {
-                    priceHelp.textContent = hintPercentage;
-                } else if (mode === 'fixed_delta') {
-                    priceHelp.textContent = hintFixedDelta;
+                const isProviderCost = mode === modeProviderCost;
+
+                if (isProviderCost) {
+                    priceInput.value = '';
+                    priceInput.classList.add('d-none');
+                    priceInput.removeAttribute('required');
+                    priceHelp.textContent = '';
+                    priceHelp.classList.add('d-none');
+
+                    if (priceDisplay instanceof HTMLElement) {
+                        priceDisplay.classList.remove('d-none');
+                        priceDisplay.removeAttribute('aria-hidden');
+                    }
                 } else {
-                    priceHelp.textContent = hintDirect;
+                    priceInput.classList.remove('d-none');
+                    priceHelp.classList.remove('d-none');
+
+                    if (mode === 'percentage') {
+                        priceHelp.textContent = hintPercentage;
+                    } else if (mode === 'fixed_delta') {
+                        priceHelp.textContent = hintFixedDelta;
+                    } else {
+                        priceHelp.textContent = hintFixedPrice;
+                    }
+
+                    if (priceDisplay instanceof HTMLElement) {
+                        priceDisplay.textContent = '';
+                        priceDisplay.classList.add('d-none');
+                        priceDisplay.setAttribute('aria-hidden', 'true');
+                    }
                 }
             }
 
@@ -339,7 +360,7 @@
                 });
 
                 if (!allowedModes.includes(current)) {
-                    pricingModeSelect.value = allowedModes.includes('direct') ? 'direct' : allowedModes[0];
+                    pricingModeSelect.value = allowedModes.includes(modeFixedPrice) ? modeFixedPrice : allowedModes[0];
                 }
             }
 
@@ -347,12 +368,19 @@
                 const providerCell = row.querySelector('[data-role="provider-cost-cell"]');
                 const finalCell = row.querySelector('[data-role="final-price-cell"]');
                 const warningBox = row.querySelector('[data-role="item-warning"]');
+                const priceDisplay = row.querySelector('[data-role="item-price-provider-cost"]');
+                const pricingMode = row.querySelector('[data-role="pricing-mode-select"]')?.value ?? modeProviderCost;
 
                 if (providerCell) {
                     providerCell.textContent = data?.provider_cost_formatted ?? '—';
                 }
                 if (finalCell) {
                     finalCell.textContent = data?.final_price_formatted ?? '—';
+                }
+                if (priceDisplay instanceof HTMLElement && pricingMode === modeProviderCost) {
+                    priceDisplay.textContent = data?.provider_cost_has
+                        ? data.provider_cost_formatted
+                        : providerCostUnavailable;
                 }
                 if (warningBox) {
                     const warning = data?.warning ?? '';
@@ -368,7 +396,7 @@
 
             async function refreshRowPreview(row) {
                 const packageItemId = row.querySelector('[data-role="package-item-select"]')?.value ?? '';
-                const pricingMode = row.querySelector('[data-role="pricing-mode-select"]')?.value ?? 'direct';
+                const pricingMode = row.querySelector('[data-role="pricing-mode-select"]')?.value ?? modeProviderCost;
                 const price = row.querySelector('[data-role="item-price"]')?.value ?? '';
                 const currencyId = currencySelect?.value ?? '';
 
@@ -377,7 +405,7 @@
                         provider_cost_formatted: '—',
                         final_price_formatted: '—',
                         warning: '',
-                        allowed_modes: ['percentage', 'fixed_delta', 'direct'],
+                        allowed_modes: ['', 'percentage', 'fixed_delta', 'fixed_price'],
                     });
 
                     return;

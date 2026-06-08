@@ -18,6 +18,8 @@
 
             <x-panel-account-summary :stats="$panelStats" class="mt-4" />
 
+            @include('dashboard.partials.currency-rates-chart-section')
+
             <div class="row mt-4">
                 <div class="col-lg-12 col-xl-8">
                     <div class="d-flex flex-wrap gap-2">
@@ -39,4 +41,8 @@
     </section>
 
     <x-site-footer-simple />
+@endsection
+
+@section('script-bottom')
+    @vite('resources/js/operator-currency-rates-chart.js')
 @endsection

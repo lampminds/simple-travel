@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +20,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
 class Service extends Model implements HasMedia
 {
-    use HasFactory, AuditTrait, InteractsWithMedia;
+    use HasFactory, AuditTrait, HasUuid, InteractsWithMedia;
 
     public const MEDIA_COLLECTION_MAIN = 'main';
 
@@ -40,8 +42,6 @@ class Service extends Model implements HasMedia
         'account_id',
         'service_type_id',
         'city_id',
-        'duration_minutes',
-        'is_bookable',
         'is_featured',
         'is_public',
         'booking_mode',
@@ -50,8 +50,6 @@ class Service extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'duration_minutes' => 'integer',
-        'is_bookable' => 'boolean',
         'is_featured' => 'boolean',
         'is_public' => 'boolean',
         'booking_mode' => 'string',
@@ -122,14 +120,6 @@ class Service extends Model implements HasMedia
     public function hotel(): HasOne
     {
         return $this->hasOne(ServiceHotel::class);
-    }
-
-    /**
-     * Transfer-specific profile (1:1), when the service type is transfer.
-     */
-    public function transfer(): HasOne
-    {
-        return $this->hasOne(ServiceTransfer::class);
     }
 
     /**
@@ -265,6 +255,28 @@ class Service extends Model implements HasMedia
     }
 
     /**
+     * Services that have at least one variant (required for catalog/commercial use).
+     */
+    public function scopeWithVariants(Builder $query): Builder
+    {
+        return $query->whereHas('serviceVariants');
+    }
+
+    public function hasVariants(): bool
+    {
+        if ($this->relationLoaded('serviceVariants')) {
+            return $this->serviceVariants->isNotEmpty();
+        }
+
+        return $this->serviceVariants()->exists();
+    }
+
+    public function canBeActivated(): bool
+    {
+        return $this->hasVariants();
+    }
+
+    /**
      * Catalog states omitted from provider→operator offer pickers (given de baja).
      *
      * @return list<string>
@@ -275,11 +287,11 @@ class Service extends Model implements HasMedia
     }
 
     /**
-     * Whether this service may be proposed to operators as a whole-service offer (active catalog).
+     * Whether this service may appear in commercial operator-offer pickers.
      */
     public function catalogSelectableForOperatorOffers(): bool
     {
-        return $this->status === 'active';
+        return $this->status === 'active' && $this->hasVariants();
     }
 }
 

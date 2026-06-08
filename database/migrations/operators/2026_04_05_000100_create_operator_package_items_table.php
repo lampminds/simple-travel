@@ -18,8 +18,7 @@ return new class extends Migration
 
             $table->id();
             $table->foreignId('operator_service_catalog_id')->constrained('operator_service_catalog', 'id', 'fkp_service_id');
-            $table->foreignId('service_id')->constrained();
-            $table->foreignId('service_variant_id')->nullable();
+            $table->foreignId('service_variant_id')->constrained();
             $table->foreignId('service_offer_id')->constrained();
 
             $table->unsignedSmallInteger('day_number')->nullable();

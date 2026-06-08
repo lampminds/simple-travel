@@ -4,6 +4,7 @@
  * Client-side HTML5 constraint validation (browser tooltips on invalid submit).
  */
 return [
+    'date_input_placeholder' => 'dd/mm/yyyy',
     'html5' => [
         'value_missing' => 'Please fill out this field.',
         'type_mismatch_email' => 'Please enter a valid email address.',
@@ -15,6 +16,7 @@ return [
         'range_overflow' => 'Value is too high.',
         'step_mismatch' => 'Please enter a valid value.',
         'bad_input' => 'Please enter a valid value.',
+        'date_invalid' => 'Enter a valid date (mm/dd/yyyy).',
         'generic' => 'Please correct this field.',
     ],
 ];

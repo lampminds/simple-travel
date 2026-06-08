@@ -35,7 +35,17 @@ class Menu extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(Menu::class, 'parent_id')->orderBy('sort_order')->orderBy('id');
+        return $this->hasMany(Menu::class, 'parent_id')->ordered();
+    }
+
+    /**
+     * Listing order for navbar, Filament indexes, and sibling groups ({@see sort_order}).
+     */
+    public function scopeOrdered($query)
+    {
+        return $query
+            ->orderByRaw('COALESCE(sort_order, 9999)')
+            ->orderBy('id');
     }
 
     public function translations(): HasMany

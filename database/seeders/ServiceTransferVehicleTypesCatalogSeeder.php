@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\SeederUuid;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class ServiceTransferVehicleTypesCatalogSeeder extends Seeder
 {
 
-    /** cat_languages.id for en-US, es-AR, pt-BR (see LanguagesTableSeeder + CatLocalesTableSeeder). */
+    /** cat_languages.id for en-US, es-AR, pt-BR (see CatLanguagesTableSeeder + CatLocalesTableSeeder). */
     private const LANGUAGE_IDS = [1, 2, 3];
 
     /**
@@ -142,20 +143,20 @@ class ServiceTransferVehicleTypesCatalogSeeder extends Seeder
         $types = $this->vehicleTypeDefinitions($categoryIds);
 
         foreach ($types as $t) {
-            DB::table('service_transfer_vehicle_types')->updateOrInsert(
-                [
-                    'account_id' => null,
-                    'code' => $t['code'],
-                ],
-                [
-                    'name' => $t['name'],
-                    'service_transfer_vehicle_type_category_id' => $t['category_id'],
-                    'sort_order' => $t['sort_order'],
-                    'max_passengers' => $t['max_passengers'],
-                    'max_luggage' => $t['max_luggage'],
-                    'active' => true,
-                ]
-            );
+            $where = [
+                'account_id' => null,
+                'code' => $t['code'],
+            ];
+            $values = SeederUuid::forUpdateOrInsert('service_transfer_vehicle_types', $where, [
+                'name' => $t['name'],
+                'service_transfer_vehicle_type_category_id' => $t['category_id'],
+                'sort_order' => $t['sort_order'],
+                'max_passengers' => $t['max_passengers'],
+                'max_luggage' => $t['max_luggage'],
+                'active' => true,
+            ]);
+
+            DB::table('service_transfer_vehicle_types')->updateOrInsert($where, $values);
         }
     }
 

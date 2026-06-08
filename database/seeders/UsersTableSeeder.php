@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\SeederUuid;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -18,7 +19,7 @@ class UsersTableSeeder extends Seeder
 
         \DB::table('users')->delete();
         
-        \DB::table('users')->insert(array (
+        \DB::table('users')->insert(SeederUuid::assign(array (
             0 => 
             array (
                 'id' => 1,
@@ -67,7 +68,7 @@ class UsersTableSeeder extends Seeder
                 'last_seen_at' => '2026-05-18 22:52:00',
                 'remember_token' => NULL,
             ),
-        ));
+        )));
         
         
     }

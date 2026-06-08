@@ -22,7 +22,7 @@ class TodoTasksTableSeeder extends Seeder
             0 => 
             array (
                 'id' => 1,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'complete_profile',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -36,7 +36,7 @@ class TodoTasksTableSeeder extends Seeder
             1 => 
             array (
                 'id' => 2,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'create_first_service',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -50,7 +50,7 @@ class TodoTasksTableSeeder extends Seeder
             2 => 
             array (
                 'id' => 3,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'complete_user_profile',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -64,7 +64,7 @@ class TodoTasksTableSeeder extends Seeder
             3 => 
             array (
                 'id' => 4,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'add_availability',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -78,7 +78,7 @@ class TodoTasksTableSeeder extends Seeder
             4 => 
             array (
                 'id' => 5,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'set_pricing',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -92,7 +92,7 @@ class TodoTasksTableSeeder extends Seeder
             5 => 
             array (
                 'id' => 6,
-                'account_id' => null,
+                'account_id' => NULL,
                 'code' => 'upload_images',
                 'todo_category_id' => 1,
                 'original_task_id' => NULL,
@@ -101,6 +101,90 @@ class TodoTasksTableSeeder extends Seeder
                 'verification_type' => 'none',
                 'verification_url' => NULL,
                 'sort_order' => 4,
+                'active' => 1,
+            ),
+            6 => 
+            array (
+                'id' => 7,
+                'account_id' => 2,
+                'code' => 'complete_profile',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'route',
+                'action_url' => 'account.company.edit',
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 1,
+                'active' => 1,
+            ),
+            7 => 
+            array (
+                'id' => 8,
+                'account_id' => 2,
+                'code' => 'complete_user_profile',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'route',
+                'action_url' => 'account.profile.edit',
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 2,
+                'active' => 1,
+            ),
+            8 => 
+            array (
+                'id' => 9,
+                'account_id' => 2,
+                'code' => 'create_first_service',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'route',
+                'action_url' => 'catalog',
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 3,
+                'active' => 1,
+            ),
+            9 => 
+            array (
+                'id' => 10,
+                'account_id' => 2,
+                'code' => 'upload_images',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'none',
+                'action_url' => NULL,
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 4,
+                'active' => 1,
+            ),
+            10 => 
+            array (
+                'id' => 11,
+                'account_id' => 2,
+                'code' => 'add_availability',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'none',
+                'action_url' => NULL,
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 5,
+                'active' => 1,
+            ),
+            11 => 
+            array (
+                'id' => 12,
+                'account_id' => 2,
+                'code' => 'set_pricing',
+                'todo_category_id' => 1,
+                'original_task_id' => NULL,
+                'action_type' => 'none',
+                'action_url' => NULL,
+                'verification_type' => 'none',
+                'verification_url' => NULL,
+                'sort_order' => 6,
                 'active' => 1,
             ),
         ));

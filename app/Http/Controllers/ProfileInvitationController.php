@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserInvitation;
 use App\Notifications\UserInvitationNotification;
+use App\Services\ExternalCompanyInvitationService;
 use App\Services\PendingInvitationUserCleanup;
 use App\Services\ReplicateDefaultRolesToAccountService;
 use App\Support\CurrentAccountSession;
@@ -38,6 +39,7 @@ class ProfileInvitationController extends Controller
 
     public function __construct(
         private readonly ParameterReaderController $parameterReader,
+        private readonly ExternalCompanyInvitationService $externalCompanyInvitation,
     ) {}
 
     public function index(Request $request): RedirectResponse
@@ -88,7 +90,13 @@ class ProfileInvitationController extends Controller
         $query = UserInvitation::query()
             ->where('account_id', $accountId)
             ->where('type', $invitationType)
-            ->with(['invitedBy', 'role', 'accountInviting'])
+            ->with([
+                'invitedBy',
+                'role',
+                'accountInviting',
+                'invitedAccount.accountTypes',
+                'establishedRelationship.providerAccount.accountTypes',
+            ])
             ->orderByDesc('id');
 
         if ($statusFilter !== 'all') {
@@ -131,6 +139,9 @@ class ProfileInvitationController extends Controller
             'storeRoute' => $invitationType === UserInvitation::TYPE_INTERNAL
                 ? 'account.invitations.store_employee'
                 : 'account.invitations.store_company',
+            'targetAccountChoices' => $invitationType === UserInvitation::TYPE_EXTERNAL
+                ? session('external_invite_account_choices', [])
+                : [],
         ]);
     }
 
@@ -281,12 +292,14 @@ class ProfileInvitationController extends Controller
         } else {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
+                'company_name' => ['nullable', 'string', 'max:255'],
                 'email' => [
                     'required',
                     'string',
                     'email',
                     'max:255',
                 ],
+                'invited_account_id' => ['nullable', 'integer', 'min:1'],
             ]);
         }
 
@@ -359,6 +372,7 @@ class ProfileInvitationController extends Controller
                         [
                             'account_id' => $accountId,
                             'person_id' => $person->id,
+                            'link_type' => AccountPerson::LINK_MEMBER,
                         ],
                         [
                             'contact_department_id' => $departmentId,
@@ -412,6 +426,7 @@ class ProfileInvitationController extends Controller
                 AccountPerson::query()->create([
                     'account_id' => $accountId,
                     'person_id' => $person->id,
+                    'link_type' => AccountPerson::LINK_MEMBER,
                     'contact_department_id' => $departmentId,
                     'contact_position_id' => $positionId,
                     'is_primary' => false,
@@ -437,10 +452,75 @@ class ProfileInvitationController extends Controller
                 ]);
             });
         } else {
+            $contactName = Str::title(trim((string) $validated['name']));
+            $proposedCompanyName = Str::title(trim((string) ($validated['company_name'] ?? '')));
+
+            $existingActiveUser = $this->externalCompanyInvitation->findActiveUserByEmail($normalizedInviteEmail);
+
+            if ($existingActiveUser === null && $proposedCompanyName === '') {
+                throw ValidationException::withMessages([
+                    'company_name' => __('invitations.company_name_required'),
+                ]);
+            }
+
+            if ($existingActiveUser !== null) {
+                $selectedAccountId = isset($validated['invited_account_id'])
+                    ? (int) $validated['invited_account_id']
+                    : null;
+
+                $resolution = $this->externalCompanyInvitation->resolveTargetAccount(
+                    $existingActiveUser,
+                    $selectedAccountId !== null && $selectedAccountId > 0 ? $selectedAccountId : null,
+                );
+
+                if ($resolution['status'] === 'choose_account') {
+                    return redirect()
+                        ->route('account.invitations.company')
+                        ->withInput($request->only(['name', 'email', 'company_name']))
+                        ->with(
+                            'external_invite_account_choices',
+                            $this->externalCompanyInvitation->accountChoicesForForm($resolution['accounts'])
+                        );
+                }
+
+                if ($resolution['status'] === 'resolved') {
+                    $targetAccountId = (int) $resolution['account_id'];
+
+                    if ($this->externalCompanyInvitation->hasDuplicatePending(
+                        (int) $accountId,
+                        $normalizedInviteEmail,
+                        $targetAccountId,
+                    )) {
+                        throw ValidationException::withMessages([
+                            'email' => __('invitations.duplicate_pending'),
+                        ]);
+                    }
+
+                    $invitation = $this->externalCompanyInvitation->createPendingForExistingUser(
+                        operatorAccountId: (int) $accountId,
+                        invitedByUserId: (int) $user->id,
+                        name: $contactName,
+                        email: $normalizedInviteEmail,
+                        roleId: $roleId,
+                        expirationDays: $expirationDays,
+                        invitedUserId: (int) $existingActiveUser->id,
+                        invitedAccountId: $targetAccountId,
+                        companyName: $proposedCompanyName !== '' ? $proposedCompanyName : null,
+                    );
+
+                    $this->externalCompanyInvitation->deliverInvitation($invitation);
+
+                    return redirect()
+                        ->route('account.invitations.company')
+                        ->with('status', __('invitations.created_existing_user'));
+                }
+            }
+
             $invitation = UserInvitation::create([
                 'account_id' => $accountId,
                 'account_inviting' => $accountId,
-                'name' => Str::title(trim((string) $validated['name'])),
+                'name' => $contactName,
+                'company_name' => $proposedCompanyName,
                 'email' => $normalizedInviteEmail,
                 'role_id' => $roleId,
                 'token' => Str::random(64),
@@ -450,10 +530,14 @@ class ProfileInvitationController extends Controller
                 'type' => $invitationType,
                 'status' => UserInvitation::STATUS_PENDING,
             ]);
+
+            $this->externalCompanyInvitation->deliverInvitation($invitation);
         }
 
-        Notification::route('mail', $invitation->email)
-            ->notify(new UserInvitationNotification($invitation));
+        if ($invitationType === UserInvitation::TYPE_INTERNAL) {
+            Notification::route('mail', $invitation->email)
+                ->notify(new UserInvitationNotification($invitation));
+        }
 
         return redirect()
             ->route($invitationType === UserInvitation::TYPE_INTERNAL ? 'account.invitations.employee' : 'account.invitations.company')

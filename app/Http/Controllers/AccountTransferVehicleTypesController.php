@@ -10,6 +10,7 @@ use App\Services\AccountTransferVehicleTypeMutationGuard;
 use App\Services\ServiceTransferVehicleCatalogBootstrapService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -29,7 +30,7 @@ final class AccountTransferVehicleTypesController extends Controller
             ->with('category.translations.language.locale')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->paginate(25);
+            ->get();
 
         $bootstrapSvc = app(ServiceTransferVehicleCatalogBootstrapService::class);
         $importCatalogAvailable = $bootstrapSvc->systemCatalogHasVehicleTypes();
@@ -124,7 +125,7 @@ final class AccountTransferVehicleTypesController extends Controller
             'code' => $validated['code'],
             'service_transfer_vehicle_type_category_id' => $validated['service_transfer_vehicle_type_category_id'],
             'name' => $validated['name'],
-            'sort_order' => (int) $validated['sort_order'],
+            'sort_order' => $this->nextSortOrderForAccount($account->id),
             'max_passengers' => $validated['max_passengers'],
             'max_luggage' => $validated['max_luggage'],
             'active' => (bool) $validated['active'],
@@ -163,7 +164,6 @@ final class AccountTransferVehicleTypesController extends Controller
             'code' => $validated['code'],
             'service_transfer_vehicle_type_category_id' => $validated['service_transfer_vehicle_type_category_id'],
             'name' => $validated['name'],
-            'sort_order' => (int) $validated['sort_order'],
             'max_passengers' => $validated['max_passengers'],
             'max_luggage' => $validated['max_luggage'],
             'active' => (bool) $validated['active'],
@@ -172,6 +172,49 @@ final class AccountTransferVehicleTypesController extends Controller
         return redirect()
             ->route('account.transfer-vehicle-types.index')
             ->with('status', __('account.transfer_vehicle_types.status_updated'));
+    }
+
+    public function move(Request $request, ServiceTransferVehicleType $transfer_vehicle_type, string $direction): RedirectResponse
+    {
+        $account = $this->resolveCurrentAccount($request);
+        $this->assertBelongsToAccount($transfer_vehicle_type, $account->id);
+
+        abort_unless(in_array($direction, ['up', 'down'], true), 404);
+
+        $ordered = ServiceTransferVehicleType::query()
+            ->where('account_id', $account->id)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get()
+            ->values();
+
+        $index = $ordered->search(
+            fn (ServiceTransferVehicleType $row): bool => (int) $row->id === (int) $transfer_vehicle_type->id
+        );
+
+        if ($index === false) {
+            return redirect()->route('account.transfer-vehicle-types.index');
+        }
+
+        $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
+
+        if ($swapIndex < 0 || $swapIndex >= $ordered->count()) {
+            return redirect()->route('account.transfer-vehicle-types.index');
+        }
+
+        DB::transaction(function () use ($ordered, $index, $swapIndex): void {
+            $rows = $ordered->all();
+            [$rows[$index], $rows[$swapIndex]] = [$rows[$swapIndex], $rows[$index]];
+
+            foreach ($rows as $position => $row) {
+                $row->update(['sort_order' => ($position + 1) * 10]);
+            }
+        });
+
+        return redirect()
+            ->route('account.transfer-vehicle-types.index')
+            ->with('status', __('account.transfer_vehicle_types.status_reordered'));
     }
 
     public function destroy(Request $request, ServiceTransferVehicleType $transfer_vehicle_type): RedirectResponse
@@ -251,7 +294,6 @@ final class AccountTransferVehicleTypesController extends Controller
                 Rule::exists($catTable, 'id')->where('active', true),
             ],
             'name' => ['required', 'string', 'max:255'],
-            'sort_order' => ['required', 'integer', 'min:0', 'max:99999'],
             'max_passengers' => ['nullable', 'integer', 'min:0', 'max:500'],
             'max_luggage' => ['nullable', 'integer', 'min:0', 'max:500'],
             'active' => ['sometimes', 'boolean'],
@@ -261,7 +303,6 @@ final class AccountTransferVehicleTypesController extends Controller
             'code' => __('account.transfer_vehicle_types.fields.code'),
             'service_transfer_vehicle_type_category_id' => __('account.transfer_vehicle_types.fields.category'),
             'name' => __('account.transfer_vehicle_types.fields.name'),
-            'sort_order' => __('account.transfer_vehicle_types.fields.sort_order'),
             'max_passengers' => __('account.transfer_vehicle_types.fields.max_passengers'),
             'max_luggage' => __('account.transfer_vehicle_types.fields.max_luggage'),
             'active' => __('account.transfer_vehicle_types.fields.active'),
@@ -279,5 +320,14 @@ final class AccountTransferVehicleTypesController extends Controller
             : null;
 
         return $validated;
+    }
+
+    private function nextSortOrderForAccount(int $accountId): int
+    {
+        $max = ServiceTransferVehicleType::query()
+            ->where('account_id', $accountId)
+            ->max('sort_order');
+
+        return $max !== null ? (int) $max + 10 : 10;
     }
 }

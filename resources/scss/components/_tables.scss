@@ -48,3 +48,9 @@
         width: 100px;
     }
 }
+
+// Bootstrap .table-responsive clips absolutely/fixed-positioned dropdown menus.
+// While a row action menu is open, allow overflow so the menu is fully visible.
+.table-responsive:has(.dropdown.show) {
+    overflow: visible;
+}

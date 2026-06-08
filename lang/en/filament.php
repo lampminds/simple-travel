@@ -16,6 +16,7 @@ return [
         'crm' => 'CRM',
         'commercial' => 'Commercial',
         'administration' => 'Administration',
+        'system_tables' => 'System tables',
         'transport' => 'Transport',
     ],
 
@@ -135,6 +136,60 @@ return [
             'sort_order' => 'Sort order',
         ],
 
+        'cat_document' => 'Document type',
+        'cat_documents' => 'Document types',
+
+        'cat_document_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'cat_document_fields' => [
+            'group' => 'Group',
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+            'sort_order' => 'Sort order',
+            'language' => 'Language',
+        ],
+
+        'cat_document_columns' => [
+            'id' => 'ID',
+            'group' => 'Group',
+            'code' => 'Code',
+            'name' => 'Name',
+            'description' => 'Description',
+            'sort_order' => 'Sort order',
+        ],
+
+        'cat_gender' => 'Gender',
+        'cat_genders' => 'Genders',
+
+        'cat_gender_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'cat_gender_fields' => [
+            'code' => 'Code',
+            'code_help' => 'Stable identifier in English (letters, numbers, dashes and underscores). Must be unique.',
+            'name' => 'Name',
+        ],
+
+        'cat_gender_columns' => [
+            'id' => 'ID',
+            'code' => 'Code',
+            'name' => 'Name',
+            'translations_count' => 'Locales',
+        ],
+
+        'cat_gender_filter' => [
+            'active_status' => 'Status',
+            'active_only' => 'Active only',
+            'inactive_only' => 'Inactive only',
+            'active_all' => 'All',
+        ],
+
         'account_type' => 'Account type',
         'account_types' => 'Account types',
 
@@ -195,7 +250,8 @@ return [
             'account' => 'Account',
             'account_inviting' => 'Inviting account',
             'email' => 'Email',
-            'name' => 'Invitee name',
+            'name' => 'Contact name',
+            'company_name' => 'Company',
             'role' => 'Role',
             'type' => 'Type',
             'status' => 'Status',
@@ -207,8 +263,10 @@ return [
             'account_id' => 'Account',
             'account_inviting' => 'Inviting account',
             'account_inviting_helper' => 'The account that sent this invitation (e.g. operator). Defaults to the same as Account when left empty on create.',
+            'invited_account_id' => 'Target company (existing user)',
             'email' => 'Email',
-            'name' => 'Invitee name',
+            'name' => 'Contact name',
+            'company_name' => 'Company name',
             'role_id' => 'Role',
             'role_external_owner' => 'owner (new company)',
             'role_id_external_helper' => 'External invitations always use the owner role for the new company that is created at registration.',
@@ -318,6 +376,16 @@ return [
             'value' => 'Value',
         ],
 
+        'account_document' => 'Account document',
+        'account_documents' => 'Account documents',
+
+        'account_document_fields' => [
+            'account_id' => 'Account',
+            'document_id' => 'Document type',
+            'value' => 'Value',
+            'add' => 'Add Tax ID',
+        ],
+
         'contact_department' => 'Contact department',
         'contact_departments' => 'Contact departments',
 
@@ -405,6 +473,12 @@ return [
 
         'person_fields' => [
             'name' => 'Name',
+            'document_name' => 'Name as on documents',
+            'given_name' => 'Given name(s)',
+            'family_name' => 'Family name(s)',
+            'date_of_birth' => 'Date of birth',
+            'gender_id' => 'Gender',
+            'nationality_id' => 'Nationality',
             'user_id' => 'User',
             'add_user_link' => 'Link user',
             'account_id' => 'Account',
@@ -429,6 +503,8 @@ return [
         'person_columns' => [
             'id' => 'ID',
             'name' => 'Name',
+            'gender' => 'Gender',
+            'date_of_birth' => 'Date of birth',
             'users_count' => 'Users',
             'account_memberships_count' => 'Linked accounts',
             'contact_methods_count' => 'Methods',
@@ -695,6 +771,7 @@ return [
             'label' => 'Label',
             'route' => 'Route',
             'parent' => 'Parent',
+            'parent_none' => '— Top level —',
             'excluded_account_types' => 'Hidden for types',
             'excluded_account_types_none' => 'All types',
         ],
@@ -815,6 +892,8 @@ return [
         'plan_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
+            'account_types' => 'Account types',
+            'modules' => 'Modules',
             'items' => 'Plan items',
         ],
 
@@ -824,6 +903,16 @@ return [
             'usd_price' => 'USD price',
             'name' => 'Name',
             'description' => 'Description',
+            'account_types' => 'Applicable account types',
+            'account_types_help' => 'Leave empty to allow every account type. Select types to restrict this plan.',
+        ],
+
+        'plan_relation' => [
+            'modules_tab' => 'Modules in plan',
+            'module' => 'Module',
+            'module_code' => 'Code',
+            'module_name' => 'Name',
+            'add_module' => 'Add module',
         ],
 
         'plan_columns' => [
@@ -878,12 +967,17 @@ return [
         'module_tabs' => [
             'general' => 'General',
             'translations' => 'Translations',
+            'account_types' => 'Account types',
+            'features' => 'Features',
+            'pricing' => 'Pricing',
         ],
 
         'module_fields' => [
             'code' => 'Code',
             'name' => 'Name',
             'description' => 'Description',
+            'account_types' => 'Applicable account types',
+            'account_types_help' => 'Leave empty to allow every account type. Select types to restrict this module.',
         ],
 
         'module_columns' => [
@@ -891,6 +985,56 @@ return [
             'code' => 'Code',
             'name' => 'Name',
             'active' => 'Active',
+            'account_types' => 'Account types',
+            'account_types_all' => 'All account types',
+        ],
+
+        'module_filter' => [
+            'account_type' => 'Account type',
+            'account_type_placeholder' => 'All account types',
+        ],
+
+        'module_relation' => [
+            'features_tab' => 'Features',
+            'prices_tab' => 'Pricing',
+        ],
+
+        'module_feature_fields' => [
+            'text' => 'Feature text',
+            'language' => 'Language',
+            'add' => 'Add feature',
+            'add_translation' => 'Add translation',
+        ],
+
+        'module_feature_columns' => [
+            'text' => 'Text',
+        ],
+
+        'module_price_fields' => [
+            'add' => 'Add price',
+            'billing_type' => 'Billing model',
+            'billing_fixed' => 'Fixed',
+            'billing_per_user' => 'Per user',
+            'billing_hybrid' => 'Hybrid',
+            'billing_usage' => 'Usage',
+            'base_price' => 'Base price',
+            'included_users' => 'Included users',
+            'price_per_user' => 'Price per user',
+            'tiers_section' => 'User tiers',
+            'add_tier' => 'Add tier',
+        ],
+
+        'module_price_columns' => [
+            'billing_type' => 'Billing',
+            'base_price' => 'Base',
+            'price_per_user' => 'Per user',
+            'tiers' => 'Tiers',
+        ],
+
+        'module_price_tier_fields' => [
+            'from_users' => 'From users',
+            'to_users' => 'To users',
+            'price_per_user' => 'Price per user',
         ],
 
         'nav_contacts' => 'Contacts',
@@ -901,7 +1045,7 @@ return [
         'nav_plans' => 'Plans and pricing',
         'nav_services' => 'Services',
         'nav_accounts_transfer' => 'Transfer',
-        'nav_hotels' => 'Hotels',
+        'nav_hotels' => 'Accommodation',
         'nav_activities' => 'Activities',
         'nav_gastronomy' => 'Gastronomy',
         'nav_parameters' => 'Settings',
@@ -955,6 +1099,7 @@ return [
             'notes' => 'Internal notes',
             'text' => 'HTML content',
             'text_help' => 'Use the toolbar to format text and attach images; files are stored under public storage (no separate media collection).',
+            'text_nesting_depth_exceeded' => 'The help text is too deeply structured for the editor to save in one step. Simplify formatting (fewer nested lists or styles), save again, or contact an administrator if this persists.',
         ],
 
         'cat_helper_columns' => [
@@ -966,6 +1111,79 @@ return [
             'service_type' => 'Service type',
             'text_preview' => 'Help text',
             'translations_count' => 'Locales',
+        ],
+
+        'cat_faq' => 'FAQ',
+        'cat_faqs' => 'FAQs',
+
+        'cat_faq_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'cat_faq_fields' => [
+            'code' => 'Code',
+            'code_help' => 'Stable identifier in English (letters, numbers, dashes and underscores).',
+            'account_type' => 'Account type (optional)',
+            'sort_order' => 'Sort order',
+            'notes' => 'Internal notes',
+            'question' => 'Question',
+            'answer' => 'Answer',
+        ],
+
+        'cat_faq_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Sort order',
+            'code' => 'Code',
+            'account_type' => 'Account type',
+            'question_preview' => 'Question',
+            'translations_count' => 'Locales',
+        ],
+
+        'cat_faq_filter' => [
+            'active_status' => 'Status',
+            'active_only' => 'Active only',
+            'inactive_only' => 'Inactive only',
+            'active_all' => 'All',
+        ],
+
+        'cat_booking_status' => 'Booking status',
+        'cat_booking_statuses' => 'Booking statuses',
+
+        'cat_booking_status_tabs' => [
+            'general' => 'General',
+            'translations' => 'Translations',
+        ],
+
+        'cat_booking_status_fields' => [
+            'type' => 'Scope',
+            'code' => 'Code',
+            'code_help' => 'Stable identifier in English (letters, numbers, dashes and underscores). Unique per scope.',
+            'sort_order' => 'Sort order',
+            'name' => 'Name',
+            'help_tip' => 'Help tip',
+            'description' => 'Description',
+        ],
+
+        'cat_booking_status_columns' => [
+            'id' => 'ID',
+            'sort_order' => 'Sort order',
+            'type' => 'Scope',
+            'code' => 'Code',
+            'name' => 'Name',
+            'translations_count' => 'Locales',
+        ],
+
+        'cat_booking_status_type' => [
+            'main' => 'Booking header',
+            'item' => 'Booking item',
+        ],
+
+        'cat_booking_status_filter' => [
+            'active_status' => 'Status',
+            'active_only' => 'Active only',
+            'inactive_only' => 'Inactive only',
+            'active_all' => 'All',
         ],
 
         'todo_category' => 'To-do category',
@@ -1061,8 +1279,8 @@ return [
             'account_id' => 'With tasks for account',
         ],
 
-        'service_hotel_type' => 'Hotel type',
-        'service_hotel_types' => 'Hotel types',
+        'service_hotel_type' => 'Accommodation type',
+        'service_hotel_types' => 'Accommodation types',
 
         'service_hotel_type_tabs' => [
             'general' => 'General',
@@ -1083,8 +1301,8 @@ return [
             'name' => 'Name',
         ],
 
-        'service_hotel_type_category' => 'Hotel type category',
-        'service_hotel_type_categories' => 'Hotel type categories',
+        'service_hotel_type_category' => 'Accommodation type category',
+        'service_hotel_type_categories' => 'Accommodation type categories',
 
         'service_hotel_type_category_tabs' => [
             'general' => 'General',
@@ -1507,9 +1725,18 @@ return [
             'code' => 'Code',
             'category' => 'Category',
             'visibility' => 'Visibility',
+            'scope' => 'Scope',
+            'condition_key' => 'Default condition key',
             'active' => 'Active',
             'name' => 'Name',
             'description' => 'Description',
+        ],
+
+        'service_detail_topic_scopes' => [
+            'informational' => 'Informational',
+            'service' => 'Service',
+            'commercial' => 'Commercial',
+            'legal' => 'Legal',
         ],
 
         'service_detail_topic_visibility' => [
@@ -1524,6 +1751,8 @@ return [
             'category' => 'Category',
             'name' => 'Name',
             'visibility' => 'Visibility',
+            'scope' => 'Scope',
+            'condition_key' => 'Condition key',
             'active' => 'Active',
         ],
 
@@ -1636,7 +1865,6 @@ return [
             'currency' => 'Currency',
             'inventory_type' => 'Inventory type',
             'inventory_total' => 'Inventory total',
-            'booking_type' => 'Booking type',
             'min_advance_booking_hours' => 'Min advance (hours)',
             'max_advance_booking_days' => 'Max advance (days)',
             'start_time' => 'Start time',
@@ -1657,17 +1885,14 @@ return [
             'per_unit' => 'Per unit',
             'per_room' => 'Per room',
             'per_vehicle' => 'Per vehicle',
+            'per_group' => 'Per group',
         ],
 
         'service_variant_inventory_type' => [
             'unlimited' => 'Unlimited',
-            'fixed' => 'Fixed',
-            'request' => 'On request',
-        ],
-
-        'service_variant_booking_type' => [
-            'instant' => 'Instant',
-            'request' => 'On request',
+            'per_day' => 'Per day',
+            'per_timeslot' => 'Per time slot',
+            'per_departure' => 'Per departure',
         ],
 
         'service_fields' => [
@@ -1708,8 +1933,8 @@ return [
                 'service_offers' => 'Service offers',
                 'operator_package_items' => 'Operator package items',
                 'media_files' => 'Media library files',
-                'hotel_type_assignments' => 'Hotel type assignments',
-                'service_hotels' => 'Hotel profile rows',
+                'hotel_type_assignments' => 'Accommodation type assignments',
+                'service_hotels' => 'Accommodation profile rows',
                 'service_activity' => 'Activity profile rows',
                 'gastronomy_menu_assignments' => 'Menu format assignments',
                 'gastronomy_venue_assignments' => 'Venue assignments',
@@ -1720,6 +1945,7 @@ return [
                 'gastronomy_type_assignments' => 'Gastronomy type assignments',
                 'service_gastronomies' => 'Profile rows',
                 'transfer_routes' => 'Transfer routes',
+                'transfer_schedules' => 'Transfer schedules',
                 'transfer_vehicles' => 'Transfer vehicles',
                 'transfer_prices' => 'Transfer prices',
                 'service_transfers' => 'Transfer profile rows',
@@ -1887,6 +2113,7 @@ return [
         ],
 
         'provider_price_list_item_pricing_mode' => [
+            'variant_base' => 'Variant base price',
             'fixed' => 'Fixed',
             'percentage' => 'Percentage',
         ],
@@ -1959,8 +2186,11 @@ return [
         ],
 
         'operator_price_list_item_pricing_mode' => [
-            'fixed' => 'Fixed',
+            'fixed_delta' => 'Fixed +/-',
             'percentage' => 'Percentage',
+            'fixed_price' => 'Fixed price',
+            'direct' => 'Fixed price',
+            'fixed' => 'Fixed price',
         ],
 
         'plan_user_price' => 'User range price',
@@ -2093,6 +2323,7 @@ return [
         ],
         'service_transfer_fields' => [
             'service_id' => 'Service',
+            'service_variant_id' => 'Service variant',
             'transfer_type' => 'Transfer type',
             'modality' => 'Modality',
             'allows_multiple_stops' => 'Allows multiple stops',

@@ -18,8 +18,11 @@ return new class extends Migration
             $table->string('code')->unique()->comment('Short name, in English');
             $table->foreignId('service_detail_topic_category_id')->nullable()->constrained('cat_service_detail_topic_categories', 'id', 'sdtc_sdc_fk');
             $table->enum('visibility', ['public', 'operator', 'internal'])->nullable()->default('public');
+            $table->enum('scope', ['informational', 'service', 'commercial', 'legal'])->default('informational');
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
+            $table->foreignId('condition_key_id')->nullable()->constrained('cat_service_detail_condition_keys');
+            $table->enum('operator_override_mode', ['none', 'append_only', 'replace', 'suppress'])->default('none');
 
             lmpStamps($table);
         });
@@ -35,6 +38,8 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['service_detail_topic_id', 'language_id'], 'cat_service_detail_topic_trans_lang_unique');
         });
     }
 

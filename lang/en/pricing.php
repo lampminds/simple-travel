@@ -44,7 +44,7 @@ return [
     // Starter plan
     'plan_starter_price' => '150k',
     'plan_starter_feature1' => 'Dynamic package building',
-    'plan_starter_feature2' => 'Individual services (hotel, transfer, tour)',
+    'plan_starter_feature2' => 'Individual services (accommodation, transfer, tour)',
     'plan_starter_feature3' => 'Operations calendar',
     'plan_starter_feature4' => 'Booking statuses',
     'plan_starter_feature5' => 'Automatic voucher',

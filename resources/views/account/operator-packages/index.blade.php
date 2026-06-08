@@ -12,15 +12,25 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="alert alert-danger mb-3" role="alert">
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="row">
                 <div class="col-lg-12">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3">
-                        <div class="page-title">
-                            <h3 class="my-0">{{ __('account.operator_packages.heading') }}</h3>
-                            <p class="mt-1 fw-medium text-muted mb-0">
-                                {{ __('account.operator_packages.intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                            </p>
-                        </div>
+                        <x-account-page-header
+                            class="flex-grow-1"
+                            :title="__('account.operator_packages.heading')"
+                            :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
+                            :instructions="__('account.operator_packages.intro_instructions')"
+                        />
                         <div>
                             <a href="{{ route('account.operator-packages.create') }}" class="btn btn-primary">
                                 {{ __('account.operator_packages.create_button') }}

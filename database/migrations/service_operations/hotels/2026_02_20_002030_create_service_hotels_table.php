@@ -20,8 +20,6 @@ return new class extends Migration
             $table->smallInteger('stars')->nullable()->comment('Number of stars');
             $table->time('check_in_time')->nullable()->comment('Check-in time');
             $table->time('check_out_time')->nullable()->comment('Check-out time');
-            $table->smallInteger('rooms_count')->nullable()->comment('Number of rooms');
-            $table->string('chain_name')->nullable()->comment('Name of the hotel chain');
 
             lmpStamps($table);
         });

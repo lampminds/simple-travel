@@ -6,9 +6,11 @@ use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ProviderPriceListItemResource\Pages;
 use App\Models\PriceList;
 use App\Models\PriceListItem;
-use App\Models\Service;
 use App\Models\ServiceVariant;
+use App\Support\CurrentCatalogHelperAccountContext;
+use App\Support\ServiceWizardVariantCatalogHelpers;
 use BackedEnum;
+use Illuminate\Support\HtmlString;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -16,7 +18,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
@@ -81,39 +82,6 @@ class ProviderPriceListItemResource extends LmpResource
                         ->searchable()
                         ->required()
                         ->live(),
-                    Select::make('service_id')
-                        ->label(__('filament.resources.provider_price_list_item_fields.service_id'))
-                        ->options(function (Get $get): array {
-                            $listId = $get('provider_price_list_id');
-                            if ($listId === null || $listId === '') {
-                                return [];
-                            }
-                            $providerId = PriceList::query()->whereKey($listId)->value('provider_id');
-                            if ($providerId === null) {
-                                return [];
-                            }
-
-                            return Service::query()
-                                ->where('account_id', (int) $providerId)
-                                ->orderBy('id')
-                                ->get()
-                                ->mapWithKeys(function (Service $service): array {
-                                    $label = trim($service->name ?? '');
-                                    $label = $label !== '' ? $label : ('Service #'.$service->id);
-
-                                    return [$service->id => $label];
-                                })
-                                ->all();
-                        })
-                        ->searchable()
-                        ->nullable()
-                        ->live()
-                        ->afterStateUpdated(function (Set $set, $state): void {
-                            if (filled($state)) {
-                                $set('service_variant_id', null);
-                            }
-                        })
-                        ->required(fn (Get $get): bool => ! filled($get('service_variant_id'))),
                     Select::make('service_variant_id')
                         ->label(__('filament.resources.provider_price_list_item_fields.service_variant_id'))
                         ->options(function (Get $get): array {
@@ -131,35 +99,41 @@ class ProviderPriceListItemResource extends LmpResource
                                 ->orderBy('sku')
                                 ->get()
                                 ->mapWithKeys(function (ServiceVariant $variant): array {
+                                    $serviceName = trim((string) ($variant->service?->name ?? ''));
                                     $sku = trim((string) $variant->sku);
-                                    $sku = $sku !== '' ? $sku : ('Variant #'.$variant->id);
+                                    $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
+                                    $skuChunk = $sku !== '' ? $sku : ('Variant #'.$variant->id);
 
-                                    return [$variant->id => $sku];
+                                    return [$variant->id => $serviceChunk.' — '.$skuChunk];
                                 })
                                 ->all();
                         })
                         ->searchable()
-                        ->nullable()
-                        ->live()
-                        ->afterStateUpdated(function (Set $set, $state): void {
-                            if (filled($state)) {
-                                $set('service_id', null);
-                            }
-                        })
-                        ->required(fn (Get $get): bool => ! filled($get('service_id'))),
+                        ->required(),
                     TextInput::make('price')
                         ->label(__('filament.resources.provider_price_list_item_fields.price'))
                         ->numeric()
                         ->step(0.01)
-                        ->required(),
+                        ->nullable()
+                        ->required(fn (Get $get): bool => filled($get('pricing_mode')))
+                        ->disabled(fn (Get $get): bool => blank($get('pricing_mode')))
+                        ->dehydrateStateUsing(fn ($state, Get $get) => blank($get('pricing_mode')) ? null : $state),
                     Select::make('pricing_mode')
                         ->label(__('filament.resources.provider_price_list_item_fields.pricing_mode'))
                         ->options([
                             'fixed' => __('filament.resources.provider_price_list_item_pricing_mode.fixed'),
                             'percentage' => __('filament.resources.provider_price_list_item_pricing_mode.percentage'),
                         ])
-                        ->required()
-                        ->default('fixed'),
+                        ->nullable()
+                        ->placeholder(__('filament.resources.provider_price_list_item_pricing_mode.variant_base'))
+                        ->helperText(function (): HtmlString|string|null {
+                            $html = ServiceWizardVariantCatalogHelpers::pricingModeHelpHtml(
+                                accountTypeId: CurrentCatalogHelperAccountContext::primaryAccountTypeId(),
+                            );
+
+                            return filled($html) ? new HtmlString($html) : null;
+                        })
+                        ->live(),
                 ])
                 ->columns(2),
         ];
@@ -179,28 +153,29 @@ class ProviderPriceListItemResource extends LmpResource
                 TextColumn::make('target')
                     ->label(__('filament.resources.provider_price_list_item_columns.target'))
                     ->getStateUsing(function (PriceListItem $record): string {
-                        if ($record->service_variant_id) {
-                            $sku = trim((string) ($record->serviceVariant?->sku ?? ''));
-
-                            return $sku !== '' ? $sku : ('#'.$record->service_variant_id);
-                        }
-                        if ($record->service_id) {
-                            $name = trim((string) ($record->service?->name ?? ''));
-
-                            return __('filament.resources.provider_price_list_item_columns.service_all_variants', [
-                                'label' => $name !== '' ? $name : ('#'.$record->service_id),
-                            ]);
+                        $variant = $record->serviceVariant;
+                        if ($variant === null) {
+                            return '—';
                         }
 
-                        return '—';
+                        $serviceName = trim((string) ($variant->service?->name ?? ''));
+                        $sku = trim((string) ($variant->sku ?? ''));
+                        $serviceChunk = $serviceName !== '' ? $serviceName : ('#'.$variant->service_id);
+                        $skuChunk = $sku !== '' ? $sku : ('#'.$variant->id);
+
+                        return $serviceChunk.' — '.$skuChunk;
                     }),
                 TextColumn::make('price')
                     ->label(__('filament.resources.provider_price_list_item_columns.price'))
-                    ->numeric(decimalPlaces: 2)
+                    ->formatStateUsing(fn ($state, PriceListItem $record): string => $record->pricing_mode === null
+                        ? '—'
+                        : number_format((float) $state, 2, '.', ''))
                     ->sortable(),
                 TextColumn::make('pricing_mode')
                     ->label(__('filament.resources.provider_price_list_item_columns.pricing_mode'))
-                    ->formatStateUsing(fn (?string $state): string => $state ? __('filament.resources.provider_price_list_item_pricing_mode.'.$state) : '—')
+                    ->formatStateUsing(fn (?string $state): string => $state
+                        ? __('filament.resources.provider_price_list_item_pricing_mode.'.$state)
+                        : __('filament.resources.provider_price_list_item_pricing_mode.variant_base'))
                     ->badge(),
             ])
             ->defaultSort('id', 'desc')
@@ -211,7 +186,7 @@ class ProviderPriceListItemResource extends LmpResource
                     ->searchable()
                     ->preload(),
             ], layout: FiltersLayout::AboveContent)
-            ->modifyQueryUsing(fn ($query) => $query->with(['priceList', 'serviceVariant', 'service']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['priceList', 'serviceVariant.service']))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),

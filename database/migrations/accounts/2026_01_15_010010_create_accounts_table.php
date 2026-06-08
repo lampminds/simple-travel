@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('nick')->unique()->comment('The short name chosen by the tenant');
             $table->string('code')->unique()->comment('Combination of nick + 3 random numbers');
             $table->string('name')->nullable();

@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('commercial_subscriptions', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('commercial_plan_id')->constrained('commercial_plans');
             $table->dateTime('starts_at')->nullable();

@@ -73,6 +73,72 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
+                                            <label for="document_name" class="form-label">{{ __('profile.document_name') }}</label>
+                                            <input type="text" class="form-control @error('document_name', 'profile') is-invalid @enderror" id="document_name"
+                                                   name="document_name" value="{{ old('document_name', $profilePerson?->document_name) }}" autocomplete="off"/>
+                                            <x-form-field-error name="document_name" bag="profile" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="given_name" class="form-label">{{ __('profile.given_name') }}</label>
+                                            <input type="text" class="form-control @error('given_name', 'profile') is-invalid @enderror" id="given_name"
+                                                   name="given_name" value="{{ old('given_name', $profilePerson?->given_name) }}" autocomplete="given-name"/>
+                                            <x-form-field-error name="given_name" bag="profile" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="family_name" class="form-label">{{ __('profile.family_name') }}</label>
+                                            <input type="text" class="form-control @error('family_name', 'profile') is-invalid @enderror" id="family_name"
+                                                   name="family_name" value="{{ old('family_name', $profilePerson?->family_name) }}" autocomplete="family-name"/>
+                                            <x-form-field-error name="family_name" bag="profile" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="date_of_birth" class="form-label">{{ __('profile.date_of_birth') }}</label>
+                                            <input type="date" class="form-control @error('date_of_birth', 'profile') is-invalid @enderror" id="date_of_birth"
+                                                   name="date_of_birth" value="{{ old('date_of_birth', $profilePerson?->date_of_birth?->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}"/>
+                                            <x-form-field-error name="date_of_birth" bag="profile" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="gender_id" class="form-label">{{ __('profile.gender') }}</label>
+                                            <select id="gender_id" name="gender_id" class="form-select @error('gender_id', 'profile') is-invalid @enderror">
+                                                <option value="">{{ __('profile.select_gender') }}</option>
+                                                @foreach($genders as $gender)
+                                                    <option value="{{ $gender->id }}" @selected((int) old('gender_id', $profilePerson?->gender_id) === (int) $gender->id)>
+                                                        {{ $gender->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="gender_id" bag="profile" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="nationality_id" class="form-label">{{ __('profile.nationality') }}</label>
+                                            <select id="nationality_id" name="nationality_id" class="form-select @error('nationality_id', 'profile') is-invalid @enderror">
+                                                <option value="">{{ __('profile.select_nationality') }}</option>
+                                                @foreach($countries as $country)
+                                                    <option value="{{ $country->id }}" @selected((int) old('nationality_id', $profilePerson?->nationality_id) === (int) $country->id)>
+                                                        {{ $country->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <x-form-field-error name="nationality_id" bag="profile" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
                                             <label for="contact_department_id" class="form-label">{{ __('profile.department') }}</label>
                                             <select id="contact_department_id" name="contact_department_id" class="form-select @error('contact_department_id', 'profile') is-invalid @enderror" required>
                                                 <option value="">{{ __('profile.select_department') }}</option>
@@ -85,9 +151,7 @@
                                             <x-form-field-error name="contact_department_id" bag="profile" />
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 offset-md-6">
+                                    <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="contact_position_id" class="form-label">{{ __('profile.position') }}</label>
                                             <select id="contact_position_id" name="contact_position_id" class="form-select @error('contact_position_id', 'profile') is-invalid @enderror" required>

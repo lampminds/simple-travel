@@ -16,15 +16,16 @@ return new class extends Migration
         Schema::create('service_transfers', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('service_id')->constrained();
+            $table->foreignId('service_variant_id')->constrained();
 
             $table->enum('transfer_type', ['one_way', 'round_trip']);
             $table->enum('modality', ['private', 'shared']);
 
             $table->boolean('allows_multiple_stops')->default(false);
 
-            $table->unsignedInteger('max_passengers')->nullable();
-            $table->unsignedInteger('max_luggage')->nullable();
+            $table->enum('operation_mode', ['on_demand', 'scheduled'])->default('on_demand');
+
+            $table->unsignedInteger('duration_minutes')->nullable()->comment('Duration in minutes');
 
             $table->unsignedInteger('default_duration_minutes')->nullable();
 

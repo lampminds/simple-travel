@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\CurrencyRateSide;
+use App\Models\PriceList;
 use App\Models\PriceListAssignment;
 use App\Models\PriceListItem;
-use App\Models\Service;
 use App\Models\ServiceVariant;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -18,14 +19,18 @@ use Carbon\CarbonInterface;
  */
 final class OperatorVariantPriceResolver
 {
-    public function __construct(private readonly PriceFormatService $priceFormatService)
-    {
+    public function __construct(
+        private readonly PriceFormatService $priceFormatService,
+        private readonly CurrencyConversionService $currencyConversion,
+    ) {
     }
 
     /**
      * @return array{
      *     amount: float|null,
      *     has_amount: bool,
+     *     currency_code: string,
+     *     currency_id: int|null,
      *     formatted: string,
      *     breakdown_html: string
      * }
@@ -37,46 +42,93 @@ final class OperatorVariantPriceResolver
         ?CarbonInterface $pricingDate = null,
     ): array {
         $d = Carbon::parse($pricingDate ?? Carbon::today())->startOfDay();
-        $code = $this->currencyCode($variant);
+        $variantCurrencyCode = $this->currencyCode($variant);
+        $variantCurrencyId = (int) ($variant->currency_id ?? 0);
 
         $lines = [];
         $baseNumeric = $variant->base_price !== null ? (float) $variant->base_price : null;
 
-        if ($baseNumeric !== null) {
-            $lines[] = __('account.service_offers.price_breakdown.base', [
-                'amount' => $this->formatMoney($baseNumeric, $providerAccountId),
-                'currency' => $code,
-            ]);
-        }
-
         $assignment = $this->findActiveAssignment($providerAccountId, $operatorAccountId, $d);
         if ($assignment === null) {
+            if ($baseNumeric !== null) {
+                $lines[] = __('account.service_offers.price_breakdown.base', [
+                    'amount' => $this->formatMoney($baseNumeric, $providerAccountId),
+                    'currency' => $variantCurrencyCode,
+                ]);
+            }
+
             if ($baseNumeric === null) {
                 $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
 
-                return $this->pack(null, $code, $lines, $providerAccountId);
+                return $this->pack(null, $variantCurrencyCode, $lines, $providerAccountId, $variantCurrencyId > 0 ? $variantCurrencyId : null);
             }
 
-            return $this->pack($baseNumeric, $code, $lines, $providerAccountId);
+            return $this->pack($baseNumeric, $variantCurrencyCode, $lines, $providerAccountId, $variantCurrencyId > 0 ? $variantCurrencyId : null);
         }
 
         $list = $assignment->priceList;
+        $code = $this->listCurrencyCode($list);
+        $listCurrencyId = (int) ($list->currency_id ?? 0);
+
+        if ($baseNumeric !== null) {
+            $lines[] = __('account.service_offers.price_breakdown.base', [
+                'amount' => $this->formatMoney($baseNumeric, $providerAccountId),
+                'currency' => $variantCurrencyCode,
+            ]);
+        }
+
         $item = $this->findPriceListItemForVariant($list->id, $variant);
 
-        $afterLine = $this->computeAfterListLine($baseNumeric, $item);
+        $isFixedListPrice = $item !== null && $item->pricing_mode === 'fixed';
+        $workingBase = $baseNumeric;
+
+        if (! $isFixedListPrice && $workingBase !== null && $variantCurrencyId !== $listCurrencyId && $listCurrencyId > 0) {
+            $convertedBase = $this->currencyConversion->convert(
+                $workingBase,
+                $variantCurrencyId,
+                $listCurrencyId,
+                CurrencyRateSide::Buy,
+                CurrencyRateSide::Sell,
+                $operatorAccountId,
+                $d,
+            );
+
+            if ($convertedBase === null) {
+                $lines[] = __('account.service_offers.price_breakdown.currency_conversion_failed');
+
+                return $this->pack(null, $code, $lines, $providerAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
+            }
+
+            $lines[] = __('account.service_offers.price_breakdown.fx_conversion', [
+                'from' => $variantCurrencyCode,
+                'to' => $code,
+                'amount' => $this->formatMoney($convertedBase, $operatorAccountId),
+                'currency' => $code,
+            ]);
+
+            $workingBase = $convertedBase;
+        }
+
+        $afterLine = $this->computeAfterListLine($workingBase, $item);
 
         if ($item !== null) {
             if ($afterLine === null) {
                 $lines[] = __('account.service_offers.price_breakdown.needs_base_for_compose');
 
-                return $this->pack(null, $code, $lines, $providerAccountId);
+                return $this->pack(null, $code, $lines, $providerAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
             }
 
             $listName = (string) $list->name;
-            if ($item->pricing_mode === 'fixed') {
+            if ($item->pricing_mode === null || $item->pricing_mode === '') {
+                $lines[] = __('account.service_offers.price_breakdown.list_variant_base', [
+                    'name' => $listName,
+                    'amount' => $this->formatMoney((float) $afterLine, $operatorAccountId),
+                    'currency' => $code,
+                ]);
+            } elseif ($item->pricing_mode === 'fixed') {
                 $lines[] = __('account.service_offers.price_breakdown.list_final', [
                     'name' => $listName,
-                    'amount' => $this->formatMoney($afterLine, $providerAccountId),
+                    'amount' => $this->formatMoney($afterLine, $operatorAccountId),
                     'currency' => $code,
                 ]);
             } elseif ($item->pricing_mode === 'percentage') {
@@ -84,20 +136,20 @@ final class OperatorVariantPriceResolver
                 $lines[] = __('account.service_offers.price_breakdown.list_with_effect', [
                     'name' => $listName,
                     'effect' => $effect,
-                    'amount' => $this->formatMoney($afterLine, $providerAccountId),
+                    'amount' => $this->formatMoney($afterLine, $operatorAccountId),
                     'currency' => $code,
                 ]);
             } else {
                 $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
 
-                return $this->pack(null, $code, $lines, $providerAccountId);
+                return $this->pack(null, $code, $lines, $providerAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
             }
         }
 
         if ($afterLine === null) {
             $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
 
-            return $this->pack(null, $code, $lines, $providerAccountId);
+            return $this->pack(null, $code, $lines, $providerAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
         }
 
         $final = $this->applyAssignmentAdjustment($afterLine, $assignment);
@@ -108,109 +160,38 @@ final class OperatorVariantPriceResolver
             $effect = $this->signedPercentLabel($adjVal);
             $lines[] = __('account.service_offers.price_breakdown.adjustment', [
                 'effect' => $effect,
-                'amount' => $this->formatMoney($final, $providerAccountId),
+                'amount' => $this->formatMoney($final, $operatorAccountId),
                 'currency' => $code,
             ]);
         } elseif ($adjType === 'fixed' && abs($adjVal) > 1.0e-9) {
             $effect = $this->signedNumberLabel($adjVal);
             $lines[] = __('account.service_offers.price_breakdown.adjustment', [
                 'effect' => $effect,
-                'amount' => $this->formatMoney($final, $providerAccountId),
+                'amount' => $this->formatMoney($final, $operatorAccountId),
                 'currency' => $code,
             ]);
         }
 
-        return $this->pack($final, $code, $lines, $providerAccountId);
+        return $this->pack($final, $code, $lines, $operatorAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
     }
 
     /**
-     * Operator price for a whole-service offer (no variant), from service-wide price list lines only.
-     *
-     * @return array{
-     *     amount: float|null,
-     *     has_amount: bool,
-     *     formatted: string,
-     *     breakdown_html: string
-     * }
+     * @param  array{amount?: float|null, has_amount?: bool}  $resolved
      */
-    public function resolveForService(
-        Service $service,
-        int $providerAccountId,
-        int $operatorAccountId,
-        ?CarbonInterface $pricingDate = null,
-    ): array {
-        $d = Carbon::parse($pricingDate ?? Carbon::today())->startOfDay();
-        $code = '—';
-        $lines = [];
-
-        $assignment = $this->findActiveAssignment($providerAccountId, $operatorAccountId, $d);
-        if ($assignment === null) {
-            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
-
-            return $this->pack(null, $code, $lines, $providerAccountId);
+    public function resolvedAmountIsZero(array $resolved): bool
+    {
+        if (! ($resolved['has_amount'] ?? false)) {
+            return false;
         }
 
-        $list = $assignment->priceList;
-        $item = $this->findPriceListItemForService($list->id, (int) $service->id);
-
-        if ($item === null) {
-            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
-
-            return $this->pack(null, $code, $lines, $providerAccountId);
-        }
-
-        $afterLine = $this->computeAfterListLine(null, $item);
-        if ($afterLine === null) {
-            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
-
-            return $this->pack(null, $code, $lines, $providerAccountId);
-        }
-
-        $listName = (string) $list->name;
-        if ($item->pricing_mode === 'fixed') {
-            $lines[] = __('account.service_offers.price_breakdown.list_final', [
-                'name' => $listName,
-                'amount' => $this->formatMoney($afterLine, $providerAccountId),
-                'currency' => $code,
-            ]);
-        } elseif ($item->pricing_mode === 'percentage') {
-            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
-
-            return $this->pack(null, $code, $lines, $providerAccountId);
-        } else {
-            $lines[] = __('account.service_offers.price_breakdown.cannot_compute');
-
-            return $this->pack(null, $code, $lines, $providerAccountId);
-        }
-
-        $final = $this->applyAssignmentAdjustment($afterLine, $assignment);
-        $adjType = (string) ($assignment->adjustment_type ?? 'none');
-        $adjVal = (float) ($assignment->adjustment_value ?? 0.0);
-
-        if ($adjType === 'percentage' && abs($adjVal) > 1.0e-9) {
-            $effect = $this->signedPercentLabel($adjVal);
-            $lines[] = __('account.service_offers.price_breakdown.adjustment', [
-                'effect' => $effect,
-                'amount' => $this->formatMoney($final, $providerAccountId),
-                'currency' => $code,
-            ]);
-        } elseif ($adjType === 'fixed' && abs($adjVal) > 1.0e-9) {
-            $effect = $this->signedNumberLabel($adjVal);
-            $lines[] = __('account.service_offers.price_breakdown.adjustment', [
-                'effect' => $effect,
-                'amount' => $this->formatMoney($final, $providerAccountId),
-                'currency' => $code,
-            ]);
-        }
-
-        return $this->pack($final, $code, $lines, $providerAccountId);
+        return abs((float) ($resolved['amount'] ?? 0.0)) < 1.0e-9;
     }
 
     /**
      * @param  list<string>  $lines
-     * @return array{amount: float|null, has_amount: bool, formatted: string, breakdown_html: string}
+     * @return array{amount: float|null, has_amount: bool, currency_code: string, currency_id: int|null, formatted: string, breakdown_html: string}
      */
-    private function pack(?float $amount, string $currencyCode, array $lines, ?int $accountId = null): array
+    private function pack(?float $amount, string $currencyCode, array $lines, ?int $accountId = null, ?int $currencyId = null): array
     {
         $has = $amount !== null;
         $html = '<div class="price-breakdown-popover text-start small lh-sm" style="max-width: 22rem;">';
@@ -222,6 +203,8 @@ final class OperatorVariantPriceResolver
         return [
             'amount' => $amount,
             'has_amount' => $has,
+            'currency_code' => $currencyCode,
+            'currency_id' => $currencyId,
             'formatted' => $has
                 ? $this->priceFormatService->formatWithCurrency((float) $amount, currencyCode: $currencyCode, accountId: $accountId)
                 : '—',
@@ -237,6 +220,20 @@ final class OperatorVariantPriceResolver
             }
 
             return $variant->currency->currency_code;
+        }
+
+        return '—';
+    }
+
+    /**
+     * ISO code for amounts resolved through an assigned provider price list.
+     */
+    private function listCurrencyCode(PriceList $list): string
+    {
+        $list->loadMissing('currency.lmpCurrency');
+
+        if ($list->currency) {
+            return $list->currency->currency_code;
         }
 
         return '—';
@@ -285,38 +282,35 @@ final class OperatorVariantPriceResolver
             return $base + ($base * ($L / 100.0));
         }
 
+        if ($item->pricing_mode === null || $item->pricing_mode === '') {
+            return $base;
+        }
+
         return null;
     }
 
-    /**
-     * Prefer a variant-specific line; otherwise use a service-wide line (all variants).
-     */
     private function findPriceListItemForVariant(int $priceListId, ServiceVariant $variant): ?PriceListItem
     {
-        $serviceId = (int) $variant->service_id;
-
         return PriceListItem::query()
             ->where('provider_price_list_id', $priceListId)
-            ->where(function ($q) use ($variant, $serviceId): void {
-                $q->where('service_variant_id', $variant->id)
-                    ->orWhere(function ($q2) use ($serviceId): void {
-                        $q2->whereNull('service_variant_id')
-                            ->where('service_id', $serviceId);
-                    });
-            })
-            ->orderByRaw('CASE WHEN service_variant_id IS NOT NULL THEN 1 ELSE 0 END DESC')
+            ->where('service_variant_id', $variant->id)
             ->orderByDesc('id')
             ->first();
     }
 
-    private function findPriceListItemForService(int $priceListId, int $serviceId): ?PriceListItem
-    {
-        return PriceListItem::query()
-            ->where('provider_price_list_id', $priceListId)
-            ->where('service_id', $serviceId)
-            ->whereNull('service_variant_id')
-            ->orderByDesc('id')
-            ->first();
+    /**
+     * Active provider→operator price list assignment for today (if any).
+     */
+    public function activeAssignment(
+        int $providerAccountId,
+        int $operatorAccountId,
+        ?\Carbon\CarbonInterface $pricingDate = null,
+    ): ?PriceListAssignment {
+        return $this->findActiveAssignment(
+            $providerAccountId,
+            $operatorAccountId,
+            Carbon::parse($pricingDate ?? Carbon::today())->startOfDay(),
+        );
     }
 
     private function applyAssignmentAdjustment(float $amount, PriceListAssignment $assignment): float
@@ -345,7 +339,7 @@ final class OperatorVariantPriceResolver
                             ->orWhereDate('valid_to', '>=', $d);
                     });
             })
-            ->with('priceList')
+            ->with(['priceList.currency.lmpCurrency'])
             ->orderByDesc('id')
             ->get();
 

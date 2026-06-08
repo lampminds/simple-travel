@@ -32,6 +32,8 @@ return new class extends Migration
             $table->foreign('language_id')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
             $table->text('description')->nullable();
+
+            $table->unique(['service_gastronomy_type_id', 'language_id'], 'cat_sgt_trans_lang_unique');
         });
     }
 

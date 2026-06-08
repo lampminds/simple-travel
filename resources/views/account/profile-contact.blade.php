@@ -23,7 +23,7 @@
                 <div class="col-lg-8">
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h5 class="card-title mb-3">{{ __('profile.contact_heading') }}</h5>
+                            <h5 class="card-title mb-3">{{ __('profile.contact_section_heading') }}</h5>
 
                             @if (! $profilePerson)
                                 <div class="alert alert-warning mb-0" role="alert">{{ __('profile.contact_person_missing') }}</div>

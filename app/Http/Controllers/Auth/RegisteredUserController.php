@@ -365,6 +365,9 @@ class RegisteredUserController extends Controller
         ]);
 
         $companyName = $request->string('company_name')->trim();
+        if ($companyName === '' && filled($invitation->company_name)) {
+            $companyName = trim((string) $invitation->company_name);
+        }
         $nick = $this->uniqueNickFromCompanyName($companyName);
         $companyTypeCategoryIds = collect($validated['company_types'])
             ->map(fn ($id): int => (int) $id)
@@ -458,6 +461,7 @@ class RegisteredUserController extends Controller
             AccountPerson::create([
                 'account_id' => $account->id,
                 'person_id' => $person->id,
+                'link_type' => AccountPerson::LINK_MEMBER,
                 'contact_department_id' => $contactDepartmentId,
                 'contact_position_id' => $contactPositionId,
                 'is_primary' => true,

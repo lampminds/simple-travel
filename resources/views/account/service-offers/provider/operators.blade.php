@@ -11,10 +11,10 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('account.service_offers.provider_operators_heading') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">{{ __('account.service_offers.provider_operators_intro') }}</p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('account.service_offers.provider_operators_heading')"
+                        :instructions="__('account.service_offers.provider_operators_intro')"
+                    />
                 </div>
             </div>
 
@@ -30,6 +30,8 @@
                                         <thead>
                                             <tr>
                                                 <th>{{ __('account.service_offers.provider_operators_col_operator') }}</th>
+                                                <th class="text-center">{{ __('account.service_offers.provider_operators_col_offered') }}</th>
+                                                <th class="text-center">{{ __('account.service_offers.provider_operators_col_accepted') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.provider_operators_col_action') }}</th>
                                             </tr>
                                         </thead>
@@ -46,6 +48,18 @@
                                                 @endphp
                                                 <tr>
                                                     <td class="fw-medium">{{ $label }}</td>
+                                                    <td class="text-center text-muted">
+                                                        {{ __('account.service_offers.provider_operators_counts_summary', [
+                                                            'services' => (int) ($relationship->offered_service_count ?? 0),
+                                                            'variants' => (int) ($relationship->offered_variant_count ?? 0),
+                                                        ]) }}
+                                                    </td>
+                                                    <td class="text-center text-muted">
+                                                        {{ __('account.service_offers.provider_operators_counts_summary', [
+                                                            'services' => (int) ($relationship->accepted_service_count ?? 0),
+                                                            'variants' => (int) ($relationship->accepted_variant_count ?? 0),
+                                                        ]) }}
+                                                    </td>
                                                     <td class="text-end">
                                                         <a href="{{ route('account.service-offers.operators.edit', $operator) }}" class="btn btn-sm btn-primary">
                                                             {{ __('account.relationships.actions.manage_offers') }}

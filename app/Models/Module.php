@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 
@@ -34,6 +35,19 @@ class Module extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(ModuleTranslation::class);
+    }
+
+    /**
+     * Account business types that may use this module ({@see AccountType}, pivot module_account_types).
+     */
+    public function accountTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            AccountType::class,
+            'module_account_types',
+            'module_id',
+            'account_type_id',
+        );
     }
 
     protected function getTranslationForDisplay(): ?ModuleTranslation

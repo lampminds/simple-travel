@@ -20,13 +20,22 @@
         <ul class="nav nav-tabs flex-wrap gap-1 gap-md-0 mb-3" role="tablist">
             @foreach ($visibilityTabs as $tab)
                 <li class="nav-item" role="presentation">
-                    <button
-                        type="button"
-                        class="nav-link @if ($activeVisibilityTab === $tab) active @endif"
+                    <span
+                        role="tab"
+                        tabindex="0"
+                        class="nav-link d-inline-flex align-items-center gap-1 @if ($activeVisibilityTab === $tab) active @endif"
                         wire:click="setVisibilityTab('{{ $tab }}')"
+                        wire:keydown.enter="setVisibilityTab('{{ $tab }}')"
                     >
                         {{ __('filament.resources.service_detail_topic_visibility.'.$tab) }}
-                    </button>
+                        <x-catalog-helper-icon
+                            :html="$catalogVisibilityTabHelpHtml[$tab] ?? null"
+                            trigger-id="step6-catalog-helper-{{ $tab }}"
+                            content-id="step6-catalog-helper-{{ $tab }}-html"
+                            :aria-label="__('wizard.catalog_helper.aria_label_step6_visibility', ['visibility' => __('filament.resources.service_detail_topic_visibility.'.$tab)])"
+                            onclick="event.stopPropagation();"
+                        />
+                    </span>
                 </li>
             @endforeach
         </ul>
@@ -65,7 +74,6 @@
                                 <th scope="col" class="text-center text-nowrap" style="width: 1%;">{{ __('wizard.step6_col_order') }}</th>
                                 <th scope="col">{{ __('wizard.step6_col_category') }}</th>
                                 <th scope="col">{{ __('wizard.step6_col_topic') }}</th>
-                                <th scope="col">{{ __('wizard.step6_col_condition_key') }}</th>
                                 <th scope="col" class="text-center">{{ __('wizard.step6_col_mandatory') }}</th>
                                 <th scope="col">{{ __('wizard.step6_col_excerpt') }}</th>
                                 <th scope="col" class="text-center">{{ __('wizard.step6_col_active') }}</th>
@@ -78,7 +86,6 @@
                                     $line = $lines[$index];
                                     $cat = $categories->firstWhere('id', (int) ($line['category_id'] ?? 0));
                                     $topic = $topicsById->get((int) ($line['topic_id'] ?? 0));
-                                    $conditionKey = $conditionKeysById->get((int) ($line['condition_key_id'] ?? 0));
                                 @endphp
                                 <tr wire:key="service-detail-line-{{ $activeVisibilityTab }}-{{ $index }}">
                                     <td class="text-center text-nowrap">
@@ -101,7 +108,6 @@
                                     </td>
                                     <td>{{ $cat ? ($cat->name ?: $cat->code) : '—' }}</td>
                                     <td>{{ $topic ? ($topic->name ?: $topic->code) : '—' }}</td>
-                                    <td class="small font-monospace">{{ $conditionKey?->code ?? '—' }}</td>
                                     <td class="text-center">
                                         @if ($line['is_mandatory'] ?? false)
                                             <span class="badge text-bg-warning">{{ __('wizard.step6_mandatory_yes') }}</span>
@@ -235,36 +241,26 @@
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                <div class="col-md-8">
-                                    <label class="form-label" for="modal-detail-condition-key">{{ __('wizard.step6_condition_key') }}</label>
-                                    <select
-                                        id="modal-detail-condition-key"
-                                        class="form-select @error('modalLine.condition_key_id') is-invalid @enderror"
-                                        wire:model="modalLine.condition_key_id"
-                                    >
-                                        <option value="">{{ __('wizard.step6_select_condition_key') }}</option>
-                                        @foreach ($conditionKeysByCategory as $category => $keys)
-                                            <optgroup label="{{ $this->conditionKeyCategoryLabel($category) }}">
-                                                @foreach ($keys as $key)
-                                                    <option value="{{ $key->id }}">{{ $key->code }}</option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
-                                    </select>
-                                    @error('modalLine.condition_key_id')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-4 d-flex align-items-end">
-                                    <div class="form-check form-switch mb-2">
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            role="switch"
-                                            id="modal-detail-mandatory"
-                                            wire:model="modalLine.is_mandatory"
-                                        >
-                                        <label class="form-check-label" for="modal-detail-mandatory">{{ __('wizard.step6_is_mandatory') }}</label>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="d-flex align-items-center gap-2 w-100 mb-2">
+                                        <div class="form-check form-switch mb-0">
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                role="switch"
+                                                id="modal-detail-mandatory"
+                                                wire:model="modalLine.is_mandatory"
+                                            >
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                                            <label class="form-check-label mb-0" for="modal-detail-mandatory">{{ __('wizard.step6_is_mandatory') }}</label>
+                                            <x-catalog-helper-icon
+                                                :html="$catalogMandatoryHelpHtml"
+                                                trigger-id="step6-catalog-helper-is-mandatory"
+                                                content-id="step6-catalog-helper-is-mandatory-html"
+                                                :aria-label="__('wizard.catalog_helper.aria_label_step2_field', ['field' => __('wizard.step6_is_mandatory')])"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-12">

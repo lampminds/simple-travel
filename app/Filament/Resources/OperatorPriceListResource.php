@@ -182,11 +182,11 @@ class OperatorPriceListResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('valid_from')
                     ->label(__('filament.resources.operator_price_list_columns.valid_from'))
-                    ->date()
+                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
                     ->sortable(),
                 TextColumn::make('valid_to')
                     ->label(__('filament.resources.operator_price_list_columns.valid_to'))
-                    ->date()
+                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->label(__('filament.resources.operator_price_list_columns.is_active'))

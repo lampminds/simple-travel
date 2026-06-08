@@ -67,6 +67,54 @@ class TodoTaskTranslationsTableSeeder extends Seeder
                 'name' => 'Crear el primer servicio',
                 'description' => NULL,
             ),
+            6 => 
+            array (
+                'id' => 20,
+                'todo_task_id' => 7,
+                'language_id' => 2,
+                'name' => 'Completar el perfil de la empresa',
+                'description' => NULL,
+            ),
+            7 => 
+            array (
+                'id' => 21,
+                'todo_task_id' => 8,
+                'language_id' => 2,
+                'name' => 'Completar el perfil de usuario',
+                'description' => NULL,
+            ),
+            8 => 
+            array (
+                'id' => 22,
+                'todo_task_id' => 9,
+                'language_id' => 2,
+                'name' => 'Crear el primer servicio',
+                'description' => NULL,
+            ),
+            9 => 
+            array (
+                'id' => 23,
+                'todo_task_id' => 10,
+                'language_id' => 2,
+                'name' => 'Cargar imágenes',
+                'description' => NULL,
+            ),
+            10 => 
+            array (
+                'id' => 24,
+                'todo_task_id' => 11,
+                'language_id' => 2,
+                'name' => 'Agregar disponibilidad',
+                'description' => NULL,
+            ),
+            11 => 
+            array (
+                'id' => 25,
+                'todo_task_id' => 12,
+                'language_id' => 2,
+                'name' => 'Establecer precios',
+                'description' => NULL,
+            ),
         ));
         
         

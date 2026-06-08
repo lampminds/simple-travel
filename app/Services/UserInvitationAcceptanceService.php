@@ -58,7 +58,7 @@ final class UserInvitationAcceptanceService
             return false;
         }
 
-        $providerAccountId = $this->resolveProviderAccountId($user);
+        $providerAccountId = $this->resolveProviderAccountId($user, $invitation);
         if ($providerAccountId === null) {
             return false;
         }
@@ -91,23 +91,42 @@ final class UserInvitationAcceptanceService
         return true;
     }
 
-    private function resolveProviderAccountId(User $user): ?int
+    private function accountCanReceiveExternalInvitation(Account $account): bool
     {
+        return $account->accountTypes()
+            ->where('cat_account_types.active', true)
+            ->whereIn('cat_account_types.code', ['provider', 'agency'])
+            ->exists();
+    }
+
+    private function resolveProviderAccountId(User $user, ?UserInvitation $invitation = null): ?int
+    {
+        if ($invitation !== null && $invitation->invited_account_id !== null) {
+            $targetId = (int) $invitation->invited_account_id;
+            if ($user->belongsToAccount($targetId)) {
+                return $targetId;
+            }
+
+            return null;
+        }
+
         $currentAccount = $user->currentAccount();
-        if ($currentAccount && $currentAccount->accountTypes()->where('cat_account_types.code', 'provider')->where('cat_account_types.active', true)->exists()) {
+        if ($currentAccount && $this->accountCanReceiveExternalInvitation($currentAccount)) {
             return (int) $currentAccount->id;
         }
 
-        $providerAccountId = Account::query()
+        $invitedAccountId = Account::query()
             ->whereIn('id', $user->accounts()->pluck('accounts.id'))
             ->whereHas(
                 'accountTypes',
-                fn ($query) => $query->where('cat_account_types.code', 'provider')->where('cat_account_types.active', true)
+                fn ($query) => $query
+                    ->whereIn('cat_account_types.code', ['provider', 'agency'])
+                    ->where('cat_account_types.active', true)
             )
             ->orderBy('id')
             ->value('id');
 
-        return $providerAccountId !== null ? (int) $providerAccountId : null;
+        return $invitedAccountId !== null ? (int) $invitedAccountId : null;
     }
 }
 

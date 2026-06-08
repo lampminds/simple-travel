@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AccountPerson;
+use App\Models\CatGender;
 use App\Models\ContactDepartment;
 use App\Models\ContactPosition;
 use App\Models\ContactType;
+use App\Models\LmpCountry;
 use App\Models\Person;
 use App\Models\PersonContactMethod;
 use App\Models\TodoTask;
@@ -55,6 +57,13 @@ class ProfileController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get(),
+            'genders' => CatGender::query()
+                ->with(['translations.language'])
+                ->where('active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(),
+            'countries' => LmpCountry::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -264,6 +273,12 @@ class ProfileController extends Controller
 
         $validated = $request->validateWithBag('profile', [
             'name' => ['required', 'string', 'max:255'],
+            'given_name' => ['nullable', 'string', 'max:255'],
+            'family_name' => ['nullable', 'string', 'max:255'],
+            'document_name' => ['nullable', 'string', 'max:255'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
+            'gender_id' => ['nullable', 'integer', 'exists:cat_genders,id'],
+            'nationality_id' => ['nullable', 'integer', Rule::exists(LmpCountry::class, 'id')],
             'contact_department_id' => ['required', 'integer', 'exists:cat_contact_departments,id'],
             'contact_position_id' => ['required', 'integer', 'exists:cat_contact_positions,id'],
             'is_public_contact' => ['nullable', 'boolean'],
@@ -272,6 +287,12 @@ class ProfileController extends Controller
 
         $person->update([
             'name' => $validated['name'],
+            'given_name' => $validated['given_name'] ?? null,
+            'family_name' => $validated['family_name'] ?? null,
+            'document_name' => $validated['document_name'] ?? null,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'gender_id' => $validated['gender_id'] ?? null,
+            'nationality_id' => $validated['nationality_id'] ?? null,
         ]);
         $accountPerson->update([
             'contact_department_id' => (int) $validated['contact_department_id'],
@@ -358,6 +379,7 @@ class ProfileController extends Controller
         if ($currentAccountId !== null) {
             $accountPerson = AccountPerson::query()
                 ->where('account_id', $currentAccountId)
+                ->members()
                 ->whereIn('person_id', $personIds->all())
                 ->orderByDesc('is_primary')
                 ->orderBy('id')
@@ -383,6 +405,7 @@ class ProfileController extends Controller
 
         return $person->accountPersons()
             ->where('account_id', $currentAccountId)
+            ->members()
             ->orderByDesc('is_primary')
             ->orderBy('id')
             ->first();

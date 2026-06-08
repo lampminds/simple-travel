@@ -9,7 +9,7 @@ use App\Models\ServiceOffer;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Accepted, active service and variant offers an operator may add to commercial packages.
+ * Accepted, active variant offers an operator may add to commercial packages.
  */
 final class OperatorPackageOfferCatalog
 {
@@ -36,7 +36,7 @@ final class OperatorPackageOfferCatalog
      * @return list<array{
      *     offer_id: int,
      *     service_id: int,
-     *     service_variant_id: int|null,
+     *     service_variant_id: int,
      *     label: string
      * }>
      */
@@ -45,11 +45,9 @@ final class OperatorPackageOfferCatalog
         $offers = $this->eligibleOffersQuery($operatorAccountId)
             ->where('provider_id', $providerAccountId)
             ->with([
-                'service.translations.language.locale',
                 'serviceVariant.service.translations.language.locale',
                 'serviceVariant.translations.language.locale',
             ])
-            ->orderBy('service_id')
             ->orderBy('service_variant_id')
             ->get();
 
@@ -60,15 +58,17 @@ final class OperatorPackageOfferCatalog
                 continue;
             }
 
-            $serviceId = (int) ($offer->service_id ?? $offer->serviceVariant?->service_id ?? 0);
-            if ($serviceId < 1) {
+            $variant = $offer->serviceVariant;
+            $serviceId = (int) ($variant?->service_id ?? 0);
+            $variantId = (int) ($offer->service_variant_id ?? 0);
+            if ($serviceId < 1 || $variantId < 1) {
                 continue;
             }
 
             $out[] = [
                 'offer_id' => (int) $offer->id,
                 'service_id' => $serviceId,
-                'service_variant_id' => $offer->service_variant_id !== null ? (int) $offer->service_variant_id : null,
+                'service_variant_id' => $variantId,
                 'label' => $label,
             ];
         }
@@ -79,7 +79,7 @@ final class OperatorPackageOfferCatalog
     /**
      * @return array{
      *     providers: array<int, string>,
-     *     offersByProvider: array<int, list<array{offer_id: int, service_id: int, service_variant_id: int|null, label: string}>>
+     *     offersByProvider: array<int, list<array{offer_id: int, service_id: int, service_variant_id: int, label: string}>>
      * }
      */
     public function catalogPayloadForOperator(int $operatorAccountId): array
@@ -109,32 +109,11 @@ final class OperatorPackageOfferCatalog
             ->where('operator_id', $operatorAccountId)
             ->where('status', ServiceOffer::STATUS_ACCEPTED)
             ->where('availability', ServiceOffer::AVAILABILITY_ACTIVE)
-            ->where(function (Builder $q): void {
-                $q->where(function (Builder $q2): void {
-                    $q2->whereNotNull('service_variant_id')->whereHas('serviceVariant');
-                })->orWhere(function (Builder $q2): void {
-                    $q2->whereNotNull('service_id')
-                        ->whereNull('service_variant_id')
-                        ->whereHas('service');
-                });
-            });
+            ->whereHas('serviceVariant');
     }
 
     private function labelForOffer(ServiceOffer $offer): ?string
     {
-        if ($offer->targetsWholeService()) {
-            $service = $offer->service;
-            if ($service === null) {
-                return null;
-            }
-            $serviceName = trim((string) ($service->name ?? ''));
-            if ($serviceName === '') {
-                $serviceName = '#'.$service->id;
-            }
-
-            return $serviceName.' — '.__('account.service_offers.whole_service_label');
-        }
-
         $variant = $offer->serviceVariant;
         $service = $variant?->service;
         if ($variant === null || $service === null) {

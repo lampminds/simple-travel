@@ -17,8 +17,11 @@ class ServiceDetailTopic extends Model
         'code',
         'service_detail_topic_category_id',
         'visibility',
+        'scope',
         'sort_order',
         'active',
+        'condition_key_id',
+        'operator_override_mode',
     ];
 
     protected $casts = [
@@ -31,9 +34,14 @@ class ServiceDetailTopic extends Model
         return $this->belongsTo(ServiceDetailTopicCategory::class, 'service_detail_topic_category_id');
     }
 
+    public function conditionKey(): BelongsTo
+    {
+        return $this->belongsTo(ServiceDetailConditionKey::class, 'condition_key_id');
+    }
+
     public function translations(): HasMany
     {
-        return $this->hasMany(ServiceDetailTopicTranslation::class);
+        return $this->hasMany(ServiceDetailTopicTranslation::class, 'service_detail_topic_id');
     }
 
     public function serviceDetails(): HasMany

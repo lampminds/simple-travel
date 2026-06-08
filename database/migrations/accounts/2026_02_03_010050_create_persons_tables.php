@@ -15,18 +15,31 @@ return new class extends Migration
     {
         Schema::create('persons', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('name');
+            $table->string('given_name')->nullable()->comment('Optional, for legacy systems');
+            $table->string('family_name')->nullable()->comment('Optional, for legacy systems');
+            $table->string('document_name')->nullable()->comment('As shown in documents');
+
+            $table->unsignedBigInteger('nationality_id')->nullable(); // refers to lmp_countries
+            $table->date('date_of_birth')->nullable();
+            $table->foreignId('gender_id')->nullable()->constrained('cat_genders');
 
             lmpStamps($table);
         });
 
         Schema::create('account_person', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('person_id')->constrained('persons')->cascadeOnDelete();
 
-            $table->foreignId('contact_department_id')->constrained('cat_contact_departments');
-            $table->foreignId('contact_position_id')->constrained('cat_contact_positions');
+            $table->enum('link_type', ['member', 'client'])
+                ->default('member')
+                ->comment('member = staff/contact; client = account-managed customer person');
+
+            $table->foreignId('contact_department_id')->nullable()->constrained('cat_contact_departments');
+            $table->foreignId('contact_position_id')->nullable()->constrained('cat_contact_positions');
 
             $table->boolean('is_primary')->default(false);
             $table->boolean('is_active')->default(true);
@@ -34,6 +47,8 @@ return new class extends Migration
             $table->boolean('is_preferred_contact_mode')->default(false);
 
             lmpStamps($table);
+
+            $table->unique(['account_id', 'person_id', 'link_type'], 'account_person_unique');
         });
 
         Schema::create('account_contact_links', function (Blueprint $table) {
@@ -46,6 +61,7 @@ return new class extends Migration
 
             lmpStamps($table);
 
+            $table->unique(['account_id', 'person_id', 'source_account_id'], 'account_contact_links_unique');
         });
 
         Schema::create('user_person', function (Blueprint $table) {
@@ -54,6 +70,8 @@ return new class extends Migration
             $table->foreignId('person_id')->constrained('persons')->cascadeOnDelete();
 
             lmpStamps($table);
+
+            $table->unique(['user_id', 'person_id']);
         });
 
         Schema::create('person_contact_methods', function (Blueprint $table) {
@@ -65,6 +83,8 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false);
 
             lmpStamps($table);
+
+            $table->unique(['person_id', 'contact_type_id', 'value'], 'person_contact_methods_unique');
         });
     }
 

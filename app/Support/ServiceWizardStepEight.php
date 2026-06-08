@@ -16,4 +16,10 @@ final class ServiceWizardStepEight
 
         return $code !== '' && in_array($code, self::SERVICE_TYPE_CODES, true);
     }
+
+    /** Catalog URL scrolled to the provider services list (wizard step 8 completion). */
+    public static function catalogServicesListUrl(): string
+    {
+        return route('catalog').'#provider-services-list';
+    }
 }

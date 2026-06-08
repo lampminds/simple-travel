@@ -151,7 +151,7 @@
                         <h5 class="mb-4 mt-5 mt-md-0">Resources</h5>
                         <ul class="list-unstyled">
                             <li class="my-3"><a href="#" class="text-muted">Blog</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">FAQ</a></li>
+                            <li class="my-3"><a href="{{ route('pages.faq') }}" class="text-muted">{{ __('faq.nav') }}</a></li>
                             <li class="my-3"><a href="#" class="text-muted">Team of service</a></li>
                             <li class="my-3"><a href="#" class="text-muted">Privacy policy</a></li>
                         </ul>

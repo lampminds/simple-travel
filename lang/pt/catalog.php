@@ -4,6 +4,8 @@ return [
     'title' => 'Catálogo',
     'filter_by_type' => 'Filtrar por tipo',
     'filter_type_all' => 'Todos os tipos',
+    'filter_by_status' => 'Filtrar por estado',
+    'filter_status_default' => 'Todos (exceto dado de baixa)',
     'provider_intro' => 'Serviços definidos para a sua conta de prestador.',
     'agency_intro' => 'Serviços da sua conta de agência. O pedido de acesso ao catálogo de prestadores convidados será acrescentado em seguida.',
     'operator_intro' => 'Os seus serviços e variantes aceites de prestadores ligados aparecem abaixo.',

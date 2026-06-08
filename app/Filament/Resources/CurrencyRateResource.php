@@ -68,7 +68,7 @@ class CurrencyRateResource extends BaseResource
         $record->loadMissing('currency.lmpCurrency', 'account');
 
         $label = $record->currency?->display_name ?? '#'.$record->currency_id;
-        $when = $record->starting_at?->format('Y-m-d') ?? '';
+        $when = $record->starting_at ? locale_date($record->starting_at) : '';
         $scope = $record->isSystemRate()
             ? __('filament.resources.currency_rate_scope.system')
             : ($record->account?->commercial_name ?? $record->account?->name ?? '#'.$record->account_id);
@@ -312,7 +312,7 @@ class CurrencyRateResource extends BaseResource
                     ->alignEnd(),
                 TextColumn::make('starting_at')
                     ->label(__('filament.resources.currency_rate_columns.starting_at'))
-                    ->date()
+                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->label(__('filament.resources.currency_rate_columns.is_active'))

@@ -16,6 +16,14 @@
 
             <x-panel-account-summary :stats="$panelStats" class="mt-4" />
 
+            @include('dashboard.partials.currency-rates-chart-section')
+
+            <div class="mt-4 d-flex flex-wrap gap-2">
+                <a href="{{ route('account.package-offers.index') }}" class="btn btn-outline-primary">
+                    {{ __('account.package_offers_nav') }}
+                </a>
+            </div>
+
             @if (auth()->user()?->shouldShowBackToAccountDashboard())
                 <a href="{{ route('account.dashboard') }}" class="btn btn-outline-secondary mt-4">
                     {{ __('catalog.back_dashboard') }}
@@ -25,4 +33,8 @@
     </section>
 
     <x-site-footer-simple />
+@endsection
+
+@section('script-bottom')
+    @vite('resources/js/operator-currency-rates-chart.js')
 @endsection

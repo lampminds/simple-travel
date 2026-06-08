@@ -103,6 +103,27 @@ class CatParameterOptionsTableSeeder extends Seeder
                 'value' => ',',
                 'sort_order' => 0,
             ),
+            12 => 
+            array (
+                'id' => 36,
+                'parameter_definition_id' => 7,
+                'value' => '1',
+                'sort_order' => 10,
+            ),
+            13 => 
+            array (
+                'id' => 37,
+                'parameter_definition_id' => 7,
+                'value' => '2',
+                'sort_order' => 20,
+            ),
+            14 => 
+            array (
+                'id' => 38,
+                'parameter_definition_id' => 7,
+                'value' => '3',
+                'sort_order' => 30,
+            ),
         ));
         
         

@@ -37,12 +37,10 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('exchange_rates.page_title') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">
-                            {{ $canEdit ? __('exchange_rates.intro') : __('exchange_rates.intro_readonly') }}
-                        </p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('exchange_rates.page_title')"
+                        :instructions="$canEdit ? __('exchange_rates.intro') : __('exchange_rates.intro_readonly')"
+                    />
                 </div>
             </div>
 
@@ -117,7 +115,7 @@
                 <div class="card border-0 shadow-sm exchange-rates-panel">
                     <div class="card-header bg-transparent border-bottom py-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
                         <h2 class="h6 mb-0 fw-semibold">
-                            {{ __('exchange_rates.tenant_heading', ['date' => $rateDay->translatedFormat('d M Y')]) }}
+                            {{ __('exchange_rates.tenant_heading', ['date' => locale_date($rateDay)]) }}
                         </h2>
                         @if ($canEdit)
                             <a

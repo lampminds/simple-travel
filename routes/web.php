@@ -27,6 +27,11 @@ use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AccountOperatorServiceOfferController;
 use App\Http\Controllers\AccountProviderServiceOfferController;
 use App\Http\Controllers\AccountServiceOfferHubController;
+use App\Http\Controllers\AccountPackageOfferHubController;
+use App\Http\Controllers\AccountOperatorPackageOfferController;
+use App\Http\Controllers\AccountAgencyPackageOfferController;
+use App\Http\Controllers\AccountProviderAllocationController;
+use App\Http\Controllers\AccountAgencyClientsController;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use App\Http\Controllers\WelcomeCompanyController;
@@ -107,6 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/company', [AccountCompanyController::class, 'edit'])->name('account.company.edit');
     Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
+    Route::get('account/cities/search', [AccountCompanyController::class, 'searchCities'])->name('account.cities.search');
     Route::get('account/tasks', [AccountTasksController::class, 'index'])->name('account.tasks.index');
     Route::get('account/notifications', [AccountNotificationsController::class, 'index'])->name('account.notifications.index');
     Route::post('account/notifications', [AccountNotificationsController::class, 'store'])->name('account.notifications.store');
@@ -114,6 +120,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.notifications.read');
 
     Route::get('account/relationships', [AccountRelationshipController::class, 'index'])->name('account.relationships.index');
+
+    Route::get('account/clients', [AccountAgencyClientsController::class, 'index'])->name('account.clients.index');
+    Route::get('account/clients/persons/create', [AccountAgencyClientsController::class, 'createPerson'])->name('account.clients.persons.create');
+    Route::post('account/clients/persons', [AccountAgencyClientsController::class, 'storePerson'])->name('account.clients.persons.store');
+    Route::get('account/clients/persons/{person}/edit', [AccountAgencyClientsController::class, 'editPerson'])->name('account.clients.persons.edit');
+    Route::put('account/clients/persons/{person}', [AccountAgencyClientsController::class, 'updatePerson'])->name('account.clients.persons.update');
+    Route::delete('account/clients/persons/{person}', [AccountAgencyClientsController::class, 'destroyPerson'])->name('account.clients.persons.destroy');
+    Route::get('account/clients/organizations/create', [AccountAgencyClientsController::class, 'createOrganization'])->name('account.clients.organizations.create');
+    Route::post('account/clients/organizations', [AccountAgencyClientsController::class, 'storeOrganization'])->name('account.clients.organizations.store');
+    Route::get('account/clients/organizations/{organization}/edit', [AccountAgencyClientsController::class, 'editOrganization'])->name('account.clients.organizations.edit');
+    Route::put('account/clients/organizations/{organization}', [AccountAgencyClientsController::class, 'updateOrganization'])->name('account.clients.organizations.update');
+    Route::delete('account/clients/organizations/{organization}', [AccountAgencyClientsController::class, 'destroyOrganization'])->name('account.clients.organizations.destroy');
+
+    Route::post('account/relationships/incoming/{invitation}/accept', [AccountRelationshipController::class, 'acceptIncomingInvitation'])
+        ->name('account.relationships.incoming.accept');
+    Route::post('account/relationships/incoming/{invitation}/decline', [AccountRelationshipController::class, 'declineIncomingInvitation'])
+        ->name('account.relationships.incoming.decline');
 
     Route::get('account/contacts', [AccountContactsController::class, 'index'])->name('account.contacts.index');
     Route::get('account/contacts/{accountPerson}', [AccountContactsController::class, 'show'])->name('account.contacts.show');
@@ -126,7 +149,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.service-offers.operators.edit');
     Route::put('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'update'])
         ->name('account.service-offers.operators.update');
+    Route::post('account/service-offers/operators/{operator}/offers/{offer}/revoke', [AccountProviderServiceOfferController::class, 'revoke'])
+        ->name('account.service-offers.operators.revoke');
 
+    Route::get('account/service-offers/{offer}/preview.pdf', [AccountOperatorServiceOfferController::class, 'previewPdf'])
+        ->name('account.service-offers.preview-pdf');
     Route::post('account/service-offers/{offer}/accept', [AccountOperatorServiceOfferController::class, 'accept'])
         ->name('account.service-offers.accept');
     Route::post('account/service-offers/{offer}/reject', [AccountOperatorServiceOfferController::class, 'reject'])
@@ -147,6 +174,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/operator/service-offers/{offer}/accept', [AccountOperatorServiceOfferController::class, 'accept']);
     Route::post('account/operator/service-offers/{offer}/reject', [AccountOperatorServiceOfferController::class, 'reject']);
     Route::post('account/operator/service-offers/{offer}/availability', [AccountOperatorServiceOfferController::class, 'updateLinkedAvailability']);
+
+    Route::get('account/package-offers', [AccountPackageOfferHubController::class, 'index'])
+        ->name('account.package-offers.index');
+    Route::get('account/package-offers/agencies/{agency}', [AccountOperatorPackageOfferController::class, 'edit'])
+        ->name('account.package-offers.agencies.edit');
+    Route::put('account/package-offers/agencies/{agency}', [AccountOperatorPackageOfferController::class, 'update'])
+        ->name('account.package-offers.agencies.update');
+    Route::post('account/package-offers/agencies/{agency}/offers/{offer}/revoke', [AccountOperatorPackageOfferController::class, 'revoke'])
+        ->name('account.package-offers.agencies.revoke');
+    Route::get('account/package-offers/{offer}/preview.pdf', [AccountAgencyPackageOfferController::class, 'previewPdf'])
+        ->name('account.package-offers.preview-pdf');
+    Route::post('account/package-offers/{offer}/accept', [AccountAgencyPackageOfferController::class, 'accept'])
+        ->name('account.package-offers.accept');
+    Route::post('account/package-offers/{offer}/reject', [AccountAgencyPackageOfferController::class, 'reject'])
+        ->name('account.package-offers.reject');
+
     Route::permanentRedirect('account/price-lists', '/account/provider-price-lists');
     Route::permanentRedirect('account/price-lists/{tail}', '/account/provider-price-lists/{tail}')->where('tail', '.*');
 
@@ -160,6 +203,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/provider-price-lists/{priceList}/edit', [AccountProviderPriceListController::class, 'edit'])->name('account.provider-price-lists.edit');
     Route::put('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'update'])->name('account.provider-price-lists.update');
     Route::delete('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'destroy'])->name('account.provider-price-lists.destroy');
+
+    Route::get('account/allocations', [AccountProviderAllocationController::class, 'operatorsIndex'])->name('account.allocations.index');
+    Route::get('account/allocations/operators/{operator}', [AccountProviderAllocationController::class, 'index'])->name('account.allocations.operators.index');
+    Route::get('account/allocations/operators/{operator}/create', [AccountProviderAllocationController::class, 'create'])->name('account.allocations.operators.create');
+    Route::post('account/allocations/operators/{operator}', [AccountProviderAllocationController::class, 'store'])->name('account.allocations.operators.store');
+    Route::get('account/allocations/{allocation}/edit', [AccountProviderAllocationController::class, 'edit'])->name('account.allocations.edit');
+    Route::put('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'update'])->name('account.allocations.update');
+    Route::delete('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'destroy'])->name('account.allocations.destroy');
 
     Route::get('account/operator-price-lists', [AccountOperatorPriceListController::class, 'index'])->name('account.operator-price-lists.index');
     Route::get('account/operator-price-lists/create', [AccountOperatorPriceListController::class, 'create'])->name('account.operator-price-lists.create');
@@ -180,6 +231,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/operator-packages/translate-translations', [AccountOperatorPackageController::class, 'translateTranslations'])
         ->name('account.operator-packages.translate-translations');
     Route::get('account/operator-packages/offers', [AccountOperatorPackageController::class, 'offers'])->name('account.operator-packages.offers');
+    Route::get('account/operator-packages/item-conditions', [AccountOperatorPackageController::class, 'itemConditions'])
+        ->name('account.operator-packages.item-conditions');
     Route::get('account/operator-packages/{operatorPackage}/edit', [AccountOperatorPackageController::class, 'edit'])->name('account.operator-packages.edit');
     Route::put('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'update'])->name('account.operator-packages.update');
     Route::delete('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'destroy'])->name('account.operator-packages.destroy');
@@ -196,10 +249,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.transfer-vehicle-types.edit');
     Route::put('account/transfer-vehicle-types/{transfer_vehicle_type}', [AccountTransferVehicleTypesController::class, 'update'])
         ->name('account.transfer-vehicle-types.update');
+    Route::patch('account/transfer-vehicle-types/{transfer_vehicle_type}/move/{direction}', [AccountTransferVehicleTypesController::class, 'move'])
+        ->where('direction', 'up|down')
+        ->name('account.transfer-vehicle-types.move');
     Route::delete('account/transfer-vehicle-types/{transfer_vehicle_type}', [AccountTransferVehicleTypesController::class, 'destroy'])
         ->name('account.transfer-vehicle-types.destroy');
 
     Route::get('relationships', fn () => redirect()->route('account.relationships.index'))->name('relationships');
+    Route::get('clients', fn () => redirect()->route('account.clients.index'))->name('clients');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
     // Account dashboards by account category (must be protected against public catch-alls).
@@ -231,6 +288,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('dashboard', [AgencyDashboardController::class, 'show'])
                 ->defaults('menu_type_id', AccountTypeCategoryIds::AGENCY)
                 ->name('dashboard');
+            Route::get('clients', fn () => redirect()->route('account.clients.index'))
+                ->defaults('menu_type_id', AccountTypeCategoryIds::AGENCY)
+                ->name('clients');
+            Route::get('relationships', fn () => redirect()->route('account.relationships.index', ['as' => 'agency']))
+                ->defaults('menu_type_id', AccountTypeCategoryIds::AGENCY)
+                ->name('relationships');
         });
 
     // Service wizard step 1 (create or edit).
@@ -277,6 +340,9 @@ Route::post('contactus', DemoContactFormController::class)->name('site.demo.cont
 
 // Pricing page (dynamic plans from database; must be before catch-all)
 Route::get('pages/pricing', App\Http\Controllers\PricingController::class)->name('pages.pricing');
+Route::get('pages/faq', App\Http\Controllers\FaqPageController::class)->name('pages.faq');
+
+Route::get('api/faqs', [App\Http\Controllers\CatFaqController::class, 'index'])->name('api.faqs.index');
 
 // Digitalizar operador turístico comparison page
 Route::get('pages/digitalizar-operador-turistico', App\Http\Controllers\DigitalizarOperadorController::class)->name('pages.digitalizar-operador-turistico');

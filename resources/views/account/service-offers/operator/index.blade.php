@@ -11,10 +11,26 @@
 
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="page-title">
-                        <h3 class="my-0">{{ __('account.service_offers.operator_index_heading') }}</h3>
-                        <p class="mt-1 fw-medium text-muted mb-0">{{ __('account.service_offers.operator_index_intro') }}</p>
-                    </div>
+                    <x-account-page-header
+                        :title="__('account.service_offers.operator_index_heading')"
+                        :instructions="__('account.service_offers.operator_index_intro')"
+                    />
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-lg-12">
+                    <form method="get" action="{{ route('account.service-offers.index') }}" class="d-flex flex-wrap align-items-end gap-2 mb-0">
+                        <input type="hidden" name="as" value="operator">
+                        <div>
+                            <label for="offer_status" class="form-label small mb-1">{{ __('account.service_offers.operator_index_filter_label') }}</label>
+                            <select name="status" id="offer_status" class="form-select form-select-sm" style="min-width: 14rem;" onchange="this.form.submit()">
+                                @foreach ($statusFilterOptions as $value => $label)
+                                    <option value="{{ $value }}" @selected($statusFilter === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -23,7 +39,15 @@
                     <div class="card">
                         <div class="card-body">
                             @if ($offers->isEmpty())
-                                <p class="text-muted mb-0">{{ __('account.service_offers.operator_index_empty') }}</p>
+                                <p class="text-muted mb-0">
+                                    @if ($statusFilter === 'accepted')
+                                        {{ __('account.service_offers.operator_index_empty_accepted') }}
+                                    @elseif ($statusFilter === 'all')
+                                        {{ __('account.service_offers.operator_index_empty_all') }}
+                                    @else
+                                        {{ __('account.service_offers.operator_index_empty_pending') }}
+                                    @endif
+                                </p>
                             @else
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
@@ -31,7 +55,8 @@
                                             <tr>
                                                 <th>{{ __('account.service_offers.operator_index_col_provider') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_service') }}</th>
-                                                <th>{{ __('account.service_offers.operator_index_col_variant') }}</th>
+                                                <th>{{ __('account.service_offers.operator_index_col_status') }}</th>
+                                                <th class="text-end">{{ __('account.service_offers.operator_index_col_price') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_offered') }}</th>
                                                 <th class="text-end text-nowrap">{{ __('wizard.provider_services_col_actions') }}</th>
                                             </tr>
@@ -39,38 +64,57 @@
                                         <tbody>
                                             @foreach ($offers as $offer)
                                                 @php
-                                                    $isWholeService = $offer->service_id !== null && $offer->service_variant_id === null;
-                                                    $v = $offer->serviceVariant;
-                                                    $svc = $isWholeService ? $offer->service : $v?->service;
                                                     $providerLabel = $offer->providerAccount?->commercial_name
                                                         ?? $offer->providerAccount?->name
                                                         ?? ('#' . $offer->provider_id);
+                                                    $opPrice = $offer->operator_price ?? [
+                                                        'has_amount' => false,
+                                                        'formatted' => '—',
+                                                    ];
+                                                    $isPending = $offer->status === \App\Models\ServiceOffer::STATUS_PENDING;
                                                 @endphp
                                                 <tr>
                                                     <td class="fw-medium">{{ $providerLabel }}</td>
-                                                    <td>{{ $svc && $svc->name !== '' ? $svc->name : ('—') }}</td>
+                                                    <td>{{ $offer->operator_service_label ?? '—' }}</td>
                                                     <td>
-                                                        @if ($isWholeService)
-                                                            <span class="text-muted">{{ __('account.service_offers.whole_service_label') }}</span>
-                                                        @else
-                                                            {{ $v && $v->name !== '' ? $v->name : ($v?->sku ?? '—') }}
+                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                                            {{ __('account.service_offers.provider_edit_state_' . $offer->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end @if ($opPrice['has_amount']) fw-medium @else text-muted @endif">
+                                                        <div>{{ $opPrice['formatted'] }}</div>
+                                                        @if (($opPrice['usd_hint'] ?? '') !== '')
+                                                            <div class="small text-muted fw-normal mt-1">{{ $opPrice['usd_hint'] }}</div>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $offer->offered_at?->format('Y-m-d H:i') ?? '—' }}</td>
+                                                    <td>{{ $offer->offered_at ? locale_datetime($offer->offered_at) : '—' }}</td>
                                                     <td class="text-end text-nowrap">
-                                                        <form method="POST" action="{{ route('account.service-offers.accept', $offer) }}" class="d-inline">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-primary me-1">{{ __('account.service_offers.operator_index_accept') }}</button>
-                                                        </form>
-                                                        <form
-                                                            method="POST"
-                                                            action="{{ route('account.service-offers.reject', $offer) }}"
-                                                            class="d-inline"
-                                                            onsubmit="return confirm(@js(__('account.service_offers.operator_index_reject_confirm')))"
-                                                        >
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('account.service_offers.operator_index_reject') }}</button>
-                                                        </form>
+                                                        @if ($isPending)
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-sm btn-outline-secondary me-1"
+                                                                onclick="Livewire.dispatch('open-service-offer-preview', { offerUuid: @js($offer->uuid) })"
+                                                            >
+                                                                {{ __('account.service_offers.operator_index_preview') }}
+                                                            </button>
+                                                            <form method="POST" action="{{ route('account.service-offers.accept', $offer) }}" class="d-inline">
+                                                                @csrf
+                                                                <input type="hidden" name="status" value="{{ $statusFilter }}">
+                                                                <button type="submit" class="btn btn-sm btn-primary me-1">{{ __('account.service_offers.operator_index_accept') }}</button>
+                                                            </form>
+                                                            <form
+                                                                method="POST"
+                                                                action="{{ route('account.service-offers.reject', $offer) }}"
+                                                                class="d-inline"
+                                                                onsubmit="return confirm(@js(__('account.service_offers.operator_index_reject_confirm')))"
+                                                            >
+                                                                @csrf
+                                                                <input type="hidden" name="status" value="{{ $statusFilter }}">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('account.service_offers.operator_index_reject') }}</button>
+                                                            </form>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -84,6 +128,10 @@
             </div>
         </div>
     </section>
+
+    <livewire:account.service-offer-preview-modal />
+
+    @include('partials.feather-livewire-refresh')
 
     <x-site-footer-simple />
 @endsection

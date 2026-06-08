@@ -6,13 +6,9 @@
         'name' => $headerDisplayName,
         'step' => 4,
     ]);
-    $catalogVariantDescriptionHelp = \App\Support\CatalogHelperContent::htmlForQuery(
-        new \App\Services\CatalogHelperQuery(
-            screenCode: \App\Support\ServiceWizardHelperScreens::STEP4_VARIANT_DESCRIPTION,
-            code: 'catalog_variant_description',
-            serviceTypeId: $serviceType->id,
-            accountTypeId: $catalogHelperAccountTypeId ?? null,
-        )
+    $catalogVariantFieldHelpHtml = \App\Support\ServiceWizardVariantCatalogHelpers::htmlMapForForm(
+        serviceTypeId: $serviceType->id,
+        accountTypeId: $catalogHelperAccountTypeId ?? null,
     );
 @endphp
 @extends('layouts.base', ['title' => $stepPageTitle])
@@ -80,7 +76,7 @@
                             @livewire(\App\Livewire\ServiceWizard\ServiceVariantsStep::class, [
                                 'serviceId' => $service->id,
                                 'serviceTypeId' => $serviceType->id,
-                                'catalogVariantDescriptionHelpHtml' => $catalogVariantDescriptionHelp,
+                                'catalogVariantFieldHelpHtml' => $catalogVariantFieldHelpHtml,
                             ], key('service-variants-'.$service->id))
 
                             @include('services.wizard.partials._footer', [

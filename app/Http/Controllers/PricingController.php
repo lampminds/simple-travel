@@ -7,8 +7,7 @@ use Illuminate\Support\Number;
 use Illuminate\View\View;
 
 class PricingController extends Controller
-{
-    /**
+{    /**
      * Format a price for display using the current locale (comma or period as decimal).
      * Non-numeric values (e.g. "150mil") are returned as-is.
      */
@@ -64,7 +63,7 @@ class PricingController extends Controller
             'modulePlans',
             'rangeTabs',
             'defaultUpTo',
-            'modulePricesByRange'
+            'modulePricesByRange',
         ));
     }
 }

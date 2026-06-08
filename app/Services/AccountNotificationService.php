@@ -52,6 +52,29 @@ final class AccountNotificationService
     }
 
     /**
+     * Notify target company when an operator sends an external invitation to an existing user.
+     */
+    public function createForExternalInvitationReceived(UserInvitation $invitation): AccountNotification
+    {
+        $invitation->loadMissing(['account', 'accountInviting']);
+        $operatorAccount = $invitation->accountInviting ?? $invitation->account;
+        $operatorName = (string) ($operatorAccount?->commercial_name ?: $operatorAccount?->name ?: '#'.$invitation->account_id);
+
+        return $this->createForAccount(
+            accountId: (int) $invitation->invited_account_id,
+            type: 'external_invitation_received',
+            title: (string) __('account.notifications.external_invitation_received_title', ['company' => $operatorName]),
+            message: (string) __('account.notifications.external_invitation_received_message', ['company' => $operatorName]),
+            recipientUserId: null,
+            data: [
+                'invitation_id' => (int) $invitation->id,
+                'operator_account_id' => (int) ($operatorAccount?->id ?? $invitation->account_id),
+                'operator_account_name' => $operatorName,
+            ],
+        );
+    }
+
+    /**
      * Notify inviter account/user when an external invitation is accepted.
      */
     public function createForExternalInvitationAccepted(

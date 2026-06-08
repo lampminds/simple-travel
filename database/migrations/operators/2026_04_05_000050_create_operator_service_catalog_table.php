@@ -17,6 +17,7 @@ return new class extends Migration
         Schema::create('operator_service_catalog', function (Blueprint $table) {
 
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('operator_id')->constrained('accounts', 'id', 'fkosc_account_id');
             $table->enum('status', ['active', 'hidden', 'paused', 'archived'])->default('active');
             $table->boolean('is_featured')->default(false);
@@ -36,6 +37,8 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['operator_service_catalog_id', 'language_id'], 'osc_trans_lang_unique');
         });
     }
 

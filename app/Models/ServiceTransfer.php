@@ -19,15 +19,19 @@ class ServiceTransfer extends Model
 
     public const MODALITY_SHARED = 'shared';
 
+    public const OPERATION_ON_DEMAND = 'on_demand';
+
+    public const OPERATION_SCHEDULED = 'scheduled';
+
     protected $table = 'service_transfers';
 
     protected $fillable = [
-        'service_id',
+        'service_variant_id',
         'transfer_type',
         'modality',
         'allows_multiple_stops',
-        'max_passengers',
-        'max_luggage',
+        'operation_mode',
+        'duration_minutes',
         'default_duration_minutes',
         'requires_flight_info',
         'requires_pickup_time',
@@ -36,17 +40,16 @@ class ServiceTransfer extends Model
 
     protected $casts = [
         'allows_multiple_stops' => 'boolean',
-        'max_passengers' => 'integer',
-        'max_luggage' => 'integer',
+        'duration_minutes' => 'integer',
         'default_duration_minutes' => 'integer',
         'requires_flight_info' => 'boolean',
         'requires_pickup_time' => 'boolean',
         'requires_dropoff_time' => 'boolean',
     ];
 
-    public function service(): BelongsTo
+    public function serviceVariant(): BelongsTo
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(ServiceVariant::class);
     }
 
     public function routes(): HasMany
@@ -62,5 +65,10 @@ class ServiceTransfer extends Model
     public function prices(): HasMany
     {
         return $this->hasMany(ServiceTransferPrice::class)->orderBy('id');
+    }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(ServiceTransferSchedule::class)->orderBy('id');
     }
 }

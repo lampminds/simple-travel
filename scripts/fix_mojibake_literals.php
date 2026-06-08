@@ -1,9 +1,9 @@
 <?php
 
 $files = [
-    __DIR__.'/../database/seeders/ServiceTypeTranslationsTableSeeder.php',
-    __DIR__.'/../database/seeders/ServiceActivityTypeTranslationsTableSeeder.php',
-    __DIR__.'/../database/seeders/ServiceActivityTypeCategoryTranslationsTableSeeder.php',
+    __DIR__.'/../database/seeders/CatServiceTypeTranslationsTableSeeder.php',
+    __DIR__.'/../database/seeders/CatServiceActivityTypeTranslationsTableSeeder.php',
+    __DIR__.'/../database/seeders/CatServiceActivityTypeCategoryTranslationsTableSeeder.php',
     __DIR__.'/../database/seeders/CatServiceFeatureTranslationsTableSeeder.php',
     __DIR__.'/../app/Console/Commands/SeedServiceActivityTypesCommand.php',
     __DIR__.'/../routes/console.php',

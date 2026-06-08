@@ -7,6 +7,7 @@
 @endphp
 <tr class="package-item-row">
     <td>
+        <input type="hidden" name="items[{{ $index }}][id]" class="package-item-id" value="{{ $item['id'] ?? '' }}">
         <select name="items[{{ $index }}][provider_id]" class="form-select package-item-provider" required>
             <option value="">{{ __('account.operator_packages.fields.provider_placeholder') }}</option>
             @foreach ($providerOptions as $id => $label)
@@ -26,14 +27,24 @@
                 >{{ $offer['label'] }}</option>
             @endforeach
         </select>
-        <input type="hidden" name="items[{{ $index }}][service_id]" class="package-item-service-id" value="{{ $item['service_id'] ?? '' }}">
         <input type="hidden" name="items[{{ $index }}][service_variant_id]" class="package-item-variant-id" value="{{ $item['service_variant_id'] ?? '' }}">
     </td>
     <td>
         <input type="number" name="items[{{ $index }}][day_number]" class="form-control" min="1" max="999" value="{{ $item['day_number'] ?? '' }}">
     </td>
-    <td>
-        <input type="number" name="items[{{ $index }}][sort_order]" class="form-control" min="0" max="9999" value="{{ $item['sort_order'] ?? 9999 }}">
+    <td class="text-center text-nowrap">
+        <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('account.operator_packages.fields.sort_order') }}">
+            <button
+                type="button"
+                class="btn btn-outline-secondary package-item-move-up"
+                title="{{ __('account.operator_packages.move_up') }}"
+            >↑</button>
+            <button
+                type="button"
+                class="btn btn-outline-secondary package-item-move-down"
+                title="{{ __('account.operator_packages.move_down') }}"
+            >↓</button>
+        </div>
     </td>
     <td>
         <input type="number" name="items[{{ $index }}][quantity]" class="form-control" min="1" max="9999" value="{{ $item['quantity'] ?? 1 }}">

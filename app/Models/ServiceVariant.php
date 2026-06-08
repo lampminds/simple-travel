@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 use Spatie\Image\Enums\Fit;
@@ -14,7 +16,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
 class ServiceVariant extends Model implements HasMedia
 {
-    use AuditTrait, InteractsWithMedia;
+    use AuditTrait, HasUuid, InteractsWithMedia;
 
     public const MEDIA_COLLECTION_MAIN = 'main';
 
@@ -36,7 +38,6 @@ class ServiceVariant extends Model implements HasMedia
         'service_id',
         'sku',
         'status',
-        'booking_type',
         'pricing_type',
         'base_price',
         'currency_id',
@@ -64,6 +65,14 @@ class ServiceVariant extends Model implements HasMedia
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    /**
+     * Transfer profile for this variant (1:1), when the parent service type is transfer.
+     */
+    public function transfer(): HasOne
+    {
+        return $this->hasOne(ServiceTransfer::class);
     }
 
     /**

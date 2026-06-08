@@ -164,8 +164,7 @@ final class WebsiteNavigation
 
         $menus = $query
             ->with(['translations.language.locale'])
-            ->orderBy('sort_order')
-            ->orderBy('id')
+            ->ordered()
             ->get();
 
         $idsInSet = $menus->modelKeys();
@@ -179,10 +178,7 @@ final class WebsiteNavigation
 
         $attach = null;
         $attach = function (string $parentKey) use (&$attach, $byParentKey): Collection {
-            return $byParentKey
-                ->get($parentKey, collect())
-                ->sortBy(fn (Menu $m) => [$m->sort_order, $m->id])
-                ->values()
+            return static::sortSiblingMenus($byParentKey->get($parentKey, collect()))
                 ->map(function (Menu $menu) use (&$attach): Menu {
                     $menu->setRelation('nav_children', $attach((string) (int) $menu->id));
 
@@ -191,6 +187,19 @@ final class WebsiteNavigation
         };
 
         return $attach('__root__');
+    }
+
+    /**
+     * Sort menus within one parent (roots use parent key {@see buildMenuTree}).
+     *
+     * @param  \Illuminate\Support\Collection<int, Menu>  $menus
+     * @return \Illuminate\Support\Collection<int, Menu>
+     */
+    private static function sortSiblingMenus(Collection $menus): Collection
+    {
+        return $menus
+            ->sortBy(fn (Menu $m): array => [(int) ($m->sort_order ?? 9999), (int) $m->id])
+            ->values();
     }
 
     public static function urlForMenu(Menu $menu): string

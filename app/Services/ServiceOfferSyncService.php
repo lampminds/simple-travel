@@ -13,7 +13,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Syncs whole-service and variant-level offers from a provider to an operator (pending until accepted).
+ * Syncs variant-level offers from a provider to an operator (pending until accepted).
  */
 final class ServiceOfferSyncService
 {
@@ -23,14 +23,12 @@ final class ServiceOfferSyncService
 
     /**
      * @param  list<int>  $proposedVariantIds
-     * @param  list<int>  $proposedServiceIds
      * @return array{new_pending_count: int}
      */
     public function syncProposals(
         int $providerAccountId,
         int $operatorAccountId,
         array $proposedVariantIds,
-        array $proposedServiceIds,
         User $actingUser,
     ): array {
         abort_unless(
@@ -43,17 +41,9 @@ final class ServiceOfferSyncService
         );
 
         $proposedVariantIds = array_values(array_unique(array_map('intval', $proposedVariantIds)));
-        $proposedServiceIds = array_values(array_unique(array_map('intval', $proposedServiceIds)));
 
         $omittedServiceStatuses = Service::catalogStatusesOmittedFromOperatorOffers();
         $omittedVariantStatuses = ServiceVariant::catalogStatusesOmittedFromOperatorOffers();
-
-        $allowedServiceIds = Service::query()
-            ->where('account_id', $providerAccountId)
-            ->whereNotIn('status', $omittedServiceStatuses)
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
 
         $allowedVariantIds = ServiceVariant::query()
             ->whereHas('service', function ($q) use ($providerAccountId, $omittedServiceStatuses): void {
@@ -69,31 +59,17 @@ final class ServiceOfferSyncService
             abort_unless(in_array($vid, $allowedVariantIds, true), 422);
         }
 
-        foreach ($proposedServiceIds as $sid) {
-            abort_unless(in_array($sid, $allowedServiceIds, true), 422);
-        }
-
         $newPendingCount = 0;
 
         DB::transaction(function () use (
             $providerAccountId,
             $operatorAccountId,
             $proposedVariantIds,
-            $proposedServiceIds,
-            $allowedServiceIds,
             $allowedVariantIds,
             $omittedServiceStatuses,
             $omittedVariantStatuses,
             &$newPendingCount,
         ): void {
-            $newPendingCount += $this->syncServiceOffersInTransaction(
-                $providerAccountId,
-                $operatorAccountId,
-                $proposedServiceIds,
-                $allowedServiceIds,
-                $omittedServiceStatuses,
-            );
-
             $newPendingCount += $this->syncVariantOffersInTransaction(
                 $providerAccountId,
                 $operatorAccountId,
@@ -116,6 +92,45 @@ final class ServiceOfferSyncService
         return ['new_pending_count' => $newPendingCount];
     }
 
+    public function notifyProviderOfAcceptedOffer(ServiceOffer $offer, User $actingUser): void
+    {
+        $offer->loadMissing([
+            'serviceVariant.service.translations',
+            'serviceVariant.translations.language.locale',
+            'operatorAccount',
+        ]);
+
+        $providerAccountId = (int) $offer->provider_id;
+        $operatorAccountId = (int) $offer->operator_id;
+        $operator = $offer->operatorAccount ?? Account::query()->find($operatorAccountId);
+        $operatorLabel = $operator?->commercial_name ?? $operator?->name ?? $operator?->nick ?? (string) $operatorAccountId;
+
+        $variantLabel = $this->variantLabelForOffer($offer);
+
+        $url = $operator instanceof Account
+            ? route('account.service-offers.operators.edit', ['operator' => $operator], true)
+            : route('account.service-offers.index', ['as' => 'provider'], true);
+
+        $this->accountNotifications->createForAccount(
+            accountId: $providerAccountId,
+            type: 'service_offer_accepted',
+            title: (string) __('account.service_offers.notification_accepted_title', ['operator' => $operatorLabel]),
+            message: (string) __('account.service_offers.notification_accepted_message', [
+                'operator' => $operatorLabel,
+                'variant' => $variantLabel,
+                'url' => $url,
+            ]),
+            recipientUserId: null,
+            data: [
+                'operator_account_id' => $operatorAccountId,
+                'service_offer_id' => (int) $offer->id,
+                'variant_label' => $variantLabel,
+                'created_by_user_id' => $actingUser->id,
+                'created_by_user_name' => $actingUser->name,
+            ],
+        );
+    }
+
     /**
      * @param  list<int>  $proposedVariantIds
      * @return array{new_pending_count: int}
@@ -126,104 +141,7 @@ final class ServiceOfferSyncService
         array $proposedVariantIds,
         User $actingUser,
     ): array {
-        return $this->syncProposals($providerAccountId, $operatorAccountId, $proposedVariantIds, [], $actingUser);
-    }
-
-    /**
-     * @param  list<int>  $proposedServiceIds
-     * @param  list<int>  $allowedServiceIds
-     * @param  list<string>  $omittedServiceStatuses
-     */
-    private function syncServiceOffersInTransaction(
-        int $providerAccountId,
-        int $operatorAccountId,
-        array $proposedServiceIds,
-        array $allowedServiceIds,
-        array $omittedServiceStatuses,
-    ): int {
-        $acceptedServiceIds = ServiceOffer::query()
-            ->where('provider_id', $providerAccountId)
-            ->where('operator_id', $operatorAccountId)
-            ->whereNull('service_variant_id')
-            ->whereNotNull('service_id')
-            ->where('status', ServiceOffer::STATUS_ACCEPTED)
-            ->pluck('service_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        $wantServiceIds = collect($proposedServiceIds)
-            ->merge($acceptedServiceIds)
-            ->unique()
-            ->values()
-            ->all();
-
-        ServiceOffer::query()
-            ->where('provider_id', $providerAccountId)
-            ->where('operator_id', $operatorAccountId)
-            ->whereNull('service_variant_id')
-            ->whereNotNull('service_id')
-            ->whereIn('status', [
-                ServiceOffer::STATUS_PENDING,
-                ServiceOffer::STATUS_REJECTED,
-            ])
-            ->whereHas('service', fn ($sq) => $sq->whereIn('status', $omittedServiceStatuses))
-            ->delete();
-
-        $servicesById = Service::query()
-            ->whereIn('id', $allowedServiceIds)
-            ->get()
-            ->keyBy(fn (Service $s) => (int) $s->id);
-
-        $offers = ServiceOffer::query()
-            ->where('provider_id', $providerAccountId)
-            ->where('operator_id', $operatorAccountId)
-            ->whereNull('service_variant_id')
-            ->whereNotNull('service_id')
-            ->whereIn('service_id', $allowedServiceIds)
-            ->get()
-            ->keyBy(fn (ServiceOffer $o) => (int) $o->service_id);
-
-        $newPendingCount = 0;
-
-        foreach ($allowedServiceIds as $serviceId) {
-            $want = in_array($serviceId, $wantServiceIds, true);
-            /** @var ServiceOffer|null $offer */
-            $offer = $offers->get($serviceId);
-
-            if ($want) {
-                if ($offer === null) {
-                    ServiceOffer::query()->create([
-                        'provider_id' => $providerAccountId,
-                        'operator_id' => $operatorAccountId,
-                        'service_id' => $serviceId,
-                        'service_variant_id' => null,
-                        'status' => ServiceOffer::STATUS_PENDING,
-                        'availability' => ServiceOffer::AVAILABILITY_ACTIVE,
-                        'offered_at' => now(),
-                    ]);
-                    $newPendingCount++;
-                } elseif ($offer->status === ServiceOffer::STATUS_REJECTED) {
-                    $offer->update([
-                        'status' => ServiceOffer::STATUS_PENDING,
-                        'availability' => ServiceOffer::AVAILABILITY_ACTIVE,
-                        'offered_at' => now(),
-                    ]);
-                    $newPendingCount++;
-                }
-            } elseif ($offer !== null && in_array($offer->status, [
-                ServiceOffer::STATUS_PENDING,
-                ServiceOffer::STATUS_REJECTED,
-            ], true)) {
-                /** @var Service|null $service */
-                $service = $servicesById->get($serviceId);
-                if ($service !== null && ! $service->catalogSelectableForOperatorOffers()) {
-                    continue;
-                }
-                $offer->delete();
-            }
-        }
-
-        return $newPendingCount;
+        return $this->syncProposals($providerAccountId, $operatorAccountId, $proposedVariantIds, $actingUser);
     }
 
     /**
@@ -243,14 +161,22 @@ final class ServiceOfferSyncService
         $acceptedVariantIds = ServiceOffer::query()
             ->where('provider_id', $providerAccountId)
             ->where('operator_id', $operatorAccountId)
-            ->whereNotNull('service_variant_id')
             ->where('status', ServiceOffer::STATUS_ACCEPTED)
+            ->pluck('service_variant_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $pendingVariantIds = ServiceOffer::query()
+            ->where('provider_id', $providerAccountId)
+            ->where('operator_id', $operatorAccountId)
+            ->where('status', ServiceOffer::STATUS_PENDING)
             ->pluck('service_variant_id')
             ->map(fn ($id) => (int) $id)
             ->all();
 
         $wantVariantIds = collect($proposedVariantIds)
             ->merge($acceptedVariantIds)
+            ->merge($pendingVariantIds)
             ->unique()
             ->values()
             ->all();
@@ -258,7 +184,6 @@ final class ServiceOfferSyncService
         ServiceOffer::query()
             ->where('provider_id', $providerAccountId)
             ->where('operator_id', $operatorAccountId)
-            ->whereNotNull('service_variant_id')
             ->whereIn('status', [
                 ServiceOffer::STATUS_PENDING,
                 ServiceOffer::STATUS_REJECTED,
@@ -278,7 +203,6 @@ final class ServiceOfferSyncService
         $offers = ServiceOffer::query()
             ->where('provider_id', $providerAccountId)
             ->where('operator_id', $operatorAccountId)
-            ->whereNotNull('service_variant_id')
             ->whereIn('service_variant_id', $allowedVariantIds)
             ->get()
             ->keyBy(fn (ServiceOffer $o) => (int) $o->service_variant_id);
@@ -295,7 +219,6 @@ final class ServiceOfferSyncService
                     ServiceOffer::query()->create([
                         'provider_id' => $providerAccountId,
                         'operator_id' => $operatorAccountId,
-                        'service_id' => null,
                         'service_variant_id' => $variantId,
                         'status' => ServiceOffer::STATUS_PENDING,
                         'availability' => ServiceOffer::AVAILABILITY_ACTIVE,
@@ -310,10 +233,7 @@ final class ServiceOfferSyncService
                     ]);
                     $newPendingCount++;
                 }
-            } elseif ($offer !== null && in_array($offer->status, [
-                ServiceOffer::STATUS_PENDING,
-                ServiceOffer::STATUS_REJECTED,
-            ], true)) {
+            } elseif ($offer !== null && $offer->status === ServiceOffer::STATUS_REJECTED) {
                 /** @var ServiceVariant|null $variant */
                 $variant = $variantsById->get($variantId);
                 if ($variant !== null && ! $variant->catalogSelectableForOperatorOffers()) {
@@ -324,6 +244,107 @@ final class ServiceOfferSyncService
         }
 
         return $newPendingCount;
+    }
+
+    public function revokePendingProposal(
+        int $providerAccountId,
+        int $operatorAccountId,
+        int $serviceOfferId,
+        User $actingUser,
+    ): void {
+        abort_unless(
+            AccountRelationship::query()
+                ->where('provider_account_id', $providerAccountId)
+                ->where('operator_account_id', $operatorAccountId)
+                ->where('status', AccountRelationship::STATUS_APPROVED)
+                ->exists(),
+            403
+        );
+
+        $offer = ServiceOffer::query()
+            ->where('id', $serviceOfferId)
+            ->where('provider_id', $providerAccountId)
+            ->where('operator_id', $operatorAccountId)
+            ->where('status', ServiceOffer::STATUS_PENDING)
+            ->with([
+                'serviceVariant.service.translations',
+                'serviceVariant.translations.language.locale',
+            ])
+            ->first();
+
+        abort_unless($offer !== null, 404);
+
+        $variantLabel = $this->variantLabelForOffer($offer);
+
+        DB::transaction(function () use ($offer): void {
+            $offer->update(['withdrawn_at' => now()]);
+            $offer->delete();
+        });
+
+        $this->notifyOperatorOfRevokedProposal(
+            $providerAccountId,
+            $operatorAccountId,
+            $variantLabel,
+            $actingUser,
+        );
+    }
+
+    private function variantLabelForOffer(ServiceOffer $offer): string
+    {
+        $variant = $offer->serviceVariant;
+        $service = $variant?->service;
+        if ($variant === null || $service === null) {
+            return '—';
+        }
+
+        $serviceName = trim((string) ($service->name ?? ''));
+        if ($serviceName === '') {
+            $serviceName = 'Service #'.$service->id;
+        }
+
+        $detail = trim((string) ($variant->name ?? ''));
+        if ($detail === '') {
+            $detail = trim((string) ($variant->sku ?? ''));
+        }
+        if ($detail === '') {
+            $detail = 'Variant #'.$variant->id;
+        }
+
+        if (strcasecmp($detail, $serviceName) === 0) {
+            return $serviceName;
+        }
+
+        return $serviceName.' — '.$detail;
+    }
+
+    private function notifyOperatorOfRevokedProposal(
+        int $providerAccountId,
+        int $operatorAccountId,
+        string $variantLabel,
+        User $actingUser,
+    ): void {
+        $provider = Account::query()->find($providerAccountId);
+        $providerLabel = $provider?->commercial_name ?? $provider?->name ?? $provider?->nick ?? (string) $providerAccountId;
+
+        $url = route('account.service-offers.index', ['as' => 'operator'], true);
+
+        $this->accountNotifications->createForAccount(
+            accountId: $operatorAccountId,
+            type: 'service_offer_revoked',
+            title: (string) __('account.service_offers.notification_revoked_title', ['provider' => $providerLabel]),
+            message: (string) __('account.service_offers.notification_revoked_message', [
+                'provider' => $providerLabel,
+                'variant' => $variantLabel,
+                'url' => $url,
+            ]),
+            recipientUserId: null,
+            data: [
+                'provider_account_id' => $providerAccountId,
+                'variant_label' => $variantLabel,
+                'created_by_user_id' => $actingUser->id,
+                'created_by_user_name' => $actingUser->name,
+            ],
+        );
     }
 
     private function notifyOperatorOfNewPending(

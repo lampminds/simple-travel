@@ -22,6 +22,34 @@ class ModuleFeature extends Model
         'active' => 'boolean',
     ];
 
+    public function getTextAttribute(): ?string
+    {
+        return $this->getTranslationForDisplay()?->text;
+    }
+
+    protected function getTranslationForDisplay(): ?ModuleFeatureTranslation
+    {
+        if (! $this->relationLoaded('translations')) {
+            $this->load('translations');
+        }
+        if ($this->translations->isEmpty()) {
+            return null;
+        }
+        $locale = app()->getLocale();
+        foreach ($this->translations as $translation) {
+            $lang = $translation->language;
+            if (! $lang) {
+                continue;
+            }
+            $lang->loadMissing('locale');
+            if (Locale::primaryTagMatches($lang->locale, $locale)) {
+                return $translation;
+            }
+        }
+
+        return $this->translations->first();
+    }
+
     public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class);

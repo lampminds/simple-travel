@@ -117,6 +117,22 @@ class CatParameterDefinitionsTableSeeder extends Seeder
 -2: rounds $35.123,10 to $35.100
 -3: rounds $35.123,10 to $35.000',
             ),
+            6 => 
+            array (
+                'id' => 7,
+                'category' => 'system',
+                'subcategory' => 'dates',
+                'code' => 'date_format',
+                'type' => 'string',
+                'scope' => 'tenant',
+                'has_default' => 0,
+                'ui_component' => 'select',
+                'ui_options' => '[]',
+                'sort_order' => 0,
+                'default_value' => NULL,
+                'validation_rules' => '[]',
+                'comments' => NULL,
+            ),
         ));
         
         

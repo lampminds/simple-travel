@@ -4,6 +4,7 @@
  * Validação HTML5 no navegador (mensagens do tooltip ao submeter).
  */
 return [
+    'date_input_placeholder' => 'dd/mm/aaaa',
     'html5' => [
         'value_missing' => 'Preencha este campo.',
         'type_mismatch_email' => 'Introduza um e-mail válido.',
@@ -15,6 +16,7 @@ return [
         'range_overflow' => 'O valor é demasiado alto.',
         'step_mismatch' => 'Introduza um valor válido.',
         'bad_input' => 'Introduza um valor válido.',
+        'date_invalid' => 'Introduza uma data válida (dd/mm/aaaa).',
         'generic' => 'Corrija este campo.',
     ],
 ];

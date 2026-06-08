@@ -33,9 +33,9 @@
                         </p>
                         <p class="mt-1 small text-muted mb-0">
                             @if ($fromSystem)
-                                {{ __('exchange_rates.edit_from_system', ['date' => $rateDay->translatedFormat('d M Y')]) }}
+                                {{ __('exchange_rates.edit_from_system', ['date' => locale_date($rateDay)]) }}
                             @else
-                                {{ __('exchange_rates.edit_existing', ['date' => $rateDay->translatedFormat('d M Y')]) }}
+                                {{ __('exchange_rates.edit_existing', ['date' => locale_date($rateDay)]) }}
                             @endif
                         </p>
                     </div>

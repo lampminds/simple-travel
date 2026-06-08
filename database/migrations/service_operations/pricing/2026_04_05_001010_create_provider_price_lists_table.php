@@ -16,6 +16,7 @@ return new class extends Migration
     {
         Schema::create('provider_price_lists', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
 
             $table->foreignId('provider_id')->constrained('accounts', 'id', 'pl_provider_fk');
 
@@ -35,15 +36,16 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('provider_price_list_id')->constrained();
-            $table->foreignId('service_id')
-                ->nullable() // there might be service variants
-                ->constrained('services', 'id', 'pl_items_service_fk');
             $table->foreignId('service_variant_id')
-                ->nullable() // there might be services with NO variants
                 ->constrained('service_variants', 'id', 'pl_items_variant_fk');
 
-            $table->decimal('price', 10, 2);
-            $table->enum('pricing_mode', ['fixed', 'percentage'])->default('fixed');
+            $table->decimal('price', 10, 2)->nullable();
+            $table->enum('pricing_mode', ['fixed', 'percentage'])->nullable();
+
+            $table->unique(
+                ['provider_price_list_id', 'service_variant_id'],
+                'provider_price_list_items_unique'
+            );
         });
 
         Schema::create('provider_price_list_assignments', function (Blueprint $table) {
@@ -71,6 +73,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('operator_id', 'assigned_to_index');
+
+            $table->unique(
+                ['provider_price_list_id', 'operator_id'],
+                'provider_price_list_assignments_unique'
+            );
         });
 
     }

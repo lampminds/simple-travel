@@ -4,11 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\PersonResource\Pages;
+use App\Models\CatGender;
 use App\Models\ContactDepartment;
 use App\Models\ContactPosition;
 use App\Models\ContactType;
+use App\Models\LmpCountry;
 use App\Models\Person;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -76,7 +79,42 @@ class PersonResource extends LmpResource
                                 TextInput::make('name')
                                     ->label(__('filament.resources.person_fields.name'))
                                     ->required()
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                                TextInput::make('document_name')
+                                    ->label(__('filament.resources.person_fields.document_name'))
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+                                TextInput::make('given_name')
+                                    ->label(__('filament.resources.person_fields.given_name'))
                                     ->maxLength(255),
+                                TextInput::make('family_name')
+                                    ->label(__('filament.resources.person_fields.family_name'))
+                                    ->maxLength(255),
+                                DatePicker::make('date_of_birth')
+                                    ->label(__('filament.resources.person_fields.date_of_birth'))
+                                    ->maxDate(now())
+                                    ->native(false),
+                                Select::make('gender_id')
+                                    ->label(__('filament.resources.person_fields.gender_id'))
+                                    ->options(
+                                        fn () => CatGender::query()
+                                            ->where('active', true)
+                                            ->orderBy('sort_order')
+                                            ->get()
+                                            ->mapWithKeys(fn (CatGender $g) => [
+                                                $g->id => $g->name !== '' ? $g->name : (string) $g->getRawOriginal('code'),
+                                            ])
+                                    )
+                                    ->searchable()
+                                    ->nullable(),
+                                Select::make('nationality_id')
+                                    ->label(__('filament.resources.person_fields.nationality_id'))
+                                    ->options(
+                                        fn () => LmpCountry::query()->orderBy('name')->pluck('name', 'id')
+                                    )
+                                    ->searchable()
+                                    ->nullable(),
                             ])->columns(2),
                         ]),
                     Tab::make(__('filament.resources.person_tabs.users'))
@@ -241,7 +279,9 @@ class PersonResource extends LmpResource
     {
         return parent::table($table)
             ->modifyQueryUsing(
-                fn (Builder $query) => $query->withCount(['users', 'accountPersons', 'contactMethods', 'contactLinks'])
+                fn (Builder $query) => $query
+                    ->with(['gender'])
+                    ->withCount(['users', 'accountPersons', 'contactMethods', 'contactLinks'])
             )
             ->columns([
                 TextColumn::make('id')
@@ -251,6 +291,13 @@ class PersonResource extends LmpResource
                     ->label(__('filament.resources.person_columns.name'))
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('gender.name')
+                    ->label(__('filament.resources.person_columns.gender'))
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('date_of_birth')
+                    ->label(__('filament.resources.person_columns.date_of_birth'))
+                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('users_count')
                     ->label(__('filament.resources.person_columns.users_count'))
                     ->sortable(),

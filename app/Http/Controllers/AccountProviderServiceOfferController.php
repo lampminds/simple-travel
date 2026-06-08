@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class AccountProviderServiceOfferController extends Controller
@@ -27,6 +28,21 @@ final class AccountProviderServiceOfferController extends Controller
             ->with('operatorAccount')
             ->orderBy('id')
             ->get();
+
+        $offerCountsByOperator = $this->offerCountsByOperator(
+            (int) $account->id,
+            $relationships->pluck('operator_account_id')->map(fn ($id) => (int) $id)->all(),
+        );
+
+        foreach ($relationships as $relationship) {
+            $operatorId = (int) $relationship->operator_account_id;
+            $offered = $offerCountsByOperator[$operatorId]['offered'] ?? ['services' => 0, 'variants' => 0];
+            $accepted = $offerCountsByOperator[$operatorId]['accepted'] ?? ['services' => 0, 'variants' => 0];
+            $relationship->setAttribute('offered_service_count', $offered['services']);
+            $relationship->setAttribute('offered_variant_count', $offered['variants']);
+            $relationship->setAttribute('accepted_service_count', $accepted['services']);
+            $relationship->setAttribute('accepted_variant_count', $accepted['variants']);
+        }
 
         return view('account.service-offers.provider.operators', [
             'account' => $account,
@@ -49,17 +65,8 @@ final class AccountProviderServiceOfferController extends Controller
         $variantOffers = ServiceOffer::query()
             ->where('provider_id', $account->id)
             ->where('operator_id', $operator->id)
-            ->whereNotNull('service_variant_id')
             ->get()
             ->keyBy(fn (ServiceOffer $o) => (int) $o->service_variant_id);
-
-        $serviceOffers = ServiceOffer::query()
-            ->where('provider_id', $account->id)
-            ->where('operator_id', $operator->id)
-            ->whereNull('service_variant_id')
-            ->whereNotNull('service_id')
-            ->get()
-            ->keyBy(fn (ServiceOffer $o) => (int) $o->service_id);
 
         $serviceStatusOptions = $this->eligibleServiceStatusesForOperatorOffers($account);
         $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
@@ -69,6 +76,7 @@ final class AccountProviderServiceOfferController extends Controller
 
         $services = Service::query()
             ->where('account_id', $account->id)
+            ->withVariants()
             ->whereNotIn('status', Service::catalogStatusesOmittedFromOperatorOffers())
             ->when($serviceStatusFilter !== '', fn ($q) => $q->where('status', $serviceStatusFilter))
             ->with([
@@ -85,25 +93,20 @@ final class AccountProviderServiceOfferController extends Controller
             ->orderBy('id')
             ->get();
 
+        $activeAssignment = $priceResolver->activeAssignment((int) $account->id, (int) $operator->id);
+        $operatorPriceListName = $activeAssignment?->priceList?->name;
+        $operatorHasPriceList = $activeAssignment !== null;
+
         foreach ($services as $service) {
-            $serviceOffer = $serviceOffers->get((int) $service->id);
-            $service->setAttribute('offer_status', $serviceOffer?->status ?? 'none');
-            $service->setAttribute('has_variants', $service->serviceVariants->isNotEmpty());
-
-            if ($service->serviceVariants->isEmpty()) {
-                $service->setAttribute(
-                    'operator_price',
-                    $priceResolver->resolveForService($service, (int) $account->id, (int) $operator->id),
-                );
-            }
-
             foreach ($service->serviceVariants as $variant) {
                 $offer = $variantOffers->get((int) $variant->id);
                 $variant->setAttribute('offer_status', $offer?->status ?? 'none');
-                $variant->setAttribute(
-                    'operator_price',
-                    $priceResolver->resolve($variant, (int) $account->id, (int) $operator->id),
-                );
+                $variant->setAttribute('offer_id', $offer?->id);
+                $operatorPrice = $priceResolver->resolve($variant, (int) $account->id, (int) $operator->id);
+                $variant->setAttribute('operator_price', $operatorPrice);
+                $variant->setAttribute('operator_price_is_zero', $priceResolver->resolvedAmountIsZero($operatorPrice));
+                $variant->setAttribute('operator_has_price_list', $operatorHasPriceList);
+                $variant->setAttribute('operator_price_list_name', $operatorPriceListName);
             }
         }
 
@@ -113,11 +116,17 @@ final class AccountProviderServiceOfferController extends Controller
             'services' => $services,
             'serviceStatusOptions' => $serviceStatusOptions,
             'serviceStatusFilter' => $serviceStatusFilter,
+            'operatorHasPriceList' => $operatorHasPriceList,
+            'operatorPriceListName' => $operatorPriceListName,
         ]);
     }
 
-    public function update(Request $request, Account $operator, ServiceOfferSyncService $syncService): RedirectResponse
-    {
+    public function update(
+        Request $request,
+        Account $operator,
+        ServiceOfferSyncService $syncService,
+        OperatorVariantPriceResolver $priceResolver,
+    ): RedirectResponse {
         $account = $this->resolveProviderAccount($request);
         abort_unless(
             AccountRelationship::query()
@@ -155,27 +164,45 @@ final class AccountProviderServiceOfferController extends Controller
                         );
                 }),
             ],
-            'propose_services' => ['nullable', 'array'],
-            'propose_services.*' => [
-                'integer',
-                'distinct',
-                Rule::exists('services', 'id')->where(function ($query) use ($account, $omittedServiceStatuses): void {
-                    $query->where('account_id', $account->id)
-                        ->where('status', 'active')
-                        ->whereNotIn('status', $omittedServiceStatuses);
-                }),
-            ],
             'service_status' => $serviceStatusRules,
         ]);
 
         $user = $request->user();
         abort_unless($user !== null, 401);
 
+        $proposedVariantIds = array_values(array_unique(array_map('intval', $validated['propose'] ?? [])));
+        if ($proposedVariantIds !== []) {
+            $variants = ServiceVariant::query()
+                ->whereIn('id', $proposedVariantIds)
+                ->with('currency.lmpCurrency')
+                ->get()
+                ->keyBy('id');
+
+            $zeroPriceSkus = [];
+            foreach ($proposedVariantIds as $variantId) {
+                $variant = $variants->get($variantId);
+                if ($variant === null) {
+                    continue;
+                }
+                $resolved = $priceResolver->resolve($variant, (int) $account->id, (int) $operator->id);
+                if ($priceResolver->resolvedAmountIsZero($resolved)) {
+                    $zeroPriceSkus[] = $variant->sku;
+                }
+            }
+
+            if ($zeroPriceSkus !== []) {
+                throw ValidationException::withMessages([
+                    'propose' => __('account.service_offers.provider_edit_zero_price_validation', [
+                        'variants' => implode(', ', $zeroPriceSkus),
+                    ]),
+                ]);
+            }
+        }
+
         $syncService->syncProposals(
             (int) $account->id,
             (int) $operator->id,
-            $validated['propose'] ?? [],
-            $validated['propose_services'] ?? [],
+            $proposedVariantIds,
             $user,
         );
 
@@ -190,8 +217,45 @@ final class AccountProviderServiceOfferController extends Controller
             ->with('status', __('account.service_offers.provider_status_saved'));
     }
 
+    public function revoke(
+        Request $request,
+        Account $operator,
+        ServiceOffer $offer,
+        ServiceOfferSyncService $syncService,
+    ): RedirectResponse {
+        $account = $this->resolveProviderAccount($request);
+        abort_unless(
+            AccountRelationship::query()
+                ->where('provider_account_id', $account->id)
+                ->where('operator_account_id', $operator->id)
+                ->where('status', AccountRelationship::STATUS_APPROVED)
+                ->exists(),
+            404
+        );
+
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
+        $syncService->revokePendingProposal(
+            (int) $account->id,
+            (int) $operator->id,
+            (int) $offer->id,
+            $user,
+        );
+
+        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
+            (string) ($request->input('service_status') ?? $request->query('service_status', '')),
+            $this->eligibleServiceStatusesForOperatorOffers($account),
+        );
+        $query = $serviceStatusFilter !== '' ? ['service_status' => $serviceStatusFilter] : [];
+
+        return redirect()
+            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
+            ->with('status', __('account.service_offers.provider_status_revoked'));
+    }
+
     /**
-     * Distinct service.status values in the operator-offers picker (services with or without variants).
+     * Distinct service.status values in the operator-offers picker (services with variants only).
      *
      * @return Collection<int, string>
      */
@@ -202,14 +266,12 @@ final class AccountProviderServiceOfferController extends Controller
 
         return Service::query()
             ->where('account_id', $account->id)
+            ->withVariants()
             ->whereNotIn('status', $omittedServiceStatuses)
-            ->where(function ($q) use ($omittedVariantStatuses): void {
-                $q->whereDoesntHave('serviceVariants')
-                    ->orWhereHas(
-                        'serviceVariants',
-                        fn ($vq) => $vq->whereNotIn('status', $omittedVariantStatuses)
-                    );
-            })
+            ->whereHas(
+                'serviceVariants',
+                fn ($vq) => $vq->whereNotIn('status', $omittedVariantStatuses)
+            )
             ->distinct()
             ->orderBy('status')
             ->pluck('status')
@@ -224,6 +286,58 @@ final class AccountProviderServiceOfferController extends Controller
         }
 
         return $raw;
+    }
+
+    /**
+     * Pending and accepted variant offers per operator.
+     *
+     * @param  list<int>  $operatorAccountIds
+     * @return array<int, array{
+     *     offered: array{services: int, variants: int},
+     *     accepted: array{services: int, variants: int}
+     * }>
+     */
+    private function offerCountsByOperator(int $providerAccountId, array $operatorAccountIds): array
+    {
+        $operatorAccountIds = array_values(array_unique(array_filter(array_map('intval', $operatorAccountIds))));
+        if ($operatorAccountIds === []) {
+            return [];
+        }
+
+        $emptyBucket = fn (): array => ['services' => 0, 'variants' => 0];
+        $out = [];
+        foreach ($operatorAccountIds as $operatorId) {
+            $out[$operatorId] = [
+                'offered' => $emptyBucket(),
+                'accepted' => $emptyBucket(),
+            ];
+        }
+
+        $rows = ServiceOffer::query()
+            ->join('service_variants', 'service_offers.service_variant_id', '=', 'service_variants.id')
+            ->where('service_offers.provider_id', $providerAccountId)
+            ->whereIn('service_offers.operator_id', $operatorAccountIds)
+            ->whereIn('service_offers.status', [
+                ServiceOffer::STATUS_PENDING,
+                ServiceOffer::STATUS_ACCEPTED,
+            ])
+            ->selectRaw('service_offers.operator_id, service_offers.status, COUNT(*) as variant_count, COUNT(DISTINCT service_variants.service_id) as service_count')
+            ->groupBy('service_offers.operator_id', 'service_offers.status')
+            ->get();
+
+        foreach ($rows as $row) {
+            $operatorId = (int) $row->operator_id;
+            $bucket = $row->status === ServiceOffer::STATUS_ACCEPTED ? 'accepted' : 'offered';
+            if (! isset($out[$operatorId])) {
+                continue;
+            }
+            $out[$operatorId][$bucket] = [
+                'services' => (int) $row->service_count,
+                'variants' => (int) $row->variant_count,
+            ];
+        }
+
+        return $out;
     }
 
     private function resolveProviderAccount(Request $request): Account

@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CatAccountTypeTranslationsTableSeeder extends Seeder
 {
+    use DisablesForeignKeyChecks;
 
     /**
      * Auto generated seed file
@@ -14,11 +17,10 @@ class CatAccountTypeTranslationsTableSeeder extends Seeder
      */
     public function run()
     {
-        
+        $this->withoutForeignKeyChecks(function (): void {
+            DB::table('cat_account_type_translations')->delete();
 
-        \DB::table('cat_account_type_translations')->delete();
-        
-        \DB::table('cat_account_type_translations')->insert(array (
+            DB::table('cat_account_type_translations')->insert(array (
             0 => 
             array (
                 'id' => 1,
@@ -73,7 +75,7 @@ class CatAccountTypeTranslationsTableSeeder extends Seeder
                 'account_type_id' => 2,
                 'language_id' => 1,
                 'name' => 'Service provider',
-                'description' => 'Hotels, transport, tours, guides, rentals, gastronomic',
+                'description' => 'Accommodations, transport, tours, guides, rentals, gastronomic',
             ),
             7 => 
             array (
@@ -81,7 +83,7 @@ class CatAccountTypeTranslationsTableSeeder extends Seeder
                 'account_type_id' => 2,
                 'language_id' => 2,
                 'name' => 'Proveedor de servicios',
-                'description' => 'Hoteles, transporte, tours, rentals, guías, gastronómicos',
+                'description' => 'Alojamientos, transporte, tours, rentals, guías, gastronómicos',
             ),
             8 => 
             array (
@@ -89,10 +91,9 @@ class CatAccountTypeTranslationsTableSeeder extends Seeder
                 'account_type_id' => 2,
                 'language_id' => 3,
                 'name' => 'Prestador de serviços',
-                'description' => 'Hotéis, passeios, guias, transportes',
+                'description' => 'Alojamentos, passeios, guias, transportes',
             ),
         ));
-        
-        
+        });
     }
 }

@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+From now on we won't run a migrate:fresh anymore. Changes to current tables will be done in migrations/ongoing folder. New tables will be created in the exisitng migrations/ folders

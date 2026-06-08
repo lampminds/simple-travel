@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('code')->unique()->comment('Short name, in English');
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
+            $table->enum('operator_override_mode', ['none', 'append_only', 'replace', 'suppress'])->default('none')
+                ->comment('none: operator cannot override nor hide; append_only: operator can only append, replace: operator can replace, suppress: operator can hide it');
 
             lmpStamps($table);
         });
@@ -33,6 +35,8 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['service_detail_topic_category_id', 'language_id'], 'cat_sdtc_trans_lang_unique');
         });
     }
 

@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
-use App\Models\AccountCategory;
+use App\Models\CatDocument;
 use App\Models\AccountType;
 use App\Models\LmpCity;
 use BackedEnum;
@@ -141,13 +141,13 @@ class AccountResource extends LmpResource
                         ]),
                     Tab::make(__('filament.resources.account_tabs.tax_ids'))
                         ->schema([
-                            Repeater::make('taxIds')
+                            Repeater::make('documents')
                                 ->relationship()
                                 ->schema([
-                                    Select::make('account_category_id')
-                                        ->label(__('filament.resources.account_tax_id_fields.account_category_id'))
+                                    Select::make('document_id')
+                                        ->label(__('filament.resources.account_document_fields.document_id'))
                                         ->options(
-                                            fn () => AccountCategory::query()
+                                            fn () => CatDocument::query()
                                                 ->byGroup('tax_id')
                                                 ->where('active', true)
                                                 ->with(['translations.language.locale'])
@@ -158,13 +158,13 @@ class AccountResource extends LmpResource
                                         ->required()
                                         ->searchable(),
                                     TextInput::make('value')
-                                        ->label(__('filament.resources.account_tax_id_fields.value'))
+                                        ->label(__('filament.resources.account_document_fields.value'))
                                         ->required()
                                         ->maxLength(255),
                                 ])
                                 ->columns(2)
                                 ->defaultItems(0)
-                                ->addActionLabel(__('filament.resources.account_tax_id_fields.add')),
+                                ->addActionLabel(__('filament.resources.account_document_fields.add')),
                         ])
                         ->visibleOn(['edit', 'view']),
                     Tab::make(__('filament.resources.account_tabs.business_types'))

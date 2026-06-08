@@ -15,12 +15,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3">
-                        <div class="page-title">
-                            <h3 class="my-0">{{ __('account.operator_price_lists.heading') }}</h3>
-                            <p class="mt-1 fw-medium text-muted mb-0">
-                                {{ __('account.operator_price_lists.intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                            </p>
-                        </div>
+                        <x-account-page-header
+                            class="flex-grow-1"
+                            :title="__('account.operator_price_lists.heading')"
+                            :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
+                            :instructions="__('account.operator_price_lists.intro_instructions')"
+                        />
                         <div>
                             <a href="{{ route('account.operator-price-lists.create') }}" class="btn btn-primary">
                                 {{ __('account.operator_price_lists.create_button') }}
@@ -60,7 +60,7 @@
                                                 <td>{{ $priceList->currency?->display_name ?? '—' }}</td>
                                                 <td>
                                                     @if ($priceList->valid_from || $priceList->valid_to)
-                                                        {{ $priceList->valid_from?->format('Y-m-d') ?? '—' }} → {{ $priceList->valid_to?->format('Y-m-d') ?? '—' }}
+                                                        {{ locale_date_range($priceList->valid_from, $priceList->valid_to) }}
                                                     @else
                                                         —
                                                     @endif

@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ServiceTransferResource\Pages;
-use App\Models\Service;
 use App\Models\ServiceTransfer;
+use App\Models\ServiceVariant;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -76,14 +76,24 @@ class ServiceTransferResource extends LmpResource
                     Tab::make(__('filament.resources.service_transfer_tabs.general'))
                         ->schema([
                             Section::make('')->schema([
-                                Select::make('service_id')
-                                    ->label(__('filament.resources.service_transfer_fields.service_id'))
+                                Select::make('service_variant_id')
+                                    ->label(__('filament.resources.service_transfer_fields.service_variant_id'))
                                     ->options(
-                                        fn () => Service::query()
-                                            ->with(['translations.language.locale'])
+                                        fn () => ServiceVariant::query()
+                                            ->with(['translations.language.locale', 'service.translations.language.locale'])
+                                            ->orderBy('service_id')
+                                            ->orderBy('sort_order')
                                             ->orderBy('id')
                                             ->get()
-                                            ->mapWithKeys(fn (Service $s) => [$s->id => ($s->name !== '' ? $s->name : '#'.$s->id)])
+                                            ->mapWithKeys(function (ServiceVariant $variant): array {
+                                                $serviceName = trim((string) ($variant->service?->name ?? ''));
+                                                $variantLabel = trim((string) $variant->name) !== ''
+                                                    ? trim((string) $variant->name)
+                                                    : (trim((string) $variant->sku) !== '' ? trim((string) $variant->sku) : '#'.$variant->id);
+                                                $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
+
+                                                return [$variant->id => $serviceChunk.' — '.$variantLabel];
+                                            })
                                     )
                                     ->searchable()
                                     ->required()
@@ -105,16 +115,6 @@ class ServiceTransferResource extends LmpResource
                                 Toggle::make('allows_multiple_stops')
                                     ->label(__('filament.resources.service_transfer_fields.allows_multiple_stops'))
                                     ->default(false),
-                                TextInput::make('max_passengers')
-                                    ->label(__('filament.resources.service_transfer_fields.max_passengers'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->nullable(),
-                                TextInput::make('max_luggage')
-                                    ->label(__('filament.resources.service_transfer_fields.max_luggage'))
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->nullable(),
                                 TextInput::make('default_duration_minutes')
                                     ->label(__('filament.resources.service_transfer_fields.default_duration_minutes'))
                                     ->numeric()
@@ -142,10 +142,17 @@ class ServiceTransferResource extends LmpResource
                 TextColumn::make('id')
                     ->label(__('filament.resources.service_transfer_columns.id'))
                     ->sortable(),
-                TextColumn::make('service.name')
+                TextColumn::make('serviceVariant.service.name')
                     ->label(__('filament.resources.service_transfer_columns.service'))
                     ->searchable(query: function ($query, $search): void {
-                        $query->whereHas('service.translations', function ($q) use ($search): void {
+                        $query->whereHas('serviceVariant.service.translations', function ($q) use ($search): void {
+                            $q->where('name', 'like', '%'.$search.'%');
+                        });
+                    }),
+                TextColumn::make('serviceVariant.name')
+                    ->label(__('filament.resources.service_transfer_fields.service_variant_id'))
+                    ->searchable(query: function ($query, $search): void {
+                        $query->whereHas('serviceVariant.translations', function ($q) use ($search): void {
                             $q->where('name', 'like', '%'.$search.'%');
                         });
                     }),
@@ -160,7 +167,10 @@ class ServiceTransferResource extends LmpResource
                     ->boolean(),
             ])
             ->defaultSort('id')
-            ->modifyQueryUsing(fn ($query) => $query->with(['service.translations.language.locale']))
+            ->modifyQueryUsing(fn ($query) => $query->with([
+                'serviceVariant.translations.language.locale',
+                'serviceVariant.service.translations.language.locale',
+            ]))
             ->recordActions([
                 ActionGroup::make([
                     ViewAction::make(),
@@ -178,7 +188,7 @@ class ServiceTransferResource extends LmpResource
     public static function modifyGlobalSearchQuery(Builder $query, string $search): void
     {
         $term = '%'.$search.'%';
-        $query->whereHas('service.translations', function ($q) use ($term): void {
+        $query->whereHas('serviceVariant.service.translations', function ($q) use ($term): void {
             $q->where('name', 'like', $term);
         });
     }

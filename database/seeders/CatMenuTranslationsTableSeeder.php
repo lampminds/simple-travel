@@ -109,21 +109,13 @@ class CatMenuTranslationsTableSeeder extends Seeder
             ),
             11 => 
             array (
-                'id' => 13,
-                'menu_id' => 13,
-                'language_id' => 2,
-                'name' => 'Gestionar invitaciones',
-                'tip' => NULL,
-            ),
-            12 => 
-            array (
                 'id' => 14,
                 'menu_id' => 14,
                 'language_id' => 2,
                 'name' => 'Sitio web',
                 'tip' => NULL,
             ),
-            13 => 
+            12 => 
             array (
                 'id' => 15,
                 'menu_id' => 15,
@@ -131,7 +123,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Configuración del sitio',
                 'tip' => NULL,
             ),
-            14 => 
+            13 => 
             array (
                 'id' => 16,
                 'menu_id' => 16,
@@ -139,7 +131,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Ver sitio web',
                 'tip' => NULL,
             ),
-            15 => 
+            14 => 
             array (
                 'id' => 17,
                 'menu_id' => 17,
@@ -147,7 +139,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Listas de Precios',
                 'tip' => NULL,
             ),
-            16 => 
+            15 => 
             array (
                 'id' => 18,
                 'menu_id' => 18,
@@ -155,7 +147,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Relaciones comerciales',
                 'tip' => NULL,
             ),
-            17 => 
+            16 => 
             array (
                 'id' => 19,
                 'menu_id' => 20,
@@ -163,7 +155,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Services',
                 'tip' => NULL,
             ),
-            18 => 
+            17 => 
             array (
                 'id' => 20,
                 'menu_id' => 20,
@@ -171,7 +163,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Servicios',
                 'tip' => NULL,
             ),
-            19 => 
+            18 => 
             array (
                 'id' => 21,
                 'menu_id' => 19,
@@ -179,7 +171,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Vehículos',
                 'tip' => NULL,
             ),
-            20 => 
+            19 => 
             array (
                 'id' => 24,
                 'menu_id' => 17,
@@ -187,7 +179,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Pricing',
                 'tip' => NULL,
             ),
-            21 => 
+            20 => 
             array (
                 'id' => 25,
                 'menu_id' => 17,
@@ -195,7 +187,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Listas de Preços',
                 'tip' => NULL,
             ),
-            22 => 
+            21 => 
             array (
                 'id' => 27,
                 'menu_id' => 22,
@@ -203,7 +195,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Provider prices',
                 'tip' => NULL,
             ),
-            23 => 
+            22 => 
             array (
                 'id' => 28,
                 'menu_id' => 22,
@@ -211,7 +203,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Precios a operadores',
                 'tip' => NULL,
             ),
-            24 => 
+            23 => 
             array (
                 'id' => 29,
                 'menu_id' => 23,
@@ -219,7 +211,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Operator prices',
                 'tip' => NULL,
             ),
-            25 => 
+            24 => 
             array (
                 'id' => 30,
                 'menu_id' => 23,
@@ -227,7 +219,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Precios comerciales',
                 'tip' => NULL,
             ),
-            26 => 
+            25 => 
             array (
                 'id' => 31,
                 'menu_id' => 24,
@@ -235,12 +227,36 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Packages',
                 'tip' => NULL,
             ),
-            27 => 
+            26 => 
             array (
                 'id' => 32,
                 'menu_id' => 24,
                 'language_id' => 2,
                 'name' => 'Paquetes',
+                'tip' => NULL,
+            ),
+            27 => 
+            array (
+                'id' => 33,
+                'menu_id' => 25,
+                'language_id' => 1,
+                'name' => 'To Be Developed...',
+                'tip' => NULL,
+            ),
+            28 => 
+            array (
+                'id' => 34,
+                'menu_id' => 25,
+                'language_id' => 2,
+                'name' => 'A desarrollar...',
+                'tip' => NULL,
+            ),
+            29 => 
+            array (
+                'id' => 35,
+                'menu_id' => 25,
+                'language_id' => 3,
+                'name' => 'A desarrollar...',
                 'tip' => NULL,
             ),
         ));

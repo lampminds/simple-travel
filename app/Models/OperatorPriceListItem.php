@@ -11,7 +11,7 @@ class OperatorPriceListItem extends Model
 
     public const MODE_FIXED_DELTA = 'fixed_delta';
 
-    public const MODE_DIRECT = 'direct';
+    public const MODE_FIXED_PRICE = 'fixed_price';
 
     protected $table = 'operator_price_list_items';
 

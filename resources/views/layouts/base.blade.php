@@ -24,7 +24,7 @@
 
 @yield('script')
 @include('layouts.partials.html5-validation')
-@vite(['resources/js/theme.js','resources/js/swiper.js'])
+    @vite(['resources/js/theme.js', 'resources/js/swiper.js', 'resources/js/locale-date-input.js'])
 @livewireScripts
 @yield('script-bottom')
 </body>

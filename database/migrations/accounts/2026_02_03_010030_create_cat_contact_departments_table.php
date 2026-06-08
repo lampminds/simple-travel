@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('cat_contact_departments', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
+            $table->string('code')->unique();
             $table->boolean('active')->default(true);
             $table->smallInteger('sort_order')->default(9999)->comment('Order for listing');
 
@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('name')->nullable();
 
             lmpStamps($table);
+
+            $table->unique(['contact_department_id', 'language_id'], 'cat_contact_department_trans_lang_unique');
         });
     }
 

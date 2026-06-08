@@ -22,6 +22,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->smallinteger('sort_order')->default(9999)->comment('Order for listing');
             $table->boolean('active')->default(true);
+            $table->boolean('is_mandatory')->default(false);
+            $table->foreignId('condition_key_id')->nullable()->constrained('cat_service_detail_condition_keys');
 
             lmpStamps($table);
         });

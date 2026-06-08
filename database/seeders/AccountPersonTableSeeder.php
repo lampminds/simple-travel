@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Support\SeederUuid;
 use Illuminate\Database\Seeder;
 
 class AccountPersonTableSeeder extends Seeder
@@ -18,7 +19,7 @@ class AccountPersonTableSeeder extends Seeder
 
         \DB::table('account_person')->delete();
         
-        \DB::table('account_person')->insert(array (
+        \DB::table('account_person')->insert(SeederUuid::assign(array (
             0 => 
             array (
                 'id' => 1,
@@ -31,7 +32,7 @@ class AccountPersonTableSeeder extends Seeder
                 'is_public_contact' => 0,
                 'is_preferred_contact_mode' => 0,
             ),
-        ));
+        )));
         
         
     }

@@ -18,13 +18,10 @@ class ServiceHotel extends Model
         'stars',
         'check_in_time',
         'check_out_time',
-        'rooms_count',
-        'chain_name',
     ];
 
     protected $casts = [
         'stars' => 'integer',
-        'rooms_count' => 'integer',
     ];
 
     public function service(): BelongsTo

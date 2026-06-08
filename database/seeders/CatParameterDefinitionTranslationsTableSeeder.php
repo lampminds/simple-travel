@@ -102,6 +102,15 @@ class CatParameterDefinitionTranslationsTableSeeder extends Seeder
 -2: redondea $35.123,10 a $35.100
 -3: redondea $35.123,10 a $35.000',
             ),
+            9 => 
+            array (
+                'id' => 22,
+                'parameter_definition_id' => 7,
+                'language_id' => 2,
+                'name' => 'Formato de fecha',
+                'description' => NULL,
+                'help' => NULL,
+            ),
         ));
         
         

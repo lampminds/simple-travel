@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
@@ -14,14 +16,64 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
 class Person extends Model implements HasMedia
 {
-    use HasFactory, AuditTrait, InteractsWithMedia;
+    use HasFactory, AuditTrait, HasUuid, InteractsWithMedia;
 
     /** Laravel would default to table `people` (irregular plural). */
     protected $table = 'persons';
 
     protected $fillable = [
         'name',
+        'given_name',
+        'family_name',
+        'document_name',
+        'nationality_id',
+        'date_of_birth',
+        'gender_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'date_of_birth' => 'date',
+            'nationality_id' => 'integer',
+            'gender_id' => 'integer',
+        ];
+    }
+
+    public function gender(): BelongsTo
+    {
+        return $this->belongsTo(CatGender::class, 'gender_id');
+    }
+
+    public function nationality(): BelongsTo
+    {
+        return $this->belongsTo(LmpCountry::class, 'nationality_id');
+    }
+
+    /**
+     * Display / snapshot name (always {@see $name}, which is required).
+     */
+    public function resolveFullName(): string
+    {
+        return trim((string) $this->name);
+    }
+
+    /**
+     * Attributes copied into booking_passengers snapshot columns.
+     *
+     * @return array<string, mixed>
+     */
+    public function toPassengerSnapshotAttributes(): array
+    {
+        return [
+            'full_name' => $this->resolveFullName(),
+            'given_name' => $this->given_name,
+            'family_name' => $this->family_name,
+            'nationality_id' => $this->nationality_id,
+            'date_of_birth' => $this->date_of_birth,
+            'gender_id' => $this->gender_id,
+        ];
+    }
 
     /**
      * Account membership rows (department, position, flags per account).
@@ -41,10 +93,21 @@ class Person extends Model implements HasMedia
         return $this->hasMany(AccountContactLink::class);
     }
 
+    public function organizationPersons(): HasMany
+    {
+        return $this->hasMany(OrganizationPerson::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(PersonDocument::class);
+    }
+
     public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class, 'account_person')
             ->withPivot([
+                'link_type',
                 'contact_department_id',
                 'contact_position_id',
                 'is_primary',
@@ -121,7 +184,7 @@ class Person extends Model implements HasMedia
     {
         $seed = substr(hash('sha256', 'person|'.$this->getKey().'|'.$this->name), 0, 32);
 
-        return 'https://api.dicebear.com/9.x/avataaars/svg?'.http_build_query([
+        return 'https://api.dicebear.com/9.x/pixel-art/svg?'.http_build_query([
             'seed' => $seed,
             'size' => $size,
         ]);

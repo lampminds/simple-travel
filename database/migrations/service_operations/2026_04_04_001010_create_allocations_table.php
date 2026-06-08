@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('allocations', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
 
             $table->foreignId('service_variant_id')->constrained();
 
@@ -38,6 +39,11 @@ return new class extends Migration
             $table->boolean('active')->default(true);
 
             lmpStamps($table);
+
+            $table->unique(
+                ['provider_id', 'operator_id', 'service_variant_id', 'start_date'],
+                'allocations_unique'
+            );
         });
     }
 

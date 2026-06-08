@@ -20,7 +20,7 @@ final class OperatorPriceListItemPricingService
 
     public const MODE_FIXED_DELTA = 'fixed_delta';
 
-    public const MODE_DIRECT = 'direct';
+    public const MODE_FIXED_PRICE = 'fixed_price';
 
     public function __construct(
         private readonly OperatorVariantPriceResolver $variantPriceResolver,
@@ -47,7 +47,7 @@ final class OperatorPriceListItemPricingService
         OperatorPackageItem $packageItem,
         int $operatorAccountId,
         int $listCurrencyId,
-        string $pricingMode,
+        ?string $pricingMode,
         float $price,
         ?CarbonInterface $pricingDate = null,
     ): array {
@@ -75,14 +75,17 @@ final class OperatorPriceListItemPricingService
             $breakdownHtml = $resolved['breakdown_html'] ?? null;
 
             if ($resolved['has_amount'] && $resolved['amount'] !== null) {
-                $variantCurrencyId = (int) $variant->currency_id;
-                if ($variantCurrencyId === $listCurrencyId) {
+                $sourceCurrencyId = isset($resolved['currency_id'])
+                    ? (int) $resolved['currency_id']
+                    : (int) $variant->currency_id;
+
+                if ($sourceCurrencyId === $listCurrencyId) {
                     $providerUnitCost = (float) $resolved['amount'];
                 } else {
-                    // Provider cost → operator list currency: conservative (higher cost in list currency).
+                    // Provider list currency → operator list currency: conservative (higher cost in list currency).
                     $converted = $this->currencyConversion->convert(
                         (float) $resolved['amount'],
-                        $variantCurrencyId,
+                        $sourceCurrencyId,
                         $listCurrencyId,
                         CurrencyRateSide::Buy,
                         CurrencyRateSide::Sell,
@@ -106,10 +109,14 @@ final class OperatorPriceListItemPricingService
             $warning = __('account.operator_price_lists.warnings.no_provider_cost');
         }
 
-        $finalPrice = $this->applyOperatorAdjustment($pricingMode, $price, $providerUnitCost);
+        if ($pricingMode === null) {
+            $finalPrice = $providerUnitCost;
+        } else {
+            $finalPrice = $this->applyOperatorAdjustment($pricingMode, $price, $providerUnitCost);
 
-        if (! $providerCostAvailable && $pricingMode !== self::MODE_DIRECT) {
-            $finalPrice = null;
+            if (! $providerCostAvailable && $pricingMode !== self::MODE_FIXED_PRICE) {
+                $finalPrice = null;
+            }
         }
 
         return [
@@ -130,12 +137,18 @@ final class OperatorPriceListItemPricingService
         ];
     }
 
-    public function normalizeMode(string $mode): string
+    public function normalizeMode(?string $mode): ?string
     {
+        $mode = trim((string) $mode);
+
+        if ($mode === '') {
+            return null;
+        }
+
         return match ($mode) {
-            self::MODE_PERCENTAGE, self::MODE_FIXED_DELTA, self::MODE_DIRECT => $mode,
-            'fixed' => self::MODE_DIRECT,
-            default => self::MODE_DIRECT,
+            self::MODE_PERCENTAGE, self::MODE_FIXED_DELTA, self::MODE_FIXED_PRICE => $mode,
+            'direct', 'fixed' => self::MODE_FIXED_PRICE,
+            default => null,
         };
     }
 
@@ -145,10 +158,10 @@ final class OperatorPriceListItemPricingService
     public function allowedModesForProviderCost(bool $providerCostAvailable): array
     {
         if ($providerCostAvailable) {
-            return [self::MODE_PERCENTAGE, self::MODE_FIXED_DELTA, self::MODE_DIRECT];
+            return ['', self::MODE_PERCENTAGE, self::MODE_FIXED_DELTA, self::MODE_FIXED_PRICE];
         }
 
-        return [self::MODE_DIRECT];
+        return [self::MODE_FIXED_PRICE];
     }
 
     private function applyOperatorAdjustment(string $pricingMode, float $price, ?float $providerUnitCost): ?float
@@ -160,7 +173,7 @@ final class OperatorPriceListItemPricingService
             self::MODE_FIXED_DELTA => $providerUnitCost !== null
                 ? $providerUnitCost + $price
                 : null,
-            self::MODE_DIRECT => $price > 0.0 ? $price : null,
+            self::MODE_FIXED_PRICE => $price > 0.0 ? $price : null,
             default => null,
         };
     }

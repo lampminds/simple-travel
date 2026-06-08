@@ -16,6 +16,7 @@ return new class extends Migration
     {
         Schema::create('service_variants', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('service_id')->constrained();
             $table->string('sku')->comment('Stock keeping unit / variant code');
 
@@ -27,7 +28,6 @@ return new class extends Migration
             $table->foreign('currency_id')->references('id')->on('cat_currencies');
 
             $table->enum('inventory_type', ['unlimited', 'per_day', 'per_timeslot', 'per_departure']);
-            $table->enum('booking_type', ['instant', 'request'])->default('request');
             $table->unsignedInteger('inventory_total')->nullable()->comment('When inventory_type is fixed');
             $table->unsignedSmallInteger('capacity_min')->nullable()->comment('Min capacity (e.g. persons)');
             $table->unsignedSmallInteger('capacity_max')->nullable()->comment('Max capacity (e.g. persons)');

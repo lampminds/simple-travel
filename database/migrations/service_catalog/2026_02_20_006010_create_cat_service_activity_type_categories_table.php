@@ -30,6 +30,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('language_id');
             $table->foreign('language_id', 'satc_lang_fk')->references('id')->on('cat_languages');
             $table->string('name')->nullable();
+
+            $table->unique(['service_activity_type_category_id', 'language_id'], 'cat_satcc_trans_lang_unique');
         });
     }
 

@@ -20,12 +20,12 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3">
-                        <div class="page-title">
-                            <h3 class="my-0">{{ __('account.transfer_vehicle_types.heading') }}</h3>
-                            <p class="mt-1 fw-medium text-muted mb-0">
-                                {{ __('account.transfer_vehicle_types.intro', ['account' => $account->commercial_name ?? $account->name ?? $account->nick]) }}
-                            </p>
-                        </div>
+                        <x-account-page-header
+                            class="flex-grow-1"
+                            :title="__('account.transfer_vehicle_types.heading')"
+                            :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
+                            :instructions="__('account.transfer_vehicle_types.intro_instructions')"
+                        />
                         <div>
                             <div class="d-flex flex-wrap gap-2 justify-content-md-end">
                                 @if ($importCatalogAvailable)
@@ -61,11 +61,11 @@
                                 <table class="table table-hover align-middle mb-0">
                                     <thead>
                                         <tr>
+                                            <th class="text-center text-nowrap" style="width: 1%;">{{ __('account.transfer_vehicle_types.columns.order') }}</th>
                                             <th>{{ __('account.transfer_vehicle_types.columns.name') }}</th>
                                             <th>{{ __('account.transfer_vehicle_types.columns.code') }}</th>
                                             <th>{{ __('account.transfer_vehicle_types.columns.category') }}</th>
                                             <th>{{ __('account.transfer_vehicle_types.columns.max_passengers') }}</th>
-                                            <th>{{ __('account.transfer_vehicle_types.columns.sort_order') }}</th>
                                             <th>{{ __('account.transfer_vehicle_types.columns.active') }}</th>
                                             <th class="text-end">{{ __('account.transfer_vehicle_types.columns.actions') }}</th>
                                         </tr>
@@ -73,11 +73,39 @@
                                     <tbody>
                                         @foreach ($vehicleTypes as $vt)
                                             <tr>
+                                                <td class="text-center text-nowrap">
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ route('account.transfer-vehicle-types.move', [$vt, 'up']) }}"
+                                                        class="d-inline-block"
+                                                    >
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('account.transfer_vehicle_types.columns.order') }}">
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-outline-secondary"
+                                                                title="{{ __('account.transfer_vehicle_types.move_up') }}"
+                                                                @disabled($loop->first)
+                                                            >
+                                                                <i data-feather="chevron-up" class="icon icon-xs" aria-hidden="true"></i>
+                                                            </button>
+                                                            <button
+                                                                type="submit"
+                                                                class="btn btn-outline-secondary"
+                                                                title="{{ __('account.transfer_vehicle_types.move_down') }}"
+                                                                formaction="{{ route('account.transfer-vehicle-types.move', [$vt, 'down']) }}"
+                                                                @disabled($loop->last)
+                                                            >
+                                                                <i data-feather="chevron-down" class="icon icon-xs" aria-hidden="true"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </td>
                                                 <td class="fw-semibold">{{ $vt->name }}</td>
                                                 <td class="text-muted small">{{ $vt->code ?? '—' }}</td>
                                                 <td>{{ $vt->category?->name !== '' && $vt->category?->name !== null ? $vt->category->name : ($vt->category?->code ?? '—') }}</td>
                                                 <td>{{ $vt->max_passengers ?? '—' }}</td>
-                                                <td>{{ (int) $vt->sort_order }}</td>
                                                 <td>
                                                     <span class="badge {{ $vt->active ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' }}">
                                                         {{ $vt->active ? __('account.transfer_vehicle_types.active_yes') : __('account.transfer_vehicle_types.active_no') }}
@@ -106,10 +134,6 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-
-                        <div class="mt-3">
-                            {{ $vehicleTypes->links() }}
                         </div>
                     @endif
                 </div>

@@ -101,6 +101,42 @@ class Currency extends Model
         return "Currency #{$this->id}";
     }
 
+    /**
+     * Resolve a project currency row by ISO code (e.g. ARS, USD).
+     */
+    public static function resolveByIsoCode(string $code): ?self
+    {
+        static $cache = [];
+
+        $normalized = strtoupper(trim($code));
+        if ($normalized === '' || $normalized === '—') {
+            return null;
+        }
+
+        if (array_key_exists($normalized, $cache)) {
+            return $cache[$normalized];
+        }
+
+        $masterId = LmpCurrency::query()
+            ->whereRaw('UPPER(code) = ?', [$normalized])
+            ->value('id');
+
+        if ($masterId === null) {
+            $cache[$normalized] = null;
+
+            return null;
+        }
+
+        $currency = static::query()
+            ->with('lmpCurrency')
+            ->where('currency_id', $masterId)
+            ->first();
+
+        $cache[$normalized] = $currency;
+
+        return $currency;
+    }
+
     private function formatDisplay(LmpCurrency $lmp): string
     {
         $parts = array_filter([$lmp->code, $lmp->symbol, $lmp->name]);

@@ -21,7 +21,7 @@ class ServiceDetailTopicTranslation extends Model
 
     public function serviceDetailTopic(): BelongsTo
     {
-        return $this->belongsTo(ServiceDetailTopic::class);
+        return $this->belongsTo(ServiceDetailTopic::class, 'service_detail_topic_id');
     }
 
     public function language(): BelongsTo

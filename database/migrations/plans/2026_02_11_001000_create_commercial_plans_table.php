@@ -30,6 +30,18 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('description')->nullable();
 
+            $table->unique(['commercial_plan_id', 'language_id'], 'commercial_plan_trans_lang_unique');
+
+            lmpStamps($table);
+        });
+
+        Schema::create('commercial_plan_account_types', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('commercial_plan_id')->constrained('commercial_plans', 'id', 'cp_account_types_fk')->cascadeOnDelete();
+            $table->foreignId('account_type_id')->constrained('cat_account_types', 'id', 'pt_account_types_fk')->cascadeOnDelete();
+
+            $table->unique(['commercial_plan_id', 'account_type_id'], 'commercial_plan_account_types_unique');
+
             lmpStamps($table);
         });
 
@@ -39,18 +51,22 @@ return new class extends Migration
             $table->foreignId('module_id')->constrained('modules', 'id', 'pt_modules_fk')->cascadeOnDelete();
             $table->smallInteger('sort_order')->default(9999);
 
+            $table->unique(['commercial_plan_id', 'module_id'], 'commercial_plan_modules_unique');
+
             lmpStamps($table);
         });
 
         Schema::create('commercial_module_prices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('module_id')->nullable()->constrained('modules', 'id', 'cm_prices_fk')->cascadeOnDelete();
-            $table->enum('billing_type', ['fixed', 'per_user', 'hybrid', 'usage', 'included'])->default('fixed')
+            $table->foreignId('module_id')->constrained('modules', 'id', 'cm_prices_fk')->cascadeOnDelete();
+            $table->enum('billing_type', ['fixed', 'per_user', 'hybrid', 'usage'])->default('fixed')
                 ->comment('website:fixed, crm:per_user, core:hybrid, api:usage');
             $table->decimal('base_price', 10, 2)->nullable();
             $table->integer('included_users')->nullable();
             $table->decimal('price_per_user', 10, 2)->nullable();
             $table->boolean('active')->default(true);
+
+            $table->unique(['module_id', 'billing_type'], 'module_prices_unique');
 
             lmpStamps($table);
         });
@@ -61,6 +77,8 @@ return new class extends Migration
             $table->smallInteger('from_users')->nullable();
             $table->smallInteger('to_users')->nullable();
             $table->decimal('price_per_user', 10, 2)->nullable();
+
+            $table->unique(['module_price_id', 'from_users', 'to_users'], 'module_price_tiers_unique');
 
             lmpStamps($table);
         });

@@ -16,7 +16,9 @@ export default defineConfig({
 
                 // js
                 'resources/js/theme.js',
-                'resources/js/swiper.js'
+                'resources/js/swiper.js',
+                'resources/js/operator-currency-rates-chart.js',
+                'resources/js/locale-date-input.js',
             ],
             refresh: true,
         }),
