@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class CatMenusTableSeeder extends Seeder
 {
@@ -14,11 +15,13 @@ class CatMenusTableSeeder extends Seeder
      */
     public function run()
     {
-        
+        // parent_id can point to rows that appear later in this array; FK checks would fail on insert order.
+        Schema::disableForeignKeyConstraints();
 
-        \DB::table('cat_menus')->delete();
-        
-        \DB::table('cat_menus')->insert(array (
+        try {
+            \DB::table('cat_menus')->delete();
+
+            \DB::table('cat_menus')->insert(array (
             0 => 
             array (
                 'id' => 1,
@@ -280,7 +283,8 @@ class CatMenusTableSeeder extends Seeder
                 'active' => 1,
             ),
         ));
-        
-        
+        } finally {
+            Schema::enableForeignKeyConstraints();
+        }
     }
 }
