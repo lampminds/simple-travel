@@ -93,10 +93,16 @@ class ParameterValueResource extends BaseResource
                         ->relationship(
                             name: 'parameterDefinition',
                             titleAttribute: 'code',
-                            modifyQueryUsing: fn (Builder $query) => $query->orderBy('category')->orderBy('code')
+                            modifyQueryUsing: fn (Builder $query) => $query
+                                ->orderBy('category')
+                                ->orderBy('subcategory')
+                                ->orderBy('code')
                         )
                         ->getOptionLabelFromRecordUsing(
-                            fn (ParameterDefinition $record): string => ($record->category !== '' ? $record->category.' — ' : '').$record->code
+                            fn (ParameterDefinition $record): string => implode(' — ', array_filter(
+                                [$record->category, $record->subcategory, $record->code],
+                                fn (?string $part): bool => filled($part),
+                            ))
                         )
                         ->searchable()
                         ->preload()

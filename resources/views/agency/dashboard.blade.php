@@ -19,8 +19,11 @@
             @include('dashboard.partials.currency-rates-chart-section')
 
             <div class="mt-4 d-flex flex-wrap gap-2">
-                <a href="{{ route('account.package-offers.index') }}" class="btn btn-outline-primary">
+                <a href="{{ route('account.package-offers.index', ['as' => 'agency']) }}" class="btn btn-outline-primary">
                     {{ __('account.package_offers_nav') }}
+                </a>
+                <a href="{{ route('account.reservations.index') }}" class="btn btn-outline-primary">
+                    {{ __('account.reservations_nav') }}
                 </a>
             </div>
 

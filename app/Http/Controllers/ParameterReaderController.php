@@ -18,6 +18,7 @@ class ParameterReaderController extends Controller
 {
     public const CODE_INVITATION_EXPIRATION_DAYS = 'invitation_expiration_days';
     public const CODE_MAX_INVITATIONS_RETRIES = 'max_invitations_retries';
+    public const CODE_DAILY_UPDATE_TIME = 'daily_update_time';
 
     /** @var array<string, ?string> */
     private array $rawCache = [];
@@ -57,6 +58,30 @@ class ParameterReaderController extends Controller
         $value = filter_var($raw, FILTER_VALIDATE_INT);
 
         return $value === false ? $default : $value;
+    }
+
+    /**
+     * Daily time (HH:MM) for scheduled system jobs such as currency rate updates.
+     */
+    public function dailyUpdateTime(string $default = '10:10'): string
+    {
+        $raw = $this->getRawValue(self::CODE_DAILY_UPDATE_TIME);
+        if ($raw === null) {
+            return $default;
+        }
+
+        if (preg_match('/^(\d{1,2}):(\d{2})(?::\d{2})?$/', $raw, $matches) !== 1) {
+            return $default;
+        }
+
+        $hour = (int) $matches[1];
+        $minute = (int) $matches[2];
+
+        if ($hour < 0 || $hour > 23 || $minute < 0 || $minute > 59) {
+            return $default;
+        }
+
+        return sprintf('%02d:%02d', $hour, $minute);
     }
 
     /**

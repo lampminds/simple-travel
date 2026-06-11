@@ -30,6 +30,8 @@ use App\Http\Controllers\AccountServiceOfferHubController;
 use App\Http\Controllers\AccountPackageOfferHubController;
 use App\Http\Controllers\AccountOperatorPackageOfferController;
 use App\Http\Controllers\AccountAgencyPackageOfferController;
+use App\Http\Controllers\AccountAgencyReservationController;
+use App\Http\Controllers\AccountOperatorReservationController;
 use App\Http\Controllers\AccountProviderAllocationController;
 use App\Http\Controllers\AccountAgencyClientsController;
 use App\Models\Account;
@@ -190,6 +192,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/package-offers/{offer}/reject', [AccountAgencyPackageOfferController::class, 'reject'])
         ->name('account.package-offers.reject');
 
+    Route::get('account/reservations', [AccountAgencyReservationController::class, 'index'])
+        ->name('account.reservations.index');
+    Route::get('account/reservations/create/{packageOffer}', [AccountAgencyReservationController::class, 'create'])
+        ->name('account.reservations.create');
+    Route::post('account/reservations', [AccountAgencyReservationController::class, 'store'])
+        ->name('account.reservations.store');
+    Route::get('account/reservations/{booking}', [AccountAgencyReservationController::class, 'show'])
+        ->name('account.reservations.show');
+
+    Route::get('account/operator/reservations', [AccountOperatorReservationController::class, 'index'])
+        ->name('account.operator.reservations.index');
+    Route::get('account/operator/reservations/{booking}', [AccountOperatorReservationController::class, 'show'])
+        ->name('account.operator.reservations.show');
+    Route::post('account/operator/reservations/{booking}/confirm', [AccountOperatorReservationController::class, 'confirm'])
+        ->name('account.operator.reservations.confirm');
+    Route::post('account/operator/reservations/{booking}/reject', [AccountOperatorReservationController::class, 'reject'])
+        ->name('account.operator.reservations.reject');
+
     Route::permanentRedirect('account/price-lists', '/account/provider-price-lists');
     Route::permanentRedirect('account/price-lists/{tail}', '/account/provider-price-lists/{tail}')->where('tail', '.*');
 
@@ -257,6 +277,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('relationships', fn () => redirect()->route('account.relationships.index'))->name('relationships');
     Route::get('clients', fn () => redirect()->route('account.clients.index'))->name('clients');
+    Route::get('reservations', fn () => redirect()->route('account.reservations.index'))->name('reservations');
     Route::get('catalog', [CatalogController::class, 'index'])->name('catalog');
 
     // Account dashboards by account category (must be protected against public catch-alls).

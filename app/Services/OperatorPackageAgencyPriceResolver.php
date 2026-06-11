@@ -9,6 +9,7 @@ use App\Models\OperatorPriceList;
 use App\Models\OperatorPriceListAssignment;
 use App\Models\OperatorPriceListItem;
 use App\Models\OperatorServiceCatalog;
+use App\Support\BookingPassengersSnapshot;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -40,6 +41,7 @@ final class OperatorPackageAgencyPriceResolver
         int $agencyAccountId,
         int $operatorAccountId,
         ?CarbonInterface $pricingDate = null,
+        ?array $passengersSnapshot = null,
     ): array {
         $pricingDate ??= Carbon::today();
         $empty = [
@@ -102,7 +104,7 @@ final class OperatorPackageAgencyPriceResolver
             }
 
             $unit = (float) $line['final_price'];
-            $qty = max(1, (int) $packageItem->quantity);
+            $qty = BookingPassengersSnapshot::lineQuantity($packageItem, $passengersSnapshot);
             $subtotal += $unit * $qty;
             $hasLine = true;
         }
@@ -112,8 +114,10 @@ final class OperatorPackageAgencyPriceResolver
         }
 
         $total = $this->applyAssignmentAdjustment($subtotal, $assignment);
+        $pricingMeta = $this->pricingMeta($subtotal, $total, $assignment);
+
         if ($total <= 0.0) {
-            return [
+            return array_merge([
                 'amount' => $total,
                 'has_amount' => true,
                 'formatted' => $this->priceFormatService->formatWithCurrency(
@@ -124,10 +128,10 @@ final class OperatorPackageAgencyPriceResolver
                 'currency_id' => $listCurrencyId,
                 'currency_code' => $priceList->currency?->currency_code,
                 'is_zero' => true,
-            ];
+            ], $pricingMeta);
         }
 
-        return [
+        return array_merge([
             'amount' => $total,
             'has_amount' => true,
             'formatted' => $this->priceFormatService->formatWithCurrency(
@@ -138,6 +142,32 @@ final class OperatorPackageAgencyPriceResolver
             'currency_id' => $listCurrencyId,
             'currency_code' => $priceList->currency?->currency_code,
             'is_zero' => false,
+        ], $pricingMeta);
+    }
+
+    /**
+     * @return array{
+     *     lines_subtotal: float,
+     *     assignment_adjustment_type: string|null,
+     *     assignment_adjustment_value: float|null,
+     *     assignment_adjustment_amount: float
+     * }
+     */
+    private function pricingMeta(
+        float $linesSubtotal,
+        float $grandTotal,
+        OperatorPriceListAssignment $assignment,
+    ): array {
+        $adjustmentType = trim((string) ($assignment->adjustment_type ?? ''));
+        $adjustmentValue = $assignment->adjustment_value !== null
+            ? (float) $assignment->adjustment_value
+            : null;
+
+        return [
+            'lines_subtotal' => round($linesSubtotal, 2),
+            'assignment_adjustment_type' => $adjustmentType !== '' ? $adjustmentType : null,
+            'assignment_adjustment_value' => $adjustmentValue,
+            'assignment_adjustment_amount' => round($grandTotal - $linesSubtotal, 2),
         ];
     }
 

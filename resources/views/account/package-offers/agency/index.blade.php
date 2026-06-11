@@ -111,6 +111,10 @@
                                                                 <input type="hidden" name="status" value="{{ $statusFilter }}">
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('account.package_offers.agency_index_reject') }}</button>
                                                             </form>
+                                                        @elseif ($offer->status === \App\Models\PackageOffer::STATUS_ACCEPTED && $offer->availability === \App\Models\PackageOffer::AVAILABILITY_ACTIVE)
+                                                            <a href="{{ route('account.reservations.create', $offer) }}" class="btn btn-sm btn-primary">
+                                                                {{ __('account.package_offers.agency_index_reserve') }}
+                                                            </a>
                                                         @endif
                                                     </td>
                                                 </tr>

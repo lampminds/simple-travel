@@ -113,7 +113,9 @@
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('account.service_offers.operator_index_reject') }}</button>
                                                             </form>
                                                         @else
-                                                            <span class="text-muted">—</span>
+                                                            <a href="{{ route('account.operator-packages.index') }}" class="btn btn-sm btn-outline-primary">
+                                                                {{ __('account.service_offers.operator_index_use_in_packages') }}
+                                                            </a>
                                                         @endif
                                                     </td>
                                                 </tr>

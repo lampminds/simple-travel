@@ -33,75 +33,159 @@ class CatMenuAccountTypeExclusionsTableSeeder extends Seeder
             ),
             2 => 
             array (
+                'id' => 18,
+                'menu_id' => 7,
+                'account_type_id' => 2,
+            ),
+            3 => 
+            array (
+                'id' => 19,
+                'menu_id' => 7,
+                'account_type_id' => 3,
+            ),
+            4 => 
+            array (
+                'id' => 31,
+                'menu_id' => 9,
+                'account_type_id' => 1,
+            ),
+            5 => 
+            array (
+                'id' => 28,
+                'menu_id' => 9,
+                'account_type_id' => 2,
+            ),
+            6 => 
+            array (
                 'id' => 12,
                 'menu_id' => 10,
                 'account_type_id' => 1,
             ),
-            3 => 
+            7 => 
             array (
                 'id' => 13,
                 'menu_id' => 10,
                 'account_type_id' => 2,
             ),
-            4 => 
+            8 => 
             array (
                 'id' => 5,
                 'menu_id' => 12,
                 'account_type_id' => 2,
             ),
-            5 => 
+            9 => 
+            array (
+                'id' => 17,
+                'menu_id' => 17,
+                'account_type_id' => 3,
+            ),
+            10 => 
             array (
                 'id' => 9,
                 'menu_id' => 19,
                 'account_type_id' => 1,
             ),
-            6 => 
+            11 => 
             array (
                 'id' => 8,
                 'menu_id' => 19,
                 'account_type_id' => 3,
             ),
-            7 => 
+            12 => 
             array (
                 'id' => 14,
                 'menu_id' => 20,
                 'account_type_id' => 1,
             ),
-            8 => 
+            13 => 
             array (
                 'id' => 7,
                 'menu_id' => 20,
                 'account_type_id' => 3,
             ),
-            9 => 
+            14 => 
             array (
                 'id' => 1,
                 'menu_id' => 22,
                 'account_type_id' => 1,
             ),
-            10 => 
+            15 => 
             array (
                 'id' => 2,
                 'menu_id' => 22,
                 'account_type_id' => 3,
             ),
-            11 => 
+            16 => 
             array (
                 'id' => 3,
                 'menu_id' => 23,
                 'account_type_id' => 2,
             ),
-            12 => 
+            17 => 
             array (
                 'id' => 4,
                 'menu_id' => 23,
                 'account_type_id' => 3,
             ),
-            13 => 
+            18 => 
             array (
                 'id' => 11,
                 'menu_id' => 24,
                 'account_type_id' => 2,
+            ),
+            19 => 
+            array (
+                'id' => 22,
+                'menu_id' => 24,
+                'account_type_id' => 3,
+            ),
+            20 => 
+            array (
+                'id' => 20,
+                'menu_id' => 26,
+                'account_type_id' => 1,
+            ),
+            21 => 
+            array (
+                'id' => 21,
+                'menu_id' => 26,
+                'account_type_id' => 3,
+            ),
+            22 => 
+            array (
+                'id' => 23,
+                'menu_id' => 27,
+                'account_type_id' => 2,
+            ),
+            23 => 
+            array (
+                'id' => 24,
+                'menu_id' => 27,
+                'account_type_id' => 3,
+            ),
+            24 => 
+            array (
+                'id' => 25,
+                'menu_id' => 28,
+                'account_type_id' => 1,
+            ),
+            25 => 
+            array (
+                'id' => 26,
+                'menu_id' => 28,
+                'account_type_id' => 2,
+            ),
+            26 => 
+            array (
+                'id' => 33,
+                'menu_id' => 29,
+                'account_type_id' => 2,
+            ),
+            27 => 
+            array (
+                'id' => 32,
+                'menu_id' => 29,
+                'account_type_id' => 3,
             ),
         ));
         

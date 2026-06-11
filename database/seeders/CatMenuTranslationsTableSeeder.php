@@ -71,17 +71,17 @@ class CatMenuTranslationsTableSeeder extends Seeder
             array (
                 'id' => 7,
                 'menu_id' => 7,
-                'language_id' => 2,
-                'name' => 'Disponibilidad',
-                'tip' => NULL,
+                'language_id' => 1,
+                'name' => 'Provider services',
+                'tip' => 'Review incoming service proposals from linked providers.',
             ),
             7 => 
             array (
                 'id' => 9,
                 'menu_id' => 9,
-                'language_id' => 2,
-                'name' => 'Reservas',
-                'tip' => NULL,
+                'language_id' => 1,
+                'name' => 'Reservations',
+                'tip' => 'Book packages enabled by linked operators.',
             ),
             8 => 
             array (
@@ -224,16 +224,16 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'id' => 31,
                 'menu_id' => 24,
                 'language_id' => 1,
-                'name' => 'Packages',
-                'tip' => NULL,
+                'name' => 'Commercial packages',
+                'tip' => 'Compose packages from accepted provider services.',
             ),
             26 => 
             array (
                 'id' => 32,
                 'menu_id' => 24,
                 'language_id' => 2,
-                'name' => 'Paquetes',
-                'tip' => NULL,
+                'name' => 'Paquetes comerciales',
+                'tip' => 'Armá paquetes a partir de los servicios de prestadores que aceptaste.',
             ),
             27 => 
             array (
@@ -258,6 +258,86 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'language_id' => 3,
                 'name' => 'A desarrollar...',
                 'tip' => NULL,
+            ),
+            30 => 
+            array (
+                'id' => 36,
+                'menu_id' => 7,
+                'language_id' => 2,
+                'name' => 'Servicios de prestadores',
+                'tip' => 'Revisá propuestas pendientes de servicios de prestadores vinculados.',
+            ),
+            31 => 
+            array (
+                'id' => 37,
+                'menu_id' => 9,
+                'language_id' => 2,
+                'name' => 'Reservas',
+                'tip' => 'Reservá paquetes que ya aceptaste de operadores vinculados.',
+            ),
+            32 => 
+            array (
+                'id' => 38,
+                'menu_id' => 26,
+                'language_id' => 1,
+                'name' => 'Offers to operators',
+                'tip' => 'Propose catalog variants to linked operators.',
+            ),
+            33 => 
+            array (
+                'id' => 39,
+                'menu_id' => 26,
+                'language_id' => 2,
+                'name' => 'Ofertas a operadores',
+                'tip' => 'Proponé variantes de tu catálogo a operadores vinculados.',
+            ),
+            34 => 
+            array (
+                'id' => 40,
+                'menu_id' => 27,
+                'language_id' => 1,
+                'name' => 'Offers to agencies',
+                'tip' => 'Propose commercial packages to linked agencies.',
+            ),
+            35 => 
+            array (
+                'id' => 41,
+                'menu_id' => 27,
+                'language_id' => 2,
+                'name' => 'Ofertas a agencias',
+                'tip' => 'Proponé paquetes comerciales a agencias vinculadas.',
+            ),
+            36 => 
+            array (
+                'id' => 42,
+                'menu_id' => 28,
+                'language_id' => 1,
+                'name' => 'Operator offers',
+                'tip' => 'Review pending package proposals from linked operators.',
+            ),
+            37 => 
+            array (
+                'id' => 43,
+                'menu_id' => 28,
+                'language_id' => 2,
+                'name' => 'Ofertas de operadores',
+                'tip' => 'Revisá propuestas pendientes de paquetes de operadores vinculados.',
+            ),
+            38 => 
+            array (
+                'id' => 44,
+                'menu_id' => 29,
+                'language_id' => 1,
+                'name' => 'Reservations',
+                'tip' => 'Review and confirm bookings submitted by linked agencies.',
+            ),
+            39 => 
+            array (
+                'id' => 45,
+                'menu_id' => 29,
+                'language_id' => 2,
+                'name' => 'Reservas',
+                'tip' => 'Revisá y confirmá reservas enviadas por agencias vinculadas.',
             ),
         ));
         
