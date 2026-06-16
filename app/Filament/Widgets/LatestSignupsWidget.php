@@ -2,71 +2,59 @@
 
 namespace App\Filament\Widgets;
 
-use App\Filament\Actions\OpenWebsiteImpersonationAction;
+use App\Filament\Widgets\Concerns\FormatsUserAccountNames;
+use App\Filament\Widgets\Concerns\InteractsWithWidgetActions;
+use App\Filament\Widgets\Concerns\MapsRecentUserRows;
 use App\Models\User;
-use Filament\Actions\ActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\RecordActionsPosition;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseTableWidget;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Collection;
 
-class LatestSignupsWidget extends BaseTableWidget
+class LatestSignupsWidget extends Widget implements HasActions, HasSchemas
 {
+    use FormatsUserAccountNames;
+    use InteractsWithWidgetActions;
+    use InteractsWithSchemas;
+    use MapsRecentUserRows;
+
     protected static ?string $heading = 'Registraciones recientes';
 
     protected static ?int $sort = 2;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
-    public function table(Table $table): Table
+    protected string $view = 'filament.widgets.latest-signups-widget';
+
+    protected static int $limit = 6;
+
+    /**
+     * @return Collection<int, array{id: int, can_impersonate: bool, name: string, account: string, time: string|null, time_formatted: string|null}>
+     */
+    public function getUsers(): Collection
     {
-        return $table
-            ->query(
-                User::query()
-                    ->with('accounts')
-                    ->latest('created_at')
-                    ->limit(10)
-            )
-            ->columns([
-                TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable(),
-                TextColumn::make('accounts_display')
-                    ->label('Cuenta')
-                    ->getStateUsing(function (User $record): string {
-                        $names = $record->accounts->pluck('commercial_name')->filter();
-                        if ($names->isEmpty()) {
-                            $names = $record->accounts->pluck('name')->filter();
-                        }
+        return User::query()
+            ->with('accounts')
+            ->latest('created_at')
+            ->limit(static::$limit)
+            ->get()
+            ->map(fn (User $user): array => $this->mapRecentUserRow(
+                $user,
+                $user->created_at?->diffForHumans(),
+                $user->created_at ? locale_datetime($user->created_at) : null,
+            ));
+    }
 
-                        return $names->isEmpty() ? '—' : $names->join(', ');
-                    }),
-                TextColumn::make('email_verified_at')
-                    ->label('Cuenta confirmada')
-                    ->formatStateUsing(fn ($state) => $state ? 'Sí' : 'No')
-                    ->badge()
-                    ->color(fn ($state) => $state ? 'success' : 'warning'),
-                TextColumn::make('created_at')
-                    ->label('Fecha de registro')
-                    ->formatStateUsing(function ($state): string | Htmlable | null {
-                        if (! $state) {
-                            return '—';
-                        }
-                        return new \Illuminate\Support\HtmlString(
-                            e(locale_datetime($state)).'<br><span class="text-muted text-sm">'.e($state->diffForHumans()).'</span>'
-                        );
-                    })
-                    ->sortable(),
-            ])
-            ->recordActions([
-                ActionGroup::make([
-                    OpenWebsiteImpersonationAction::make(),
-                ]),
-            ], position: RecordActionsPosition::BeforeColumns)
-            ->paginated(false);
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getViewData(): array
+    {
+        return [
+            'users' => $this->getUsers(),
+            'heading' => static::$heading,
+            'showImpersonation' => $this->canImpersonateUsers(),
+        ];
     }
 }

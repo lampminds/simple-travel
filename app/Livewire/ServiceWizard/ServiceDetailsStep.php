@@ -9,6 +9,7 @@ use App\Models\ServiceDetail;
 use App\Models\ServiceDetailTopic;
 use App\Models\ServiceDetailTopicCategory;
 use App\Services\Translation\TranslationService;
+use App\Support\AiUsageContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -183,10 +184,21 @@ class ServiceDetailsStep extends Component
             ];
         }
 
+        $user = Auth::user();
+        $account = $user?->currentAccount();
+
         $result = app(TranslationService::class)->translateFromLanguage(
             sourceLanguageId: $sourceLanguageId,
             translationsPayload: $payload,
-            userId: Auth::id()
+            userId: $user?->id,
+            usageContext: $user !== null
+                ? new AiUsageContext(
+                    userId: (int) $user->id,
+                    accountId: $user->currentAccountId(),
+                    accountTypeId: $account?->account_type_id !== null ? (int) $account->account_type_id : null,
+                    source: 'service_wizard.livewire.details',
+                )
+                : null,
         );
 
         if (! $result['ok']) {

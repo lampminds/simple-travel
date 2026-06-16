@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('key')->unique();  // ie: "edit_image"
             $table->boolean('is_active')->default(true)->index();
 
-            $table->timestamps();
+            lmpStamps($table);
         });
 
         Schema::create('ai_knowledge_translations', function (Blueprint $table) {
@@ -42,7 +42,7 @@ return new class extends Migration
             $table->string('embedding_model', 100)->nullable();
             $table->string('embedding_version', 50)->nullable();
 
-            $table->timestamps();
+            lmpStamps($table);
 
             $table->unique(['ai_knowledge_item_id', 'language_id'], 'ai_knowledge_item_lang_unique');
         });

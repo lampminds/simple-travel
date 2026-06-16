@@ -327,17 +327,9 @@ final class OperatorVariantPriceResolver
         $assignments = PriceListAssignment::query()
             ->where('operator_id', $operatorAccountId)
             ->where('is_active', true)
-            ->whereHas('priceList', function ($q) use ($providerAccountId, $d): void {
+            ->whereHas('priceList', function ($q) use ($providerAccountId): void {
                 $q->where('provider_id', $providerAccountId)
-                    ->where('is_active', true)
-                    ->where(function ($q2) use ($d): void {
-                        $q2->whereNull('valid_from')
-                            ->orWhereDate('valid_from', '<=', $d);
-                    })
-                    ->where(function ($q2) use ($d): void {
-                        $q2->whereNull('valid_to')
-                            ->orWhereDate('valid_to', '>=', $d);
-                    });
+                    ->where('is_active', true);
             })
             ->with(['priceList.currency.lmpCurrency'])
             ->orderByDesc('id')

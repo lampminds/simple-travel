@@ -22,6 +22,11 @@ return new class extends Migration
             $table->enum('status', ['active', 'hidden', 'paused', 'archived'])->default('active');
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_public')->default(false);
+            $table->enum('inventory_type', ['unlimited', 'per_day', 'per_timeslot', 'per_departure'])
+                ->default('unlimited');
+            $table->unsignedInteger('inventory_total')
+                ->nullable()
+                ->comment('Default package sales capacity when not unlimited');
 
             lmpStamps($table);
         });

@@ -49,6 +49,11 @@
                                                         <a href="{{ route('account.package-offers.agencies.edit', $agency) }}" class="btn btn-sm btn-primary">
                                                             {{ __('account.relationships.actions.manage_package_offers') }}
                                                         </a>
+                                                        @if ((int) ($relationship->accepted_package_count ?? 0) > 0)
+                                                            <a href="{{ route('account.package-allocations.agencies.index', $agency) }}" class="btn btn-sm btn-outline-primary ms-1">
+                                                                {{ __('account.package_offers.operator_agencies_allocations_button') }}
+                                                            </a>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach

@@ -2,60 +2,60 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\FormatsUserAccountNames;
+use App\Filament\Widgets\Concerns\InteractsWithWidgetActions;
+use App\Filament\Widgets\Concerns\MapsRecentUserRows;
 use App\Models\User;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Filament\Widgets\TableWidget as BaseTableWidget;
-use Illuminate\Contracts\Support\Htmlable;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Collection;
 
-class LatestLoginsWidget extends BaseTableWidget
+class LatestLoginsWidget extends Widget implements HasActions, HasSchemas
 {
+    use FormatsUserAccountNames;
+    use InteractsWithWidgetActions;
+    use InteractsWithSchemas;
+    use MapsRecentUserRows;
+
     protected static ?string $heading = 'Últimos accesos';
 
     protected static ?int $sort = 1;
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 1;
 
-    public function table(Table $table): Table
+    protected string $view = 'filament.widgets.latest-logins-widget';
+
+    protected static int $limit = 6;
+
+    /**
+     * @return Collection<int, array{id: int, can_impersonate: bool, name: string, account: string, time: string|null, time_formatted: string|null}>
+     */
+    public function getUsers(): Collection
     {
-        return $table
-            ->query(
-                User::query()
-                    ->with('accounts')
-                    ->whereNotNull('last_login_at')
-                    ->latest('last_login_at')
-                    ->limit(10)
-            )
-            ->columns([
-                TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable(),
-                TextColumn::make('accounts_display')
-                    ->label('Cuenta')
-                    ->getStateUsing(function (User $record): string {
-                        $names = $record->accounts->pluck('commercial_name')->filter();
-                        if ($names->isEmpty()) {
-                            $names = $record->accounts->pluck('name')->filter();
-                        }
+        return User::query()
+            ->with('accounts')
+            ->whereNotNull('last_login_at')
+            ->latest('last_login_at')
+            ->limit(static::$limit)
+            ->get()
+            ->map(fn (User $user): array => $this->mapRecentUserRow(
+                $user,
+                $user->last_login_at?->diffForHumans(),
+                $user->last_login_at ? locale_datetime($user->last_login_at) : null,
+            ));
+    }
 
-                        return $names->isEmpty() ? '—' : $names->join(', ');
-                    }),
-                TextColumn::make('last_login_at')
-                    ->label('Fecha de acceso')
-                    ->formatStateUsing(function ($state): string | Htmlable | null {
-                        if (! $state) {
-                            return '—';
-                        }
-
-                        return new \Illuminate\Support\HtmlString(
-                            e(locale_datetime($state)).'<br><span class="text-muted text-sm">'.e($state->diffForHumans()).'</span>'
-                        );
-                    })
-                    ->sortable(),
-            ])
-            ->paginated(false);
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getViewData(): array
+    {
+        return [
+            'users' => $this->getUsers(),
+            'heading' => static::$heading,
+            'showImpersonation' => $this->canImpersonateUsers(),
+        ];
     }
 }

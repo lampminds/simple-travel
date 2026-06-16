@@ -96,6 +96,7 @@ return [
         ],
 
         'user_actions' => [
+            'impersonate' => 'Impersonate',
             'open_website_impersonation' => 'Website access link',
             'open_website_impersonation_tooltip' => 'Generate a one-time link to open the website in another browser as this user.',
             'impersonation_modal_heading' => 'One-time website access link',
@@ -1078,6 +1079,32 @@ return [
             'key' => 'Key',
             'title_preview' => 'Title (first locale)',
             'translations_count' => 'Locales',
+        ],
+
+        'ai_usage_log' => 'AI usage entry',
+        'ai_usage_logs' => 'AI usage log',
+
+        'ai_usage_log_columns' => [
+            'created_at' => 'Date',
+            'usage_type' => 'Type',
+            'user' => 'User',
+            'account' => 'Account',
+            'total_tokens' => 'Tokens',
+            'estimated_usd' => 'Estimated cost (USD)',
+        ],
+
+        'ai_usage_log_types' => [
+            'assistant' => 'Assistant',
+            'translation' => 'Translation (free API)',
+            'openai_translation' => 'OpenAI translation',
+        ],
+
+        'ai_usage_log_filters' => [
+            'user' => 'User',
+            'account' => 'Account',
+            'date_range' => 'Date range',
+            'created_from' => 'From',
+            'created_until' => 'Until',
         ],
 
         'cat_helper' => 'Context help',

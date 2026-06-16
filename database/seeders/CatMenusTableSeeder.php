@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Schema;
 
 class CatMenusTableSeeder extends Seeder
 {
@@ -15,13 +14,9 @@ class CatMenusTableSeeder extends Seeder
      */
     public function run()
     {
-        // parent_id can point to rows that appear later in this array; FK checks would fail on insert order.
-        Schema::disableForeignKeyConstraints();
+        \DB::table('cat_menus')->delete();
 
-        try {
-            \DB::table('cat_menus')->delete();
-
-            \DB::table('cat_menus')->insert(array (
+        $rows = array (
             0 => 
             array (
                 'id' => 1,
@@ -282,9 +277,62 @@ class CatMenusTableSeeder extends Seeder
                 'sort_order' => 6,
                 'active' => 1,
             ),
-        ));
-        } finally {
-            Schema::enableForeignKeyConstraints();
-        }
+            26 => 
+            array (
+                'id' => 30,
+                'slug' => 'provider_allocations',
+                'icon' => NULL,
+                'route' => 'account.allocations.index',
+                'parent_id' => NULL,
+                'sort_order' => 5,
+                'active' => 1,
+            ),
+            27 => 
+            array (
+                'id' => 31,
+                'slug' => 'provider_availability',
+                'icon' => NULL,
+                'route' => 'account.availability.index',
+                'parent_id' => 3,
+                'sort_order' => 3,
+                'active' => 1,
+            ),
+            28 => 
+            array (
+                'id' => 32,
+                'slug' => 'operator_package_availability',
+                'icon' => NULL,
+                'route' => 'account.package-availability.index',
+                'parent_id' => 24,
+                'sort_order' => 2,
+                'active' => 1,
+            ),
+            29 => 
+            array (
+                'id' => 33,
+                'slug' => 'operator_package_allocations',
+                'icon' => NULL,
+                'route' => 'account.package-allocations.index',
+                'parent_id' => NULL,
+                'sort_order' => 7,
+                'active' => 1,
+            ),
+            30 => 
+            array (
+                'id' => 34,
+                'slug' => 'operator_package_services',
+                'icon' => NULL,
+                'route' => 'account.operator-package-services.index',
+                'parent_id' => 24,
+                'sort_order' => 3,
+                'active' => 1,
+            ),
+        );
+
+        $parents = array_values(array_filter($rows, fn (array $row): bool => $row['parent_id'] === null));
+        $children = array_values(array_filter($rows, fn (array $row): bool => $row['parent_id'] !== null));
+
+        \DB::table('cat_menus')->insert($parents);
+        \DB::table('cat_menus')->insert($children);
     }
 }

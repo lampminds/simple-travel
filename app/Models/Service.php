@@ -130,6 +130,19 @@ class Service extends Model implements HasMedia
         return $this->hasMany(ServiceVariant::class)->orderBy('sort_order');
     }
 
+    public function availabilityRules(): HasMany
+    {
+        return $this->hasMany(ServiceAvailabilityRule::class)
+            ->orderByDesc('active')
+            ->orderByDesc('start_date');
+    }
+
+    public function availabilityOverrides(): HasMany
+    {
+        return $this->hasMany(ServiceAvailabilityOverride::class)
+            ->orderByDesc('date');
+    }
+
     /**
      * Get the translations for this service (one per language).
      */

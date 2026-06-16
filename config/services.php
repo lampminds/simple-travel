@@ -80,6 +80,11 @@ return [
         'embedding_model' => env('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small'),
         'embedding_version' => env('OPENAI_EMBEDDING_VERSION', 'v1'),
         'chat_model' => env('OPENAI_CHAT_MODEL', 'gpt-4o-mini'),
+        'pricing' => [
+            'embedding_per_million' => (float) env('OPENAI_EMBEDDING_USD_PER_MILLION', 0.02),
+            'chat_prompt_per_million' => (float) env('OPENAI_CHAT_PROMPT_USD_PER_MILLION', 0.15),
+            'chat_completion_per_million' => (float) env('OPENAI_CHAT_COMPLETION_USD_PER_MILLION', 0.60),
+        ],
     ],
 
     'google' => [

@@ -187,6 +187,66 @@ class CatMenuAccountTypeExclusionsTableSeeder extends Seeder
                 'menu_id' => 29,
                 'account_type_id' => 3,
             ),
+            28 => 
+            array (
+                'id' => 34,
+                'menu_id' => 30,
+                'account_type_id' => 1,
+            ),
+            29 => 
+            array (
+                'id' => 35,
+                'menu_id' => 30,
+                'account_type_id' => 3,
+            ),
+            30 => 
+            array (
+                'id' => 36,
+                'menu_id' => 31,
+                'account_type_id' => 1,
+            ),
+            31 => 
+            array (
+                'id' => 37,
+                'menu_id' => 31,
+                'account_type_id' => 3,
+            ),
+            32 => 
+            array (
+                'id' => 38,
+                'menu_id' => 32,
+                'account_type_id' => 2,
+            ),
+            33 => 
+            array (
+                'id' => 39,
+                'menu_id' => 32,
+                'account_type_id' => 3,
+            ),
+            34 => 
+            array (
+                'id' => 40,
+                'menu_id' => 33,
+                'account_type_id' => 2,
+            ),
+            35 => 
+            array (
+                'id' => 41,
+                'menu_id' => 33,
+                'account_type_id' => 3,
+            ),
+            36 => 
+            array (
+                'id' => 42,
+                'menu_id' => 34,
+                'account_type_id' => 2,
+            ),
+            37 => 
+            array (
+                'id' => 43,
+                'menu_id' => 34,
+                'account_type_id' => 3,
+            ),
         ));
         
         

@@ -275,3 +275,7 @@
         </div>
     </nav>
 </header>
+
+@if(config('assistant.enabled', true) && auth()->check())
+    @include('partials.account-assistant-widget')
+@endif

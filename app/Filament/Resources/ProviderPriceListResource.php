@@ -97,14 +97,6 @@ class ProviderPriceListResource extends LmpResource
                                         ->options(fn () => Currency::query()->with('lmpCurrency')->orderBy('id')->get()->mapWithKeys(fn (Currency $c) => [$c->id => $c->display_name]))
                                         ->searchable()
                                         ->required(),
-                                    DatePicker::make('valid_from')
-                                        ->label(__('filament.resources.provider_price_list_fields.valid_from'))
-                                        ->native(false)
-                                        ->nullable(),
-                                    DatePicker::make('valid_to')
-                                        ->label(__('filament.resources.provider_price_list_fields.valid_to'))
-                                        ->native(false)
-                                        ->nullable(),
                                     Toggle::make('is_active')
                                         ->label(__('filament.resources.provider_price_list_fields.is_active'))
                                         ->default(true),
@@ -185,14 +177,6 @@ class ProviderPriceListResource extends LmpResource
                     }),
                 TextColumn::make('currency.display_name')
                     ->label(__('filament.resources.provider_price_list_columns.currency'))
-                    ->sortable(),
-                TextColumn::make('valid_from')
-                    ->label(__('filament.resources.provider_price_list_columns.valid_from'))
-                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
-                    ->sortable(),
-                TextColumn::make('valid_to')
-                    ->label(__('filament.resources.provider_price_list_columns.valid_to'))
-                    ->formatStateUsing(fn ($state) => $state ? locale_date($state) : '—')
                     ->sortable(),
                 IconColumn::make('is_active')
                     ->label(__('filament.resources.provider_price_list_columns.is_active'))

@@ -46,7 +46,6 @@
                                         <tr>
                                             <th>{{ __('account.price_lists.columns.name') }}</th>
                                             <th>{{ __('account.price_lists.columns.currency') }}</th>
-                                            <th>{{ __('account.price_lists.columns.validity') }}</th>
                                             <th>{{ __('account.price_lists.columns.items') }}</th>
                                             <th>{{ __('account.price_lists.columns.assignments') }}</th>
                                             <th>{{ __('account.price_lists.columns.active') }}</th>
@@ -58,13 +57,6 @@
                                             <tr>
                                                 <td class="fw-semibold">{{ $priceList->name }}</td>
                                                 <td>{{ $priceList->currency?->display_name ?? '—' }}</td>
-                                                <td>
-                                                    @if ($priceList->valid_from || $priceList->valid_to)
-                                                        {{ locale_date_range($priceList->valid_from, $priceList->valid_to) }}
-                                                    @else
-                                                        —
-                                                    @endif
-                                                </td>
                                                 <td>{{ $priceList->items_count }}</td>
                                                 <td>
                                                     @php

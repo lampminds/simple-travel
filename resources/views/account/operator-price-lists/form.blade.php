@@ -145,37 +145,7 @@
 
                                         <div class="row">
                                             <div class="col-lg-4">
-                                                <div class="mb-3">
-                                                    <label for="valid_from" class="form-label">{{ __('account.price_lists.fields.valid_from') }}</label>
-                                                    <x-locale-date-input
-                                                        id="valid_from"
-                                                        name="valid_from"
-                                                        :value="old('valid_from', $priceList?->valid_from)"
-                                                        class="{{ $errors->has('valid_from') ? 'is-invalid' : '' }}"
-                                                    />
-                                                    @error('valid_from')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-4">
-                                                <div class="mb-3">
-                                                    <label for="valid_to" class="form-label">{{ __('account.price_lists.fields.valid_to') }}</label>
-                                                    <x-locale-date-input
-                                                        id="valid_to"
-                                                        name="valid_to"
-                                                        :value="old('valid_to', $priceList?->valid_to)"
-                                                        class="{{ $errors->has('valid_to') ? 'is-invalid' : '' }}"
-                                                    />
-                                                    @error('valid_to')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-4">
-                                                <div class="mb-3 d-flex align-items-end h-100">
+                                                <div class="mb-3 d-flex align-items-end">
                                                     <div class="form-check form-switch mb-2">
                                                         <input
                                                             class="form-check-input"

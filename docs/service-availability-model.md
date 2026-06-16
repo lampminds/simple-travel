@@ -2,14 +2,49 @@
 
 ## Overview
 
-This document defines how availability must be interpreted and computed for `service_variants`.
+This document defines how availability must be interpreted and computed for catalog services and their `service_variants`.
 
 The model is composed of:
 
+* **Service layer** (`service_availability_rules`, `service_availability_overrides`) — master schedule and mass closures for all variants of a service
 * Base configuration (`service_variants`)
 * Recurring availability rules (`service_variant_availability_rules`)
 * Optional time slots (`service_variant_availability_time_slots`)
 * Overrides (`service_variant_availability_overrides`)
+
+---
+
+# 0. Service layer (all variants)
+
+## 0.1 Purpose
+
+Lets a provider close or restrict an entire service (e.g. hotel renovation) without editing each variant.
+
+## 0.2 Tables
+
+### `service_availability_rules`
+
+Same fields as variant rules (no time slots): `service_id`, `start_date`, `end_date`, `weekday_mask`, `active`.
+
+If **at least one active service rule exists**, a date must match a service rule **and** a variant rule to be bookable.
+
+If **no service rules exist**, the service layer does not restrict dates (variant rules alone apply).
+
+### `service_availability_overrides`
+
+`service_id`, `date`, `end_date` (nullable, inclusive range end), `closed`, `reason`.
+
+Service-level overrides support **closures only** (no capacity). A closed service override blocks **all variants** for every day in the range. Variant overrides cannot reopen a service closure.
+
+## 0.3 Resolution order (full stack)
+
+```
+service closed override → service rules (if any) → variant rules → variant slots/overrides → capacity
+```
+
+---
+
+# 1. Core Concepts (variant layer)
 
 The system supports multiple inventory strategies:
 

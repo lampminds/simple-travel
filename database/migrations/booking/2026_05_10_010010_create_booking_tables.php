@@ -20,6 +20,9 @@ return new class extends Migration
 
             $table->foreignId('operator_id')->constrained('accounts');
             $table->foreignId('agency_id')->constrained('accounts');
+            $table->foreignId('package_offer_id')
+                ->nullable()
+                ->constrained('package_offers');
             $table->foreignId('organization_id')->nullable()->comment('optional, if it is an organization')->constrained();
 
             $table->string('invitation_token')->nullable()->comment('token used to invite passengers to complete the booking');

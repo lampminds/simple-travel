@@ -13,6 +13,7 @@ use App\Services\OperatorPackageConditionFormService;
 use App\Services\OperatorPackageOfferCatalog;
 use App\Services\Translation\TranslationService;
 use App\Support\AccountBusinessTypeGate;
+use App\Support\AiUsageContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -153,7 +154,8 @@ final class AccountOperatorPackageController extends Controller
 
     public function translateTranslations(Request $request, TranslationService $translationService): JsonResponse
     {
-        $this->resolveOperatorOwnerAccount($request);
+        $account = $this->resolveOperatorOwnerAccount($request);
+        $user = $request->user();
 
         $validated = $request->validate(
             [
@@ -174,7 +176,15 @@ final class AccountOperatorPackageController extends Controller
         $result = $translationService->translateFromLanguage(
             sourceLanguageId: (int) $validated['source_language_id'],
             translationsPayload: $validated['translations'],
-            userId: $request->user()?->id
+            userId: $user?->id,
+            usageContext: $user !== null
+                ? new AiUsageContext(
+                    userId: (int) $user->id,
+                    accountId: (int) $account->id,
+                    accountTypeId: $account->account_type_id !== null ? (int) $account->account_type_id : null,
+                    source: 'account.operator_packages.translate',
+                )
+                : null,
         );
 
         if (! $result['ok']) {

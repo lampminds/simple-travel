@@ -71,6 +71,13 @@
                                                 <td>{{ $package->is_featured ? '✓' : '—' }}</td>
                                                 <td>{{ $package->is_public ? '✓' : '—' }}</td>
                                                 <td class="text-end text-nowrap">
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-secondary me-1"
+                                                        onclick="Livewire.dispatch('open-operator-package-preview', { packageUuid: @js($package->uuid) })"
+                                                    >
+                                                        {{ __('account.operator_packages.preview_button') }}
+                                                    </button>
                                                     <a href="{{ route('account.operator-packages.edit', $package) }}" class="btn btn-sm btn-outline-primary">
                                                         {{ __('account.operator_packages.edit_button') }}
                                                     </a>
@@ -96,5 +103,7 @@
             </div>
         </div>
     </section>
+
+    <livewire:account.operator-package-preview-modal />
 
 @endsection

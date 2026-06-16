@@ -60,11 +60,7 @@ final class ProviderPriceListActiveAssignmentService
 
     private function priceListIsActiveOnDate(PriceList $priceList, ?Carbon $date = null): bool
     {
-        if (! $priceList->is_active) {
-            return false;
-        }
-
-        return $this->windowContains($priceList->valid_from, $priceList->valid_to, $this->resolveDate($date));
+        return $priceList->is_active;
     }
 
     private function assignmentIsActiveOnDate(PriceListAssignment $assignment, ?Carbon $date = null): bool

@@ -909,7 +909,6 @@ final class ServiceOfferPreviewBuilder
         }
 
         return [
-            'list_validity' => locale_date_range($list->valid_from, $list->valid_to),
             'assignment_validity' => locale_date_range($assignment->valid_from, $assignment->valid_to),
         ];
     }

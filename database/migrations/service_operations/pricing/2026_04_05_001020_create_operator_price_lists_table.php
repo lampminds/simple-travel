@@ -24,9 +24,6 @@ return new class extends Migration
             $table->unsignedTinyInteger('currency_id');
             $table->foreign('currency_id')->references('id')->on('cat_currencies');
 
-            $table->timestamp('valid_from')->nullable();
-            $table->timestamp('valid_to')->nullable();
-
             $table->boolean('is_active')->default(true);
 
             lmpStamps($table);

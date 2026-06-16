@@ -31,9 +31,19 @@
 
             <div class="row mt-3">
                 <div class="col-lg-12">
-                    <a href="{{ route('account.package-offers.index', ['as' => 'operator']) }}" class="btn btn-sm btn-outline-secondary mb-3">
-                        {{ __('account.package_offers.operator_edit_cancel') }}
-                    </a>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <a href="{{ route('account.package-offers.index', ['as' => 'operator']) }}" class="btn btn-sm btn-outline-secondary">
+                            {{ __('account.package_offers.operator_edit_cancel') }}
+                        </a>
+                        <a href="{{ route('account.package-availability.index') }}" class="btn btn-sm btn-outline-primary">
+                            {{ __('account.package_offers.operator_edit_manage_availability') }}
+                        </a>
+                        @if ($packages->contains(fn ($package): bool => ($package->offer_status ?? 'none') === 'accepted'))
+                            <a href="{{ route('account.package-allocations.agencies.index', $agency) }}" class="btn btn-sm btn-outline-primary">
+                                {{ __('account.package_offers.operator_edit_manage_allocations') }}
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -69,7 +79,19 @@
                                                 $packageLabel = $package->displayLabel() ?: ('Package #' . $package->id);
                                             @endphp
                                             <tr>
-                                                <td class="fw-medium">{{ $packageLabel }}</td>
+                                                <td class="fw-medium">
+                                                    {{ $packageLabel }}
+                                                    <div class="small mt-1 d-flex flex-wrap gap-2">
+                                                        <a href="{{ route('account.package-availability.catalogs.show', $package) }}" class="link-secondary text-decoration-none">
+                                                            {{ __('account.package_offers.operator_edit_link_availability') }}
+                                                        </a>
+                                                        @if ($status === 'accepted')
+                                                            <a href="{{ route('account.package-allocations.agencies.create', ['agency' => $agency, 'catalog' => $package->id]) }}" class="link-secondary text-decoration-none">
+                                                                {{ __('account.package_offers.operator_edit_link_allocations') }}
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td class="text-muted">{{ (int) $package->items_count }}</td>
                                                 <td>
                                                     <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">

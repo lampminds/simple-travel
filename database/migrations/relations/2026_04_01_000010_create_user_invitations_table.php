@@ -18,6 +18,9 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->string('email');
             $table->string('name');
+            $table->string('company_name')
+                ->nullable()
+                ->comment('Proposed company name for external invitations (new company signup)');
             $table->foreignId('role_id')->constrained('user_roles');
             $table->string('token')->unique();
             $table->unsignedInteger('send_attempts')->default(1);

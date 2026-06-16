@@ -63,6 +63,32 @@ final class PackageOfferPreviewBuilder
             ? (string) ($agencyPrice['formatted'] ?? '—')
             : '—';
 
+        return array_merge($this->buildForCatalog($catalog), [
+            'operator_name' => $operatorLabel,
+            'agency_price' => $priceFormatted,
+            'agency_price_usd_hint' => $this->localePriceService->buildUsd($agencyPrice, $agencyId),
+            'price_list_name' => trim((string) ($priceList?->name ?? '')),
+        ]);
+    }
+
+    /**
+     * Builds the operator-facing package sheet from a catalog record (without commercial offer pricing).
+     *
+     * @return array<string, mixed>
+     */
+    public function buildForCatalog(OperatorServiceCatalog $catalog): array
+    {
+        $catalog->loadMissing([
+            'translations.language.locale',
+            'items.serviceVariant.translations.language.locale',
+            'items.serviceVariant.media',
+            'items.service.translations.language.locale',
+            'items.service.media',
+            'items.serviceOffer.providerAccount',
+            'items.conditionOverrides.translations.language.locale',
+            'conditionOverrides.translations.language.locale',
+        ]);
+
         $conditions = $this->conditionResolver->resolveForPackage($catalog);
         $conditionRows = $this->displayConditions(
             $conditions['consolidated_by_topic'] ?? [],
@@ -73,10 +99,10 @@ final class PackageOfferPreviewBuilder
 
         return [
             'title' => $catalog->displayLabel(),
-            'operator_name' => $operatorLabel,
-            'agency_price' => $priceFormatted,
-            'agency_price_usd_hint' => $this->localePriceService->buildUsd($agencyPrice, $agencyId),
-            'price_list_name' => trim((string) ($priceList?->name ?? '')),
+            'status' => (string) $catalog->status,
+            'status_label' => (string) __('account.operator_packages.status.'.$catalog->status),
+            'is_featured' => (bool) $catalog->is_featured,
+            'is_public' => (bool) $catalog->is_public,
             'locales' => $this->packageLocales($catalog),
             'items' => $this->packageItems($catalog),
             'conditions' => $conditionRows,

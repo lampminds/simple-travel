@@ -19,11 +19,14 @@ class OperatorServiceCatalog extends Model
         'status',
         'is_featured',
         'is_public',
+        'inventory_type',
+        'inventory_total',
     ];
 
     protected $casts = [
         'is_featured' => 'boolean',
         'is_public' => 'boolean',
+        'inventory_total' => 'integer',
     ];
 
     public function operator(): BelongsTo
@@ -49,6 +52,29 @@ class OperatorServiceCatalog extends Model
     public function packageOffers(): HasMany
     {
         return $this->hasMany(PackageOffer::class, 'operator_service_catalog_id');
+    }
+
+    public function availabilityRules(): HasMany
+    {
+        return $this->hasMany(OperatorPackageAvailabilityRule::class, 'operator_service_catalog_id')
+            ->orderByDesc('active')
+            ->orderByDesc('start_date');
+    }
+
+    public function availabilityOverrides(): HasMany
+    {
+        return $this->hasMany(OperatorPackageAvailabilityOverride::class, 'operator_service_catalog_id')
+            ->orderByDesc('date');
+    }
+
+    public function packageAllocations(): HasMany
+    {
+        return $this->hasMany(PackageAllocation::class, 'operator_service_catalog_id');
+    }
+
+    public function usesTimeSlotInventory(): bool
+    {
+        return in_array($this->inventory_type, ['per_timeslot', 'per_departure'], true);
     }
 
     /**

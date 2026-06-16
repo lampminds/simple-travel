@@ -103,6 +103,7 @@
                                                     ];
                                                     $hasOperatorPriceList = (bool) ($variant->operator_has_price_list ?? $operatorHasPriceList ?? false);
                                                     $operatorPriceListLabel = (string) ($variant->operator_price_list_name ?? $operatorPriceListName ?? '');
+                                                    $operatorPriceListValidity = (string) ($variant->operator_price_list_validity ?? $operatorPriceListValidity ?? '');
                                                     $operatorPriceIsZero = (bool) ($variant->operator_price_is_zero ?? false);
                                                     $proposeSelectable = $catalogSelectable && ! $operatorPriceIsZero;
                                                     $bdId = 'operator-price-bd-' . $variant->id;
@@ -128,9 +129,12 @@
                                                             <div class="small text-muted mt-1">{{ __('account.service_offers.provider_edit_accepted_note') }}</div>
                                                         @endif
                                                     </td>
-                                                    <td>
+                                                    <td class="small">
                                                         @if ($hasOperatorPriceList && $operatorPriceListLabel !== '')
-                                                            {{ $operatorPriceListLabel }}
+                                                            <div>{{ $operatorPriceListLabel }}</div>
+                                                            @if ($operatorPriceListValidity !== '')
+                                                                <div class="text-muted mt-1">{{ $operatorPriceListValidity }}</div>
+                                                            @endif
                                                         @else
                                                             <span class="text-danger">{{ __('account.service_offers.provider_edit_price_list_none') }}</span>
                                                         @endif

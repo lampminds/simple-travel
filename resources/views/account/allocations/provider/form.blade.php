@@ -9,8 +9,8 @@
 
     $allocationType = old('allocation_type', $isEdit ? $allocation->allocation_type : Allocation::TYPE_HARD);
     $capacityValue = old('capacity', $isEdit && $allocation->allocation_type !== Allocation::TYPE_FREE_SALE ? (string) $allocation->capacity : '');
-    $startDate = old('start_date', $isEdit && $allocation->start_date ? $allocation->start_date->format('Y-m-d') : '');
-    $endDate = old('end_date', $isEdit && $allocation->end_date ? $allocation->end_date->format('Y-m-d') : '');
+    $startDate = old('start_date', $isEdit && $allocation->start_date ? normalize_form_date_value($allocation->start_date) : '');
+    $endDate = old('end_date', $isEdit && $allocation->end_date ? normalize_form_date_value($allocation->end_date) : '');
     $isActive = old('active', $isEdit ? $allocation->active : true);
 @endphp
 
@@ -93,12 +93,12 @@
 
                                         <div class="col-md-4">
                                             <label for="start_date" class="form-label">{{ __('account.allocations.fields.start_date') }}</label>
-                                            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ $startDate }}">
+                                            <x-locale-date-input name="start_date" id="start_date" :value="$startDate" />
                                         </div>
 
                                         <div class="col-md-4">
                                             <label for="end_date" class="form-label">{{ __('account.allocations.fields.end_date') }}</label>
-                                            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ $endDate }}">
+                                            <x-locale-date-input name="end_date" id="end_date" :value="$endDate" />
                                             <div class="form-text">{{ __('account.allocations.fields.validity_help') }}</div>
                                         </div>
 

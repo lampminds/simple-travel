@@ -185,14 +185,6 @@ final class OperatorPackageAgencyPriceResolver
         $lists = OperatorPriceList::query()
             ->where('operator_id', $operatorAccountId)
             ->where('is_active', true)
-            ->where(function ($query) use ($pricingDate): void {
-                $query->whereNull('valid_from')
-                    ->orWhere('valid_from', '<=', $pricingDate);
-            })
-            ->where(function ($query) use ($pricingDate): void {
-                $query->whereNull('valid_to')
-                    ->orWhere('valid_to', '>=', $pricingDate);
-            })
             ->whereHas('assignments', function ($query) use ($agencyAccountId, $pricingDate): void {
                 $query->where('agency_id', $agencyAccountId)
                     ->where('is_active', true)
@@ -287,12 +279,6 @@ final class OperatorPackageAgencyPriceResolver
                 continue;
             }
 
-            if (! $this->listIsValidOnDate($list, $pricingDate)) {
-                $listIssues[] = __('account.package_offers.blockers.list_outside_dates', ['list' => $listLabel]);
-
-                continue;
-            }
-
             $assignment = $list->assignments->first();
             if ($assignment === null) {
                 continue;
@@ -359,21 +345,6 @@ final class OperatorPackageAgencyPriceResolver
         }
 
         return $messages;
-    }
-
-    private function listIsValidOnDate(OperatorPriceList $list, CarbonInterface $pricingDate): bool
-    {
-        $date = Carbon::parse($pricingDate)->startOfDay();
-
-        if ($list->valid_from !== null && Carbon::parse($list->valid_from)->startOfDay()->gt($date)) {
-            return false;
-        }
-
-        if ($list->valid_to !== null && Carbon::parse($list->valid_to)->startOfDay()->lt($date)) {
-            return false;
-        }
-
-        return true;
     }
 
     private function assignmentIsValidOnDate(OperatorPriceListAssignment $assignment, CarbonInterface $pricingDate): bool

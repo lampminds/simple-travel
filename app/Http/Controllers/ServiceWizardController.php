@@ -12,6 +12,7 @@ use App\Support\ServiceWizardSkipsVariantsStep;
 use App\Support\ServiceWizardStepEight;
 use Illuminate\Support\Collection;
 use App\Services\Translation\TranslationService;
+use App\Support\AiUsageContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -403,10 +404,21 @@ class ServiceWizardController extends Controller
             ]
         );
 
+        $user = $request->user();
+        $account = $user?->currentAccount();
+
         $result = $translationService->translateFromLanguage(
             sourceLanguageId: (int) $validated['source_language_id'],
             translationsPayload: $validated['translations'],
-            userId: $request->user()?->id
+            userId: $user?->id,
+            usageContext: $user !== null
+                ? new AiUsageContext(
+                    userId: (int) $user->id,
+                    accountId: $user->currentAccountId(),
+                    accountTypeId: $account?->account_type_id !== null ? (int) $account->account_type_id : null,
+                    source: 'service_wizard.translate_descriptions',
+                )
+                : null,
         );
 
         if (! $result['ok']) {

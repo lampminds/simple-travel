@@ -76,8 +76,6 @@ final class AccountOperatorPriceListController extends Controller
                 'operator_id' => $account->id,
                 'name' => $validated['name'],
                 'currency_id' => (int) $validated['currency_id'],
-                'valid_from' => $validated['valid_from'] ?? null,
-                'valid_to' => $validated['valid_to'] ?? null,
                 'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
 
@@ -199,8 +197,6 @@ final class AccountOperatorPriceListController extends Controller
             $operatorPriceList->update([
                 'name' => $validated['name'],
                 'currency_id' => (int) $validated['currency_id'],
-                'valid_from' => $validated['valid_from'] ?? null,
-                'valid_to' => $validated['valid_to'] ?? null,
                 'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
 
@@ -236,8 +232,6 @@ final class AccountOperatorPriceListController extends Controller
      * @return array{
      *   name:string,
      *   currency_id:int|string,
-     *   valid_from?:string|null,
-     *   valid_to?:string|null,
      *   is_active?:bool|string|int|null,
      *   items:array<int, array{
      *      operator_package_item_id:int|string,
@@ -249,13 +243,10 @@ final class AccountOperatorPriceListController extends Controller
     private function validatePayload(Request $request, int $accountId): array
     {
         $this->normalizePriceItemInputs($request, $accountId);
-        normalize_request_locale_dates($request, ['valid_from', 'valid_to']);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'currency_id' => ['required', Rule::exists('cat_currencies', 'id')],
-            'valid_from' => ['nullable', 'date'],
-            'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['nullable', 'boolean'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.operator_package_item_id' => [

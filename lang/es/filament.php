@@ -98,6 +98,7 @@ return [
         ],
 
         'user_actions' => [
+            'impersonate' => 'Personificar',
             'open_website_impersonation' => 'Enlace de acceso al sitio',
             'open_website_impersonation_tooltip' => 'Genera un enlace de un solo uso para abrir el sitio en otro navegador como este usuario.',
             'impersonation_modal_heading' => 'Enlace de acceso al sitio (un solo uso)',
@@ -1080,6 +1081,32 @@ return [
             'key' => 'Clave',
             'title_preview' => 'Título (primer idioma)',
             'translations_count' => 'Idiomas',
+        ],
+
+        'ai_usage_log' => 'Consumo de IA',
+        'ai_usage_logs' => 'Consumos de IA',
+
+        'ai_usage_log_columns' => [
+            'created_at' => 'Fecha',
+            'usage_type' => 'Tipo',
+            'user' => 'Usuario',
+            'account' => 'Cuenta',
+            'total_tokens' => 'Tokens',
+            'estimated_usd' => 'Costo estimado (USD)',
+        ],
+
+        'ai_usage_log_types' => [
+            'assistant' => 'Asistente',
+            'translation' => 'Traducción (API gratuita)',
+            'openai_translation' => 'Traducción OpenAI',
+        ],
+
+        'ai_usage_log_filters' => [
+            'user' => 'Usuario',
+            'account' => 'Cuenta',
+            'date_range' => 'Rango de fechas',
+            'created_from' => 'Desde',
+            'created_until' => 'Hasta',
         ],
 
         'cat_helper' => 'Ayuda contextual',

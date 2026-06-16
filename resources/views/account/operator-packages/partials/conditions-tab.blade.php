@@ -38,6 +38,7 @@
 
     <h5 class="h6 mb-3">{{ __('account.operator_packages.conditions.items_heading') }}</h5>
     <p class="text-muted small">{{ __('account.operator_packages.conditions.items_help') }}</p>
+    <p class="text-muted small">{{ __('account.operator_packages.conditions.items_consolidated_note') }}</p>
 
     <div id="package-item-conditions" class="d-flex flex-column gap-3">
         <p class="text-muted small mb-0" id="package-item-conditions-empty">

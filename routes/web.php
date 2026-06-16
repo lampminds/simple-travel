@@ -33,11 +33,17 @@ use App\Http\Controllers\AccountAgencyPackageOfferController;
 use App\Http\Controllers\AccountAgencyReservationController;
 use App\Http\Controllers\AccountOperatorReservationController;
 use App\Http\Controllers\AccountProviderAllocationController;
+use App\Http\Controllers\AccountProviderVariantAvailabilityController;
+use App\Http\Controllers\AccountProviderServiceAvailabilityController;
+use App\Http\Controllers\AccountOperatorPackageAllocationController;
+use App\Http\Controllers\AccountOperatorPackageAvailabilityController;
+use App\Http\Controllers\AccountOperatorPackageServicesController;
 use App\Http\Controllers\AccountAgencyClientsController;
 use App\Models\Account;
 use Illuminate\Http\Request;
 use App\Http\Controllers\WelcomeCompanyController;
 use App\Http\Controllers\AccountTasksController;
+use App\Http\Controllers\AccountAssistantController;
 use App\Http\Controllers\TenantSite\HomeController;
 use App\Http\Controllers\WebsiteImpersonationController;
 use App\Support\AccountTypeCategoryIds;
@@ -116,6 +122,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
     Route::get('account/cities/search', [AccountCompanyController::class, 'searchCities'])->name('account.cities.search');
     Route::get('account/tasks', [AccountTasksController::class, 'index'])->name('account.tasks.index');
+    Route::get('account/assistant', [AccountAssistantController::class, 'index'])->name('account.assistant.index');
+    Route::get('account/assistant/history', [AccountAssistantController::class, 'history'])->name('account.assistant.history');
+    Route::post('account/assistant/message', [AccountAssistantController::class, 'message'])->name('account.assistant.message');
     Route::get('account/notifications', [AccountNotificationsController::class, 'index'])->name('account.notifications.index');
     Route::post('account/notifications', [AccountNotificationsController::class, 'store'])->name('account.notifications.store');
     Route::post('account/notifications/{notification}/read', [AccountNotificationsController::class, 'markAsRead'])
@@ -192,6 +201,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/package-offers/{offer}/reject', [AccountAgencyPackageOfferController::class, 'reject'])
         ->name('account.package-offers.reject');
 
+    Route::get('account/package-availability', [AccountOperatorPackageAvailabilityController::class, 'index'])->name('account.package-availability.index');
+    Route::get('account/package-availability/catalogs/{catalog}', [AccountOperatorPackageAvailabilityController::class, 'show'])->name('account.package-availability.catalogs.show');
+    Route::put('account/package-availability/catalogs/{catalog}/inventory', [AccountOperatorPackageAvailabilityController::class, 'updateInventory'])->name('account.package-availability.catalogs.inventory.update');
+    Route::get('account/package-availability/catalogs/{catalog}/rules/create', [AccountOperatorPackageAvailabilityController::class, 'createRule'])->name('account.package-availability.rules.create');
+    Route::post('account/package-availability/catalogs/{catalog}/rules', [AccountOperatorPackageAvailabilityController::class, 'storeRule'])->name('account.package-availability.rules.store');
+    Route::get('account/package-availability/rules/{rule}/edit', [AccountOperatorPackageAvailabilityController::class, 'editRule'])->name('account.package-availability.rules.edit');
+    Route::put('account/package-availability/rules/{rule}', [AccountOperatorPackageAvailabilityController::class, 'updateRule'])->name('account.package-availability.rules.update');
+    Route::delete('account/package-availability/rules/{rule}', [AccountOperatorPackageAvailabilityController::class, 'destroyRule'])->name('account.package-availability.rules.destroy');
+    Route::get('account/package-availability/catalogs/{catalog}/overrides/create', [AccountOperatorPackageAvailabilityController::class, 'createOverride'])->name('account.package-availability.overrides.create');
+    Route::post('account/package-availability/catalogs/{catalog}/overrides', [AccountOperatorPackageAvailabilityController::class, 'storeOverride'])->name('account.package-availability.overrides.store');
+    Route::get('account/package-availability/overrides/{override}/edit', [AccountOperatorPackageAvailabilityController::class, 'editOverride'])->name('account.package-availability.overrides.edit');
+    Route::put('account/package-availability/overrides/{override}', [AccountOperatorPackageAvailabilityController::class, 'updateOverride'])->name('account.package-availability.overrides.update');
+    Route::delete('account/package-availability/overrides/{override}', [AccountOperatorPackageAvailabilityController::class, 'destroyOverride'])->name('account.package-availability.overrides.destroy');
+
+    Route::get('account/package-allocations', [AccountOperatorPackageAllocationController::class, 'agenciesIndex'])->name('account.package-allocations.index');
+    Route::get('account/package-allocations/agencies/{agency}', [AccountOperatorPackageAllocationController::class, 'index'])->name('account.package-allocations.agencies.index');
+    Route::get('account/package-allocations/agencies/{agency}/create', [AccountOperatorPackageAllocationController::class, 'create'])->name('account.package-allocations.agencies.create');
+    Route::post('account/package-allocations/agencies/{agency}', [AccountOperatorPackageAllocationController::class, 'store'])->name('account.package-allocations.agencies.store');
+    Route::get('account/package-allocations/{allocation}/edit', [AccountOperatorPackageAllocationController::class, 'edit'])->name('account.package-allocations.edit');
+    Route::put('account/package-allocations/{allocation}', [AccountOperatorPackageAllocationController::class, 'update'])->name('account.package-allocations.update');
+    Route::delete('account/package-allocations/{allocation}', [AccountOperatorPackageAllocationController::class, 'destroy'])->name('account.package-allocations.destroy');
+
     Route::get('account/reservations', [AccountAgencyReservationController::class, 'index'])
         ->name('account.reservations.index');
     Route::get('account/reservations/create/{packageOffer}', [AccountAgencyReservationController::class, 'create'])
@@ -232,6 +263,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'update'])->name('account.allocations.update');
     Route::delete('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'destroy'])->name('account.allocations.destroy');
 
+    Route::get('account/availability', [AccountProviderServiceAvailabilityController::class, 'index'])->name('account.availability.index');
+    Route::get('account/availability/services/{service}', [AccountProviderServiceAvailabilityController::class, 'show'])->name('account.availability.services.show');
+    Route::get('account/availability/services/{service}/rules/create', [AccountProviderServiceAvailabilityController::class, 'createRule'])->name('account.availability.service-rules.create');
+    Route::post('account/availability/services/{service}/rules', [AccountProviderServiceAvailabilityController::class, 'storeRule'])->name('account.availability.service-rules.store');
+    Route::get('account/availability/service-rules/{rule}/edit', [AccountProviderServiceAvailabilityController::class, 'editRule'])->name('account.availability.service-rules.edit');
+    Route::put('account/availability/service-rules/{rule}', [AccountProviderServiceAvailabilityController::class, 'updateRule'])->name('account.availability.service-rules.update');
+    Route::delete('account/availability/service-rules/{rule}', [AccountProviderServiceAvailabilityController::class, 'destroyRule'])->name('account.availability.service-rules.destroy');
+    Route::get('account/availability/services/{service}/overrides/create', [AccountProviderServiceAvailabilityController::class, 'createOverride'])->name('account.availability.service-overrides.create');
+    Route::post('account/availability/services/{service}/overrides', [AccountProviderServiceAvailabilityController::class, 'storeOverride'])->name('account.availability.service-overrides.store');
+    Route::get('account/availability/service-overrides/{override}/edit', [AccountProviderServiceAvailabilityController::class, 'editOverride'])->name('account.availability.service-overrides.edit');
+    Route::put('account/availability/service-overrides/{override}', [AccountProviderServiceAvailabilityController::class, 'updateOverride'])->name('account.availability.service-overrides.update');
+    Route::delete('account/availability/service-overrides/{override}', [AccountProviderServiceAvailabilityController::class, 'destroyOverride'])->name('account.availability.service-overrides.destroy');
+    Route::get('account/availability/variants/{variant}', [AccountProviderVariantAvailabilityController::class, 'show'])->name('account.availability.variants.show');
+    Route::get('account/availability/variants/{variant}/rules/create', [AccountProviderVariantAvailabilityController::class, 'createRule'])->name('account.availability.rules.create');
+    Route::post('account/availability/variants/{variant}/rules', [AccountProviderVariantAvailabilityController::class, 'storeRule'])->name('account.availability.rules.store');
+    Route::get('account/availability/rules/{rule}/edit', [AccountProviderVariantAvailabilityController::class, 'editRule'])->name('account.availability.rules.edit');
+    Route::put('account/availability/rules/{rule}', [AccountProviderVariantAvailabilityController::class, 'updateRule'])->name('account.availability.rules.update');
+    Route::delete('account/availability/rules/{rule}', [AccountProviderVariantAvailabilityController::class, 'destroyRule'])->name('account.availability.rules.destroy');
+    Route::get('account/availability/variants/{variant}/overrides/create', [AccountProviderVariantAvailabilityController::class, 'createOverride'])->name('account.availability.overrides.create');
+    Route::post('account/availability/variants/{variant}/overrides', [AccountProviderVariantAvailabilityController::class, 'storeOverride'])->name('account.availability.overrides.store');
+    Route::get('account/availability/overrides/{override}/edit', [AccountProviderVariantAvailabilityController::class, 'editOverride'])->name('account.availability.overrides.edit');
+    Route::put('account/availability/overrides/{override}', [AccountProviderVariantAvailabilityController::class, 'updateOverride'])->name('account.availability.overrides.update');
+    Route::delete('account/availability/overrides/{override}', [AccountProviderVariantAvailabilityController::class, 'destroyOverride'])->name('account.availability.overrides.destroy');
+
     Route::get('account/operator-price-lists', [AccountOperatorPriceListController::class, 'index'])->name('account.operator-price-lists.index');
     Route::get('account/operator-price-lists/create', [AccountOperatorPriceListController::class, 'create'])->name('account.operator-price-lists.create');
     Route::post('account/operator-price-lists', [AccountOperatorPriceListController::class, 'store'])->name('account.operator-price-lists.store');
@@ -256,6 +311,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/operator-packages/{operatorPackage}/edit', [AccountOperatorPackageController::class, 'edit'])->name('account.operator-packages.edit');
     Route::put('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'update'])->name('account.operator-packages.update');
     Route::delete('account/operator-packages/{operatorPackage}', [AccountOperatorPackageController::class, 'destroy'])->name('account.operator-packages.destroy');
+
+    Route::get('account/operator-package-services', [AccountOperatorPackageServicesController::class, 'index'])
+        ->name('account.operator-package-services.index');
 
     Route::get('account/transfer-vehicle-types', [AccountTransferVehicleTypesController::class, 'index'])
         ->name('account.transfer-vehicle-types.index');

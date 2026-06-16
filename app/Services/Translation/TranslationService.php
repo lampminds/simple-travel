@@ -3,6 +3,8 @@
 namespace App\Services\Translation;
 
 use App\Models\Language;
+use App\Services\AiUsageLogger;
+use App\Support\AiUsageContext;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,8 +21,12 @@ class TranslationService
      *   failures: array<int, array{to: string, reason: string}>
      * }
      */
-    public function translateFromLanguage(int $sourceLanguageId, array $translationsPayload, ?int $userId = null): array
-    {
+    public function translateFromLanguage(
+        int $sourceLanguageId,
+        array $translationsPayload,
+        ?int $userId = null,
+        ?AiUsageContext $usageContext = null,
+    ): array {
         $languages = Language::query()
             ->with('locale')
             ->get()
@@ -46,6 +52,13 @@ class TranslationService
         $translations = [];
         $providers = [];
         $failures = [];
+        $tokenEstimate = 0;
+        $apiCalls = 0;
+
+        $context = $usageContext;
+        if ($context === null && $userId !== null) {
+            $context = new AiUsageContext(userId: (int) $userId, source: 'translation');
+        }
 
         foreach ($languages as $language) {
             if ((int) $language->id === $sourceLanguageId) {
@@ -74,6 +87,10 @@ class TranslationService
                         $targetPayload['name'] = $nameResult['translated'] ?? null;
                         if ($targetPayload['name']) {
                             $fieldProviders['name'] = $nameResult['provider'] ?? 'unknown';
+                            if ($this->countsAsTranslationApiCall($nameResult['provider'] ?? null)) {
+                                $tokenEstimate += $this->estimateTokensFromText($sourceName);
+                                $apiCalls++;
+                            }
                         } else {
                             $fieldFailureReasons[] = 'name: ' . ($nameResult['reason'] ?? 'translation failed');
                         }
@@ -89,6 +106,10 @@ class TranslationService
                         $targetPayload['description'] = $descriptionResult['translated'] ?? null;
                         if ($targetPayload['description']) {
                             $fieldProviders['description'] = $descriptionResult['provider'] ?? 'unknown';
+                            if ($this->countsAsTranslationApiCall($descriptionResult['provider'] ?? null)) {
+                                $tokenEstimate += $this->estimateTokensFromText($sourceDescription);
+                                $apiCalls++;
+                            }
                         } else {
                             $fieldFailureReasons[] = 'description: ' . ($descriptionResult['reason'] ?? 'translation failed');
                         }
@@ -142,6 +163,19 @@ class TranslationService
             'failures' => $failures,
         ]);
 
+        if ($context !== null && $tokenEstimate > 0) {
+            app(AiUsageLogger::class)->logFreeTranslation(
+                context: $context,
+                totalTokens: $tokenEstimate,
+                summary: sprintf(
+                    'Translate %s → %d language(s), %d API call(s)',
+                    $sourceCode,
+                    count($translations),
+                    $apiCalls,
+                ),
+            );
+        }
+
         return [
             'ok' => true,
             'message' => '',
@@ -149,6 +183,18 @@ class TranslationService
             'providers' => $providers,
             'failures' => $failures,
         ];
+    }
+
+    protected function countsAsTranslationApiCall(?string $provider): bool
+    {
+        return in_array($provider, ['mymemory', 'google_fallback'], true);
+    }
+
+    protected function estimateTokensFromText(string $text): int
+    {
+        $length = mb_strlen(trim($text));
+
+        return $length > 0 ? (int) max(1, (int) ceil($length / 4)) : 0;
     }
 
     protected function fail(string $message, array $failures): array

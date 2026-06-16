@@ -96,6 +96,9 @@ final class AccountProviderServiceOfferController extends Controller
         $activeAssignment = $priceResolver->activeAssignment((int) $account->id, (int) $operator->id);
         $operatorPriceListName = $activeAssignment?->priceList?->name;
         $operatorHasPriceList = $activeAssignment !== null;
+        $operatorPriceListValidity = $activeAssignment !== null
+            ? locale_date_range($activeAssignment->valid_from, $activeAssignment->valid_to)
+            : null;
 
         foreach ($services as $service) {
             foreach ($service->serviceVariants as $variant) {
@@ -107,6 +110,7 @@ final class AccountProviderServiceOfferController extends Controller
                 $variant->setAttribute('operator_price_is_zero', $priceResolver->resolvedAmountIsZero($operatorPrice));
                 $variant->setAttribute('operator_has_price_list', $operatorHasPriceList);
                 $variant->setAttribute('operator_price_list_name', $operatorPriceListName);
+                $variant->setAttribute('operator_price_list_validity', $operatorPriceListValidity);
             }
         }
 
@@ -118,6 +122,7 @@ final class AccountProviderServiceOfferController extends Controller
             'serviceStatusFilter' => $serviceStatusFilter,
             'operatorHasPriceList' => $operatorHasPriceList,
             'operatorPriceListName' => $operatorPriceListName,
+            'operatorPriceListValidity' => $operatorPriceListValidity,
         ]);
     }
 

@@ -58,6 +58,7 @@
                                                 <th>{{ __('account.service_offers.operator_index_col_status') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.operator_index_col_price') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_offered') }}</th>
+                                                <th class="text-end">{{ __('account.service_offers.operator_index_col_packages') }}</th>
                                                 <th class="text-end text-nowrap">{{ __('wizard.provider_services_col_actions') }}</th>
                                             </tr>
                                         </thead>
@@ -88,15 +89,16 @@
                                                         @endif
                                                     </td>
                                                     <td>{{ $offer->offered_at ? locale_datetime($offer->offered_at) : '—' }}</td>
+                                                    <td class="text-end">{{ number_format((int) ($offer->packages_count ?? 0)) }}</td>
                                                     <td class="text-end text-nowrap">
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-secondary me-1"
+                                                            onclick="Livewire.dispatch('open-service-offer-preview', { offerUuid: @js($offer->uuid) })"
+                                                        >
+                                                            {{ __('account.service_offers.operator_index_preview') }}
+                                                        </button>
                                                         @if ($isPending)
-                                                            <button
-                                                                type="button"
-                                                                class="btn btn-sm btn-outline-secondary me-1"
-                                                                onclick="Livewire.dispatch('open-service-offer-preview', { offerUuid: @js($offer->uuid) })"
-                                                            >
-                                                                {{ __('account.service_offers.operator_index_preview') }}
-                                                            </button>
                                                             <form method="POST" action="{{ route('account.service-offers.accept', $offer) }}" class="d-inline">
                                                                 @csrf
                                                                 <input type="hidden" name="status" value="{{ $statusFilter }}">
@@ -113,8 +115,11 @@
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('account.service_offers.operator_index_reject') }}</button>
                                                             </form>
                                                         @else
-                                                            <a href="{{ route('account.operator-packages.index') }}" class="btn btn-sm btn-outline-primary">
-                                                                {{ __('account.service_offers.operator_index_use_in_packages') }}
+                                                            <a
+                                                                href="{{ route('account.operator-package-services.index', ['service_offer' => $offer->uuid]) }}"
+                                                                class="btn btn-sm btn-outline-primary"
+                                                            >
+                                                                {{ __('account.service_offers.operator_index_view_packages') }}
                                                             </a>
                                                         @endif
                                                     </td>

@@ -258,6 +258,15 @@
                                 </div>
 
                                 <div class="d-flex flex-wrap gap-2 mt-4">
+                                    @if ($isEdit)
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary"
+                                            onclick="Livewire.dispatch('open-operator-package-preview', { packageUuid: @js($package->uuid) })"
+                                        >
+                                            {{ __('account.operator_packages.preview_button') }}
+                                        </button>
+                                    @endif
                                     <button type="submit" class="btn btn-primary" @disabled($providerOptions === [])>
                                         {{ $isEdit ? __('account.operator_packages.update_button') : __('account.operator_packages.save_button') }}
                                     </button>
@@ -287,6 +296,10 @@
             'offersByProvider' => $offersByProvider,
         ])
     </template>
+
+    @if ($isEdit)
+        <livewire:account.operator-package-preview-modal />
+    @endif
 
 @endsection
 

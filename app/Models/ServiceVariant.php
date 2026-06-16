@@ -91,6 +91,21 @@ class ServiceVariant extends Model implements HasMedia
         return $this->hasMany(ServiceVariantTranslation::class);
     }
 
+    public function availabilityRules(): HasMany
+    {
+        return $this->hasMany(ServiceVariantAvailabilityRule::class)->orderByDesc('active')->orderByDesc('start_date');
+    }
+
+    public function availabilityOverrides(): HasMany
+    {
+        return $this->hasMany(ServiceVariantAvailabilityOverride::class)->orderByDesc('date');
+    }
+
+    public function usesTimeSlotInventory(): bool
+    {
+        return in_array($this->inventory_type, ['per_timeslot', 'per_departure'], true);
+    }
+
     /**
      * Display name from translations (prefers current app locale).
      */

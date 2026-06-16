@@ -18,14 +18,10 @@ class PriceList extends Model
         'provider_id',
         'name',
         'currency_id',
-        'valid_from',
-        'valid_to',
         'is_active',
     ];
 
     protected $casts = [
-        'valid_from' => 'datetime',
-        'valid_to' => 'datetime',
         'is_active' => 'boolean',
     ];
 

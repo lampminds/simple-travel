@@ -25,6 +25,7 @@ final class AgencyBookingFromPackageOfferService
         private readonly OperatorPackageAgencyPriceResolver $packagePriceResolver,
         private readonly OperatorPriceListItemPricingService $itemPricingService,
         private readonly BookingNotificationService $bookingNotifications,
+        private readonly BookingAvailabilityValidationService $availabilityValidation,
     ) {
     }
 
@@ -93,6 +94,20 @@ final class AgencyBookingFromPackageOfferService
         $includedItems = $catalog->items
             ->filter(fn (OperatorPackageItem $item): bool => $item->inclusion_mode === 'included')
             ->values();
+
+        $this->availabilityValidation->assertPackageOfferAvailable(
+            $offer,
+            $travelStart,
+            $travelEnd,
+        );
+
+        $this->availabilityValidation->assertPackageItemsAvailable(
+            (int) $offer->operator_id,
+            $includedItems,
+            $travelStart,
+            $travelEnd,
+            $passengersSnapshot,
+        );
 
         $listItems = OperatorPriceListItem::query()
             ->where('operator_price_list_id', $priceList->id)

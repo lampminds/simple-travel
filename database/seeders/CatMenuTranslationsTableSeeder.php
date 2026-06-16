@@ -339,6 +339,86 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Reservas',
                 'tip' => 'Revisá y confirmá reservas enviadas por agencias vinculadas.',
             ),
+            40 => 
+            array (
+                'id' => 46,
+                'menu_id' => 30,
+                'language_id' => 1,
+                'name' => 'Capacity allocations',
+                'tip' => 'Assign inventory caps to linked operators for accepted catalog variants.',
+            ),
+            41 => 
+            array (
+                'id' => 47,
+                'menu_id' => 30,
+                'language_id' => 2,
+                'name' => 'Asignación de cupos',
+                'tip' => 'Asigná cupos a operadores vinculados para variantes de catálogo ya aceptadas.',
+            ),
+            42 => 
+            array (
+                'id' => 48,
+                'menu_id' => 31,
+                'language_id' => 1,
+                'name' => 'Variant availability',
+                'tip' => 'Recurring rules and date exceptions for catalog variant inventory.',
+            ),
+            43 => 
+            array (
+                'id' => 49,
+                'menu_id' => 31,
+                'language_id' => 2,
+                'name' => 'Disponibilidad de variantes',
+                'tip' => 'Reglas recurrentes y excepciones por fecha para el inventario de variantes.',
+            ),
+            44 => 
+            array (
+                'id' => 50,
+                'menu_id' => 32,
+                'language_id' => 1,
+                'name' => 'Package availability',
+                'tip' => 'Recurring rules and date exceptions for operator package inventory.',
+            ),
+            45 => 
+            array (
+                'id' => 51,
+                'menu_id' => 32,
+                'language_id' => 2,
+                'name' => 'Disponibilidad de paquetes',
+                'tip' => 'Reglas recurrentes y excepciones por fecha para el inventario de paquetes.',
+            ),
+            46 => 
+            array (
+                'id' => 52,
+                'menu_id' => 33,
+                'language_id' => 1,
+                'name' => 'Package capacity allocations',
+                'tip' => 'Assign inventory caps to linked agencies for accepted operator packages.',
+            ),
+            47 => 
+            array (
+                'id' => 53,
+                'menu_id' => 33,
+                'language_id' => 2,
+                'name' => 'Asignación de cupos de paquetes',
+                'tip' => 'Asigná cupos a agencias vinculadas para paquetes del operador ya aceptados.',
+            ),
+            48 => 
+            array (
+                'id' => 54,
+                'menu_id' => 34,
+                'language_id' => 1,
+                'name' => 'Services by package',
+                'tip' => 'See which commercial packages include each accepted provider service.',
+            ),
+            49 => 
+            array (
+                'id' => 55,
+                'menu_id' => 34,
+                'language_id' => 2,
+                'name' => 'Servicios por paquete',
+                'tip' => 'Consultá en qué paquetes comerciales está incluido cada servicio de prestador aceptado.',
+            ),
         ));
         
         

@@ -71,8 +71,6 @@ final class AccountProviderPriceListController extends Controller
                 'provider_id' => $account->id,
                 'name' => $validated['name'],
                 'currency_id' => (int) $validated['currency_id'],
-                'valid_from' => $validated['valid_from'] ?? null,
-                'valid_to' => $validated['valid_to'] ?? null,
                 'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
 
@@ -161,8 +159,6 @@ final class AccountProviderPriceListController extends Controller
             $priceList->update([
                 'name' => $validated['name'],
                 'currency_id' => (int) $validated['currency_id'],
-                'valid_from' => $validated['valid_from'] ?? null,
-                'valid_to' => $validated['valid_to'] ?? null,
                 'is_active' => (bool) ($validated['is_active'] ?? false),
             ]);
 
@@ -215,8 +211,6 @@ final class AccountProviderPriceListController extends Controller
      * @return array{
      *   name:string,
      *   currency_id:int|string,
-     *   valid_from?:string|null,
-     *   valid_to?:string|null,
      *   is_active?:bool|string|int|null,
      *   items:array<int, array{
      *      service_id?:int|string|null,
@@ -229,13 +223,10 @@ final class AccountProviderPriceListController extends Controller
     private function validatePayload(Request $request, int $accountId, bool $requiresNotificationTab = false): array
     {
         $this->normalizePriceItemInputs($request, $accountId);
-        normalize_request_locale_dates($request, ['valid_from', 'valid_to']);
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'currency_id' => ['required', Rule::exists('cat_currencies', 'id')],
-            'valid_from' => ['nullable', 'date'],
-            'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],
             'is_active' => ['nullable', 'boolean'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.service_variant_id' => [

@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\ServiceVariant;
 use App\Services\PriceFormatService;
 use App\Services\Translation\TranslationService;
+use App\Support\AiUsageContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -372,10 +373,21 @@ class ServiceVariantsStep extends Component
             ];
         }
 
+        $user = Auth::user();
+        $account = $user?->currentAccount();
+
         $result = app(TranslationService::class)->translateFromLanguage(
             sourceLanguageId: $sourceLanguageId,
             translationsPayload: $payload,
-            userId: Auth::id()
+            userId: $user?->id,
+            usageContext: $user !== null
+                ? new AiUsageContext(
+                    userId: (int) $user->id,
+                    accountId: $user->currentAccountId(),
+                    accountTypeId: $account?->account_type_id !== null ? (int) $account->account_type_id : null,
+                    source: 'service_wizard.livewire.variants',
+                )
+                : null,
         );
 
         if (! $result['ok']) {

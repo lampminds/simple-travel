@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\LmpCity;
 use App\Models\ServiceTransferLocationType;
+use App\Support\AiUsageContext;
 use App\Support\OpenAiUserFacingMessage;
+use App\Support\SystemAccount;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use OpenAI\Client;
@@ -17,6 +19,7 @@ final class CityTransferLocationsAiPlanner
 {
     public function __construct(
         private readonly ?Client $client = null,
+        private readonly ?AiUsageLogger $usageLogger = null,
     ) {
     }
 
@@ -146,6 +149,7 @@ PROMPT;
         array $names,
         string $sourceLanguageCode,
         array $targetLanguageCodes,
+        ?AiUsageContext $usageContext = null,
     ): array {
         $names = array_values(array_map(static fn (string $n): string => trim($n), $names));
         $targetLanguageCodes = array_values(array_unique(array_filter(
@@ -169,7 +173,13 @@ PROMPT;
         $merged = [];
 
         foreach ($chunks as $chunk) {
-            $partial = $this->translateLocationNamesChunk($chunk, $sourceLanguageCode, $targetLanguageCodes, $targetList);
+            $partial = $this->translateLocationNamesChunk(
+                $chunk,
+                $sourceLanguageCode,
+                $targetLanguageCodes,
+                $targetList,
+                $usageContext,
+            );
             foreach ($partial as $row) {
                 $merged[] = $row;
             }
@@ -188,6 +198,7 @@ PROMPT;
         string $sourceLanguageCode,
         array $targetLanguageCodes,
         string $targetList,
+        ?AiUsageContext $usageContext = null,
     ): array {
         $apiKey = trim((string) config('services.openai.api_key', ''));
         if ($apiKey === '') {
@@ -233,6 +244,39 @@ PROMPT;
         } catch (\Throwable $e) {
             throw new RuntimeException(OpenAiUserFacingMessage::from($e), 0, $e);
         }
+
+        $usage = $response->usage ?? null;
+        $promptTokens = $usage?->promptTokens ?? $usage?->prompt_tokens ?? null;
+        $completionTokens = $usage?->completionTokens ?? $usage?->completion_tokens ?? null;
+        $totalTokens = $usage?->totalTokens ?? $usage?->total_tokens ?? null;
+        $promptTokens = $promptTokens !== null ? (int) $promptTokens : null;
+        $completionTokens = $completionTokens !== null ? (int) $completionTokens : null;
+        $totalTokens = $totalTokens !== null ? (int) $totalTokens : null;
+        $chatTotalTokens = ($promptTokens ?? 0) + ($completionTokens ?? 0);
+        if ($totalTokens === null && $chatTotalTokens > 0) {
+            $totalTokens = $chatTotalTokens;
+        }
+
+        $logger = $this->usageLogger ?? app(AiUsageLogger::class);
+        $context = $usageContext ?? new AiUsageContext(
+            userId: (int) (auth()->id() ?? SystemAccount::USER_ID),
+            useSystemAccount: true,
+            source: 'filament.lmp_city_transfer_locations',
+        );
+        $logger->logOpenAiTranslation(
+            context: $context,
+            summary: sprintf(
+                'OpenAI translate %d location label(s) from %s to %s',
+                count($names),
+                $sourceLanguageCode,
+                $targetList,
+            ),
+            chatModel: $model,
+            chatPromptTokens: $promptTokens,
+            chatCompletionTokens: $completionTokens,
+            chatTotalTokens: $chatTotalTokens > 0 ? $chatTotalTokens : null,
+            totalTokens: $totalTokens,
+        );
 
         $raw = trim((string) ($response->choices[0]->message->content ?? ''));
         $decoded = json_decode($raw, true);

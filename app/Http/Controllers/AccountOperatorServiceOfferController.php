@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\OperatorPackageItem;
 use App\Models\ServiceOffer;
 use App\Services\OperatorPreviewLocalePriceService;
 use App\Services\OperatorVariantPriceResolver;
@@ -42,12 +43,17 @@ final class AccountOperatorServiceOfferController extends Controller
             ->get();
 
         $operatorId = (int) $account->id;
+        $packageCountsByOfferId = $this->packageCountsByOfferIds(
+            $offers->pluck('id')->map(fn ($id): int => (int) $id)->all(),
+        );
+
         foreach ($offers as $offer) {
             $operatorPrice = $this->resolveOperatorPriceForOffer($offer, $operatorId, $priceResolver);
             $operatorPrice['usd_hint'] = $usdHintService->buildUsd($operatorPrice, $operatorId) ?? '';
 
             $offer->setAttribute('operator_price', $operatorPrice);
             $offer->setAttribute('operator_service_label', $this->serviceLabelForOffer($offer));
+            $offer->setAttribute('packages_count', $packageCountsByOfferId[(int) $offer->id] ?? 0);
         }
 
         return view('account.service-offers.operator.index', [
@@ -177,13 +183,13 @@ final class AccountOperatorServiceOfferController extends Controller
 
     private function resolveOfferStatusFilter(Request $request): string
     {
-        $raw = trim((string) $request->query('status', self::OFFER_FILTER_PENDING));
+        $raw = trim((string) $request->query('status', self::OFFER_FILTER_ALL));
 
         return in_array($raw, [
             self::OFFER_FILTER_PENDING,
             self::OFFER_FILTER_ACCEPTED,
             self::OFFER_FILTER_ALL,
-        ], true) ? $raw : self::OFFER_FILTER_PENDING;
+        ], true) ? $raw : self::OFFER_FILTER_ALL;
     }
 
     /**
@@ -192,9 +198,9 @@ final class AccountOperatorServiceOfferController extends Controller
     private function offerStatusFilterOptions(): array
     {
         return [
+            self::OFFER_FILTER_ALL => __('account.service_offers.operator_index_filter_all'),
             self::OFFER_FILTER_PENDING => __('account.service_offers.operator_index_filter_pending'),
             self::OFFER_FILTER_ACCEPTED => __('account.service_offers.operator_index_filter_accepted'),
-            self::OFFER_FILTER_ALL => __('account.service_offers.operator_index_filter_all'),
         ];
     }
 
@@ -216,6 +222,25 @@ final class AccountOperatorServiceOfferController extends Controller
         }
 
         return $query;
+    }
+
+    /**
+     * @param  list<int>  $offerIds
+     * @return array<int, int>
+     */
+    private function packageCountsByOfferIds(array $offerIds): array
+    {
+        if ($offerIds === []) {
+            return [];
+        }
+
+        return OperatorPackageItem::query()
+            ->whereIn('service_offer_id', $offerIds)
+            ->selectRaw('service_offer_id, COUNT(DISTINCT operator_service_catalog_id) as packages_count')
+            ->groupBy('service_offer_id')
+            ->pluck('packages_count', 'service_offer_id')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
     }
 
     private function serviceLabelForOffer(ServiceOffer $offer): string
@@ -252,14 +277,14 @@ final class AccountOperatorServiceOfferController extends Controller
     private function operatorIndexRouteParams(Request $request): array
     {
         $params = ['as' => 'operator'];
-        $raw = trim((string) ($request->query('status', $request->input('status', self::OFFER_FILTER_PENDING))));
+        $raw = trim((string) ($request->query('status', $request->input('status', self::OFFER_FILTER_ALL))));
         $statusFilter = in_array($raw, [
             self::OFFER_FILTER_PENDING,
             self::OFFER_FILTER_ACCEPTED,
             self::OFFER_FILTER_ALL,
-        ], true) ? $raw : self::OFFER_FILTER_PENDING;
+        ], true) ? $raw : self::OFFER_FILTER_ALL;
 
-        if ($statusFilter !== self::OFFER_FILTER_PENDING) {
+        if ($statusFilter !== self::OFFER_FILTER_ALL) {
             $params['status'] = $statusFilter;
         }
 

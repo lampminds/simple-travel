@@ -7,6 +7,7 @@ use App\Models\AccountRelationship;
 use App\Models\Allocation;
 use App\Models\Service;
 use App\Models\ServiceVariant;
+use App\Services\AllocationInventoryCapacityService;
 use App\Services\AllocationValidationService;
 use App\Support\AccountBusinessTypeGate;
 use Illuminate\Http\RedirectResponse;
@@ -17,8 +18,10 @@ use Illuminate\View\View;
 
 final class AccountProviderAllocationController extends Controller
 {
-    public function __construct(private readonly AllocationValidationService $allocationValidation)
-    {
+    public function __construct(
+        private readonly AllocationValidationService $allocationValidation,
+        private readonly AllocationInventoryCapacityService $inventoryCapacity,
+    ) {
     }
 
     public function operatorsIndex(Request $request): View
@@ -201,6 +204,8 @@ final class AccountProviderAllocationController extends Controller
         int $operatorId,
         ?int $excludeAllocationId = null,
     ): array {
+        normalize_request_locale_dates($request, ['start_date', 'end_date']);
+
         $validated = $request->validate([
             'target_key' => ['required', 'string'],
             'allocation_type' => ['required', Rule::in([
@@ -239,8 +244,8 @@ final class AccountProviderAllocationController extends Controller
         $variant = ServiceVariant::query()
             ->whereKey($serviceId)
             ->whereHas('service', fn ($q) => $q->where('account_id', $providerId))
-            ->exists();
-        if (! $variant) {
+            ->first();
+        if ($variant === null) {
             throw ValidationException::withMessages([
                 'target_key' => __('account.allocations.validation.target_not_owned'),
             ]);
@@ -287,6 +292,32 @@ final class AccountProviderAllocationController extends Controller
         if ($overlap instanceof Allocation) {
             throw ValidationException::withMessages([
                 'start_date' => __('account.allocations.validation.date_overlap'),
+            ]);
+        }
+
+        $inventoryViolation = $this->inventoryCapacity->findInventoryViolation(
+            $variant,
+            $capacity,
+            $startDate,
+            $endDate,
+            (bool) ($validated['active'] ?? false),
+            $allocationType,
+            $excludeAllocationId,
+        );
+
+        if ($inventoryViolation !== null) {
+            $message = ($inventoryViolation['reason'] ?? '') === 'missing_inventory_total'
+                ? __('account.allocations.validation.inventory_not_defined')
+                : __('account.allocations.validation.capacity_exceeds_inventory', [
+                    'date' => $inventoryViolation['date'] !== ''
+                        ? locale_date($inventoryViolation['date'])
+                        : __('account.allocations.validity_open'),
+                    'assigned' => number_format((int) $inventoryViolation['assigned']),
+                    'limit' => number_format((int) $inventoryViolation['limit']),
+                ]);
+
+            throw ValidationException::withMessages([
+                'capacity' => $message,
             ]);
         }
 

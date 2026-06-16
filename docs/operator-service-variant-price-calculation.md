@@ -48,17 +48,15 @@ An operator (as an `Account`) is linked to a **price list** through a row in `pr
 
 **Table:** `price_lists` (same migration)
 
-The **list itself** also carries validity and status:
+The **list itself** carries only a global on/off flag:
 
 | Column        | Role |
 |---------------|------|
-| `valid_from`  | Optional list-wide start |
-| `valid_to`    | Optional list-wide end |
 | `is_active`   | List must be active |
 
-**Date logic (list):** The same `pricing_date` should fall within the list’s `valid_from` / `valid_to` when those are set, and `is_active` should be true.
+**Date logic (list):** The list has no date window. Validity is defined per assignment only. The list’s `is_active` flag must still be true.
 
-**Schema note:** Both `price_lists` and `price_list_assignments` support independent date ranges. A correct resolver should enforce **both** the list window and the assignment window (and any future business rules for conflicts if several rows match).
+**Schema note:** Only `price_list_assignments` define date ranges. A correct resolver should enforce the assignment window (and `is_active` on both list and assignment).
 
 ---
 
@@ -132,7 +130,7 @@ Suggested interpretation:
 |-------------|----------------------|
 | Base price on the variant | Yes — `service_variants.base_price` |
 | Operator-specific list link with date range | Yes — `price_list_assignments` on morph `assigned_to` + `valid_from` / `valid_to` / `is_active` |
-| List-level date range | Yes — `price_lists.valid_from` / `valid_to` / `is_active` |
+| List-level active flag | Yes — `price_lists.is_active` (no list date range) |
 | Per-variant line on a list (adjustment vs base) | Yes — `price_list_items` with `price`, `pricing_mode`, `application_mode` |
 | Global operator discount/markup on top | Yes — `adjustment_type`, `adjustment_value` on the **assignment** row |
 
