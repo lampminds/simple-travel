@@ -922,8 +922,16 @@ return [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nombre',
+            'account_types' => 'Tipos',
+            'account_types_all' => 'Todos los tipos de cuenta',
+            'modules_count' => 'Módulos',
             'usd_price' => 'Precio USD',
             'active' => 'Activo',
+        ],
+
+        'plan_filter' => [
+            'account_type' => 'Tipo de cuenta',
+            'account_type_placeholder' => 'Todos los tipos de cuenta',
         ],
 
         'plan_item' => 'Item del plan',
@@ -997,6 +1005,17 @@ return [
             'account_type_placeholder' => 'Todos los tipos de cuenta',
         ],
 
+        'module_actions' => [
+            'copy' => 'Copiar',
+            'copy_heading' => 'Copiar módulo',
+            'copy_description' => 'Crea un módulo nuevo con traducciones, tipos de cuenta, características y precios copiados de este registro. No se copian las asignaciones a planes.',
+            'copy_failed_title' => 'No se pudo copiar el módulo',
+            'copy_code_required' => 'Ingresá un código para el módulo nuevo.',
+            'copy_code_exists' => 'Ya existe un módulo con ese código.',
+            'copy_success_title' => 'Módulo copiado',
+            'copy_success_body' => 'Se creó el módulo :code. Podés revisarlo y ajustarlo ahora.',
+        ],
+
         'module_relation' => [
             'features_tab' => 'Características',
             'prices_tab' => 'Precios',
@@ -1021,8 +1040,13 @@ return [
             'billing_hybrid' => 'Híbrido',
             'billing_usage' => 'Por uso',
             'base_price' => 'Precio base',
+            'base_price_per_user_help' => 'Cargo fijo mensual que se suma al componente por usuario.',
+            'base_price_fixed_help' => 'Importe mensual fijo del módulo.',
             'included_users' => 'Usuarios incluidos',
+            'included_users_help' => 'Solo para híbrido: usuarios cubiertos por el precio base. Los adicionales pagan el precio por usuario.',
             'price_per_user' => 'Precio por usuario',
+            'price_per_user_per_user_help' => 'Total mensual = precio base + (precio por usuario × cantidad de usuarios).',
+            'price_per_user_hybrid_help' => 'Solo se cobra por cada usuario por encima de los usuarios incluidos.',
             'tiers_section' => 'Tramos por usuarios',
             'add_tier' => 'Añadir tramo',
         ],

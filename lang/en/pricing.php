@@ -5,7 +5,58 @@ return [
 
     // Hero
     'hero_title' => 'A simple model that grows with your team',
-    'hero_lead' => 'You pay based on the number of active users in your operation. No limits on quotes, bookings or sales volume.',
+    'hero_lead' => 'Choose your account type, set how many users you need, and build your plan with the base service plus the modules you want.',
+    'hero_trial_invite' => 'Try everything free for 30 days, with a single user included.',
+    'hero_promo_trial_badge' => 'Free trial',
+    'hero_promo_trial_title' => '30 days to try everything',
+    'hero_promo_trial_text' => '1 user included. Full platform access — no credit card required to start.',
+    'hero_promo_setup_badge' => 'No surprises',
+    'hero_promo_setup_title' => '$0 setup',
+    'hero_promo_setup_text' => 'No implementation, activation, or onboarding fees.',
+
+    'step_account_type' => 'What is your role in tourism?',
+    'step_account_type_help' => 'We only show modules available for operators, agencies, or providers.',
+    'step_users' => 'How many users will you need?',
+    'step_users_help' => 'The base service and some modules price according to the number of active users.',
+    'users_label' => 'Number of users',
+    'users_context' => 'Prices calculated for :count users',
+
+    'step_currency' => 'Which currency should we display?',
+    'step_currency_help' => 'Catalog prices are stored in USD. We show the equivalent using the current system exchange rate.',
+    'prices_usd_note' => 'Reference prices in USD.',
+    'exchange_rate_note' => 'Exchange rate: 1 USD = :rate :code (as of :date).',
+
+    'core_heading' => 'Base service',
+    'core_intro' => 'The base service is mandatory and includes the operational core of the system.',
+    'core_required' => 'Required',
+
+    'addons_heading' => 'Additional modules',
+    'addons_intro' => 'Check the modules you want to add. Each one is included in the estimated total.',
+    'select_module' => 'Include in plan',
+
+    'estimate_heading' => 'Your monthly estimate',
+    'estimate_intro' => 'Breakdown of the base service plus selected add-on modules.',
+    'estimate_core' => 'Base service',
+    'estimate_addons' => 'Additional modules',
+    'estimate_total' => 'Estimated total',
+    'estimate_empty' => 'No modules are configured for this account type.',
+    'estimate_context' => ':count · :code',
+    'estimate_cta' => 'Request a demo',
+    'config_bar_label' => 'Configuration',
+    'mobile_view_detail' => 'View details',
+    'mobile_close_detail' => 'Close',
+    'users_summary' => ':count users',
+
+    'no_modules_for_type' => 'No additional modules for this account type.',
+    'custom_quote' => 'Custom quote',
+
+    'billing_fixed' => 'Fixed price',
+    'billing_per_user' => 'Per user',
+    'billing_per_user_amount' => ':amount per user',
+    'billing_per_user_base_and_amount' => ':base + :amount per user',
+    'billing_hybrid' => 'Base + users',
+    'billing_usage' => 'Usage based',
+    'billing_not_user_dependent' => 'Does not vary with user count',
 
     // Block 1: Base by user range
     'block1_heading' => 'Base fee by user range',

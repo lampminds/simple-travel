@@ -7,173 +7,311 @@
     <section class="hero-4 pb-5 pt-7 py-sm-7 bg-gradient2">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-7 text-center">
+                <div class="col-lg-8 text-center">
                     <h1 class="hero-title">{{ __('pricing.hero_title') }}</h1>
-                    <p class="fs-17 text-muted">{{ __('pricing.hero_lead') }}</p>
-                </div>
-            </div>
-        </div>
-    </section>
+                    <p class="fs-17 text-muted mb-4">{{ __('pricing.hero_lead') }}</p>
 
-    <!-- Block 1: Abono base por rango de usuarios -->
-    <section class="section py-6 position-relative">
-        <div class="container">
-            @php $defaultRangeLabel = !empty($rangeTabs) ? (collect($rangeTabs)->firstWhere('up_to', $defaultUpTo)['label'] ?? '') : ''; @endphp
-            <div class="row mb-3">
-                <div class="col text-center">
-                    <h2 class="display-6 fw-semibold">{{ __('pricing.block1_heading') }}</h2>
-                    <p class="text-muted mb-0 mt-2">{{ __('pricing.block1_intro') }}</p>
-                </div>
-            </div>
-            @if(!empty($rangeTabs))
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap gap-2 justify-content-center overflow-auto pb-2" data-range-tabs data-selected-up-to="{{ $defaultUpTo }}">
-                            @foreach($rangeTabs as $tab)
-                                <button type="button" class="btn {{ $tab['up_to'] == $defaultUpTo ? 'btn-primary' : 'btn-outline-primary' }} px-4 py-2 rounded-pill flex-shrink-0" data-up-to="{{ $tab['up_to'] }}" data-label="{{ e($tab['label']) }}" aria-pressed="{{ $tab['up_to'] == $defaultUpTo ? 'true' : 'false' }}">
-                                    <span class="d-block">{{ $tab['label'] }}</span>
-                                    @if($tab['base_price'] !== null && $tab['base_price'] !== '')
-                                        <span class="small opacity-90">{{ __('pricing.currency') }}{{ $tab['base_price'] }}</span>
-                                    @endif
-                                </button>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            @endif
-            <p class="text-center mb-4">
-                <span class="fw-semibold text-primary py-2 px-3 rounded bg-soft-primary d-inline-block">
-                    {{ __('pricing.block1_highlight') }}
-                </span>
-            </p>
-            @if($starterPlan ?? null)
-                <div class="row">
-                    <div class="col-12">
-                        @if($starterPlan->name)
-                            <h4 class="text-primary mb-3">{{ $starterPlan->name }}</h4>
-                        @endif
-                        @php
-                                $firstOpenIndex = null;
-                                foreach ($starterPlan->items as $idx => $it) {
-                                    if ($it->display_text && $it->children->filter(fn ($c) => $c->display_text !== null && $c->display_text !== '')->isNotEmpty()) {
-                                        $firstOpenIndex = $idx;
-                                        break;
-                                    }
-                                }
-                            @endphp
-                        <div class="accordion accordion-flush" id="starter-accordion">
-                            @foreach($starterPlan->items as $index => $item)
-                                @if($item->display_text)
-                                    @php
-                                        $collapseId = 'starter-collapse-' . $index;
-                                        $headingId = 'starter-heading-' . $index;
-                                        $hasChildren = $item->children->filter(fn ($c) => $c->display_text !== null && $c->display_text !== '')->isNotEmpty();
-                                        $isFirstOpen = $hasChildren && $index === $firstOpenIndex;
-                                    @endphp
-                                    <div class="accordion-item border rounded-sm mb-2">
-                                        <h5 class="accordion-header" id="{{ $headingId }}">
-                                            <button class="accordion-button {{ $hasChildren && !$isFirstOpen ? 'collapsed' : '' }} {{ !$hasChildren ? 'disabled' : '' }} py-3 {{ !$hasChildren ? 'pe-3' : '' }}" type="button" data-bs-toggle="{{ $hasChildren ? 'collapse' : '' }}" data-bs-target="{{ $hasChildren ? '#' . $collapseId : '' }}" aria-expanded="{{ $isFirstOpen ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}">
-                                                <span class="fw-bold">{{ $item->display_text }}</span>
-                                                @if($hasChildren)
-                                                    <i class="icon-xs accordion-arrow ms-2" data-feather="chevron-down"></i>
-                                                @endif
-                                            </button>
-                                        </h5>
-                                        @if($hasChildren)
-                                            <div id="{{ $collapseId }}" class="accordion-collapse collapse {{ $isFirstOpen ? 'show' : '' }}" aria-labelledby="{{ $headingId }}" data-bs-parent="#starter-accordion">
-                                                <div class="accordion-body pt-0 pb-3">
-                                                    <ul class="list-unstyled mb-0">
-                                                        @foreach($item->children as $child)
-                                                            @if($child->display_text)
-                                                                <li class="py-2 d-flex align-items-center">
-                                                                    <i class="align-middle icon-dual-success me-2 icon-xs flex-shrink-0" data-feather="check"></i>
-                                                                    <span>{{ $child->display_text }}</span>
-                                                                </li>
-                                                            @endif
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        @endif
+                    <div class="row g-3 justify-content-center pricing-hero-promos">
+                        <div class="col-md-6 col-lg-5">
+                            <div class="pricing-hero-promo pricing-hero-promo-trial h-100 text-start">
+                                <div class="d-flex align-items-start gap-3">
+                                    <span class="pricing-hero-promo-icon bg-soft-primary text-primary flex-shrink-0">
+                                        <i data-feather="gift" class="icon icon-sm"></i>
+                                    </span>
+                                    <div>
+                                        <span class="badge rounded-pill badge-soft-primary px-2 py-1 mb-2">{{ __('pricing.hero_promo_trial_badge') }}</span>
+                                        <div class="fw-bold fs-18 text-dark lh-sm mb-1">{{ __('pricing.hero_promo_trial_title') }}</div>
+                                        <p class="text-muted small mb-0">{{ __('pricing.hero_promo_trial_text') }}</p>
                                     </div>
-                                @endif
-                            @endforeach
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            @endif
-        </div>
-    </section>
-
-    <!-- Block 2: Módulos adicionales -->
-    <section class="section py-6 position-relative bg-light">
-        <div class="container">
-            <div class="row mb-4">
-                <div class="col text-center">
-                    <h2 class="display-6 fw-semibold">{{ __('pricing.block2_heading') }}</h2>
-                    <p class="text-muted mx-auto mt-3 mb-0" style="max-width: 42rem;">
-                        {{ __('pricing.block2_intro') }}
-                    </p>
-                </div>
-            </div>
-            <div class="row align-items-start mt-5">
-                @forelse($modulePlans ?? [] as $index => $plan)
-                    @php
-                        $pricesForPlan = $modulePricesByRange[$plan->id] ?? [];
-                        $displayPrice = (string) ($pricesForPlan[$defaultUpTo ?? ''] ?? $plan->price ?? '');
-                    @endphp
-                    <div class="col-lg-4 col-xl-4 mb-4">
-                        <div class="card border hoverable h-100" data-aos="fade-up" data-aos-duration="{{ 300 + ($index * 200) }}">
-                            <div class="card-body text-center d-flex flex-column">
-                                @if($plan->name)
-                                    <h4 class="my-0 text-primary">{{ $plan->name }}</h4>
-                                @endif
-                                @if($plan->price !== null || $displayPrice !== '')
-                                    <h2 class="mb-0 mt-2">
-                                        <span class="fw-normal text-muted fs-13 align-top">{{ __('pricing.currency') }}</span>
-                                        <span class="fw-bolder display-5 module-price-display" data-prices="{{ json_encode($pricesForPlan) }}">{{ $displayPrice }}</span>
-                                        <span class="fw-normal text-muted fs-13 align-middle"> {{ __('pricing.per_month') }}</span>
-                                    </h2>
-                                    @if(($defaultRangeLabel ?? '') !== '')
-                                        <p class="small text-muted mb-0 mt-1"><span class="module-range-label">{{ $defaultRangeLabel }}</span></p>
-                                    @endif
-                                @endif
-                                @if($plan->description)
-                                    <p class="text-muted small mt-2 mb-0">{{ $plan->description }}</p>
-                                @endif
-                                <ul class="list-unstyled border-top py-4 mt-4 text-start flex-grow-1">
-                                    @foreach($plan->items as $item)
-                                        @if($item->display_text)
-                                            <li class="py-2 d-flex align-items-center">
-                                                <span class="fw-bold">{{ $item->display_text }}</span>
-                                            </li>
-                                            @foreach($item->children as $child)
-                                                @if($child->display_text)
-                                                    <li class="py-2 d-flex align-items-center ps-3 border-start border-2 border-light">
-                                                        <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                                        <span>{{ $child->display_text }}</span>
-                                                    </li>
-                                                @endif
-                                            @endforeach
-                                        @endif
-                                    @endforeach
-                                </ul>
-                                <a href="#" class="btn btn-soft-primary d-block mt-auto">{{ __('pricing.sign_up_now') }}</a>
+                        <div class="col-md-6 col-lg-5">
+                            <div class="pricing-hero-promo pricing-hero-promo-setup h-100 text-start">
+                                <div class="d-flex align-items-start gap-3">
+                                    <span class="pricing-hero-promo-icon bg-soft-success text-success flex-shrink-0">
+                                        <i data-feather="check-circle" class="icon icon-sm"></i>
+                                    </span>
+                                    <div>
+                                        <span class="badge rounded-pill badge-soft-success px-2 py-1 mb-2">{{ __('pricing.hero_promo_setup_badge') }}</span>
+                                        <div class="fw-bold fs-18 text-dark lh-sm mb-1">{{ __('pricing.hero_promo_setup_title') }}</div>
+                                        <p class="text-muted small mb-0">{{ __('pricing.hero_promo_setup_text') }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="col-12 text-center text-muted py-4">
-                        <p class="mb-0">{{ __('pricing.no_plans') }}</p>
-                    </div>
-                @endforelse
+                </div>
             </div>
         </div>
     </section>
 
+    <style>
+        .pricing-hero-promo {
+            background: #fff;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 1rem;
+            padding: 1.125rem 1.25rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .pricing-hero-promo-trial {
+            border-top: 3px solid var(--bs-primary);
+        }
+
+        .pricing-hero-promo-setup {
+            border-top: 3px solid var(--bs-success);
+        }
+
+        .pricing-hero-promo-icon {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .pricing-hero-promos {
+                margin-top: 0.25rem;
+            }
+        }
+    </style>
+
+  @php
+      $defaultAccountType = collect($pricingConfig['accountTypes'])->firstWhere('code', $pricingConfig['defaultAccountTypeCode'])
+          ?? ($pricingConfig['accountTypes'][0] ?? null);
+      $defaultCurrency = collect($pricingConfig['currencies'])->firstWhere('id', $pricingConfig['defaultCurrencyId'])
+          ?? ($pricingConfig['currencies'][0] ?? null);
+  @endphp
+
+  <div data-pricing-page class="pricing-page pb-lg-0 pb-5">
+    <style>
+        .pricing-mobile-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        @media (min-width: 992px) {
+            .pricing-estimate-panel.sticky-top {
+                max-height: calc(100vh - 11rem);
+            }
+
+            .pricing-estimate-lines {
+                max-height: min(18rem, calc(100vh - 22rem));
+            }
+        }
+    </style>
+    <section class="section pt-0 pb-3 position-relative">
+        <div class="container">
+            <div class="card border shadow-sm sticky-top z-3 pricing-config-bar" style="top: 5.5rem;">
+                <div class="card-body py-3 px-3 px-lg-4">
+                    <button
+                        type="button"
+                        class="btn btn-link w-100 d-lg-none text-decoration-none text-body p-0 mb-0"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#pricing-config-collapse"
+                        aria-expanded="false"
+                        aria-controls="pricing-config-collapse"
+                    >
+                        <span class="d-flex align-items-center justify-content-between gap-2">
+                            <span class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="small fw-semibold text-muted">{{ __('pricing.config_bar_label') }}</span>
+                                <span class="badge bg-soft-primary text-primary" data-config-summary-role>{{ $defaultAccountType['name'] ?? '' }}</span>
+                                <span class="badge bg-light text-muted border" data-config-summary-users>{{ __('pricing.users_summary', ['count' => $pricingConfig['defaultUserCount']]) }}</span>
+                                <span class="badge bg-light text-muted border" data-config-summary-currency>{{ $defaultCurrency['code'] ?? 'USD' }}</span>
+                            </span>
+                            <i data-feather="chevron-down" class="icon icon-xs text-muted flex-shrink-0"></i>
+                        </span>
+                    </button>
+
+                    <div class="collapse d-lg-block" id="pricing-config-collapse">
+                        <div class="d-lg-flex align-items-start align-items-lg-center gap-3 gap-xl-4 flex-wrap pt-3 pt-lg-0">
+                            <div class="pricing-config-group flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small fw-semibold mb-0">{{ __('pricing.step_account_type') }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link btn-sm p-0 text-muted lh-1"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="{{ __('pricing.step_account_type_help') }}"
+                                        aria-label="{{ __('pricing.step_account_type_help') }}"
+                                    >?</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach($pricingConfig['accountTypes'] as $accountType)
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm {{ $accountType['code'] === $pricingConfig['defaultAccountTypeCode'] ? 'btn-primary' : 'btn-outline-primary' }} px-3 py-1 rounded-pill"
+                                            data-account-type="{{ $accountType['code'] }}"
+                                            data-account-type-name="{{ $accountType['name'] }}"
+                                            aria-pressed="{{ $accountType['code'] === $pricingConfig['defaultAccountTypeCode'] ? 'true' : 'false' }}"
+                                        >
+                                            {{ $accountType['name'] }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="vr d-none d-xl-block align-self-stretch opacity-25"></div>
+
+                            <div class="pricing-config-group">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small fw-semibold mb-0">{{ __('pricing.step_users') }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link btn-sm p-0 text-muted lh-1"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="{{ __('pricing.step_users_help') }}"
+                                        aria-label="{{ __('pricing.step_users_help') }}"
+                                    >?</button>
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <label class="visually-hidden" for="pricing-user-count">{{ __('pricing.users_label') }}</label>
+                                    <input
+                                        type="number"
+                                        id="pricing-user-count"
+                                        class="form-control form-control-sm"
+                                        style="max-width: 4.5rem;"
+                                        min="1"
+                                        step="1"
+                                        value="{{ $pricingConfig['defaultUserCount'] }}"
+                                        data-user-count-input
+                                    >
+                                    @foreach($pricingConfig['userPresets'] as $preset)
+                                        <button
+                                            type="button"
+                                            class="btn {{ $preset === $pricingConfig['defaultUserCount'] ? 'btn-primary' : 'btn-outline-primary' }} btn-sm rounded-pill px-2 py-0"
+                                            style="min-width: 2.25rem;"
+                                            data-user-preset="{{ $preset }}"
+                                            aria-pressed="{{ $preset === $pricingConfig['defaultUserCount'] ? 'true' : 'false' }}"
+                                        >
+                                            {{ $preset }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div class="vr d-none d-xl-block align-self-stretch opacity-25"></div>
+
+                            <div class="pricing-config-group flex-grow-1 flex-xl-grow-0" style="min-width: 12rem;">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small fw-semibold mb-0">{{ __('pricing.step_currency') }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-link btn-sm p-0 text-muted lh-1"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="{{ __('pricing.step_currency_help') }}"
+                                        aria-label="{{ __('pricing.step_currency_help') }}"
+                                    >?</button>
+                                </div>
+                                @if(!empty($pricingConfig['currencies']))
+                                    <label class="visually-hidden" for="pricing-currency">{{ __('pricing.step_currency') }}</label>
+                                    <select id="pricing-currency" class="form-select form-select-sm" data-currency-select>
+                                        @foreach($pricingConfig['currencies'] as $currency)
+                                            <option
+                                                value="{{ $currency['id'] }}"
+                                                {{ (int) $currency['id'] === (int) $pricingConfig['defaultCurrencyId'] ? 'selected' : '' }}
+                                            >
+                                                {{ $currency['label'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="small text-muted mb-0 mt-1" data-exchange-rate-note></p>
+                                @else
+                                    <p class="text-muted small mb-0">{{ __('pricing.prices_usd_note') }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section pt-2 pb-5 position-relative">
+        <div class="container">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-8 col-xl-9">
+                    <div data-core-section class="mb-5">
+                        <div class="mb-3">
+                            <h2 class="display-6 fw-semibold mb-2">{{ __('pricing.core_heading') }}</h2>
+                            <p class="text-muted mb-2">{{ __('pricing.core_intro') }}</p>
+                            <p class="mb-0">
+                                <span class="fw-semibold text-primary py-2 px-3 rounded bg-soft-primary d-inline-block">
+                                    {{ __('pricing.block1_highlight') }}
+                                </span>
+                            </p>
+                        </div>
+                        <div data-core-card></div>
+                    </div>
+
+                    <div>
+                        <div class="mb-4">
+                            <h2 class="display-6 fw-semibold mb-2">{{ __('pricing.addons_heading') }}</h2>
+                            <p class="text-muted mb-0">{{ __('pricing.addons_intro') }}</p>
+                        </div>
+                        <div class="alert alert-light border d-none" data-addons-empty>
+                            {{ __('pricing.no_modules_for_type') }}
+                        </div>
+                        <div class="row align-items-start" data-addons-grid></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-xl-3 d-none d-lg-block">
+                    @include('pages.partials.pricing-estimate-panel', ['panelContext' => 'desktop'])
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="pricing-mobile-bar d-lg-none border-top bg-white shadow-sm">
+        <div class="container py-2">
+            <div class="d-flex align-items-center justify-content-between gap-3">
+                <div class="min-w-0">
+                    <div class="small text-muted">{{ __('pricing.estimate_total') }}</div>
+                    <div class="fs-5 fw-bold text-primary text-truncate" data-mobile-breakdown-total></div>
+                    <div class="small text-muted text-truncate" data-mobile-breakdown-context></div>
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm flex-shrink-0"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#pricing-estimate-offcanvas"
+                    aria-controls="pricing-estimate-offcanvas"
+                >
+                    {{ __('pricing.mobile_view_detail') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="offcanvas offcanvas-bottom d-lg-none"
+        tabindex="-1"
+        id="pricing-estimate-offcanvas"
+        aria-labelledby="pricing-estimate-offcanvas-label"
+        style="max-height: 85vh;"
+    >
+        <div class="offcanvas-header border-bottom py-3">
+            <h5 class="offcanvas-title fw-semibold" id="pricing-estimate-offcanvas-label">{{ __('pricing.estimate_heading') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ __('pricing.mobile_close_detail') }}"></button>
+        </div>
+        <div class="offcanvas-body pt-3">
+            @include('pages.partials.pricing-estimate-panel', ['panelContext' => 'mobile'])
+        </div>
+    </div>
+  </div>
 
     <!-- benefits start -->
-    <section class="pt-5 pb-7 career-service position-relative">
+    <section class="pt-5 pb-7 career-service position-relative bg-light">
         <div class="container">
             <div class="row" data-aos="fade-up">
                 <div class="col text-center">
@@ -185,8 +323,7 @@
             <div class="row" data-aos="fade-up" data-aos-duration="500">
                 <div class="col-lg-6">
                     <div class="d-flex align-items-center pe-sm-5 pe-3 mt-lg-5 mt-4">
-                        <span
-                            class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
+                        <span class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
                             @svg('/duotone-icons/communication/Active-call')
                         </span>
                         <div class="flex-grow-1">
@@ -197,8 +334,7 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="d-flex align-items-center pe-sm-5 mt-lg-5 mt-4">
-                        <span
-                            class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-md text-primary me-4 flex-shrink-0">
+                        <span class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-md text-primary me-4 flex-shrink-0">
                             @svg('/duotone-icons/map/Compass')
                         </span>
                         <div class="flex-grow-1">
@@ -212,8 +348,7 @@
             <div class="row" data-aos="fade-up" data-aos-duration="1000">
                 <div class="col-lg-6">
                     <div class="d-flex align-items-center pe-sm-5 mt-lg-5 mt-4">
-                        <span
-                            class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
+                        <span class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
                             @svg('/duotone-icons/media/Equalizer')
                         </span>
                         <div class="flex-grow-1">
@@ -224,8 +359,7 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="d-flex align-items-center pe-sm-5 mt-lg-5 mt-4">
-                        <span
-                            class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
+                        <span class="bg-soft-primary avatar avatar-md rounded icon icon-with-bg icon-sm text-primary me-4 flex-shrink-0">
                             @svg('/duotone-icons/food/Beer')
                         </span>
                         <div class="flex-grow-1">
@@ -363,48 +497,6 @@
 @endsection
 
 @section('script')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var container = document.querySelector('[data-range-tabs]');
-    if (!container) return;
-
-    function switchRange(btn) {
-        var upTo = btn.getAttribute('data-up-to');
-        var label = btn.getAttribute('data-label') || '';
-        if (!upTo) return;
-
-        container.setAttribute('data-selected-up-to', upTo);
-
-        container.querySelectorAll('button[data-up-to]').forEach(function(b) {
-            b.classList.remove('btn-primary');
-            b.classList.add('btn-outline-primary');
-            b.setAttribute('aria-pressed', 'false');
-        });
-        btn.classList.remove('btn-outline-primary');
-        btn.classList.add('btn-primary');
-        btn.setAttribute('aria-pressed', 'true');
-
-        document.querySelectorAll('.module-price-display').forEach(function(el) {
-            var raw = el.getAttribute('data-prices');
-            if (!raw) return;
-            try {
-                var prices = JSON.parse(raw);
-                el.textContent = prices[upTo] !== undefined && prices[upTo] !== null ? prices[upTo] : el.textContent;
-            } catch (e) {}
-        });
-
-        document.querySelectorAll('.module-range-label').forEach(function(el) {
-            el.textContent = label;
-        });
-    }
-
-    container.querySelectorAll('button[data-up-to]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            switchRange(this);
-        });
-    });
-});
-</script>
+    @vite('resources/js/pricing-page.js')
+    <script type="application/json" id="pricing-config">@json($pricingConfig)</script>
 @endsection
-
-

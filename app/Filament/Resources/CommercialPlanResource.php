@@ -24,7 +24,9 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
@@ -188,10 +190,61 @@ class CommercialPlanResource extends LmpResource
                             $q->where('name', 'like', '%'.$search.'%');
                         });
                     }),
+                TextColumn::make('account_types_labels')
+                    ->label(__('filament.resources.plan_columns.account_types'))
+                    ->getStateUsing(function (CommercialPlan $record): ?string {
+                        $codes = $record->accountTypes
+                            ->sortBy('sort_order')
+                            ->pluck('code')
+                            ->filter()
+                            ->values();
+
+                        return $codes->isEmpty() ? null : $codes->implode(', ');
+                    })
+                    ->placeholder(__('filament.resources.plan_columns.account_types_all'))
+                    ->wrap(),
+                TextColumn::make('commercial_plan_modules_count')
+                    ->label(__('filament.resources.plan_columns.modules_count'))
+                    ->sortable(),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['translations.language.locale']))
+            ->filters([
+                SelectFilter::make('account_type_id')
+                    ->label(__('filament.resources.plan_filter.account_type'))
+                    ->options(fn (): array => AccountType::query()
+                        ->where('active', true)
+                        ->ordered()
+                        ->with(['translations.language.locale'])
+                        ->get()
+                        ->mapWithKeys(fn (AccountType $type): array => [
+                            (string) $type->getKey() => $type->name !== '' ? $type->name : (string) $type->code,
+                        ])
+                        ->all())
+                    ->searchable()
+                    ->preload()
+                    ->placeholder(__('filament.resources.plan_filter.account_type_placeholder'))
+                    ->query(function (Builder $query, array $data): void {
+                        $id = $data['value'] ?? null;
+                        if ($id === null || $id === '') {
+                            return;
+                        }
+                        $accountTypeId = (int) $id;
+                        $query->where(function (Builder $q) use ($accountTypeId): void {
+                            $q->whereDoesntHave('accountTypes')
+                                ->orWhereHas(
+                                    'accountTypes',
+                                    fn (Builder $relation): Builder => $relation->whereKey($accountTypeId),
+                                );
+                        });
+                    }),
+            ], layout: FiltersLayout::AboveContent)
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->with([
+                    'translations.language.locale',
+                    'accountTypes',
+                ])
+                ->withCount('commercialPlanModules'))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),

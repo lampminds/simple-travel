@@ -1,7 +1,6 @@
 # Proyecto de plataforma de turismo operativa (web)  
 **Documento orientado a inversión — visión técnica y de producto**
 
-*Versión orientativa. Las cifras monetarias, porcentajes y fechas concretas se indican como placeholders `[…]` para completar con acuerdo entre partes.*
 
 ---
 
@@ -9,13 +8,13 @@
 
 El proyecto consiste en el desarrollo de un **sistema web** orientado a la **operación y gestión** de servicios de turismo (reservas, catálogo, operación interna y administración), con foco en **eficiencia operativa** y **escalabilidad** frente a un crecimiento orgánico de demanda.
 
-Al **mes [N] aproximadamente**, el avance de implementación alcanzó en torno al **30%** del alcance del desarrollo inicial, con un equipo reducido y experto, apoyado en **herramientas de inteligencia artificial** para acelerar tareas de diseño, revisión y productividad (sin sustituir el criterio técnico ni la responsabilidad del equipo humano).
+Al **mes 4 aproximadamente** (junio 2026), el avance de implementación alcanzó en torno al **80%** del alcance del desarrollo inicial, con un equipo reducido y experto, solventado con una inversión inicial de ARS 9M (nueve millones), apoyado en **herramientas de inteligencia artificial** para acelerar tareas de diseño, revisión y productividad (sin sustituir el criterio técnico ni la responsabilidad del equipo humano). Los gastos de servidores, licencias y software están acotados por debajo de USD 400, luego de 4 meses de trabajo.
 
 La **estrategia de go-to-market inicial** no prevé inversión en publicidad: un **mentor** con presencia relevante en el **sector turístico de la región de Mesopotamia (Argentina)** facilita el **arranque operativo** sobre empresas del propio ecosistema, y la difusión posterior se apoya en **recomendación y boca a boca** en el sector.
 
-Se busca un **inversor** que aporte **capital** a cambio de un **porcentaje de participación en el capital [X %]** (a definir en términos legales y de valoración). El capital se destina principalmente a **completar el desarrollo** entre aproximadamente el **mes 4 y el mes 12**, y a **cubrir costos recurrentes** (equipo e infraestructura) hasta alcanzar **autosostenimiento**: ingresos que **cubran gastos** (nómina de desarrollo e infraestructura) y, en la medida de lo posible, **los excedan**.
+Se busca un **inversor** que aporte **capital** a cambio de un **porcentaje de participación en el capital del 35 %**. El capital se destina casi en su totalidad a **completar el desarrollo** entre aproximadamente el **mes 5 y el mes 12**, y a **cubrir costos recurrentes** (equipo e infraestructura) hasta alcanzar **autosostenimiento**: ingresos que **cubran gastos** (nómina de desarrollo e infraestructura) y, en la medida de lo posible, **los excedan**.
 
-**Meta de producto:** un **MVP (producto mínimo viable) alrededor del mes 4**; luego **iteración y nuevas funcionalidades hasta aproximadamente el mes 12**, momento en el que se estima un **equilibrio o superávit** en la operación. El producto continuará evolucionando con nuevas capacidades según aparezcan oportunidades y demanda del mercado.
+**Meta de producto:** un **MVP (producto mínimo viable) alrededor del mes 5**; luego **iteración y nuevas funcionalidades hasta aproximadamente el mes 12**, momento en el que se estima un **equilibrio o superávit** en la operación. El producto continuará evolucionando con nuevas capacidades según aparezcan oportunidades y demanda del mercado.
 
 ---
 
@@ -49,19 +48,19 @@ Esta base permite **iterar con rapidez**, **auditar cambios** y **escalar** el b
 
 - **Forma del producto:** hoy el esfuerzo se concentra en un **sistema 100% web** (no hay app nativa móvil en el alcance descrito; el acceso es vía navegador y diseño responsive según evolución del front).
 - **Equipo actual:** **dos analistas programadores senior**, con apoyo de **herramientas de IA** en el flujo de trabajo (código, documentación, revisión).
-- **Progreso referencial:** alrededor de **30%** del desarrollo inicial estimado, tras aproximadamente **dos meses** de trabajo sostenido — coherente con un arranque de producto y definición de dominio (entidades, reglas, administración).
+- **Progreso referencial:** alrededor de **80%** del desarrollo inicial estimado, tras aproximadamente **cuatro meses** de trabajo sostenido — coherente con un arranque de producto y definición de dominio (entidades, reglas, administración).
 - **Inversión en marketing:** **cero** en publicidad paga a la fecha; el canal inicial es el **ecosistema del mentor** (Mesopotamia) y luego **recomendación**.
 
 ---
 
-## 5. Hoja de ruta orientada a inversión (mes 4 → mes 12)
+## 5. Hoja de ruta orientada a inversión (mes 5 → mes 12)
 
 Los hitos son **orientativos**; las fechas exactas y el desglose por sprint se ajustan con el plan de trabajo y el capital disponible.
 
-| Fase | Ventana aproximada | Objetivo |
-|------|--------------------|--------|
-| **MVP** | Hacia el **mes 4** | Conjunto mínimo de funcionalidades que permita **operar en entorno real** (pilotaje con operador/es del ecosistema), con criterios de aceptación acordados. |
-| **Post-MVP** | **Mes 4 → mes 12** | Incorporar funcionalidades de mayor profundidad (operación, reportes, integraciones, refinamiento UX, etc.) según prioridad de negocio. |
+| Fase | Ventana aproximada               | Objetivo |
+|------|----------------------------------|--------|
+| **MVP** | Hacia el **mes 5**               | Conjunto mínimo de funcionalidades que permita **operar en entorno real** (pilotaje con operador/es del ecosistema), con criterios de aceptación acordados. |
+| **Post-MVP** | **Mes 5 → mes 12**               | Incorporar funcionalidades de mayor profundidad (operación, reportes, integraciones, refinamiento UX, etc.) según prioridad de negocio. |
 | **Sostenimiento** | **Hacia el mes 12** (estimación) | **Ingresos ≥ gastos** recurrentes (principalmente sueldos de desarrollo e infraestructura); objetivo de **superávit** cuando el volumen y el pricing lo permitan. |
 
 Tras el mes 12, se espera **seguir desarrollando** nuevas capacidades; la narrativa de inversión se centra en **llegar con la “balanza positiva”** para reducir dependencia de capital externo en operación corriente.
@@ -70,14 +69,17 @@ Tras el mes 12, se espera **seguir desarrollando** nuevas capacidades; la narrat
 
 ## 6. Uso de capital y estructura de inversión (placeholders)
 
-- **Aporte buscado:** `[MONTO]` (moneda: `[ARS / USD / …]`)  
-- **Contrapartida:** participación en el capital social o instrumento equivalente, del orden de **`[X] %`** (a formalizar con asesoramiento legal y valoración).  
+- **Aporte buscado:** USD 40.000 (cuarenta mil), o ARS 60M (sesenta millones)
+- **Contrapartida:** participación en el capital social o instrumento equivalente, del orden de **`35 %`** (a formalizar con asesoramiento legal y valoración).  
 - **Destinos típicos del capital en la fase descrita:**  
-  - Nómina del equipo de desarrollo (y eventual ampliación controlada).  
-  - Infraestructura (hosting, bases de datos, backups, monitoreo, dominios, herramientas).  
+  - Nómina del equipo de desarrollo (hoy ARS 6M/mes).
+  - Contratación de soporte (estimado 2M/mes).
+  - Imagen, logo, marca, etc.
+  - Recursos de marketing (publicidad) si fuese necesario.
+  - Infraestructura (hosting, bases de datos, backups, monitoreo, dominios, herramientas). Hoy USD 100/mes  
   - Contingencia y ajustes de alcance.  
 
-*No se incluyen en esta versión cifras de quemado mensual ni burn rate: conviene acordarlas con planilla de gastos real.*
+*Nota: Ver Planilla de Gastos.*
 
 ---
 
@@ -93,7 +95,7 @@ Ningún plan de producto está exento de incertidumbre. La intención de esta se
 
 ### 7.2 Scope creep (expansión descontrolada del alcance)
 
-**En qué consiste:** en proyectos B2B es frecuente que surjan pedidos de funcionalidades adicionales “para ayer”. Sin disciplina, el producto **se ensancha** sin cerrar un núcleo estable, retrasando el MVP y elevando costo y complejidad.
+**En qué consiste:** en proyectos B2B es frecuente que surjan pedidos de funcionalidades adicionales “para ayer”. Sin disciplina, el producto **se ensancha** sin cerrar un núcleo estable, retrasando la versión inicial y elevando costo y complejidad.
 
 **Mitigación:** **roadmap priorizado** con visibilidad compartida; **MVP claramente delimitado**; clasificación de peticiones en *must have*, *should have* y *nice to have*; y decisión consciente de qué queda **fuera** de la siguiente entrega. El capital se alinea a hitos, no a una lista infinita de deseos.
 
@@ -120,10 +122,9 @@ Ningún plan de producto está exento de incertidumbre. La intención de esta se
 
 ## 8. Próximos pasos para inversor y equipo
 
-1. Completar placeholders: **`[MONTO]`**, **`[X] %`**, y definición legal de instrumento.  
-2. Alinear **definición de MVP** (lista corta de capacidades y criterios de “listo para producción” en pilotos).  
-3. Revisar **proyección de gastos mensuales** (interna, no necesariamente pública en este documento) frente a **hipótesis de ingresos** por cliente / plan.  
-4. Formalizar acuerdo con asesoría contable y legal.
+1. Alinear **definición de MVP** (lista corta de capacidades y criterios de “listo para producción” en pilotos).  
+2. Revisar **proyección de gastos mensuales** frente a **hipótesis de ingresos** por cliente / plan.  
+3. Formalizar acuerdo con asesoría contable y legal.
 
 ---
 

@@ -5,7 +5,58 @@ return [
 
     // Hero
     'hero_title' => 'Um modelo simples que cresce com sua equipe',
-    'hero_lead' => 'Você paga conforme a quantidade de usuários ativos na sua operação. Sem limites de cotações, reservas ou volume de vendas.',
+    'hero_lead' => 'Escolha o tipo de conta, informe quantos usuários vai contratar e monte seu plano com o serviço base e os módulos que precisar.',
+    'hero_trial_invite' => 'Experimente tudo grátis por 30 dias, com um único usuário incluído.',
+    'hero_promo_trial_badge' => 'Grátis',
+    'hero_promo_trial_title' => '30 dias para testar tudo',
+    'hero_promo_trial_text' => '1 usuário incluído. Plataforma completa, sem cartão para começar.',
+    'hero_promo_setup_badge' => 'Sem surpresas',
+    'hero_promo_setup_title' => 'Setup $0',
+    'hero_promo_setup_text' => 'Sem custos de implementação, ativação ou implantação.',
+
+    'step_account_type' => 'Qual é o seu papel no turismo?',
+    'step_account_type_help' => 'Mostramos apenas os módulos disponíveis para operadores, agências ou prestadores.',
+    'step_users' => 'Quantos usuários você vai contratar?',
+    'step_users_help' => 'O serviço base e alguns módulos calculam o preço conforme a quantidade de usuários ativos.',
+    'users_label' => 'Quantidade de usuários',
+    'users_context' => 'Preços calculados para :count usuários',
+
+    'step_currency' => 'Em qual moeda deseja ver os preços?',
+    'step_currency_help' => 'Os preços do catálogo estão em USD. Mostramos o equivalente com a taxa de câmbio vigente do sistema.',
+    'prices_usd_note' => 'Preços de referência em USD.',
+    'exchange_rate_note' => 'Taxa de câmbio: 1 USD = :rate :code (em :date).',
+
+    'core_heading' => 'Serviço base',
+    'core_intro' => 'O serviço base é obrigatório e inclui o núcleo operativo do sistema.',
+    'core_required' => 'Obrigatório',
+
+    'addons_heading' => 'Módulos adicionais',
+    'addons_intro' => 'Marque os módulos que deseja incluir. Cada um entra no total estimado.',
+    'select_module' => 'Incluir no plano',
+
+    'estimate_heading' => 'Sua estimativa mensal',
+    'estimate_intro' => 'Detalhamento do serviço base mais os módulos adicionais selecionados.',
+    'estimate_core' => 'Serviço base',
+    'estimate_addons' => 'Módulos adicionais',
+    'estimate_total' => 'Total estimado',
+    'estimate_empty' => 'Não há módulos configurados para este tipo de conta.',
+    'estimate_context' => ':count · :code',
+    'estimate_cta' => 'Solicitar demo',
+    'config_bar_label' => 'Configuração',
+    'mobile_view_detail' => 'Ver detalhes',
+    'mobile_close_detail' => 'Fechar',
+    'users_summary' => ':count usr.',
+
+    'no_modules_for_type' => 'Não há módulos adicionais para este tipo de conta.',
+    'custom_quote' => 'Cotação personalizada',
+
+    'billing_fixed' => 'Preço fixo',
+    'billing_per_user' => 'Por usuário',
+    'billing_per_user_amount' => ':amount por usuário',
+    'billing_per_user_base_and_amount' => ':base + :amount por usuário',
+    'billing_hybrid' => 'Base + usuários',
+    'billing_usage' => 'Conforme uso',
+    'billing_not_user_dependent' => 'Não varia com a quantidade de usuários',
 
     // Block 1: Base por faixa de usuários
     'block1_heading' => 'Abono base por faixa de usuários',

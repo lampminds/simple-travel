@@ -8,17 +8,21 @@ use App\Models\AccountType;
 use App\Models\Language;
 use App\Models\Module;
 use App\Models\ModuleFeature;
+use App\Services\ModuleCopyService;
 use Illuminate\Support\Arr;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -31,6 +35,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
+use Throwable;
 
 class ModuleResource extends LmpResource
 {
@@ -165,13 +170,11 @@ class ModuleResource extends LmpResource
             ->reorderable()
             ->orderColumn('sort_order')
             ->collapsible()
-            ->mutateRelationshipDataBeforeFillUsing(function (array $data, ModuleFeature $record): array {
-                if ($record->exists) {
-                    $record->loadMissing('translations');
-                }
-                $data['featureTranslations'] = static::featureTranslationsFormState(
-                    $record->exists ? $record : null,
-                );
+            ->mutateRelationshipDataBeforeFillUsing(function (array $data): array {
+                $feature = isset($data['id'])
+                    ? ModuleFeature::query()->with('translations')->find($data['id'])
+                    : null;
+                $data['featureTranslations'] = static::featureTranslationsFormState($feature);
 
                 return $data;
             })
@@ -280,25 +283,40 @@ class ModuleResource extends LmpResource
                         'usage' => __('filament.resources.module_price_fields.billing_usage'),
                     ])
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->live(),
                 Toggle::make('active')
                     ->label(__('filament.common.active'))
                     ->default(true),
                 TextInput::make('base_price')
                     ->label(__('filament.resources.module_price_fields.base_price'))
+                    ->helperText(fn (Get $get): ?string => match ((string) $get('billing_type')) {
+                        'per_user', 'hybrid' => __('filament.resources.module_price_fields.base_price_per_user_help'),
+                        'fixed', 'usage' => __('filament.resources.module_price_fields.base_price_fixed_help'),
+                        default => null,
+                    })
                     ->numeric()
                     ->minValue(0)
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->visible(fn (Get $get): bool => (string) $get('billing_type') !== ''),
                 TextInput::make('included_users')
                     ->label(__('filament.resources.module_price_fields.included_users'))
+                    ->helperText(__('filament.resources.module_price_fields.included_users_help'))
                     ->numeric()
                     ->minValue(0)
-                    ->integer(),
+                    ->integer()
+                    ->visible(fn (Get $get): bool => (string) $get('billing_type') === 'hybrid'),
                 TextInput::make('price_per_user')
                     ->label(__('filament.resources.module_price_fields.price_per_user'))
+                    ->helperText(fn (Get $get): ?string => match ((string) $get('billing_type')) {
+                        'per_user' => __('filament.resources.module_price_fields.price_per_user_per_user_help'),
+                        'hybrid' => __('filament.resources.module_price_fields.price_per_user_hybrid_help'),
+                        default => null,
+                    })
                     ->numeric()
                     ->minValue(0)
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->visible(fn (Get $get): bool => in_array((string) $get('billing_type'), ['per_user', 'hybrid'], true)),
             ])->columns(2),
             Section::make(__('filament.resources.module_price_fields.tiers_section'))
                 ->schema([
@@ -431,6 +449,44 @@ class ModuleResource extends LmpResource
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
+                    Action::make('copy')
+                        ->label(__('filament.resources.module_actions.copy'))
+                        ->icon('heroicon-o-document-duplicate')
+                        ->modalHeading(__('filament.resources.module_actions.copy_heading'))
+                        ->modalDescription(__('filament.resources.module_actions.copy_description'))
+                        ->form([
+                            TextInput::make('code')
+                                ->label(__('filament.resources.module_fields.code'))
+                                ->required()
+                                ->maxLength(255)
+                                ->unique(Module::class, 'code'),
+                        ])
+                        ->action(function (array $data, Module $record, Action $action): void {
+                            try {
+                                $newModule = app(ModuleCopyService::class)->copy(
+                                    $record,
+                                    (string) ($data['code'] ?? ''),
+                                );
+                            } catch (Throwable $e) {
+                                Notification::make()
+                                    ->title(__('filament.resources.module_actions.copy_failed_title'))
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title(__('filament.resources.module_actions.copy_success_title'))
+                                ->body(__('filament.resources.module_actions.copy_success_body', [
+                                    'code' => $newModule->code,
+                                ]))
+                                ->success()
+                                ->send();
+
+                            $action->redirect(static::getUrl('edit', ['record' => $newModule]));
+                        }),
                     DeleteAction::make(),
                 ]),
             ], position: RecordActionsPosition::BeforeColumns);

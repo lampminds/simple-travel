@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\CurrencyRateSide;
+use App\Models\AccountType;
 use App\Models\CommercialModulePrice;
-use App\Models\CommercialModulePriceTier;
+use App\Models\Currency;
 use App\Models\Module;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Number;
@@ -15,23 +17,41 @@ class PricingPageService
 {
     public const BASE_MODULE_CODE = 'core';
 
+    public function __construct(
+        private readonly CurrencyConversionService $currencyConversion,
+        private readonly ModulePricingCalculator $calculator,
+    ) {}
+
     /**
-     * @return array{
-     *     plans: Collection<int, mixed>,
-     *     starterPlan: object|null,
-     *     modulePlans: Collection<int, object>,
-     *     rangeTabs: list<array{up_to: int, label: string, base_price: string}>,
-     *     defaultUpTo: int|null,
-     *     modulePricesByRange: array<int, array<int, string>>,
-     * }
+     * @return array{pricingConfig: array<string, mixed>}
      */
     public function build(): array
     {
+        $accountTypes = AccountType::query()
+            ->where('active', true)
+            ->ordered()
+            ->with(['translations.language.locale'])
+            ->get()
+            ->sortBy(fn (AccountType $type): int => match ((string) $type->code) {
+                'operator' => 1,
+                'agency' => 2,
+                'provider' => 3,
+                default => 99,
+            })
+            ->values()
+            ->map(fn (AccountType $type): array => [
+                'code' => (string) $type->code,
+                'name' => $type->name !== '' ? $type->name : (string) $type->code,
+            ])
+            ->values()
+            ->all();
+
         $modules = Module::query()
             ->where('active', true)
             ->orderBy('sort_order')
             ->with([
                 'translations.language.locale',
+                'accountTypes',
                 'features' => fn ($query) => $query->where('active', true)
                     ->orderBy('sort_order')
                     ->with(['translations.language.locale']),
@@ -40,53 +60,29 @@ class PricingPageService
             ])
             ->get();
 
-        $baseModule = $this->resolveBaseModule($modules);
-        $basePrice = $baseModule ? $this->resolvePrimaryPrice($baseModule) : null;
-        $rangeTabs = $this->buildRangeTabs($basePrice);
-        $defaultUpTo = $rangeTabs[0]['up_to'] ?? null;
-
-        $starterPlan = $baseModule !== null
-            ? $this->presentModule(
-                $baseModule,
-                $defaultUpTo !== null && $basePrice !== null
-                    ? $this->calculateMonthlyPrice($basePrice, $defaultUpTo)
-                    : $this->defaultListPrice($basePrice),
-            )
-            : null;
-
-        $modulePlans = $modules
-            ->reject(fn (Module $module): bool => $baseModule !== null && $module->is($baseModule))
-            ->values()
-            ->map(function (Module $module) use ($rangeTabs, $defaultUpTo): object {
-                $price = $this->resolvePrimaryPrice($module);
-                $amount = $defaultUpTo !== null && $rangeTabs !== []
-                    ? $this->calculateMonthlyPrice($price, $defaultUpTo)
-                    : $this->defaultListPrice($price);
-
-                return $this->presentModule($module, $amount);
-            });
-
-        $modulePricesByRange = [];
-        foreach ($modulePlans as $modulePlan) {
-            $module = $modules->firstWhere('id', $modulePlan->id);
-            if ($module === null) {
-                continue;
-            }
-            $price = $this->resolvePrimaryPrice($module);
-            $modulePricesByRange[$modulePlan->id] = [];
-            foreach ($rangeTabs as $tab) {
-                $raw = $this->calculateMonthlyPrice($price, $tab['up_to']);
-                $modulePricesByRange[$modulePlan->id][$tab['up_to']] = $this->formatPriceForLocale($raw);
-            }
-        }
+        $coreModule = $this->resolveBaseModule($modules);
+        $defaultUserCount = $this->resolveDefaultUserCount();
+        $currencyOptions = $this->buildCurrencyOptions();
+        $userPresets = $this->buildUserPresets($coreModule, $defaultUserCount);
+        $quoteUserCounts = $this->buildQuoteUserCounts($userPresets);
 
         return [
-            'plans' => collect(),
-            'starterPlan' => $starterPlan,
-            'modulePlans' => $modulePlans,
-            'rangeTabs' => $rangeTabs,
-            'defaultUpTo' => $defaultUpTo,
-            'modulePricesByRange' => $modulePricesByRange,
+            'pricingConfig' => [
+                'calcVersion' => 2,
+                'accountTypes' => $accountTypes,
+                'defaultAccountTypeCode' => $accountTypes[0]['code'] ?? 'operator',
+                'defaultUserCount' => $defaultUserCount,
+                'userPresets' => $userPresets,
+                'quoteUserCounts' => $quoteUserCounts,
+                'currencies' => $currencyOptions['currencies'],
+                'defaultCurrencyId' => $currencyOptions['defaultCurrencyId'],
+                'coreModuleId' => $coreModule?->id,
+                'modules' => $modules
+                    ->map(fn (Module $module): array => $this->moduleToPricingArray($module, $coreModule, $quoteUserCounts))
+                    ->values()
+                    ->all(),
+                'labels' => $this->pricingLabels(),
+            ],
         ];
     }
 
@@ -109,199 +105,232 @@ class PricingPageService
 
     private function resolvePrimaryPrice(Module $module): ?CommercialModulePrice
     {
-        $prices = $module->commercialModulePrices;
+        return $module->commercialModulePrices->first();
+    }
 
-        $preferredType = match ($module->code) {
-            self::BASE_MODULE_CODE, 'starter' => 'hybrid',
-            'crm' => 'per_user',
-            'website' => 'fixed',
-            'api' => 'usage',
-            default => null,
-        };
-
-        if ($preferredType !== null) {
-            $match = $prices->firstWhere('billing_type', $preferredType);
-            if ($match !== null) {
-                return $match;
-            }
-        }
-
-        return $prices->first();
+    private function resolveDefaultUserCount(): int
+    {
+        return 1;
     }
 
     /**
-     * @return list<array{up_to: int, label: string, base_price: string}>
+     * @return list<int>
      */
-    private function buildRangeTabs(?CommercialModulePrice $basePrice): array
+    private function buildUserPresets(?Module $coreModule, int $defaultUserCount): array
     {
-        if ($basePrice === null) {
-            return [];
-        }
+        $presets = [1, 5, 10, 20, $defaultUserCount];
+        $price = $coreModule ? $this->resolvePrimaryPrice($coreModule) : null;
 
-        if ($basePrice->tiers->isNotEmpty()) {
-            return $this->buildRangeTabsFromTiers($basePrice);
-        }
-
-        if (! in_array($basePrice->billing_type, ['hybrid', 'per_user'], true)) {
-            return [];
-        }
-
-        $amount = $this->defaultListPrice($basePrice);
-        if ($amount === null) {
-            return [];
-        }
-
-        $includedUsers = max(1, (int) ($basePrice->included_users ?? 1));
-
-        return [[
-            'up_to' => $includedUsers,
-            'label' => __('pricing.range_label_up_to', ['count' => $includedUsers]),
-            'base_price' => $this->formatPriceForLocale($amount),
-        ]];
-    }
-
-    /**
-     * @return list<array{up_to: int, label: string, base_price: string}>
-     */
-    private function buildRangeTabsFromTiers(CommercialModulePrice $basePrice): array
-    {
-        $tabs = [];
-        $prevUpTo = 0;
-
-        foreach ($basePrice->tiers as $tier) {
-            $from = $tier->from_users ?? ($prevUpTo + 1);
-            $to = $tier->to_users;
-            $representativeUsers = $to ?? max($from, 1);
-
-            $label = $to === null
-                ? __('pricing.block1_range_20_plus')
-                : ($from === $to
-                    ? __('pricing.range_label_up_to', ['count' => $to])
-                    : __('pricing.range_label_from_to', ['from' => $from, 'to' => $to]));
-
-            $amount = $to === null
-                ? null
-                : $this->calculateMonthlyPrice($basePrice, $representativeUsers);
-
-            $tabs[] = [
-                'up_to' => $representativeUsers,
-                'label' => $label,
-                'base_price' => $amount === null
-                    ? (string) __('pricing.block1_range_20_plus_custom')
-                    : $this->formatPriceForLocale($amount),
-            ];
-
-            $prevUpTo = $to ?? $prevUpTo;
-        }
-
-        return $tabs;
-    }
-
-    private function calculateMonthlyPrice(?CommercialModulePrice $price, int $userCount): ?float
-    {
-        if ($price === null) {
-            return null;
-        }
-
-        return match ($price->billing_type) {
-            'fixed', 'usage' => $price->base_price !== null ? (float) $price->base_price : null,
-            'per_user' => $this->calculatePerUserPrice($price, $userCount),
-            'hybrid' => $this->calculateHybridPrice($price, $userCount),
-            default => null,
-        };
-    }
-
-    private function calculatePerUserPrice(CommercialModulePrice $price, int $userCount): ?float
-    {
-        $perUser = $this->resolvePerUserRate($price, $userCount);
-        if ($perUser === null) {
-            return null;
-        }
-
-        return (float) $perUser * $userCount;
-    }
-
-    private function calculateHybridPrice(CommercialModulePrice $price, int $userCount): ?float
-    {
-        $base = (float) ($price->base_price ?? 0);
-        $includedUsers = (int) ($price->included_users ?? 0);
-        $extraUsers = max(0, $userCount - $includedUsers);
-
-        if ($extraUsers === 0) {
-            return $base > 0 || $price->base_price !== null ? $base : null;
-        }
-
-        $perUser = $this->resolvePerUserRate($price, $userCount);
-        if ($perUser === null) {
-            return $base > 0 || $price->base_price !== null ? $base : null;
-        }
-
-        return $base + ($extraUsers * (float) $perUser);
-    }
-
-    private function resolvePerUserRate(CommercialModulePrice $price, int $userCount): ?float
-    {
-        $tier = $this->findTierForUserCount($price, $userCount);
-        $perUser = $tier?->price_per_user ?? $price->price_per_user;
-
-        return $perUser !== null ? (float) $perUser : null;
-    }
-
-    private function findTierForUserCount(CommercialModulePrice $price, int $userCount): ?CommercialModulePriceTier
-    {
-        foreach ($price->tiers as $tier) {
-            $from = $tier->from_users ?? 1;
-            $to = $tier->to_users;
-
-            if ($userCount >= $from && ($to === null || $userCount <= $to)) {
-                return $tier;
+        if ($price !== null) {
+            foreach ($price->tiers as $tier) {
+                if ($tier->from_users !== null) {
+                    $presets[] = (int) $tier->from_users;
+                }
+                if ($tier->to_users !== null) {
+                    $presets[] = (int) $tier->to_users;
+                }
             }
         }
 
-        return null;
+        $presets = array_values(array_unique(array_filter($presets, fn (int $value): bool => $value > 0)));
+        sort($presets);
+
+        return $presets;
     }
 
-    private function defaultListPrice(?CommercialModulePrice $price): ?float
+    /**
+     * User counts for which monthly amounts are pre-calculated server-side (source of truth).
+     *
+     * @param  list<int>  $userPresets
+     * @return list<int>
+     */
+    private function buildQuoteUserCounts(array $userPresets): array
+    {
+        $counts = array_merge($userPresets, range(1, 50));
+
+        $counts = array_values(array_unique(array_filter(
+            $counts,
+            fn (int $value): bool => $value > 0,
+        )));
+        sort($counts);
+
+        return $counts;
+    }
+
+    /**
+     * @param  list<int>  $quoteUserCounts
+     * @return array<int, float>
+     */
+    private function buildAmountsByUsers(?CommercialModulePrice $price, array $quoteUserCounts): array
     {
         if ($price === null) {
-            return null;
+            return [];
         }
 
-        if ($price->billing_type === 'fixed' || $price->billing_type === 'usage') {
-            return $price->base_price !== null ? (float) $price->base_price : null;
+        $amounts = [];
+        foreach ($quoteUserCounts as $userCount) {
+            $amount = $this->calculator->monthlyAmount($price, $userCount);
+            if ($amount !== null) {
+                $amounts[$userCount] = $amount;
+            }
         }
 
-        $firstTierUsers = $price->tiers->first()?->to_users
-            ?? $price->tiers->first()?->from_users
-            ?? max(1, (int) ($price->included_users ?? 1));
-
-        return $this->calculateMonthlyPrice($price, (int) $firstTierUsers);
+        return $amounts;
     }
 
-    private function presentModule(Module $module, ?float $amount = null): object
+    /**
+     * @return array{currencies: list<array<string, mixed>>, defaultCurrencyId: int|null}
+     */
+    private function buildCurrencyOptions(): array
     {
-        $items = $module->features
-            ->map(fn ($feature): object => (object) [
-                'display_text' => $feature->text,
-                'children' => collect(),
-            ])
-            ->filter(fn (object $item): bool => $item->display_text !== null && $item->display_text !== '')
+        $currencies = Currency::query()
+            ->with('lmpCurrency')
+            ->get()
+            ->sortBy(fn (Currency $currency): string => Currency::isUsdProjectCurrency($currency->id)
+                ? '0'
+                : strtoupper($currency->currency_code))
             ->values();
 
-        return (object) [
+        $options = [];
+        $defaultCurrencyId = null;
+
+        foreach ($currencies as $currency) {
+            $isUsd = Currency::isUsdProjectCurrency($currency->id);
+            $unitsPerUsd = $isUsd
+                ? 1.0
+                : $this->currencyConversion->unitsPerUsdAt(
+                    (int) $currency->id,
+                    CurrencyRateSide::Sell,
+                );
+
+            if (! $isUsd && $unitsPerUsd === null) {
+                continue;
+            }
+
+            $rateRow = $isUsd
+                ? null
+                : $this->currencyConversion->effectiveRateRow((int) $currency->id);
+
+            if ($isUsd) {
+                $defaultCurrencyId = (int) $currency->id;
+            }
+
+            $symbol = trim((string) ($currency->lmpCurrency?->symbol ?? ''));
+            $code = $currency->currency_code;
+            $currencyName = trim((string) ($currency->lmpCurrency?->name ?? ''));
+
+            $options[] = [
+                'id' => (int) $currency->id,
+                'code' => $code,
+                'symbol' => $symbol !== '' ? $symbol : $code,
+                'name' => $currency->display_name,
+                'label' => $currencyName !== '' ? "{$code} - {$currencyName}" : $code,
+                'isUsd' => $isUsd,
+                'unitsPerUsd' => $unitsPerUsd,
+                'rateDate' => $rateRow?->starting_at?->toDateString(),
+                'rateDateLabel' => $rateRow?->starting_at !== null
+                    ? locale_date($rateRow->starting_at)
+                    : null,
+            ];
+        }
+
+        if ($defaultCurrencyId === null && $options !== []) {
+            $defaultCurrencyId = (int) $options[0]['id'];
+        }
+
+        return [
+            'currencies' => $options,
+            'defaultCurrencyId' => $defaultCurrencyId,
+        ];
+    }
+
+    private function moduleToPricingArray(Module $module, ?Module $coreModule, array $quoteUserCounts): array
+    {
+        $price = $this->resolvePrimaryPrice($module);
+
+        return [
             'id' => $module->id,
+            'code' => $module->code,
+            'isCore' => $coreModule !== null && $module->is($coreModule),
             'name' => $module->name,
             'description' => $module->description,
-            'price' => $this->formatPriceForLocale($amount),
-            'items' => $items,
+            'accountTypeCodes' => $module->accountTypes
+                ->pluck('code')
+                ->map(fn ($code): string => (string) $code)
+                ->values()
+                ->all(),
+            'billingType' => $price?->billing_type,
+            'basePrice' => $price?->base_price !== null ? (float) $price->base_price : null,
+            'includedUsers' => $price?->included_users !== null ? (int) $price->included_users : null,
+            'pricePerUser' => $price?->price_per_user !== null ? (float) $price->price_per_user : null,
+            'amountsByUsers' => $this->buildAmountsByUsers($price, $quoteUserCounts),
+            'tiers' => $price
+                ? $price->tiers
+                    ->map(fn ($tier): array => [
+                        'fromUsers' => $tier->from_users,
+                        'toUsers' => $tier->to_users,
+                        'pricePerUser' => $tier->price_per_user !== null ? (float) $tier->price_per_user : null,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
+            'features' => $module->features
+                ->map(fn ($feature): ?string => $feature->text)
+                ->filter(fn (?string $text): bool => $text !== null && $text !== '')
+                ->values()
+                ->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function pricingLabels(): array
+    {
+        return [
+            'currency' => (string) __('pricing.currency'),
+            'perMonth' => (string) __('pricing.per_month'),
+            'customQuote' => (string) __('pricing.custom_quote'),
+            'stepAccountType' => (string) __('pricing.step_account_type'),
+            'stepAccountTypeHelp' => (string) __('pricing.step_account_type_help'),
+            'stepUsers' => (string) __('pricing.step_users'),
+            'stepUsersHelp' => (string) __('pricing.step_users_help'),
+            'stepCurrency' => (string) __('pricing.step_currency'),
+            'stepCurrencyHelp' => (string) __('pricing.step_currency_help'),
+            'usersLabel' => (string) __('pricing.users_label'),
+            'coreHeading' => (string) __('pricing.core_heading'),
+            'coreIntro' => (string) __('pricing.core_intro'),
+            'coreRequired' => (string) __('pricing.core_required'),
+            'addonsHeading' => (string) __('pricing.addons_heading'),
+            'addonsIntro' => (string) __('pricing.addons_intro'),
+            'selectModule' => (string) __('pricing.select_module'),
+            'estimateHeading' => (string) __('pricing.estimate_heading'),
+            'estimateIntro' => (string) __('pricing.estimate_intro'),
+            'estimateCore' => (string) __('pricing.estimate_core'),
+            'estimateAddons' => (string) __('pricing.estimate_addons'),
+            'estimateTotal' => (string) __('pricing.estimate_total'),
+            'estimateEmpty' => (string) __('pricing.estimate_empty'),
+            'noModulesForType' => (string) __('pricing.no_modules_for_type'),
+            'billingFixed' => (string) __('pricing.billing_fixed'),
+            'billingPerUser' => (string) __('pricing.billing_per_user'),
+            'billingPerUserAmount' => (string) __('pricing.billing_per_user_amount'),
+            'billingPerUserBaseAndAmount' => (string) __('pricing.billing_per_user_base_and_amount'),
+            'billingHybrid' => (string) __('pricing.billing_hybrid'),
+            'billingUsage' => (string) __('pricing.billing_usage'),
+            'usersContext' => (string) __('pricing.users_context'),
+            'pricesUsdNote' => (string) __('pricing.prices_usd_note'),
+            'exchangeRateNote' => (string) __('pricing.exchange_rate_note'),
+            'block1Highlight' => (string) __('pricing.block1_highlight'),
+            'signUpNow' => (string) __('pricing.sign_up_now'),
+            'estimateContext' => (string) __('pricing.estimate_context'),
+            'usersSummary' => (string) __('pricing.users_summary'),
         ];
     }
 
     /**
      * Format a price for display using the current locale (comma or period as decimal).
-     * Non-numeric values (e.g. "150mil") are returned as-is.
      */
-    private function formatPriceForLocale(mixed $value): string
+    public function formatPriceForLocale(mixed $value): string
     {
         if ($value === null || $value === '') {
             return '';

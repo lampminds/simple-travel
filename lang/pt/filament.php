@@ -879,8 +879,16 @@ return [
             'id' => 'ID',
             'code' => 'Código',
             'name' => 'Nome',
+            'account_types' => 'Tipos',
+            'account_types_all' => 'Todos os tipos de conta',
+            'modules_count' => 'Módulos',
             'usd_price' => 'Preço em USD',
             'active' => 'Ativo',
+        ],
+
+        'plan_filter' => [
+            'account_type' => 'Tipo de conta',
+            'account_type_placeholder' => 'Todos os tipos de conta',
         ],
 
         'plan_item' => 'Item do plano',
@@ -954,6 +962,17 @@ return [
             'account_type_placeholder' => 'Todos os tipos de conta',
         ],
 
+        'module_actions' => [
+            'copy' => 'Copiar',
+            'copy_heading' => 'Copiar módulo',
+            'copy_description' => 'Cria um módulo novo com traduções, tipos de conta, características e preços copiados deste registro. As atribuições a planos não são copiadas.',
+            'copy_failed_title' => 'Não foi possível copiar o módulo',
+            'copy_code_required' => 'Informe um código para o novo módulo.',
+            'copy_code_exists' => 'Já existe um módulo com este código.',
+            'copy_success_title' => 'Módulo copiado',
+            'copy_success_body' => 'O módulo :code foi criado. Pode revisá-lo e ajustá-lo agora.',
+        ],
+
         'module_relation' => [
             'features_tab' => 'Características',
             'prices_tab' => 'Preços',
@@ -978,8 +997,13 @@ return [
             'billing_hybrid' => 'Híbrido',
             'billing_usage' => 'Por utilização',
             'base_price' => 'Preço base',
+            'base_price_per_user_help' => 'Taxa mensal fixa somada ao componente por usuário.',
+            'base_price_fixed_help' => 'Valor mensal fixo do módulo.',
             'included_users' => 'Utilizadores incluídos',
+            'included_users_help' => 'Apenas híbrido: utilizadores cobertos pelo preço base. Os adicionais pagam o preço por utilizador.',
             'price_per_user' => 'Preço por utilizador',
+            'price_per_user_per_user_help' => 'Total mensal = preço base + (preço por utilizador × quantidade de utilizadores).',
+            'price_per_user_hybrid_help' => 'Cobrado por cada utilizador acima dos incluídos.',
             'tiers_section' => 'Escalões por utilizadores',
             'add_tier' => 'Adicionar escalão',
         ],

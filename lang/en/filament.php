@@ -920,8 +920,16 @@ return [
             'id' => 'ID',
             'code' => 'Code',
             'name' => 'Name',
+            'account_types' => 'Types',
+            'account_types_all' => 'All account types',
+            'modules_count' => 'Modules',
             'usd_price' => 'USD price',
             'active' => 'Active',
+        ],
+
+        'plan_filter' => [
+            'account_type' => 'Account type',
+            'account_type_placeholder' => 'All account types',
         ],
 
         'plan_item' => 'Plan item',
@@ -995,6 +1003,17 @@ return [
             'account_type_placeholder' => 'All account types',
         ],
 
+        'module_actions' => [
+            'copy' => 'Copy',
+            'copy_heading' => 'Copy module',
+            'copy_description' => 'Creates a new module with translations, account types, features, and pricing copied from this record. Plan assignments are not copied.',
+            'copy_failed_title' => 'Could not copy module',
+            'copy_code_required' => 'Enter a code for the new module.',
+            'copy_code_exists' => 'A module with this code already exists.',
+            'copy_success_title' => 'Module copied',
+            'copy_success_body' => 'Module :code was created. You can review and adjust it now.',
+        ],
+
         'module_relation' => [
             'features_tab' => 'Features',
             'prices_tab' => 'Pricing',
@@ -1019,8 +1038,13 @@ return [
             'billing_hybrid' => 'Hybrid',
             'billing_usage' => 'Usage',
             'base_price' => 'Base price',
+            'base_price_per_user_help' => 'Fixed monthly fee added on top of the per-user component.',
+            'base_price_fixed_help' => 'Fixed monthly module amount.',
             'included_users' => 'Included users',
+            'included_users_help' => 'Hybrid only: users covered by the base price. Additional users pay the per-user rate.',
             'price_per_user' => 'Price per user',
+            'price_per_user_per_user_help' => 'Monthly total = base price + (price per user × number of users).',
+            'price_per_user_hybrid_help' => 'Charged for each user above the included users.',
             'tiers_section' => 'User tiers',
             'add_tier' => 'Add tier',
         ],

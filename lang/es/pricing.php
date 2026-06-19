@@ -5,9 +5,60 @@ return [
 
     // Hero
     'hero_title' => 'Un modelo simple que crece con tu equipo',
-    'hero_lead' => 'Pagas según la cantidad de usuarios activos en tu operación. Sin límites de cotizaciones, reservas ni volumen de ventas.',
+    'hero_lead' => 'Elegí tu tipo de cuenta, indicá cuántos usuarios vas a contratar y armá tu plan con el servicio base y los módulos que necesites.',
+    'hero_trial_invite' => 'Probá todo gratis durante 30 días, con un solo usuario incluido.',
+    'hero_promo_trial_badge' => 'Gratis',
+    'hero_promo_trial_title' => '30 días para probarlo todo',
+    'hero_promo_trial_text' => '1 usuario incluido. Plataforma completa, sin tarjeta para empezar.',
+    'hero_promo_setup_badge' => 'Sin sorpresas',
+    'hero_promo_setup_title' => 'Setup $0',
+    'hero_promo_setup_text' => 'Sin costos de implementación, activación ni puesta en marcha.',
 
-    // Block 1: Base por rango de usuarios
+    'step_account_type' => '¿Cuál es tu rol en turismo?',
+    'step_account_type_help' => 'Mostramos solo los módulos disponibles para operadores, agencias o prestadores.',
+    'step_users' => '¿Cuántos usuarios vas a contratar?',
+    'step_users_help' => 'El servicio base y algunos módulos calculan el precio según la cantidad de usuarios activos.',
+    'users_label' => 'Cantidad de usuarios',
+    'users_context' => 'Precios calculados para :count usuarios',
+
+    'step_currency' => '¿En qué moneda querés ver los precios?',
+    'step_currency_help' => 'Los precios del catálogo están en USD. Mostramos el equivalente con el tipo de cambio vigente del sistema.',
+    'prices_usd_note' => 'Precios de referencia en USD.',
+    'exchange_rate_note' => 'Tipo de cambio: 1 USD = :rate :code (al :date).',
+
+    'core_heading' => 'Servicio base',
+    'core_intro' => 'El servicio base es obligatorio e incluye el núcleo operativo del sistema.',
+    'core_required' => 'Obligatorio',
+
+    'addons_heading' => 'Módulos adicionales',
+    'addons_intro' => 'Marcá los módulos que quieras sumar. Cada uno se agrega al total estimado.',
+    'select_module' => 'Incluir en el plan',
+
+    'estimate_heading' => 'Tu estimación mensual',
+    'estimate_intro' => 'Desglose del servicio base más los módulos adicionales seleccionados.',
+    'estimate_core' => 'Servicio base',
+    'estimate_addons' => 'Módulos adicionales',
+    'estimate_total' => 'Total estimado',
+    'estimate_empty' => 'No hay módulos configurados para este tipo de cuenta.',
+    'estimate_context' => ':count · :code',
+    'estimate_cta' => 'Solicitar demo',
+    'config_bar_label' => 'Configuración',
+    'mobile_view_detail' => 'Ver detalle',
+    'mobile_close_detail' => 'Cerrar',
+    'users_summary' => ':count usr.',
+
+    'no_modules_for_type' => 'No hay módulos adicionales para este tipo de cuenta.',
+    'custom_quote' => 'Cotización personalizada',
+
+    'billing_fixed' => 'Precio fijo',
+    'billing_per_user' => 'Por usuario',
+    'billing_per_user_amount' => ':amount por usuario',
+    'billing_per_user_base_and_amount' => ':base + :amount por usuario',
+    'billing_hybrid' => 'Base + usuarios',
+    'billing_usage' => 'Según uso',
+    'billing_not_user_dependent' => 'No varía con la cantidad de usuarios',
+
+    // Block 1: Base por rango de usuarios (legacy)
     'block1_heading' => 'Abono base por rango de usuarios',
     'block1_intro' => 'El servicio base es obligatorio e incluye el núcleo operativo del sistema. El valor mensual se define según la cantidad de usuarios que utilicen la plataforma. Tu inversión acompaña el crecimiento de tu equipo.',
     'block1_range_1_4' => '1 a 4 usuarios',
