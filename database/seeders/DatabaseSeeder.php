@@ -116,12 +116,17 @@ class DatabaseSeeder extends Seeder
         $this->call(UserPersonTableSeeder::class);
         $this->call(CatBookingStatusesTableSeeder::class);
         $this->call(CatBookingStatusTranslationsTableSeeder::class);
-        $this->call(CommercialModulePricesTableSeeder::class);
-        $this->call(CommercialModulePriceTiersTableSeeder::class);
+        $this->call(ModulesTableSeeder::class);
+        $this->call(ModuleAccountTypesTableSeeder::class);
+        $this->call(ModuleFeaturesTableSeeder::class);
+        $this->call(ModuleFeatureTranslationsTableSeeder::class);
+        $this->call(ModuleTranslationsTableSeeder::class);
         $this->call(CommercialPlansTableSeeder::class);
         $this->call(CommercialPlanAccountTypesTableSeeder::class);
         $this->call(CommercialPlanModulesTableSeeder::class);
         $this->call(CommercialPlanTranslationsTableSeeder::class);
+        $this->call(CommercialModulePricesTableSeeder::class);
+        $this->call(CommercialModulePriceTiersTableSeeder::class);
     }
 }
 
