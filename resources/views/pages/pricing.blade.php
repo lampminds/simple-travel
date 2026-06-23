@@ -413,6 +413,5 @@
 @endsection
 
 @section('script')
-    @vite('resources/js/pricing-page.js')
     <script type="application/json" id="pricing-config">@json($pricingConfig)</script>
 @endsection

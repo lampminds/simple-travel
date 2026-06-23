@@ -28,6 +28,7 @@ import Typed from "typed.js";
 import {CountUp} from 'countup.js'
 import Sticky from 'sticky-js'
 import masonry from "./masonry.js";
+import { initPricingPage } from './pricing-calculator';
 
 
 !function ($) {
@@ -499,4 +500,23 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', markRequiredLabels);
 } else {
     markRequiredLabels();
+}
+
+function initPricingPageFromConfig() {
+    const configElement = document.getElementById('pricing-config');
+    if (!configElement) {
+        return;
+    }
+
+    try {
+        initPricingPage(JSON.parse(configElement.textContent || '{}'));
+    } catch (error) {
+        console.error('Pricing page config is invalid.', error);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPricingPageFromConfig);
+} else {
+    initPricingPageFromConfig();
 }
