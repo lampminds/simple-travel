@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleTravel — Presentación</title>
+    <style>
+        :root {
+            --primary: #5369f8;
+            --primary-dark: #3d52c7;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #1e293b;
+            --muted: #64748b;
+            --bg: #f8fafc;
+            --slide-bg: #ffffff;
+            --sin-bg: #fef2f2;
+            --sin-border: #fecaca;
+            --con-bg: #ecfdf5;
+            --con-border: #a7f3d0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            background: #0f172a;
+            overflow: hidden;
+        }
+
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            background: var(--slide-bg);
+            padding: 3rem 4rem 5rem;
+            overflow-y: auto;
+        }
+
+        .slide.active { display: flex; }
+
+        .slide--cover {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .slide--cover .logo { margin-bottom: 2rem; }
+        .slide--cover h1 { font-size: 2.75rem; font-weight: 700; line-height: 1.2; max-width: 900px; }
+        .slide--cover .subtitle { font-size: 1.35rem; color: #94a3b8; margin-top: 1.25rem; max-width: 720px; }
+        .slide--cover .badge { display: inline-block; margin-top: 2rem; padding: .5rem 1.25rem; border-radius: 999px; background: rgba(83,105,248,.25); color: #a5b4fc; font-size: .9rem; }
+
+        .slide-header { margin-bottom: 1.75rem; }
+        .slide-header .kicker {
+            display: inline-block;
+            font-size: .8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--primary);
+            background: #eef2ff;
+            padding: .35rem .85rem;
+            border-radius: 999px;
+            margin-bottom: .75rem;
+        }
+        .slide-header h2 { font-size: 2rem; font-weight: 700; line-height: 1.25; }
+        .slide-header p { color: var(--muted); font-size: 1.1rem; margin-top: .6rem; max-width: 900px; }
+
+        .slide-body { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+        .two-col--reverse .col-text { order: 2; }
+        .two-col--reverse .col-img { order: 1; }
+
+        .col-img img {
+            width: 100%;
+            max-height: 380px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(15,23,42,.12);
+        }
+
+        .comparison-img {
+            text-align: center;
+            margin-bottom: .5rem;
+        }
+        .comparison-img img {
+            max-height: 220px;
+            width: auto;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(15,23,42,.1);
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .compare-card {
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+        .compare-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .6rem; text-transform: uppercase; letter-spacing: .04em; }
+        .compare-card p { font-size: .95rem; line-height: 1.55; }
+        .compare-card--sin { background: var(--sin-bg); border-color: var(--sin-border); }
+        .compare-card--sin h3 { color: #b91c1c; }
+        .compare-card--sin p { color: #7f1d1d; }
+        .compare-card--con { background: var(--con-bg); border-color: var(--con-border); }
+        .compare-card--con h3 { color: #047857; }
+        .compare-card--con p { color: #064e3b; }
+
+        ul.check-list { list-style: none; }
+        ul.check-list li {
+            padding: .55rem 0;
+            padding-left: 1.75rem;
+            position: relative;
+            font-size: 1.05rem;
+            line-height: 1.45;
+        }
+        ul.check-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .feature-list { display: flex; flex-direction: column; gap: 1rem; }
+        .feature-item {
+            padding: 1rem 1.25rem;
+            border-left: 4px solid var(--primary);
+            background: var(--bg);
+            border-radius: 0 10px 10px 0;
+        }
+        .feature-item h3 { font-size: 1.05rem; margin-bottom: .35rem; }
+        .feature-item p { font-size: .92rem; color: var(--muted); line-height: 1.5; }
+
+        .highlight { color: var(--primary); font-weight: 600; }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+        .pricing-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .pricing-card h3 { color: var(--primary); font-size: 1.1rem; margin-bottom: .75rem; }
+        .pricing-card .icon { font-size: 2rem; margin-bottom: .5rem; }
+        .pricing-card p { font-size: .9rem; color: var(--muted); line-height: 1.45; }
+
+        .cta-box {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #eef2ff, #f0fdf4);
+            border-radius: 16px;
+            margin-top: 1rem;
+        }
+        .cta-box h3 { font-size: 1.5rem; margin-bottom: .75rem; }
+        .cta-box p { color: var(--muted); margin-bottom: 1.25rem; }
+        .cta-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .cta-links a {
+            display: inline-block;
+            padding: .7rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: .95rem;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-outline { border: 2px solid var(--primary); color: var(--primary); }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .75rem 1.5rem;
+            background: rgba(15,23,42,.92);
+            color: #94a3b8;
+            font-size: .85rem;
+            z-index: 100;
+        }
+        .nav-bar button {
+            background: rgba(255,255,255,.1);
+            border: none;
+            color: #fff;
+            padding: .5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: .85rem;
+        }
+        .nav-bar button:hover { background: rgba(255,255,255,.2); }
+        .nav-bar button:disabled { opacity: .35; cursor: default; }
+        .progress { flex: 1; margin: 0 1.5rem; height: 4px; background: rgba(255,255,255,.15); border-radius: 2px; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width .25s; }
+
+        .help-hint { font-size: .75rem; opacity: .7; }
+
+        /* Print / PDF */
+        @media print {
+            html, body { overflow: visible; background: #fff; }
+            .nav-bar { display: none; }
+            .deck { height: auto; }
+            .slide {
+                display: flex !important;
+                position: relative;
+                page-break-after: always;
+                min-height: 100vh;
+                padding: 2rem 2.5rem;
+            }
+            .slide:last-child { page-break-after: avoid; }
+        }
+
+        @media (max-width: 900px) {
+            .slide { padding: 2rem 1.5rem 5rem; }
+            .two-col, .compare-grid, .pricing-cards { grid-template-columns: 1fr; }
+            .slide-header h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+    <!-- 1. Portada -->
+    <section class="slide slide--cover active" data-title="Portada">
+        <div class="logo">
+            <img src="/images/logo-light.png" alt="SimpleTravel" height="56">
+        </div>
+        <h1>Sistema de Gestión de Reservas Turísticas</h1>
+        <p class="subtitle">Plataforma digital para operadores y agencias turísticas en Latinoamérica</p>
+        <span class="badge">SimpleTravel</span>
+    </section>
+
+    <!-- 2. Intro comparación -->
+    <section class="slide" data-title="Digitalizar">
+        <div class="slide-header">
+            <span class="kicker">El desafío</span>
+            <h2>Digitalizar la gestión de tu operador turístico</h2>
+            <p>Cómo funciona hoy tu operador o agencia — y cómo puede transformarse con un sistema diseñado para operadores emisivos.</p>
+        </div>
+        <div class="slide-body two-col">
+            <div class="col-text">
+                <p style="font-size:1.1rem;line-height:1.6;margin-bottom:1.25rem;">
+                    Hoy, muchos operadores y agencias dependen de <strong>Excel, WhatsApp y procesos dispersos</strong> que ponen en riesgo márgenes, tiempos de respuesta y la coordinación del equipo.
+                </p>
+                <p style="font-size:1.1rem;line-height:1.6;color:var(--muted);">
+                    En las siguientes diapositivas verás la diferencia entre operar <em>sin</em> y <em>con</em> SimpleTravel en los aspectos críticos del negocio.
+                </p>
+            </div>
+            <div class="col-img">
+                <img src="/images/comparison/1-quoting.png" alt="Cotizaciones">
+            </div>
+        </div>
+    </section>
+
+    <!-- 3–7. Comparaciones sin/con (orden de la página digitalizar) -->
+    <section class="slide" data-title="Cotizaciones">
+        <div class="slide-header">
+            <span class="kicker">Comparación</span>
+            <h2>Cotizaciones</h2>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-img">
+                <img src="/images/comparison/1-quoting.png" alt="Cotizaciones">
+            </div>
+            <div class="compare-grid">
+                <div class="compare-card compare-card--sin">
+                    <h3>Sin Simple Travel</h3>
+                    <p>Cotizaciones en Excel, múltiples versiones del mismo archivo y cálculos manuales que dependen de quien los armó. Cada modificación implica revisar fórmulas y conversiones de moneda.</p>
+                </div>
+                <div class="compare-card compare-card--con">
+                    <h3>Con Simple Travel</h3>
+                    <p>Itinerarios estructurados en minutos, con tarifas actualizadas, conversiones automáticas y márgenes definidos por regla. Cada propuesta queda guardada, versionada y lista para enviar.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-title="Control de márgenes">
+        <div class="slide-header">
+            <span class="kicker">Comparación</span>
+            <h2>Control de márgenes</h2>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-img">
+                <img src="/images/comparison/3-profit.png" alt="Control de márgenes">
+            </div>
+            <div class="compare-grid">
+                <div class="compare-card compare-card--sin">
+                    <h3>Sin Simple Travel</h3>
+                    <p>Decisiones comerciales tomadas "a ojo". Márgenes poco claros y diferencias cambiarias que afectan la rentabilidad sin detectarlo a tiempo.</p>
+                </div>
+                <div class="compare-card compare-card--con">
+                    <h3>Con Simple Travel</h3>
+                    <p>Visualización inmediata de rentabilidad por pasajero, grupo u operación completa. Reglas de markup y control de margen mínimo antes de confirmar una venta.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-title="Liquidaciones">
+        <div class="slide-header">
+            <span class="kicker">Comparación</span>
+            <h2>Liquidaciones y pagos</h2>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-img">
+                <img src="/images/comparison/4-payments.png" alt="Liquidaciones y pagos">
+            </div>
+            <div class="compare-grid">
+                <div class="compare-card compare-card--sin">
+                    <h3>Sin Simple Travel</h3>
+                    <p>Señas, saldos y pagos gestionados en documentos separados. Dificultad para conciliar lo cobrado con lo que se debe pagar a cada prestador.</p>
+                </div>
+                <div class="compare-card compare-card--con">
+                    <h3>Con Simple Travel</h3>
+                    <p>Cada reserva conecta automáticamente ingresos y obligaciones. Cuentas corrientes claras, pagos parciales registrados y trazabilidad completa en múltiples monedas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-title="Tarifas y prestadores">
+        <div class="slide-header">
+            <span class="kicker">Comparación</span>
+            <h2>Tarifas y prestadores</h2>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-img">
+                <img src="/images/comparison/2-pricing-providers.png" alt="Tarifas y prestadores">
+            </div>
+            <div class="compare-grid">
+                <div class="compare-card compare-card--sin">
+                    <h3>Sin Simple Travel</h3>
+                    <p>Precios guardados en correos, chats o planillas aisladas. Dudas constantes sobre cuál es la tarifa vigente y riesgo de cotizar valores desactualizados.</p>
+                </div>
+                <div class="compare-card compare-card--con">
+                    <h3>Con Simple Travel</h3>
+                    <p>Tus prestadores registran y actualizan sus servicios en la plataforma. Tú seleccionas, aplicas tu markup y trabajas siempre sobre información centralizada y vigente.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide" data-title="Trabajo en equipo">
+        <div class="slide-header">
+            <span class="kicker">Comparación</span>
+            <h2>Trabajo en equipo</h2>
+        </div>
+        <div class="slide-body">
+            <div class="comparison-img">
+                <img src="/images/comparison/5-teamwork.png" alt="Trabajo en equipo">
+            </div>
+            <div class="compare-grid">
+                <div class="compare-card compare-card--sin">
+                    <h3>Sin Simple Travel</h3>
+                    <p>Información dispersa en conversaciones individuales. Confirmaciones y cambios que no quedan registrados para todo el equipo.</p>
+                </div>
+                <div class="compare-card compare-card--con">
+                    <h3>Con Simple Travel</h3>
+                    <p>Vendedores, operaciones y administración trabajan sobre la misma base de datos. Estados actualizados en tiempo real y comunicación operativa centralizada.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. La solución -->
+    <section class="slide" data-title="La solución">
+        <div class="slide-header">
+            <span class="kicker">SimpleTravel</span>
+            <h2>Infraestructura digital para operadores y agencias</h2>
+            <p>Sistema moderno, fácil de usar y personalizable que centraliza tu operación comercial.</p>
+        </div>
+        <div class="slide-body two-col">
+            <div class="col-text">
+                <p style="font-size:1.05rem;line-height:1.6;">
+                    Un solo lugar para cotizar, reservar, cobrar y liquidar, con coordinación fluida hacia tus prestadores.
+                </p>
+                <ul class="check-list" style="margin-top:1.25rem;">
+                    <li>Multi-moneda y multi-idioma (español, portugués e inglés)</li>
+                    <li>Diseñado para operadores y agencias en Latinoamérica</li>
+                    <li>Reemplaza Excel, WhatsApp y procesos dispersos</li>
+                </ul>
+            </div>
+            <div class="col-img">
+                <img src="/images/hero/saas1-es.png" alt="SimpleTravel plataforma" onerror="this.src='/images/comparison/5-teamwork.png'">
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. Gestión simple -->
+    <section class="slide" data-title="Gestión simple">
+        <div class="slide-header">
+            <span class="kicker">Ventajas</span>
+            <h2>Herramientas para una gestión simple</h2>
+            <p>Centraliza tu negocio en una sola plataforma. Reportes y estadísticas en tiempo real para tomar mejores decisiones.</p>
+        </div>
+        <div class="slide-body two-col">
+            <div class="col-text">
+                <ul class="check-list">
+                    <li>Gestión unificada de operaciones y ventas</li>
+                    <li>Relación con clientes y coordinación con prestadores</li>
+                    <li>Web de promoción y BackEnd: todo en uno</li>
+                    <li>Múltiples monedas e idiomas</li>
+                    <li>Pago a prestadores y cobranzas</li>
+                </ul>
+            </div>
+            <div class="col-img">
+                <img src="/images/hero/saas2.jpg" alt="Gestión centralizada" onerror="this.src='/images/comparison/3-profit.png'">
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. Características 1-3 -->
+    <section class="slide" data-title="Características">
+        <div class="slide-header">
+            <span class="kicker">Características</span>
+            <h2>Mejor gestión. Mejor rendimiento</h2>
+            <p>Funcionalidades diseñadas para la operación turística profesional.</p>
+        </div>
+        <div class="slide-body feature-list">
+            <div class="feature-item">
+                <h3>Gestión integral para operadores y agencias LATAM</h3>
+                <p>Centraliza reservas, cotizaciones, clientes, pagos y reportes en una sola plataforma estructurada.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Cotizaciones ágiles y precisas</h3>
+                <p>Arma itinerarios en minutos con tarifas actualizadas. Conversiones de moneda, márgenes y totales automáticos. Propuestas versionadas listas para enviar.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Control total de márgenes</h3>
+                <p>Define márgenes mínimos, markups por producto o canal. Visualiza rentabilidad antes de confirmar y evita pérdidas por errores de cálculo o cambio.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. Características 4-5 -->
+    <section class="slide" data-title="Más características">
+        <div class="slide-header">
+            <span class="kicker">Características</span>
+            <h2>Liquidaciones e integración con tus prestadores</h2>
+        </div>
+        <div class="slide-body two-col">
+            <div class="col-text feature-list">
+                <div class="feature-item">
+                    <h3>Liquidaciones claras y sin inconsistencias</h3>
+                    <p>Cuentas corrientes de clientes y prestadores en el mismo sistema. Señas, pagos parciales, saldos y obligaciones en distintas monedas con trazabilidad completa.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Integración con tus prestadores</h3>
+                    <p>Invita prestadores para que actualicen servicios y tarifas. Usa su información en cotizaciones sin duplicar datos ni perder control comercial.</p>
+                </div>
+            </div>
+            <div class="col-img">
+                <img src="/images/hero/saas3.jpg" alt="Operación integrada" onerror="this.src='/images/comparison/4-payments.png'">
+            </div>
+        </div>
+    </section>
+
+    <!-- 12. Modelo flexible -->
+    <section class="slide" data-title="Plataforma">
+        <div class="slide-header">
+            <span class="kicker">Plataforma</span>
+            <h2>Modular, flexible y a la medida de tu operación</h2>
+            <p>SimpleTravel se adapta al tamaño y las necesidades de cada operador o agencia.</p>
+        </div>
+        <div class="slide-body">
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3>Sistema modularizado</h3>
+                    <p>Activás solo las capacidades que tu operación necesita hoy, sin cargar funciones que no usás.</p>
+                </div>
+                <div class="pricing-card">
+                    <h3>Flexible y escalable</h3>
+                    <p>Crece con tu equipo y tu volumen de operaciones, sin límites artificiales ni sorpresas.</p>
+                </div>
+                <div class="pricing-card">
+                    <h3>Licenciamiento claro</h3>
+                    <p>Modelo por usuario y/o por módulo. Sin comisiones por venta ni cargos por transacción.</p>
+                </div>
+            </div>
+            <div style="margin-top:1.5rem;padding:1.25rem;background:var(--bg);border-radius:12px;text-align:center;">
+                <p style="font-size:1rem;line-height:1.55;">
+                    Pagás de acuerdo a tu necesidad real: <span class="highlight">usuarios activos y módulos contratados</span>.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 13. Cierre -->
+    <section class="slide" data-title="Cierre">
+        <div class="slide-header">
+            <span class="kicker">Próximo paso</span>
+            <h2>Empezá a operar con SimpleTravel</h2>
+        </div>
+        <div class="slide-body">
+            <div class="cta-box">
+                <h3>Conocé la plataforma en acción</h3>
+                <p>Solicitá una demo y descubrí cómo centralizar cotizaciones, reservas y liquidaciones.</p>
+                <div class="cta-links">
+                    <a href="/register" class="btn-primary">Registrarse</a>
+                    <a href="/pages/digitalizar-operador-turistico" class="btn-outline">Comparación detallada</a>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:2rem;">
+                <img src="/images/logo.png" alt="SimpleTravel" height="48">
+                <p style="color:var(--muted);margin-top:.75rem;font-size:.9rem;">simple-travel.debian</p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<nav class="nav-bar" aria-label="Navegación de diapositivas">
+    <button type="button" id="btn-prev" disabled>← Anterior</button>
+    <div class="progress"><div class="progress-fill" id="progress"></div></div>
+    <span id="counter">1 / 13</span>
+    <button type="button" id="btn-next">Siguiente →</button>
+    <span class="help-hint">← → teclado · Imprimir = PDF</span>
+</nav>
+
+<script>
+(function () {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let current = 0;
+
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+
+    function goTo(index) {
+        if (index < 0 || index >= slides.length) return;
+        slides[current].classList.remove('active');
+        current = index;
+        slides[current].classList.add('active');
+        btnPrev.disabled = current === 0;
+        btnNext.disabled = current === slides.length - 1;
+        counter.textContent = (current + 1) + ' / ' + slides.length;
+        progress.style.width = ((current + 1) / slides.length * 100) + '%';
+        document.title = slides[current].dataset.title + ' — SimpleTravel';
+    }
+
+    btnPrev.addEventListener('click', () => goTo(current - 1));
+    btnNext.addEventListener('click', () => goTo(current + 1));
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+            e.preventDefault();
+            goTo(current + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            goTo(current - 1);
+        } else if (e.key === 'Home') {
+            goTo(0);
+        } else if (e.key === 'End') {
+            goTo(slides.length - 1);
+        }
+    });
+
+    // Touch swipe
+    let touchX = null;
+    document.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', (e) => {
+        if (touchX === null) return;
+        const diff = touchX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) goTo(current + (diff > 0 ? 1 : -1));
+        touchX = null;
+    });
+})();
+</script>
+
+</body>
+</html>

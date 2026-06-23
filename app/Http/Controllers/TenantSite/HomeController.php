@@ -4,11 +4,16 @@ namespace App\Http\Controllers\TenantSite;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Services\CatFaqListService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    public function __construct(
+        private readonly CatFaqListService $faqListService,
+    ) {}
+
     /**
      * SaaS landing on the main host; minimal welcome on tenant website hosts.
      */
@@ -29,6 +34,8 @@ class HomeController extends Controller
             return view('tenant.welcome', $data);
         }
 
-        return view('landings.saas');
+        return view('landings.saas', [
+            'faqItems' => $this->faqListService->displayItemsFromRequest($request, 3),
+        ]);
     }
 }

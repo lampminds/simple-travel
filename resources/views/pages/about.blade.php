@@ -1,4 +1,4 @@
-@extends('layouts.base', ['title' => 'About'])
+@extends('layouts.base', ['title' => __('pages.about.title')])
 
 @section('content')
 
@@ -13,20 +13,16 @@
     <section class="position-relative py-5 bg-gradient2">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <h1 class="h3 fw-semibold mb-3">About</h1>
-                    <p class="text-muted mb-4">
-                        SimpleTravel helps travel businesses manage accounts, services, and day-to-day operations in one place.
-                        This page is a placeholder; replace it with your company story, mission, and team when ready.
-                    </p>
-                    <p class="text-muted mb-0">
-                        For product questions or partnerships, use the contact options from the main site when they are available.
-                    </p>
+                <div class="col-lg-8 text-center text-lg-start">
+                    <span class="badge rounded-pill badge-soft-primary px-2 py-1 mb-3">{{ __('pages.placeholder_badge') }}</span>
+                    <h1 class="display-6 fw-semibold mb-3">{{ __('pages.about.title') }}</h1>
+                    <p class="text-muted fs-17 mb-4">{{ __('pages.about.lead') }}</p>
+                    <p class="text-muted mb-0">{{ __('pages.placeholder_notice') }}</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <x-site-footer-simple />
+    <x-site-footer />
 
 @endsection

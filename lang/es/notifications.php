@@ -2,5 +2,5 @@
 
 return [
     'salutation' => 'Saludos,',
-    'subcopy' => 'Si tenés problemas para hacer clic en el botón ":actionText", copiá y pegá esta URL en tu navegador:',
+    'subcopy' => 'Si tienes problemas para hacer clic en el botón ":actionText", copia y pega esta URL en tu navegador:',
 ];

@@ -24,7 +24,7 @@ final class AccountProviderAllocationController extends Controller
     ) {
     }
 
-    public function operatorsIndex(Request $request): View
+    public function index(Request $request): View
     {
         $account = $this->resolveProviderAccount($request);
 
@@ -35,36 +35,47 @@ final class AccountProviderAllocationController extends Controller
             ->orderBy('id')
             ->get();
 
-        $countsByOperator = Allocation::query()
-            ->where('provider_id', $account->id)
-            ->selectRaw('operator_id, COUNT(*) as aggregate')
-            ->groupBy('operator_id')
-            ->pluck('aggregate', 'operator_id');
-
+        $operatorOptions = [];
         foreach ($relationships as $relationship) {
-            $operatorId = (int) $relationship->operator_account_id;
-            $relationship->setAttribute('allocations_count', (int) ($countsByOperator[$operatorId] ?? 0));
+            $operator = $relationship->operatorAccount;
+            if (! $operator instanceof Account) {
+                continue;
+            }
+
+            $operatorOptions[(int) $operator->id] = $operator->commercial_name
+                ?? $operator->name
+                ?? ('#' . $operator->id);
         }
 
-        return view('account.allocations.provider.operators', [
-            'account' => $account,
-            'relationships' => $relationships,
-        ]);
-    }
+        $selectedOperatorId = $request->integer('operator') ?: null;
+        $selectedOperator = null;
 
-    public function index(Request $request, Account $operator): View
-    {
-        $account = $this->resolveProviderAccount($request);
-        $this->assertApprovedOperatorRelationship($account, $operator);
+        if ($selectedOperatorId === null && count($operatorOptions) === 1) {
+            $selectedOperatorId = array_key_first($operatorOptions);
+        }
 
-        $allocations = Allocation::query()
+        if ($selectedOperatorId !== null && isset($operatorOptions[$selectedOperatorId])) {
+            $selectedOperator = Account::query()->find($selectedOperatorId);
+            abort_unless($selectedOperator instanceof Account, 404);
+            $this->assertApprovedOperatorRelationship($account, $selectedOperator);
+        } else {
+            $selectedOperatorId = null;
+        }
+
+        $allocationsQuery = Allocation::query()
             ->where('provider_id', $account->id)
-            ->where('operator_id', $operator->id)
             ->with([
+                'operatorAccount',
                 'service.translations.language.locale',
                 'serviceVariant.translations.language.locale',
                 'serviceVariant.service.translations.language.locale',
-            ])
+            ]);
+
+        if ($selectedOperatorId !== null) {
+            $allocationsQuery->where('operator_id', $selectedOperatorId);
+        }
+
+        $allocations = $allocationsQuery
             ->orderByDesc('active')
             ->orderByDesc('start_date')
             ->orderByDesc('id')
@@ -77,29 +88,53 @@ final class AccountProviderAllocationController extends Controller
             );
         }
 
+        $openModal = (string) $request->query('modal', '');
+        $formContext = null;
+
+        if ($openModal === 'create') {
+            if ($selectedOperator instanceof Account) {
+                $formContext = $this->buildFormContext($account, $selectedOperator, null);
+            } elseif ($operatorOptions !== []) {
+                $formContext = [
+                    'mode' => 'operator_picker',
+                    'operatorOptions' => $operatorOptions,
+                ];
+            }
+        } elseif ($openModal === 'edit') {
+            $allocationId = $request->integer('allocation');
+            $editAllocation = Allocation::query()
+                ->whereKey($allocationId)
+                ->where('provider_id', $account->id)
+                ->with([
+                    'operatorAccount',
+                    'service.translations.language.locale',
+                    'serviceVariant.translations.language.locale',
+                    'serviceVariant.service.translations.language.locale',
+                ])
+                ->first();
+
+            if ($editAllocation instanceof Allocation) {
+                $operator = $editAllocation->operatorAccount;
+                abort_unless($operator instanceof Account, 404);
+
+                if ($selectedOperatorId === null) {
+                    $selectedOperatorId = (int) $operator->id;
+                    $selectedOperator = $operator;
+                }
+
+                $formContext = $this->buildFormContext($account, $operator, $editAllocation);
+            }
+        }
+
         return view('account.allocations.provider.index', [
             'account' => $account,
-            'operator' => $operator,
+            'operatorOptions' => $operatorOptions,
+            'selectedOperatorId' => $selectedOperatorId,
+            'selectedOperator' => $selectedOperator,
             'allocations' => $allocations,
-        ]);
-    }
-
-    public function create(Request $request, Account $operator): View
-    {
-        $account = $this->resolveProviderAccount($request);
-        $this->assertApprovedOperatorRelationship($account, $operator);
-
-        $targetOptions = $this->allocationValidation->eligibleTargetOptions((int) $account->id, (int) $operator->id);
-
-        return view('account.allocations.provider.form', [
-            'account' => $account,
-            'operator' => $operator,
-            'allocation' => null,
-            'targetOptions' => $targetOptions,
-            'selectedTargetKey' => old('target_key'),
-            'submitRoute' => route('account.allocations.operators.store', $operator),
-            'submitMethod' => 'POST',
-            'cancelRoute' => route('account.allocations.operators.index', $operator),
+            'showOperatorColumn' => $selectedOperatorId === null,
+            'formContext' => $formContext,
+            'openModal' => $formContext !== null ? $openModal : '',
         ]);
     }
 
@@ -108,7 +143,11 @@ final class AccountProviderAllocationController extends Controller
         $account = $this->resolveProviderAccount($request);
         $this->assertApprovedOperatorRelationship($account, $operator);
 
-        $payload = $this->validatePayload($request, (int) $account->id, (int) $operator->id);
+        try {
+            $payload = $this->validatePayload($request, (int) $account->id, (int) $operator->id);
+        } catch (ValidationException $exception) {
+            throw $exception->redirectTo($this->allocationIndexUrl($operator, 'create'));
+        }
 
         Allocation::query()->create([
             'provider_id' => $account->id,
@@ -117,37 +156,8 @@ final class AccountProviderAllocationController extends Controller
         ]);
 
         return redirect()
-            ->route('account.allocations.operators.index', $operator)
+            ->to($this->allocationIndexUrl($operator))
             ->with('status', __('account.allocations.status_created'));
-    }
-
-    public function edit(Request $request, Allocation $allocation): View
-    {
-        $account = $this->resolveProviderAccount($request);
-        $this->assertAllocationBelongsToProvider($allocation, (int) $account->id);
-
-        $allocation->load([
-            'service.translations.language.locale',
-            'serviceVariant.translations.language.locale',
-            'serviceVariant.service.translations.language.locale',
-        ]);
-
-        $operator = $allocation->operatorAccount;
-        abort_unless($operator instanceof Account, 404);
-
-        $targetOptions = $this->allocationValidation->eligibleTargetOptions((int) $account->id, (int) $operator->id);
-        $targetOptions = $this->mergeCurrentAllocationTarget($allocation, $targetOptions);
-
-        return view('account.allocations.provider.form', [
-            'account' => $account,
-            'operator' => $operator,
-            'allocation' => $allocation,
-            'targetOptions' => $targetOptions,
-            'selectedTargetKey' => old('target_key', $this->allocationValidation->targetKeyFromAllocation($allocation)),
-            'submitRoute' => route('account.allocations.update', $allocation),
-            'submitMethod' => 'PUT',
-            'cancelRoute' => route('account.allocations.operators.index', $operator),
-        ]);
     }
 
     public function update(Request $request, Allocation $allocation): RedirectResponse
@@ -156,12 +166,21 @@ final class AccountProviderAllocationController extends Controller
         $this->assertAllocationBelongsToProvider($allocation, (int) $account->id);
 
         $operatorId = (int) $allocation->operator_id;
-        $payload = $this->validatePayload(
-            $request,
-            (int) $account->id,
-            $operatorId,
-            (int) $allocation->id,
-        );
+
+        try {
+            $payload = $this->validatePayload(
+                $request,
+                (int) $account->id,
+                $operatorId,
+                (int) $allocation->id,
+            );
+        } catch (ValidationException $exception) {
+            throw $exception->redirectTo($this->allocationIndexUrl(
+                $allocation->operatorAccount,
+                'edit',
+                $allocation,
+            ));
+        }
 
         $allocation->update($payload);
 
@@ -169,7 +188,7 @@ final class AccountProviderAllocationController extends Controller
         abort_unless($operator instanceof Account, 404);
 
         return redirect()
-            ->route('account.allocations.operators.index', $operator)
+            ->to($this->allocationIndexUrl($operator))
             ->with('status', __('account.allocations.status_updated'));
     }
 
@@ -184,8 +203,69 @@ final class AccountProviderAllocationController extends Controller
         $allocation->delete();
 
         return redirect()
-            ->route('account.allocations.operators.index', $operator)
+            ->to($this->allocationIndexUrl($operator))
             ->with('status', __('account.allocations.status_deleted'));
+    }
+
+    /**
+     * @return array{
+     *     operator: Account,
+     *     allocation: Allocation|null,
+     *     targetOptions: array{services: array<int, string>, variants: array<int, string>},
+     *     selectedTargetKey: string|null,
+     *     submitRoute: string,
+     *     submitMethod: string,
+     *     isEdit: bool,
+     * }
+     */
+    private function buildFormContext(Account $account, Account $operator, ?Allocation $allocation): array
+    {
+        $targetOptions = $this->allocationValidation->eligibleTargetOptions((int) $account->id, (int) $operator->id);
+
+        if ($allocation instanceof Allocation) {
+            $targetOptions = $this->mergeCurrentAllocationTarget($allocation, $targetOptions);
+        }
+
+        $isEdit = $allocation instanceof Allocation;
+
+        return [
+            'mode' => $isEdit ? 'edit' : 'create',
+            'operator' => $operator,
+            'allocation' => $allocation,
+            'targetOptions' => $targetOptions,
+            'selectedTargetKey' => old(
+                'target_key',
+                $isEdit
+                    ? $this->allocationValidation->targetKeyFromAllocation($allocation)
+                    : null,
+            ),
+            'submitRoute' => $isEdit
+                ? route('account.allocations.update', $allocation)
+                : route('account.allocations.operators.store', $operator),
+            'submitMethod' => $isEdit ? 'PUT' : 'POST',
+            'isEdit' => $isEdit,
+        ];
+    }
+
+    private function allocationIndexUrl(
+        ?Account $operator,
+        ?string $modal = null,
+        ?Allocation $allocation = null,
+    ): string {
+        $params = [];
+
+        if ($operator instanceof Account) {
+            $params['operator'] = $operator->id;
+        }
+
+        if ($modal === 'create') {
+            $params['modal'] = 'create';
+        } elseif ($modal === 'edit' && $allocation instanceof Allocation) {
+            $params['modal'] = 'edit';
+            $params['allocation'] = $allocation->id;
+        }
+
+        return route('account.allocations.index', $params);
     }
 
     /**

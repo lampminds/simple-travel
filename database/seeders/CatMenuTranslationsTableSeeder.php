@@ -233,7 +233,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 24,
                 'language_id' => 2,
                 'name' => 'Paquetes comerciales',
-                'tip' => 'Armá paquetes a partir de los servicios de prestadores que aceptaste.',
+                'tip' => 'Arma paquetes a partir de los servicios de prestadores que aceptaste.',
             ),
             27 => 
             array (
@@ -265,7 +265,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 7,
                 'language_id' => 2,
                 'name' => 'Servicios de prestadores',
-                'tip' => 'Revisá propuestas pendientes de servicios de prestadores vinculados.',
+                'tip' => 'Revisa propuestas pendientes de servicios de prestadores vinculados.',
             ),
             31 => 
             array (
@@ -273,7 +273,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 9,
                 'language_id' => 2,
                 'name' => 'Reservas',
-                'tip' => 'Reservá paquetes que ya aceptaste de operadores vinculados.',
+                'tip' => 'Reserva paquetes que ya aceptaste de operadores vinculados.',
             ),
             32 => 
             array (
@@ -289,7 +289,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 26,
                 'language_id' => 2,
                 'name' => 'Ofertas a operadores',
-                'tip' => 'Proponé variantes de tu catálogo a operadores vinculados.',
+                'tip' => 'Propón variantes de tu catálogo a operadores vinculados.',
             ),
             34 => 
             array (
@@ -305,7 +305,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 27,
                 'language_id' => 2,
                 'name' => 'Ofertas a agencias',
-                'tip' => 'Proponé paquetes comerciales a agencias vinculadas.',
+                'tip' => 'Propón paquetes comerciales a agencias vinculadas.',
             ),
             36 => 
             array (
@@ -321,7 +321,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 28,
                 'language_id' => 2,
                 'name' => 'Ofertas de operadores',
-                'tip' => 'Revisá propuestas pendientes de paquetes de operadores vinculados.',
+                'tip' => 'Revisa propuestas pendientes de paquetes de operadores vinculados.',
             ),
             38 => 
             array (
@@ -337,7 +337,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 29,
                 'language_id' => 2,
                 'name' => 'Reservas',
-                'tip' => 'Revisá y confirmá reservas enviadas por agencias vinculadas.',
+                'tip' => 'Revisa y confirma reservas enviadas por agencias vinculadas.',
             ),
             40 => 
             array (
@@ -353,7 +353,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 30,
                 'language_id' => 2,
                 'name' => 'Asignación de cupos',
-                'tip' => 'Asigná cupos a operadores vinculados para variantes de catálogo ya aceptadas.',
+                'tip' => 'Asigna cupos a operadores vinculados para variantes de catálogo ya aceptadas.',
             ),
             42 => 
             array (
@@ -401,7 +401,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 33,
                 'language_id' => 2,
                 'name' => 'Asignación de cupos de paquetes',
-                'tip' => 'Asigná cupos a agencias vinculadas para paquetes del operador ya aceptados.',
+                'tip' => 'Asigna cupos a agencias vinculadas para paquetes del operador ya aceptados.',
             ),
             48 => 
             array (
@@ -417,7 +417,7 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'menu_id' => 34,
                 'language_id' => 2,
                 'name' => 'Servicios por paquete',
-                'tip' => 'Consultá en qué paquetes comerciales está incluido cada servicio de prestador aceptado.',
+                'tip' => 'Consulta en qué paquetes comerciales está incluido cada servicio de prestador aceptado.',
             ),
         ));
         

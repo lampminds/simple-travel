@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Allocation;
 use App\Models\OperatorPackageItem;
 use App\Models\ServiceOffer;
 use App\Services\OperatorPreviewLocalePriceService;
@@ -12,6 +13,7 @@ use App\Services\ServiceOfferSyncService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,6 +48,7 @@ final class AccountOperatorServiceOfferController extends Controller
         $packageCountsByOfferId = $this->packageCountsByOfferIds(
             $offers->pluck('id')->map(fn ($id): int => (int) $id)->all(),
         );
+        $allocationSummariesByOfferId = $this->allocationSummariesForOffers($offers, $operatorId);
 
         foreach ($offers as $offer) {
             $operatorPrice = $this->resolveOperatorPriceForOffer($offer, $operatorId, $priceResolver);
@@ -54,6 +57,10 @@ final class AccountOperatorServiceOfferController extends Controller
             $offer->setAttribute('operator_price', $operatorPrice);
             $offer->setAttribute('operator_service_label', $this->serviceLabelForOffer($offer));
             $offer->setAttribute('packages_count', $packageCountsByOfferId[(int) $offer->id] ?? 0);
+            $offer->setAttribute(
+                'operator_allocation',
+                $allocationSummariesByOfferId[(int) $offer->id] ?? ['current' => null, 'total_count' => 0],
+            );
         }
 
         return view('account.service-offers.operator.index', [
@@ -241,6 +248,77 @@ final class AccountOperatorServiceOfferController extends Controller
             ->pluck('packages_count', 'service_offer_id')
             ->map(fn ($count): int => (int) $count)
             ->all();
+    }
+
+    /**
+     * @param  Collection<int, ServiceOffer>  $offers
+     * @return array<int, array{current: Allocation|null, total_count: int}>
+     */
+    private function allocationSummariesForOffers(Collection $offers, int $operatorId): array
+    {
+        if ($offers->isEmpty()) {
+            return [];
+        }
+
+        $variantIds = $offers
+            ->pluck('service_variant_id')
+            ->filter()
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+        $providerIds = $offers
+            ->pluck('provider_id')
+            ->filter()
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($variantIds === [] || $providerIds === []) {
+            return [];
+        }
+
+        /** @var Collection<string, Collection<int, Allocation>> $allocationsByKey */
+        $allocationsByKey = Allocation::query()
+            ->where('operator_id', $operatorId)
+            ->whereIn('provider_id', $providerIds)
+            ->whereIn('service_variant_id', $variantIds)
+            ->orderByDesc('active')
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy(fn (Allocation $allocation): string => (int) $allocation->provider_id.':'.(int) $allocation->service_variant_id);
+
+        $today = now()->toDateString();
+        $summaries = [];
+
+        foreach ($offers as $offer) {
+            $key = (int) $offer->provider_id.':'.(int) $offer->service_variant_id;
+            $group = $allocationsByKey->get($key, collect());
+
+            $current = null;
+            foreach ($group as $allocation) {
+                if (! $allocation->active) {
+                    continue;
+                }
+
+                $start = $allocation->start_date?->format('Y-m-d') ?? '0001-01-01';
+                $end = $allocation->end_date?->format('Y-m-d') ?? '9999-12-31';
+
+                if ($today >= $start && $today <= $end) {
+                    $current = $allocation;
+                    break;
+                }
+            }
+
+            $summaries[(int) $offer->id] = [
+                'current' => $current,
+                'total_count' => $group->count(),
+            ];
+        }
+
+        return $summaries;
     }
 
     private function serviceLabelForOffer(ServiceOffer $offer): string

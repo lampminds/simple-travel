@@ -93,7 +93,7 @@ class CatFaqTranslationsTableSeeder extends Seeder
                 'faq_id' => 4,
                 'language_id' => 2,
                 'question' => 'Como proveedor, ¿cómo publico servicios y llego a operadores?',
-                'answer' => 'Cargá cada servicio con el asistente paso a paso (descripción, variantes, características y disponibilidad) y marcálo como publicado cuando esté listo. Definí listas de precios de proveedor y ofertas comerciales para que los operadores vinculados vean tarifas coherentes. Cuando un operador acepta una oferta, tu catálogo sigue siendo la fuente única de verdad: los cambios en el servicio o en precios se gestionan desde tu cuenta sin planillas paralelas.',
+                'answer' => 'Carga cada servicio con el asistente paso a paso (descripción, variantes, características y disponibilidad) y márcalo como publicado cuando esté listo. Define listas de precios de proveedor y ofertas comerciales para que los operadores vinculados vean tarifas coherentes. Cuando un operador acepta una oferta, tu catálogo sigue siendo la fuente única de verdad: los cambios en el servicio o en precios se gestionan desde tu cuenta sin planillas paralelas.',
             ],
             [
                 'id' => 12,
@@ -116,7 +116,7 @@ class CatFaqTranslationsTableSeeder extends Seeder
                 'faq_id' => 5,
                 'language_id' => 2,
                 'question' => 'Como operador, ¿cómo uso catálogos de proveedores y armo paquetes?',
-                'answer' => 'Establecé vínculos comerciales con proveedores y revisá sus catálogos autorizados y ofertas desde tu panel de operador. Aceptá o negociá ofertas y armá paquetes de operador y listas de precios de operador sobre la base de los datos del proveedor. Las asignaciones y reglas de disponibilidad te permiten comercializar el mismo servicio con tu propia presentación mientras el proveedor mantiene el catálogo maestro.',
+                'answer' => 'Establece vínculos comerciales con proveedores y revisa sus catálogos autorizados y ofertas desde tu panel de operador. Acepta o negocia ofertas y arma paquetes de operador y listas de precios de operador sobre la base de los datos del proveedor. Las asignaciones y reglas de disponibilidad te permiten comercializar el mismo servicio con tu propia presentación mientras el proveedor mantiene el catálogo maestro.',
             ],
             [
                 'id' => 15,

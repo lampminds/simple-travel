@@ -102,15 +102,15 @@ return [
             'open_website_impersonation' => 'Enlace de acceso al sitio',
             'open_website_impersonation_tooltip' => 'Genera un enlace de un solo uso para abrir el sitio en otro navegador como este usuario.',
             'impersonation_modal_heading' => 'Enlace de acceso al sitio (un solo uso)',
-            'impersonation_modal_help' => 'Copiá el enlace y abrilo en otro navegador (o ventana privada). Vence en unos minutos y solo funciona una vez.',
-            'impersonation_forbidden' => 'No tenés permiso para generar este enlace.',
+            'impersonation_modal_help' => 'Copia el enlace y ábrelo en otro navegador (o ventana privada). Vence en unos minutos y solo funciona una vez.',
+            'impersonation_forbidden' => 'No tienes permiso para generar este enlace.',
             'impersonation_invalid_target' => 'Este usuario no puede usarse para este enlace.',
             'impersonation_link_aria' => 'Enlace de acceso de un solo uso',
             'impersonation_link_label' => 'Enlace',
             'impersonation_copy_button' => 'Copiar',
             'impersonation_copied' => 'Copiado',
             'impersonation_copy_failed' => 'No se pudo copiar',
-            'impersonation_copy_hint' => 'Tip: también podés hacer triple clic en el recuadro y Ctrl+C (Cmd+C en Mac).',
+            'impersonation_copy_hint' => 'Tip: también puedes hacer triple clic en el recuadro y Ctrl+C (Cmd+C en Mac).',
         ],
 
         'account_category' => 'Categoría de cuenta',
@@ -693,10 +693,10 @@ return [
             'generate_success_title' => 'Catálogo de traslados actualizado',
             'generate_success_body' => 'Se crearon :created ubicación(es). La IA sugirió :ai. Omitidas :skipped duplicada(s). Eliminadas :removed fila(s) previa(s). Llamadas OpenAI: :openai_calls.',
             'generate_translation_fallbacks' => ':count nombre(s) quedaron en el idioma origen porque falló la traducción.',
-            'openai_rate_limit' => 'OpenAI alcanzó el límite de solicitudes (request limit exceeded). Esperá unos minutos y volvé a intentar, o revisá el uso en platform.openai.com. Los embeddings y esta acción comparten la misma API key.',
-            'openai_quota' => 'Se agotó la cuota o el crédito de OpenAI. Cargá saldo o revisá el plan en platform.openai.com — no se guardó nada.',
-            'openai_invalid_key' => 'OpenAI rechazó la API key. Revisá OPENAI_API_KEY en el .env.',
-            'openai_model' => 'El modelo de chat ":model" no está disponible para esta clave. Configurá OPENAI_CHAT_MODEL en .env (ej. gpt-4o-mini).',
+            'openai_rate_limit' => 'OpenAI alcanzó el límite de solicitudes (request limit exceeded). Espera unos minutos y vuelve a intentar, o revisa el uso en platform.openai.com. Los embeddings y esta acción comparten la misma API key.',
+            'openai_quota' => 'Se agotó la cuota o el crédito de OpenAI. Carga saldo o revisa el plan en platform.openai.com — no se guardó nada.',
+            'openai_invalid_key' => 'OpenAI rechazó la API key. Revisa OPENAI_API_KEY en el .env.',
+            'openai_model' => 'El modelo de chat ":model" no está disponible para esta clave. Configura OPENAI_CHAT_MODEL en .env (ej. gpt-4o-mini).',
             'openai_generic' => 'Falló la solicitud a OpenAI: :detail',
         ],
 
@@ -849,7 +849,7 @@ return [
 
         'parameter_definition_options_help' => 'Para select, radio, checkbox e interruptor debes definir al menos dos opciones (p. ej. dos valores explícitos para sí/no). El resto de componentes UI pueden dejar la lista vacía y usar texto libre.',
         'parameter_definition_options_min_two' => 'Este componente UI exige al menos dos opciones con valor almacenado.',
-        'parameter_definition_values_tab_help' => 'Alcance sistema: como máximo una fila (la cuenta no aplica). Por cuenta: la cuenta es opcional — dejá vacío para un valor predeterminado para todas las cuentas, o indicá una cuenta por fila de anulación.',
+        'parameter_definition_values_tab_help' => 'Alcance sistema: como máximo una fila (la cuenta no aplica). Por cuenta: la cuenta es opcional — deja vacío para un valor predeterminado para todas las cuentas, o indica una cuenta por fila de anulación.',
         'parameter_definition_values_duplicate_account' => 'Cuenta duplicada en la lista de valores.',
 
         'parameter_definition_ui_components' => [
@@ -876,7 +876,7 @@ return [
             'definition_help' => 'Qué parámetro configura esta fila.',
             'account_placeholder' => 'Predeterminado (todas las cuentas)',
             'account_help_system' => 'Las definiciones de alcance sistema no guardan cuenta; siempre queda vacío.',
-            'account_help' => 'Opcional. Dejá vacío para un valor predeterminado para todas las cuentas, o elegí una cuenta para un valor por cuenta.',
+            'account_help' => 'Opcional. Deja vacío para un valor predeterminado para todas las cuentas, o elige una cuenta para un valor por cuenta.',
             'value_help' => 'Valor almacenado (texto libre, o una de las opciones predefinidas si la definición usa lista).',
         ],
 
@@ -907,7 +907,7 @@ return [
             'name' => 'Nombre',
             'description' => 'Descripción',
             'account_types' => 'Tipos de cuenta aplicables',
-            'account_types_help' => 'Dejá vacío para todos los tipos. Elegí tipos para restringir este plan.',
+            'account_types_help' => 'Deja vacío para todos los tipos. Elige tipos para restringir este plan.',
         ],
 
         'plan_relation' => [
@@ -988,7 +988,7 @@ return [
             'name' => 'Nombre',
             'description' => 'Descripción',
             'account_types' => 'Tipos de cuenta aplicables',
-            'account_types_help' => 'Dejá vacío para todos los tipos. Elegí tipos para restringir este módulo.',
+            'account_types_help' => 'Deja vacío para todos los tipos. Elige tipos para restringir este módulo.',
         ],
 
         'module_columns' => [
@@ -1010,10 +1010,10 @@ return [
             'copy_heading' => 'Copiar módulo',
             'copy_description' => 'Crea un módulo nuevo con traducciones, tipos de cuenta, características y precios copiados de este registro. No se copian las asignaciones a planes.',
             'copy_failed_title' => 'No se pudo copiar el módulo',
-            'copy_code_required' => 'Ingresá un código para el módulo nuevo.',
+            'copy_code_required' => 'Ingresa un código para el módulo nuevo.',
             'copy_code_exists' => 'Ya existe un módulo con ese código.',
             'copy_success_title' => 'Módulo copiado',
-            'copy_success_body' => 'Se creó el módulo :code. Podés revisarlo y ajustarlo ahora.',
+            'copy_success_body' => 'Se creó el módulo :code. Puedes revisarlo y ajustarlo ahora.',
         ],
 
         'module_relation' => [
@@ -1151,8 +1151,8 @@ return [
             'service_type' => 'Tipo de servicio (opcional)',
             'notes' => 'Notas internas',
             'text' => 'Contenido HTML',
-            'text_help' => 'Usá la barra para dar formato y adjuntar imágenes; los archivos van a almacenamiento público (sin colección de medios aparte).',
-            'text_nesting_depth_exceeded' => 'El texto de ayuda tiene demasiada estructura anidada para guardarlo de una vez. Simplificá el formato (menos listas o estilos anidados), guardá de nuevo o contactá al administrador si sigue ocurriendo.',
+            'text_help' => 'Usa la barra para dar formato y adjuntar imágenes; los archivos van a almacenamiento público (sin colección de medios aparte).',
+            'text_nesting_depth_exceeded' => 'El texto de ayuda tiene demasiada estructura anidada para guardarlo de una vez. Simplifica el formato (menos listas o estilos anidados), guarda de nuevo o contacta al administrador si sigue ocurriendo.',
         ],
 
         'cat_helper_columns' => [
@@ -1267,7 +1267,7 @@ return [
             'copy_to_account_description' => 'Crea una copia de cada tarea de esta categoría (de todas las cuentas), todas asignadas a la cuenta que elijas. Se duplican filas en todo_tasks y todo_task_translations.',
             'copy_destination_account' => 'Cuenta',
             'copy_failed_title' => 'No se pudieron copiar las tareas',
-            'copy_invalid_account' => 'Seleccioná una cuenta válida.',
+            'copy_invalid_account' => 'Selecciona una cuenta válida.',
             'copy_none_title' => 'No hay tareas para copiar',
             'copy_none_body' => 'Esta categoría aún no tiene tareas.',
             'copy_all_skipped_title' => 'No se crearon tareas nuevas',
@@ -1741,7 +1741,7 @@ return [
             'service_id' => 'Servicio',
             'service_activity_type_id' => 'Tipo de actividad (obsoleto)',
             'activity_types' => 'Tipos de actividad',
-            'activity_types_help' => 'Marcá uno o más tipos del catálogo que describan este servicio.',
+            'activity_types_help' => 'Marca uno o más tipos del catálogo que describan este servicio.',
             'difficulty_level' => 'Dificultad',
             'min_age' => 'Edad mínima',
             'max_age' => 'Edad máxima',

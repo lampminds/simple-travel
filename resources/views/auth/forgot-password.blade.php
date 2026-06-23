@@ -13,7 +13,7 @@
                                 </div>
 
                                 <h6 class="h5 mb-0 mt-3">Recuperar contraseña</h6>
-                                <p class="text-muted mt-1 mb-4">Ingresá tu email y te enviamos un enlace para restablecer tu contraseña.</p>
+                                <p class="text-muted mt-1 mb-4">Ingresa tu email y te enviamos un enlace para restablecer tu contraseña.</p>
 
                                 @if (session('status'))
                                     <div class="alert alert-success mb-3">{{ session('status') }}</div>

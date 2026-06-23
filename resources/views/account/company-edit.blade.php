@@ -76,7 +76,7 @@
 
                             @if ($errors->any())
                                 <div class="alert alert-danger" role="alert">
-                                    <div class="fw-semibold">Revisá los datos antes de guardar.</div>
+                                    <div class="fw-semibold">Revisa los datos antes de guardar.</div>
                                     <div>Hay errores de validación en una o más pestañas.</div>
                                 </div>
                             @endif
@@ -334,7 +334,7 @@
                                                     <div class="col-md-4">
                                                         <label class="form-label">Tipo fiscal</label>
                                                         <select name="tax_ids[{{ $idx }}][document_id]" class="form-select @error("tax_ids.$idx.document_id") is-invalid @enderror">
-                                                            <option value="">Seleccioná un tipo</option>
+                                                            <option value="">Selecciona un tipo</option>
                                                             @foreach($taxIdCategories as $category)
                                                                 <option value="{{ $category->id }}" @selected((int) ($row['document_id'] ?? 0) === (int) $category->id)>
                                                                     {{ $category->name ?: $category->code }}
@@ -351,7 +351,7 @@
                                                                name="tax_ids[{{ $idx }}][value]"
                                                                class="form-control @error("tax_ids.$idx.value") is-invalid @enderror"
                                                                value="{{ (string) ($row['value'] ?? '') }}"
-                                                               placeholder="Ingresá el dato fiscal">
+                                                               placeholder="Ingresa el dato fiscal">
                                                         @error("tax_ids.$idx.value")
                                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                                         @enderror
@@ -545,7 +545,7 @@
                 let taxNextIndex = {{ $nextTaxIndex ?? 0 }};
                 const taxCategoryOptions = @json(collect($taxIdCategories)->map(fn ($category) => ['id' => (int) $category->id, 'label' => (string) ($category->name ?: $category->code)])->values());
                 function buildTaxCategoryOptions() {
-                    let html = '<option value="">Seleccioná un tipo</option>';
+                    let html = '<option value="">Selecciona un tipo</option>';
                     taxCategoryOptions.forEach(function (opt) {
                         html += '<option value="' + opt.id + '">' + opt.label + '</option>';
                     });
@@ -565,7 +565,7 @@
                         '</div>' +
                         '<div class="col-md-6">' +
                             '<label class="form-label">Valor</label>' +
-                            '<input type="text" name="tax_ids[' + idx + '][value]" class="form-control" placeholder="Ingresá el dato fiscal">' +
+                            '<input type="text" name="tax_ids[' + idx + '][value]" class="form-control" placeholder="Ingresa el dato fiscal">' +
                         '</div>' +
                         '<div class="col-md-2">' +
                             '<button type="button" class="btn btn-outline-danger btn-sm js-remove-tax-row">Quitar</button>' +

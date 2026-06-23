@@ -313,7 +313,7 @@
             </div>
             <div class="row mt-5 justify-content-center">
                 <div class="col-auto">
-                    <a href="#" class="btn btn-primary mb-2">
+                    <a href="{{ route('register') }}" class="btn btn-primary mb-2">
                         {{ __('saas.sign_up_now') }} <i class="icon-xs ms-2" data-feather="arrow-right"></i>
                     </a>
                 </div>
@@ -323,6 +323,7 @@
     <!-- features end -->
 
     <!-- clients start -->
+{{--
     <section class="section pt-8 pb-6 bg-gradient3 position-relative">
         <div class="divider top d-none d-sm-block"></div>
         <div class="container">
@@ -355,9 +356,11 @@
             </div>
         </div>
     </section>
+--}}
     <!-- client ends -->
 
     <!-- testimonials start -->
+{{--
     <section class="section pt-5 pb-7 py-sm-9 position-relative features-4">
         <div class="container">
             <div class="row testimonials-2" data-aos="fade-up" data-aos-duration="200">
@@ -466,6 +469,7 @@
             </div>
         </div>
     </section>
+--}}
     <!-- testimonials end -->
 
     <!-- pricing start -->
@@ -481,117 +485,81 @@
                 </div>
             </div>
 
-            <div class="row align-items-center mt-0 mt-sm-5">
-                <div class="col-lg-4 col-xl-4">
-                    <div class="card border hoverable" data-aos="fade-up" data-aos-duration="500">
-                        <div class="card-body text-center">
-                            <h4 class="my-0 text-primary">{{ __('saas.plan_starter') }}</h4>
-                            <h1 class="mb-0">
-                                <span class="fw-normal text-muted fs-13 align-top">$</span>
-                                <span class="fw-bolder display-4">49</span>
-                                <span class="fw-normal text-muted fs-13 align-middle"> {{ __('saas.per_month') }}</span>
-                            </h1>
+            @php
+                $pricingHighlights = [
+                    ['icon' => 'layers', 'class' => 'bg-soft-primary text-primary', 'text' => __('saas.plans_highlight_base')],
+                    ['icon' => 'percent', 'class' => 'bg-success text-white', 'text' => __('saas.plans_highlight_no_commissions'), 'featured' => true],
+                    ['icon' => 'trending-up', 'class' => 'bg-soft-info text-info', 'text' => __('saas.plans_highlight_no_limits')],
+                    ['icon' => 'grid', 'class' => 'bg-soft-warning text-warning', 'text' => __('saas.plans_highlight_modules')],
+                    ['icon' => 'users', 'class' => 'bg-soft-danger text-danger', 'text' => __('saas.plans_highlight_per_user')],
+                ];
+            @endphp
 
-                            <ul class="list-unstyled border-top py-4 mt-4 text-start">
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_600_min') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_personal_only') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_10_attendees') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_email_support') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    &nbsp;
-                                </li>
-                            </ul>
-                            <a href="#" class="btn btn-soft-primary d-block">{{ __('saas.sign_up_now') }}</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="row justify-content-center mt-0 mt-sm-5">
+                <div class="col-lg-10 col-xl-9">
+                    <div class="card border shadow-sm hoverable" data-aos="fade-up" data-aos-duration="600">
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-9">
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach ($pricingHighlights as $highlight)
+                                            <li @class([
+                                                'd-flex align-items-start gap-3 py-3',
+                                                'border-bottom' => ! $loop->last && empty($highlight['featured']),
+                                                'saas-pricing-highlight-featured rounded-3 px-3 px-md-4 my-2' => ! empty($highlight['featured']),
+                                            ])>
+                                                <span @class([
+                                                    'saas-pricing-highlight-icon flex-shrink-0',
+                                                    $highlight['class'],
+                                                    'saas-pricing-highlight-icon-featured' => ! empty($highlight['featured']),
+                                                ])>
+                                                    <i data-feather="{{ $highlight['icon'] }}" class="icon icon-sm"></i>
+                                                </span>
+                                                <div class="pt-1">
+                                                    @if (! empty($highlight['featured']))
+                                                        <span class="badge rounded-pill badge-soft-success px-2 py-1 mb-2">{{ __('saas.plans_highlight_no_commissions_badge') }}</span>
+                                                    @endif
+                                                    <p @class(['mb-0', 'fw-semibold fs-17 text-dark' => ! empty($highlight['featured'])])>{{ $highlight['text'] }}</p>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
 
-                <div class="col-lg-4 col-xl-4">
-                    <div class="card border hoverable" data-aos="fade-up" data-aos-duration="700">
-                        <div class="card-body text-center">
-                            <h4 class="my-0 text-primary">{{ __('saas.plan_professional') }}</h4>
-                            <h1 class="mb-0">
-                                <span class="fw-normal text-muted fs-13 align-top">$</span>
-                                <span class="fw-bolder display-4">99</span>
-                                <span class="fw-normal text-muted fs-13 align-middle"> {{ __('saas.per_month') }}</span>
-                            </h1>
-
-                            <ul class="list-unstyled border-top py-4 mt-4 text-start">
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_6000_min') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_personal_commercial') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_100_attendees') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_5_teams') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_email_support') }}</span>
-                                </li>
-                            </ul>
-                            <a href="#" class="btn btn-primary d-block">{{ __('saas.sign_up_now') }}</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-xl-4">
-                    <div class="card border hoverable" data-aos="fade-up" data-aos-duration="900">
-                        <div class="card-body text-center">
-                            <h4 class="my-0 text-primary">{{ __('saas.plan_enterprise') }}</h4>
-                            <h1 class="mb-0">
-                                <span class="fw-normal text-muted fs-13 align-top">$</span>
-                                <span class="fw-bolder display-4">599</span>
-                                <span class="fw-normal text-muted fs-13 align-middle"> {{ __('saas.per_month') }}</span>
-                            </h1>
-
-                            <ul class="list-unstyled border-top py-4 mt-4 text-start">
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_unlimited') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_personal_commercial') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_unlimited_attendees') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_24x7_support') }}</span>
-                                </li>
-                                <li class="py-2 d-flex flex-row align-items-center">
-                                    <i class="align-middle icon-dual-success me-2 icon-xs" data-feather="check"></i>
-                                    <span>{{ __('saas.plan_email_support') }}</span>
-                                </li>
-                            </ul>
-                            <a href="#" class="btn btn-soft-primary d-block">{{ __('saas.sign_up_now') }}</a>
+                            <div class="text-center border-top pt-4 mt-2">
+                                <a href="{{ route('pages.pricing') }}" class="btn btn-primary">
+                                    {{ __('saas.view_pricing_cta') }}
+                                    <i class="icon-xs ms-2" data-feather="arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style>
+                .saas-pricing-highlight-icon {
+                    width: 2.75rem;
+                    height: 2.75rem;
+                    border-radius: 0.875rem;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .saas-pricing-highlight-featured {
+                    background: rgba(var(--bs-success-rgb), 0.08);
+                    border: 1px solid rgba(var(--bs-success-rgb), 0.2);
+                    box-shadow: 0 8px 24px rgba(var(--bs-success-rgb), 0.12);
+                }
+
+                .saas-pricing-highlight-icon-featured {
+                    width: 3.25rem;
+                    height: 3.25rem;
+                    border-radius: 1rem;
+                }
+            </style>
         </div>
         <div class="divider bottom d-none d-sm-block"></div>
     </section>
@@ -612,76 +580,11 @@
 
             <div class="row justify-content-center mt-5">
                 <div class="col-md-10 col-lg-8">
-                    <div id="faqContent">
-                        <div class="accordion custom-accordionwitharrow" id="accordionExample">
-                            <div class="card mb-2 border rounded-sm">
-                                <a href="" class="text-dark" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-                                   aria-expanded="true" aria-controls="collapseOne">
-                                    <div class="card-header" id="headingOne">
-                                        <h5 class="my-1 fw-medium">{{ __('saas.faq1_q') }}
-                                            <i class="icon-xs accordion-arrow" data-feather="chevron-down"></i>
-                                        </h5>
-                                    </div>
-                                </a>
-                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
-                                     data-bs-parent="#accordionExample">
-                                    <div class="card-body text-muted pt-1">
-                                        {{ __('saas.faq1_a') }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card mb-2 border rounded-sm">
-                                <a href="" class="text-dark collapsed" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                    <div class="card-header" id="headingTwo">
-                                        <h5 class="my-1 fw-medium">{{ __('saas.faq2_q') }}
-                                            <i class="icon-xs accordion-arrow" data-feather="chevron-down"></i>
-                                        </h5>
-                                    </div>
-                                </a>
-                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-                                     data-bs-parent="#accordionExample">
-                                    <div class="card-body text-muted pt-1">
-                                        {{ __('saas.faq2_a') }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-2 border rounded-sm">
-                                <a href="" class="text-dark collapsed" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                    <div class="card-header" id="headingThree">
-                                        <h5 class="my-1 fw-medium">{{ __('saas.faq3_q') }}
-                                            <i class="icon-xs accordion-arrow" data-feather="chevron-down"></i>
-                                        </h5>
-                                    </div>
-                                </a>
-                                <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
-                                     data-bs-parent="#accordionExample">
-                                    <div class="card-body text-muted pt-1">
-                                        {{ __('saas.faq3_a') }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card mb-2 border rounded-sm">
-                                <a href="" class="text-dark collapsed" data-bs-toggle="collapse"
-                                   data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                    <div class="card-header" id="headingFour">
-                                        <h5 class="my-1 fw-medium">{{ __('saas.faq4_q') }}
-                                            <i class="icon-xs accordion-arrow" data-feather="chevron-down"></i>
-                                        </h5>
-                                    </div>
-                                </a>
-                                <div id="collapseFour" class="collapse" aria-labelledby="headingFour"
-                                     data-bs-parent="#accordionExample">
-                                    <div class="card-body text-muted pt-1">
-                                        {{ __('saas.faq4_a') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    @if (count($faqItems) > 0)
+                        <x-faq-accordion :items="$faqItems" accordion-id="homeFaq" />
+                    @else
+                        <p class="text-muted text-center mb-0">{{ __('faq.empty') }}</p>
+                    @endif
                 </div>
             </div>
             <div class="row justify-content-center mt-5">
@@ -689,7 +592,8 @@
                     <div class="rounded d-inline-block py-2 px-3 alert bg-light">
                         <div class="align-items-center">
                             <div class="text-dark">
-                                {{ __('saas.still_have_questions') }} <a href="">{{ __('saas.contact_us') }}</a>
+                                {{ __('saas.still_have_questions') }}
+                                <a href="{{ route('pages.faq') }}">{{ __('saas.view_more_faqs') }}</a>
                             </div>
                         </div>
                     </div>

@@ -5,8 +5,8 @@ return [
 
     // Hero
     'hero_title' => 'Un modelo simple que crece con tu equipo',
-    'hero_lead' => 'Elegí tu tipo de cuenta, indicá cuántos usuarios vas a contratar y armá tu plan con el servicio base y los módulos que necesites.',
-    'hero_trial_invite' => 'Probá todo gratis durante 30 días, con un solo usuario incluido.',
+    'hero_lead' => 'Elige tu tipo de cuenta, indica cuántos usuarios vas a contratar y arma tu plan con el servicio base y los módulos que necesites.',
+    'hero_trial_invite' => 'Prueba todo gratis durante 30 días, con un solo usuario incluido.',
     'hero_promo_trial_badge' => 'Gratis',
     'hero_promo_trial_title' => '30 días para probarlo todo',
     'hero_promo_trial_text' => '1 usuario incluido. Plataforma completa, sin tarjeta para empezar.',
@@ -21,7 +21,7 @@ return [
     'users_label' => 'Cantidad de usuarios',
     'users_context' => 'Precios calculados para :count usuarios',
 
-    'step_currency' => '¿En qué moneda querés ver los precios?',
+    'step_currency' => '¿En qué moneda quieres ver los precios?',
     'step_currency_help' => 'Los precios del catálogo están en USD. Mostramos el equivalente con el tipo de cambio vigente del sistema.',
     'prices_usd_note' => 'Precios de referencia en USD.',
     'exchange_rate_note' => 'Tipo de cambio: 1 USD = :rate :code (al :date).',
@@ -31,7 +31,7 @@ return [
     'core_required' => 'Obligatorio',
 
     'addons_heading' => 'Módulos adicionales',
-    'addons_intro' => 'Marcá los módulos que quieras sumar. Cada uno se agrega al total estimado.',
+    'addons_intro' => 'Marca los módulos que quieras sumar. Cada uno se agrega al total estimado.',
     'select_module' => 'Incluir en el plan',
 
     'estimate_heading' => 'Tu estimación mensual',
@@ -155,7 +155,7 @@ return [
     'faq4_a' => '[Respuesta a la pregunta 4. Completar.]',
 
     // CTA section
-    'cta_heading' => '¿Tenés más preguntas?',
+    'cta_heading' => '¿Tienes más preguntas?',
     'cta_subtitle' => '[Subtítulo de la sección de contacto]',
 
     'cta_contact_title' => 'Contactanos',
@@ -165,25 +165,4 @@ return [
     'cta_kb_title' => '[Título del bloque Base de conocimiento / Ayuda]',
     'cta_kb_desc' => '[Descripción del bloque. Completar.]',
     'cta_kb_button' => 'Explorar',
-
-    // Footer (pricing page)
-    'footer_tagline' => '[Frase o descripción breve de la empresa para el pie de página]',
-    'footer_platform' => 'Plataforma',
-    'footer_kb' => 'Ayuda',
-    'footer_company' => 'Empresa',
-    'footer_legal' => 'Legal',
-    'footer_demo' => 'Demo',
-    'footer_pricing' => 'Precios',
-    'footer_integrations' => 'Integraciones',
-    'footer_status' => 'Estado',
-    'footer_blog' => 'Blog',
-    'footer_help_center' => 'Centro de ayuda',
-    'footer_about' => 'Nosotros',
-    'footer_careers' => 'Carreras',
-    'footer_contact' => 'Contacto',
-    'footer_usage_policy' => 'Política de uso',
-    'footer_privacy' => 'Política de privacidad',
-    'footer_terms' => 'Términos de servicio',
-    'footer_trust' => 'Confianza',
-    'footer_copyright' => '© SimpleTravel. Todos los derechos reservados.',
 ];

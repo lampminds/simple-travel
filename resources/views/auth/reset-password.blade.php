@@ -13,7 +13,7 @@
                                 </div>
 
                                 <h6 class="h5 mb-0 mt-3">Nueva contraseña</h6>
-                                <p class="text-muted mt-1 mb-4">Ingresá tu email y la nueva contraseña.</p>
+                                <p class="text-muted mt-1 mb-4">Ingresa tu email y la nueva contraseña.</p>
 
                                 <form method="POST" action="{{ route('password.update') }}" class="authentication-form">
                                     @csrf

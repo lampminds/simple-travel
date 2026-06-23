@@ -34,6 +34,6 @@
         </div>
     </section>
 
-    <x-site-footer-simple />
+    <x-site-footer />
 
 @endsection

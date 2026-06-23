@@ -57,6 +57,7 @@
                                                 <th>{{ __('account.service_offers.operator_index_col_service') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_status') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.operator_index_col_price') }}</th>
+                                                <th>{{ __('account.service_offers.operator_index_col_allocation') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_offered') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.operator_index_col_packages') }}</th>
                                                 <th class="text-end text-nowrap">{{ __('wizard.provider_services_col_actions') }}</th>
@@ -87,6 +88,11 @@
                                                         @if (($opPrice['usd_hint'] ?? '') !== '')
                                                             <div class="small text-muted fw-normal mt-1">{{ $opPrice['usd_hint'] }}</div>
                                                         @endif
+                                                    </td>
+                                                    <td>
+                                                        @include('account.service-offers.operator._allocation-cell', [
+                                                            'allocationSummary' => $offer->operator_allocation ?? ['current' => null, 'total_count' => 0],
+                                                        ])
                                                     </td>
                                                     <td>{{ $offer->offered_at ? locale_datetime($offer->offered_at) : '—' }}</td>
                                                     <td class="text-end">{{ number_format((int) ($offer->packages_count ?? 0)) }}</td>

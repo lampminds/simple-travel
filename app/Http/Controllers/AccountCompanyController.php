@@ -158,8 +158,8 @@ final class AccountCompanyController extends Controller
                 'tax_ids.*.delete' => ['nullable', 'boolean'],
             ],
             [
-                'tax_ids.*.document_id.required_with' => 'Seleccioná un tipo fiscal.',
-                'tax_ids.*.value.required_with' => 'Ingresá el valor fiscal.',
+                'tax_ids.*.document_id.required_with' => 'Selecciona un tipo fiscal.',
+                'tax_ids.*.value.required_with' => 'Ingresa el valor fiscal.',
             ]
         );
 
@@ -251,7 +251,7 @@ final class AccountCompanyController extends Controller
             }
 
             throw ValidationException::withMessages([
-                "tax_ids.$idx.document_id" => 'No podés repetir el mismo tipo fiscal.',
+                "tax_ids.$idx.document_id" => 'No puedes repetir el mismo tipo fiscal.',
             ]);
         }
     }

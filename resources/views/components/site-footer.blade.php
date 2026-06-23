@@ -1,5 +1,4 @@
 @props([
-    'tagline' => 'Make your web application stand out with high-quality landing page',
     'logoHeight' => 60,
 ])
 
@@ -10,49 +9,45 @@
             <div class="col-md-4">
                 <x-site-logo :height="$logoHeight" :url="route('home')" class="navbar-brand me-lg-4 mb-4 me-auto d-flex align-items-center pt-0"/>
                 <p class="text-muted w-75">
-                    {{ $tagline }}
+                    {{ __('footer.tagline') }}
                 </p>
             </div>
             <div class="col-md-auto col-sm-6">
                 <div class="ps-md-5">
-                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Platform</h6>
+                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">{{ __('footer.platform') }}</h6>
                     <ul class="list-unstyled">
-                        <li class="my-3"><a href="#" class="text-muted">Demo</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Pricing</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Integrations</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Status</a></li>
+                        <li class="my-3"><a href="{{ route('pages.demo') }}" class="text-muted">{{ __('footer.demo') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.pricing') }}" class="text-muted">{{ __('footer.pricing') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.integrations') }}" class="text-muted">{{ __('footer.integrations') }}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="col-md-auto col-sm-6">
                 <div class="ps-md-5">
-                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Knowledge Base</h6>
+                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">{{ __('footer.help') }}</h6>
                     <ul class="list-unstyled">
-                        <li class="my-3"><a href="#" class="text-muted">Blog</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Help Center</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Sales Tools catalog</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">API</a></li>
+                        <li class="my-3"><a href="{{ route('pages.help-center') }}" class="text-muted">{{ __('footer.help_center') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.api') }}" class="text-muted">{{ __('footer.api') }}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="col-md-auto col-sm-6">
                 <div class="ps-md-5">
-                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Company</h6>
+                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">{{ __('footer.company') }}</h6>
                     <ul class="list-unstyled">
-                        <li class="my-3"><a href="{{ route('pages.about') }}" class="text-muted">About Us</a></li>
-                        <li class="my-3"><a href="{{ route('pages.faq') }}" class="text-muted">{{ __('faq.nav') }}</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Contact Us</a></li>
+                        <li class="my-3"><a href="{{ route('pages.about') }}" class="text-muted">{{ __('footer.about') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.faq') }}" class="text-muted">{{ __('footer.faq') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.contact') }}" class="text-muted">{{ __('footer.contact') }}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="col-md-auto col-6">
                 <div class="ps-md-5">
-                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">Legal</h6>
+                    <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">{{ __('footer.legal') }}</h6>
                     <ul class="list-unstyled">
-                        <li class="my-3"><a href="#" class="text-muted">Usage Policy</a></li>
-                        <li class="my-3"><a href="{{ route('pages.privacy') }}" class="text-muted">Privacy Policy</a></li>
-                        <li class="my-3"><a href="{{ route('pages.terms') }}" class="text-muted">Terms of Service</a></li>
-                        <li class="my-3"><a href="#" class="text-muted">Trust</a></li>
+                        <li class="my-3"><a href="{{ route('pages.usage-policy') }}" class="text-muted">{{ __('footer.usage_policy') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.privacy') }}" class="text-muted">{{ __('footer.privacy') }}</a></li>
+                        <li class="my-3"><a href="{{ route('pages.terms') }}" class="text-muted">{{ __('footer.terms') }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -62,24 +57,10 @@
             <div class="col-md-6">
                 <p class="pb-0 mb-0 text-muted">
                     <script>document.write(new Date().getFullYear())</script>
-                    © Prompt. All rights reserved. Crafted
-                    by <a href="https://coderthemes.com/">Coderthemes</a>
+                    {{ __('footer.copyright') }}
+                    {{ __('footer.developed_by') }}
+                    <a href="https://lampminds.com/">Lampminds</a>
                 </p>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <div class="align-items-end mt-md-0 mt-4">
-                    <ul class="list-unstyled mb-0">
-                        <li class="d-inline-block me-4">
-                            <a href=""><i data-feather="facebook" class="icon icon-xs"></i></a>
-                        </li>
-                        <li class="d-inline-block me-4">
-                            <a href=""><i data-feather="twitter" class="icon icon-xs"></i></a>
-                        </li>
-                        <li class="d-inline-block">
-                            <a href=""><i data-feather="linkedin" class="icon icon-xs"></i></a>
-                        </li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>

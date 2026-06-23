@@ -14,6 +14,7 @@ use App\Http\Controllers\RoutingController;
 use App\Http\Controllers\SelectDashboardLaneController;
 use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
+use App\Http\Controllers\PublicPlaceholderPageController;
 use App\Http\Controllers\AccountCompanyController;
 use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\AccountContactsController;
@@ -255,11 +256,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'update'])->name('account.provider-price-lists.update');
     Route::delete('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'destroy'])->name('account.provider-price-lists.destroy');
 
-    Route::get('account/allocations', [AccountProviderAllocationController::class, 'operatorsIndex'])->name('account.allocations.index');
-    Route::get('account/allocations/operators/{operator}', [AccountProviderAllocationController::class, 'index'])->name('account.allocations.operators.index');
-    Route::get('account/allocations/operators/{operator}/create', [AccountProviderAllocationController::class, 'create'])->name('account.allocations.operators.create');
+    Route::get('account/allocations', [AccountProviderAllocationController::class, 'index'])->name('account.allocations.index');
+    Route::get('account/allocations/operators/{operator}', function (Account $operator) {
+        return redirect()->route('account.allocations.index', ['operator' => $operator->id]);
+    })->name('account.allocations.operators.index');
     Route::post('account/allocations/operators/{operator}', [AccountProviderAllocationController::class, 'store'])->name('account.allocations.operators.store');
-    Route::get('account/allocations/{allocation}/edit', [AccountProviderAllocationController::class, 'edit'])->name('account.allocations.edit');
     Route::put('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'update'])->name('account.allocations.update');
     Route::delete('account/allocations/{allocation}', [AccountProviderAllocationController::class, 'destroy'])->name('account.allocations.destroy');
 
@@ -430,8 +431,21 @@ Route::get('pages/digitalizar-operador-turistico', App\Http\Controllers\Digitali
 Route::view('template-demos', 'pages.template-demos')->name('template.demos');
 
 Route::view('pages/about', 'pages.about')->name('pages.about');
-Route::view('pages/privacy', 'pages.privacy')->name('pages.privacy');
-Route::view('pages/terms', 'pages.terms')->name('pages.terms');
+Route::view('pages/privacy', 'pages.legal', ['document' => 'privacy'])->name('pages.privacy');
+Route::view('pages/terms', 'pages.legal', ['document' => 'terms'])->name('pages.terms');
+Route::view('pages/usage-policy', 'pages.legal', ['document' => 'usage_policy'])->name('pages.usage-policy');
+
+foreach ([
+    'demo',
+    'integrations',
+    'help-center',
+    'api',
+    'contact',
+] as $placeholderPage) {
+    Route::get('pages/'.$placeholderPage, PublicPlaceholderPageController::class)
+        ->defaults('page', $placeholderPage)
+        ->name('pages.'.$placeholderPage);
+}
 
 // Redirect old Filament resource URL (contact_roles renamed to contact_positions)
 Route::get('smpl_adm/contact-roles', fn () => redirect('/smpl_adm/contact-positions', 301))

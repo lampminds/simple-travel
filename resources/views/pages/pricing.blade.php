@@ -399,7 +399,7 @@
                         <div class="card-body">
                             <h3 class="mt-0 fw-semibold">{{ __('pricing.cta_kb_title') }}</h3>
                             <p>{{ __('pricing.cta_kb_desc') }}</p>
-                            <a href="{{ route('second', ['pages', 'help-desk']) }}"
+                            <a href="{{ route('pages.help-center') }}"
                                class="btn btn-outline-primary mt-4">{{ __('pricing.cta_kb_button') }}</a>
                         </div>
                     </div>
@@ -409,91 +409,7 @@
     </section>
     <!-- cta end -->
 
-    <!-- footer start -->
-    <section class="mt-lg-5 pt-5 pb-4 bg-gradient3 position-relative">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <x-site-logo class="navbar-brand me-lg-4 mb-4 me-auto d-flex align-items-center pt-0" :url="'#'" />
-                    <p class="text-muted w-75">
-                        {{ __('pricing.footer_tagline') }}
-                    </p>
-                </div>
-                <div class="col-md-auto col-sm-6">
-                    <div class="ps-md-5">
-                        <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">
-                            {{ __('pricing.footer_platform') }}</h6>
-                        <ul class="list-unstyled">
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_demo') }}</a></li>
-                            <li class="my-3"><a href="{{ route('second', ['pages', 'pricing']) }}" class="text-muted">{{ __('pricing.footer_pricing') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_integrations') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_status') }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-auto col-sm-6">
-                    <div class="ps-md-5">
-                        <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">
-                            {{ __('pricing.footer_kb') }}</h6>
-                        <ul class="list-unstyled">
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_blog') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_help_center') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">API</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-auto col-sm-6">
-                    <div class="ps-md-5">
-                        <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">
-                            {{ __('pricing.footer_company') }}</h6>
-                        <ul class="list-unstyled">
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_about') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_careers') }}</a></li>
-                            <li class="my-3"><a href="{{ route('second', ['pages', 'contact']) }}" class="text-muted">{{ __('pricing.footer_contact') }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-md-auto col-6">
-                    <div class="ps-md-5">
-                        <h6 class="mb-4 mt-5 mt-sm-2 fs-14 fw-semibold text-uppercase">
-                            {{ __('pricing.footer_legal') }}
-                        </h6>
-                        <ul class="list-unstyled">
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_usage_policy') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_privacy') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_terms') }}</a></li>
-                            <li class="my-3"><a href="#" class="text-muted">{{ __('pricing.footer_trust') }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <hr/>
-            <div class="row text-md-start text-center">
-                <div class="col-md-6">
-                    <p class="pb-0 mb-0 text-muted">
-                        <script>document.write(new Date().getFullYear())</script>
-                        {{ __('pricing.footer_copyright') }}
-                    </p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <div class="align-items-end mt-md-0 mt-4">
-                        <ul class="list-unstyled mb-0">
-                            <li class="d-inline-block me-4">
-                                <a href=""><i data-feather="facebook" class="icon icon-xs"></i></a>
-                            </li>
-                            <li class="d-inline-block me-4">
-                                <a href=""><i data-feather="twitter" class="icon icon-xs"></i></a>
-                            </li>
-                            <li class="d-inline-block">
-                                <a href=""><i data-feather="linkedin" class="icon icon-xs"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- footer end -->
+    <x-site-footer class="mt-lg-5" />
 @endsection
 
 @section('script')

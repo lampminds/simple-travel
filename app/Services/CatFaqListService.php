@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\CatFaq;
+use App\Support\AccountDashboardLane;
+use App\Support\CurrentAccountSession;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 /**
@@ -36,6 +40,42 @@ final class CatFaqListService
         }
 
         return $items;
+    }
+
+    /**
+     * @return list<array{id: int, question: string, answer: string}>
+     */
+    public function displayItemsFromRequest(Request $request, ?int $limit = null): array
+    {
+        $items = $this->displayItems($this->resolveAccountTypeId($request));
+
+        if ($limit === null) {
+            return $items;
+        }
+
+        return array_slice($items, 0, max(0, $limit));
+    }
+
+    private function resolveAccountTypeId(Request $request): ?int
+    {
+        $user = $request->user();
+        if ($user === null) {
+            return null;
+        }
+
+        $account = $user->currentAccount();
+        if (! $account instanceof Account) {
+            return null;
+        }
+
+        $accountTypeId = AccountDashboardLane::resolvedLaneTypeId($request, $account);
+        if ($accountTypeId !== null) {
+            return $accountTypeId;
+        }
+
+        $typeIds = CurrentAccountSession::typeIds($request);
+
+        return $typeIds[0] ?? null;
     }
 
     /**

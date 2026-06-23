@@ -38,7 +38,7 @@
 
             @if ($errors->any())
                 <div class="alert alert-danger" role="alert">
-                    Revisá los parámetros. Hay errores en una o más secciones.
+                    Revisa los parámetros. Hay errores en una o más secciones.
                 </div>
             @endif
 

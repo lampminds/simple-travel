@@ -66,7 +66,7 @@ class CatHelperTranslationsTableSeeder extends Seeder
                 'id' => 7,
                 'helper_id' => 4,
                 'language_id' => 2,
-            'text' => '<p>Moneda del precio base de arriba y de las líneas de lista en porcentaje.</p><ul><li><p>Cuando el operador tiene una lista asignada, prevalece la <strong>moneda de la lista</strong> en el precio que ve al ofrecer el servicio (aunque aquí figure otro código).</p></li><li><p>Elegí la moneda que coincida con tu precio base habitual o con tu lista, para que los importes sean coherentes.</p></li></ul>',
+            'text' => '<p>Moneda del precio base de arriba y de las líneas de lista en porcentaje.</p><ul><li><p>Cuando el operador tiene una lista asignada, prevalece la <strong>moneda de la lista</strong> en el precio que ve al ofrecer el servicio (aunque aquí figure otro código).</p></li><li><p>Elige la moneda que coincida con tu precio base habitual o con tu lista, para que los importes sean coherentes.</p></li></ul>',
             ),
             7 => 
             array (
@@ -87,7 +87,7 @@ class CatHelperTranslationsTableSeeder extends Seeder
                 'id' => 10,
                 'helper_id' => 6,
                 'language_id' => 2,
-            'text' => '<p>Si puede estimar el tiempo (en horas) que necesita para procesar una confirmación de reserva, indíquelo acá. De esta forma, Simple-travel podrá mostrar sus tareas pendientes por orden de prioridad.</p>',
+            'text' => '<p>Si puede estimar el tiempo (en horas) que necesita para procesar una confirmación de reserva, indíquelo aquí. De esta forma, Simple-travel podrá mostrar sus tareas pendientes por orden de prioridad.</p>',
             ),
             10 => 
             array (
