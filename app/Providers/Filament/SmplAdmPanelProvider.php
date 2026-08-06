@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Http\Controllers\Filament\SetPanelLocaleController;
 use App\Http\Middleware\SetLocaleFromSession;
 use App\Models\Language;
+use Filament\Navigation\NavigationItem;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -42,6 +43,13 @@ class SmplAdmPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->navigationItems([
+                NavigationItem::make('back-to-site')
+                    ->label(fn (): string => __('filament.panel.back_to_site'))
+                    ->url(fn (): string => route('home'))
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->sort(999),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

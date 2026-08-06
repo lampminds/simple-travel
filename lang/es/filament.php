@@ -25,6 +25,7 @@ return [
     'panel' => [
         'cluster_subnav_hide' => 'Ocultar menú del módulo',
         'cluster_subnav_show' => 'Mostrar menú del módulo',
+        'back_to_site' => 'Volver al sitio',
     ],
 
     'common' => [

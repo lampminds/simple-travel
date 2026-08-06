@@ -208,7 +208,7 @@
                         <form
                             id="revoke-offer-{{ $variant->offer_id }}"
                             method="POST"
-                            action="{{ route('account.service-offers.operators.revoke', ['operator' => $operator, 'offer' => $variant->offer_id]) }}"
+                            action="{{ route('account.service-offers.operators.revoke', ['operator' => $operator, 'offer' => $variant->offer_uuid]) }}"
                             class="d-none"
                         >
                             @csrf

@@ -105,6 +105,7 @@ final class AccountProviderServiceOfferController extends Controller
                 $offer = $variantOffers->get((int) $variant->id);
                 $variant->setAttribute('offer_status', $offer?->status ?? 'none');
                 $variant->setAttribute('offer_id', $offer?->id);
+                $variant->setAttribute('offer_uuid', $offer?->uuid);
                 $operatorPrice = $priceResolver->resolve($variant, (int) $account->id, (int) $operator->id);
                 $variant->setAttribute('operator_price', $operatorPrice);
                 $variant->setAttribute('operator_price_is_zero', $priceResolver->resolvedAmountIsZero($operatorPrice));

@@ -23,6 +23,7 @@ return [
     'panel' => [
         'cluster_subnav_hide' => 'Ocultar menu do módulo',
         'cluster_subnav_show' => 'Mostrar menu do módulo',
+        'back_to_site' => 'Voltar ao site',
     ],
 
     'common' => [

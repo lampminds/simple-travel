@@ -6,9 +6,9 @@ use App\Models\User;
 use App\Services\WebsiteImpersonationTokenService;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\View;
 use Filament\Support\Enums\TextSize;
 
 final class OpenWebsiteImpersonationAction
@@ -51,12 +51,9 @@ final class OpenWebsiteImpersonationAction
                     ->color('gray')
                     ->size(TextSize::Small)
                     ->visible(fn (Get $get): bool => blank($get('error'))),
-                TextInput::make('url')
-                    ->hiddenLabel()
-                    ->readOnly()
-                    ->copyable()
-                    ->extraInputAttributes([
-                        'aria-label' => __('filament.resources.user_actions.impersonation_link_aria'),
+                View::make('filament.actions.impersonation-link-field')
+                    ->viewData(fn (Get $get): array => [
+                        'url' => (string) $get('url'),
                     ])
                     ->visible(fn (Get $get): bool => blank($get('error'))),
                 Text::make(__('filament.resources.user_actions.impersonation_copy_hint'))
