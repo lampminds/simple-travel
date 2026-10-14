@@ -45,9 +45,9 @@ final class WebsiteImpersonationController extends Controller
                 ->with('error', __('impersonation.target_no_account'));
         }
 
+        WebsiteImpersonationSession::markActive($request);
         Auth::login($user);
         $request->session()->regenerate();
-        $request->session()->put(WebsiteImpersonationSession::KEY_ACTIVE_VIA_SUPPORT_TOKEN, true);
         CurrentAccountSession::put($request, $user, $contextAccountId);
 
         return redirect()->route('account.dashboard');
