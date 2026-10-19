@@ -54,6 +54,7 @@ final class AccountPanelStats
             [
                 'operator_package_count' => OperatorServiceCatalog::query()
                     ->where('operator_id', $account->id)
+                    ->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE)
                     ->count(),
                 'service_offers_pending_count' => ServiceOffer::query()
                     ->where('operator_id', $account->id)

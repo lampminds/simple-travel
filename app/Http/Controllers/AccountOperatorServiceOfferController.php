@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Allocation;
 use App\Models\OperatorPackageItem;
+use App\Models\OperatorServiceCatalog;
 use App\Models\ServiceOffer;
+use App\Services\OperatorDirectServiceCatalogService;
 use App\Services\OperatorPreviewLocalePriceService;
 use App\Services\OperatorVariantPriceResolver;
 use App\Services\ServiceOfferPreviewPdfGenerator;
@@ -45,9 +47,9 @@ final class AccountOperatorServiceOfferController extends Controller
             ->get();
 
         $operatorId = (int) $account->id;
-        $packageCountsByOfferId = $this->packageCountsByOfferIds(
-            $offers->pluck('id')->map(fn ($id): int => (int) $id)->all(),
-        );
+        $offerIds = $offers->pluck('id')->map(fn ($id): int => (int) $id)->all();
+        $packageCountsByOfferId = $this->packageCountsByOfferIds($offerIds);
+        $directServiceStatusByOfferId = $this->directServiceStatusByOfferIds($offerIds);
         $allocationSummariesByOfferId = $this->allocationSummariesForOffers($offers, $operatorId);
 
         foreach ($offers as $offer) {
@@ -57,6 +59,10 @@ final class AccountOperatorServiceOfferController extends Controller
             $offer->setAttribute('operator_price', $operatorPrice);
             $offer->setAttribute('operator_service_label', $this->serviceLabelForOffer($offer));
             $offer->setAttribute('packages_count', $packageCountsByOfferId[(int) $offer->id] ?? 0);
+            $offer->setAttribute(
+                'direct_service_status',
+                $directServiceStatusByOfferId[(int) $offer->id] ?? 'none',
+            );
             $offer->setAttribute(
                 'operator_allocation',
                 $allocationSummariesByOfferId[(int) $offer->id] ?? ['current' => null, 'total_count' => 0],
@@ -140,8 +146,11 @@ final class AccountOperatorServiceOfferController extends Controller
     /**
      * Operator-only: change catalog availability for an already accepted offer.
      */
-    public function updateLinkedAvailability(Request $request, ServiceOffer $offer): RedirectResponse
-    {
+    public function updateLinkedAvailability(
+        Request $request,
+        ServiceOffer $offer,
+        OperatorDirectServiceCatalogService $directServices,
+    ): RedirectResponse {
         $account = $this->resolveOperatorAccount($request);
         $this->assertAcceptedOfferForOperator($offer, $account->id);
 
@@ -159,9 +168,42 @@ final class AccountOperatorServiceOfferController extends Controller
 
         $offer->update(['availability' => $validated['availability']]);
 
+        $pausedDirectService = $validated['availability'] !== ServiceOffer::AVAILABILITY_ACTIVE
+            && $directServices->disable($offer);
+
+        $status = __('catalog.operator_linked_availability_updated');
+        if ($pausedDirectService) {
+            $status .= ' '.__('account.service_offers.direct_service_paused_with_offer');
+        }
+
         return redirect()
             ->route('catalog')
-            ->with('status', __('catalog.operator_linked_availability_updated'));
+            ->with('status', $status);
+    }
+
+    public function toggleDirectService(
+        Request $request,
+        ServiceOffer $offer,
+        OperatorDirectServiceCatalogService $directServices,
+    ): RedirectResponse {
+        $account = $this->resolveOperatorAccount($request);
+        $this->assertAcceptedOfferForOperator($offer, (int) $account->id);
+
+        $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        if ($request->boolean('enabled')) {
+            $directServices->enable($offer);
+            $message = __('account.service_offers.direct_service_enabled');
+        } else {
+            $directServices->disable($offer);
+            $message = __('account.service_offers.direct_service_disabled');
+        }
+
+        return redirect()
+            ->route('account.service-offers.index', $this->operatorIndexRouteParams($request))
+            ->with('status', $message);
     }
 
     private function assertOfferForOperator(ServiceOffer $offer, int $operatorAccountId): void
@@ -243,11 +285,37 @@ final class AccountOperatorServiceOfferController extends Controller
 
         return OperatorPackageItem::query()
             ->whereIn('service_offer_id', $offerIds)
+            ->whereHas('catalog', fn ($query) => $query->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE))
             ->selectRaw('service_offer_id, COUNT(DISTINCT operator_service_catalog_id) as packages_count')
             ->groupBy('service_offer_id')
             ->pluck('packages_count', 'service_offer_id')
             ->map(fn ($count): int => (int) $count)
             ->all();
+    }
+
+    /**
+     * @param  list<int>  $offerIds
+     * @return array<int, string> offer id => none|active|paused
+     */
+    private function directServiceStatusByOfferIds(array $offerIds): array
+    {
+        if ($offerIds === []) {
+            return [];
+        }
+
+        $statuses = [];
+        $catalogs = OperatorServiceCatalog::query()
+            ->where('catalog_kind', OperatorServiceCatalog::KIND_SERVICE)
+            ->whereIn('source_service_offer_id', $offerIds)
+            ->get(['source_service_offer_id', 'status']);
+
+        foreach ($catalogs as $catalog) {
+            $statuses[(int) $catalog->source_service_offer_id] = $catalog->status === 'active'
+                ? 'active'
+                : 'paused';
+        }
+
+        return $statuses;
     }
 
     /**

@@ -121,7 +121,7 @@ final class PackageAllocationValidationService
 
     private function catalogLabel(OperatorServiceCatalog $catalog): string
     {
-        return $catalog->displayLabel();
+        return $catalog->displayLabelWithKind();
     }
 
     private function dateRangesOverlap(?string $startA, ?string $endA, ?string $startB, ?string $endB): bool

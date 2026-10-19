@@ -172,6 +172,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.service-offers.reject');
     Route::post('account/service-offers/{offer}/availability', [AccountOperatorServiceOfferController::class, 'updateLinkedAvailability'])
         ->name('account.service-offers.linked-availability');
+    Route::post('account/service-offers/{offer}/direct-service', [AccountOperatorServiceOfferController::class, 'toggleDirectService'])
+        ->name('account.service-offers.direct-service');
 
     Route::get('account/provider/service-offers', function (Request $request) {
         return redirect()->route('account.service-offers.index', array_merge($request->query(), ['as' => 'provider']));

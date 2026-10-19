@@ -26,6 +26,7 @@ final class AccountOperatorPackageServicesController extends Controller
 
         $packagesQuery = OperatorServiceCatalog::query()
             ->where('operator_id', $operatorId)
+            ->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE)
             ->with(['translations.language.locale'])
             ->orderByDesc('id');
 

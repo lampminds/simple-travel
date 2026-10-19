@@ -53,7 +53,10 @@
                                                     }
                                                 @endphp
                                                 <tr>
-                                                    <td class="fw-medium">{{ $catalog->displayLabel() }}</td>
+                                                    <td class="fw-medium">
+                                                        {{ $catalog->displayLabel() }}
+                                                        @include('account.partials.catalog-kind-badge', ['catalog' => $catalog])
+                                                    </td>
                                                     <td>{{ $inventoryLabel }}</td>
                                                     <td>{{ number_format((int) $catalog->availability_rules_count) }}</td>
                                                     <td>{{ number_format((int) $catalog->availability_overrides_count) }}</td>

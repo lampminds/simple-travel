@@ -12,10 +12,16 @@ class OperatorServiceCatalog extends Model
 {
     use AuditTrait, HasUuid;
 
+    public const KIND_PACKAGE = 'package';
+
+    public const KIND_SERVICE = 'service';
+
     protected $table = 'operator_service_catalog';
 
     protected $fillable = [
         'operator_id',
+        'catalog_kind',
+        'source_service_offer_id',
         'status',
         'is_featured',
         'is_public',
@@ -32,6 +38,28 @@ class OperatorServiceCatalog extends Model
     public function operator(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'operator_id');
+    }
+
+    public function sourceServiceOffer(): BelongsTo
+    {
+        return $this->belongsTo(ServiceOffer::class, 'source_service_offer_id');
+    }
+
+    public function isDirectService(): bool
+    {
+        return $this->catalog_kind === self::KIND_SERVICE;
+    }
+
+    /**
+     * Label for selects that mix real packages and one-line services.
+     */
+    public function displayLabelWithKind(?int $languageId = null): string
+    {
+        $kind = $this->isDirectService()
+            ? __('account.catalog_kind.service')
+            : __('account.catalog_kind.package');
+
+        return $kind.' · '.$this->displayLabel($languageId);
     }
 
     public function translations(): HasMany

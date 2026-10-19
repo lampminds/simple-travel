@@ -60,6 +60,7 @@
                                                 <th>{{ __('account.service_offers.operator_index_col_allocation') }}</th>
                                                 <th>{{ __('account.service_offers.operator_index_col_offered') }}</th>
                                                 <th class="text-end">{{ __('account.service_offers.operator_index_col_packages') }}</th>
+                                                <th>{{ __('account.service_offers.operator_index_col_direct') }}</th>
                                                 <th class="text-end text-nowrap">{{ __('wizard.provider_services_col_actions') }}</th>
                                             </tr>
                                         </thead>
@@ -96,6 +97,52 @@
                                                     </td>
                                                     <td>{{ $offer->offered_at ? locale_datetime($offer->offered_at) : '—' }}</td>
                                                     <td class="text-end">{{ number_format((int) ($offer->packages_count ?? 0)) }}</td>
+                                                    <td>
+                                                        @if ($offer->status === \App\Models\ServiceOffer::STATUS_ACCEPTED)
+                                                            @php
+                                                                $directStatus = $offer->direct_service_status ?? 'none';
+                                                            @endphp
+                                                            @if ($directStatus === 'active')
+                                                                <div class="small mb-1">
+                                                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                                                        {{ __('account.service_offers.direct_service_active') }}
+                                                                    </span>
+                                                                </div>
+                                                                <form
+                                                                    method="POST"
+                                                                    action="{{ route('account.service-offers.direct-service', $offer) }}"
+                                                                    onsubmit="return confirm(@js(__('account.service_offers.direct_service_disable_confirm')))"
+                                                                >
+                                                                    @csrf
+                                                                    <input type="hidden" name="enabled" value="0">
+                                                                    <input type="hidden" name="status" value="{{ $statusFilter }}">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                                        {{ __('account.service_offers.direct_service_disable') }}
+                                                                    </button>
+                                                                </form>
+                                                            @else
+                                                                @if ($directStatus === 'paused')
+                                                                    <div class="small mb-1">
+                                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                                                            {{ __('account.service_offers.direct_service_paused') }}
+                                                                        </span>
+                                                                    </div>
+                                                                @endif
+                                                                <form method="POST" action="{{ route('account.service-offers.direct-service', $offer) }}">
+                                                                    @csrf
+                                                                    <input type="hidden" name="enabled" value="1">
+                                                                    <input type="hidden" name="status" value="{{ $statusFilter }}">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                                        {{ $directStatus === 'paused'
+                                                                            ? __('account.service_offers.direct_service_resume')
+                                                                            : __('account.service_offers.direct_service_enable') }}
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
                                                     <td class="text-end text-nowrap">
                                                         <button
                                                             type="button"

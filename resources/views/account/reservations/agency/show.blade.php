@@ -28,7 +28,10 @@
                                     {{ $booking->operatorAccount?->commercial_name ?? $booking->operatorAccount?->name ?? ('#' . $booking->operator_id) }}
                                 </dd>
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_package') }}</dt>
-                                <dd class="col-sm-8">{{ $packageLabel }}</dd>
+                                <dd class="col-sm-8">
+                                    {{ $packageLabel }}
+                                    @include('account.partials.catalog-kind-badge', ['catalog' => $booking->packageOffer?->catalog])
+                                </dd>
                                 <dt class="col-sm-4">{{ __('account.reservations.col_travel_dates') }}</dt>
                                 <dd class="col-sm-8">
                                     {{ locale_date($booking->travel_start_date) }}

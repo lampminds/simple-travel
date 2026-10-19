@@ -51,7 +51,10 @@
                                                 @endphp
                                                 <tr>
                                                     <td class="fw-medium">{{ $operatorLabel }}</td>
-                                                    <td>{{ $offer->package_label ?? '—' }}</td>
+                                                    <td>
+                                                        {{ $offer->package_label ?? '—' }}
+                                                        @include('account.partials.catalog-kind-badge', ['catalog' => $offer->catalog])
+                                                    </td>
                                                     <td class="text-end @if ($agencyPrice['has_amount'] ?? false) fw-medium @else text-muted @endif">
                                                         {{ $agencyPrice['formatted'] ?? '—' }}
                                                     </td>
@@ -113,7 +116,10 @@
                                                 <tr>
                                                     <td class="fw-medium">{{ $booking->booking_code }}</td>
                                                     <td>{{ $operatorLabel }}</td>
-                                                    <td>{{ $packageLabel !== '' ? $packageLabel : '—' }}</td>
+                                                    <td>
+                                                        {{ $packageLabel !== '' ? $packageLabel : '—' }}
+                                                        @include('account.partials.catalog-kind-badge', ['catalog' => $booking->packageOffer?->catalog])
+                                                    </td>
                                                     <td class="text-muted small">
                                                         {{ locale_date($booking->travel_start_date) }}
                                                         —

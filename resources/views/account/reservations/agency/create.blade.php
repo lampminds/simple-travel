@@ -22,7 +22,10 @@
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_operator') }}</dt>
                                 <dd class="col-sm-8">{{ $operatorLabel }}</dd>
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_package') }}</dt>
-                                <dd class="col-sm-8">{{ $packageLabel }}</dd>
+                                <dd class="col-sm-8">
+                                    {{ $packageLabel }}
+                                    @include('account.partials.catalog-kind-badge', ['catalog' => $offer->catalog])
+                                </dd>
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_price') }}</dt>
                                 <dd class="col-sm-8 @if ($agencyPrice['has_amount'] ?? false) fw-medium @else text-muted @endif">
                                     {{ $agencyPrice['formatted'] ?? '—' }}

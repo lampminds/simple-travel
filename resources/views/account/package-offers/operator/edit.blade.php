@@ -81,6 +81,7 @@
                                             <tr>
                                                 <td class="fw-medium">
                                                     {{ $packageLabel }}
+                                                    @include('account.partials.catalog-kind-badge', ['catalog' => $package])
                                                     <div class="small mt-1 d-flex flex-wrap gap-2">
                                                         <a href="{{ route('account.package-availability.catalogs.show', $package) }}" class="link-secondary text-decoration-none">
                                                             {{ __('account.package_offers.operator_edit_link_availability') }}

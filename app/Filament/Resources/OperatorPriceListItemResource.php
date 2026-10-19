@@ -97,7 +97,7 @@ class OperatorPriceListItemResource extends LmpResource
                                 ->orderBy('id')
                                 ->get()
                                 ->mapWithKeys(fn (OperatorServiceCatalog $row): array => [
-                                    $row->id => $row->displayLabel(),
+                                    $row->id => $row->displayLabelWithKind(),
                                 ])
                                 ->all();
                         })

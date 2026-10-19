@@ -76,7 +76,10 @@
                                                 @endphp
                                                 <tr>
                                                     <td class="fw-medium">{{ $operatorLabel }}</td>
-                                                    <td>{{ $offer->package_label ?? '—' }}</td>
+                                                    <td>
+                                                        {{ $offer->package_label ?? '—' }}
+                                                        @include('account.partials.catalog-kind-badge', ['catalog' => $offer->catalog])
+                                                    </td>
                                                     <td class="text-muted small">{{ $offer->priceList?->name ?? '—' }}</td>
                                                     <td>
                                                         <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">

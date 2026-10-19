@@ -53,7 +53,11 @@ final class OperatorPackageItemSelectOptions
             $variantPart = $sku !== '' ? ' ('.$sku.')' : '';
         }
 
-        $segments = [$packageName, $serviceName.$variantPart];
+        $kind = $item->catalog?->isDirectService()
+            ? __('account.catalog_kind.service')
+            : __('account.catalog_kind.package');
+
+        $segments = [$kind, $packageName, $serviceName.$variantPart];
 
         if ($item->day_number !== null) {
             $segments[] = __('account.operator_price_lists.package_item_day', ['day' => $item->day_number]);

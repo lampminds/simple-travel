@@ -37,6 +37,7 @@ final class AccountOperatorPackageController extends Controller
 
         $packages = OperatorServiceCatalog::query()
             ->where('operator_id', $account->id)
+            ->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE)
             ->with('translations.language.locale')
             ->withCount('items')
             ->orderByDesc('id')
@@ -63,6 +64,7 @@ final class AccountOperatorPackageController extends Controller
         DB::transaction(function () use ($account, $validated): void {
             $package = OperatorServiceCatalog::query()->create([
                 'operator_id' => $account->id,
+                'catalog_kind' => OperatorServiceCatalog::KIND_PACKAGE,
                 'status' => $validated['status'],
                 'is_featured' => (bool) ($validated['is_featured'] ?? false),
                 'is_public' => (bool) ($validated['is_public'] ?? false),
@@ -78,10 +80,13 @@ final class AccountOperatorPackageController extends Controller
             ->with('status', __('account.operator_packages.status_created'));
     }
 
-    public function edit(Request $request, OperatorServiceCatalog $operatorPackage): View
+    public function edit(Request $request, OperatorServiceCatalog $operatorPackage): View|RedirectResponse
     {
         $account = $this->resolveOperatorOwnerAccount($request);
         $this->assertPackageBelongsToAccount($operatorPackage, $account->id);
+        if ($redirect = $this->redirectDirectServiceAway($operatorPackage)) {
+            return $redirect;
+        }
 
         $operatorPackage->load([
             'translations.language.locale',
@@ -99,6 +104,9 @@ final class AccountOperatorPackageController extends Controller
     {
         $account = $this->resolveOperatorOwnerAccount($request);
         $this->assertPackageBelongsToAccount($operatorPackage, $account->id);
+        if ($redirect = $this->redirectDirectServiceAway($operatorPackage)) {
+            return $redirect;
+        }
 
         $validated = $this->validatePayload($request, $account->id);
 
@@ -123,6 +131,9 @@ final class AccountOperatorPackageController extends Controller
     {
         $account = $this->resolveOperatorOwnerAccount($request);
         $this->assertPackageBelongsToAccount($operatorPackage, $account->id);
+        if ($redirect = $this->redirectDirectServiceAway($operatorPackage)) {
+            return $redirect;
+        }
 
         $itemIds = $operatorPackage->items()->pluck('id');
 
@@ -694,5 +705,21 @@ final class AccountOperatorPackageController extends Controller
     private function assertPackageBelongsToAccount(OperatorServiceCatalog $package, int $accountId): void
     {
         abort_unless((int) $package->operator_id === $accountId, 404);
+    }
+
+    /**
+     * One-line services are created from an accepted provider offer, not in the package composer.
+     */
+    private function redirectDirectServiceAway(OperatorServiceCatalog $package): ?RedirectResponse
+    {
+        if (! $package->isDirectService()) {
+            return null;
+        }
+
+        return redirect()
+            ->route('account.service-offers.index', ['as' => 'operator', 'status' => 'accepted'])
+            ->withErrors([
+                'package' => __('account.operator_packages.direct_service_managed_elsewhere'),
+            ]);
     }
 }
