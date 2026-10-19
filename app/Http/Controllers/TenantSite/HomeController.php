@@ -4,6 +4,7 @@ namespace App\Http\Controllers\TenantSite;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Language;
 use App\Services\CatFaqListService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +20,15 @@ class HomeController extends Controller
      */
     public function __invoke(Request $request): View
     {
+        $portalAccount = $request->attributes->get('operator_portal_account');
+        if ($portalAccount instanceof Account) {
+            return view('portal.home', [
+                'account' => $portalAccount,
+                'title' => $portalAccount->commercial_name ?? $portalAccount->name ?? $portalAccount->nick,
+                'languages' => Language::query()->with('locale')->get(),
+            ]);
+        }
+
         $account = $request->attributes->get('tenant_website_account');
 
         if ($account instanceof Account) {

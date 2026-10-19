@@ -290,6 +290,18 @@ if (! function_exists('getAccountRoles')) {
     }
 }
 
+if (! function_exists('operator_portal_account')) {
+    /**
+     * Operator account resolved from the current host, or null on the platform site.
+     */
+    function operator_portal_account(): ?\App\Models\Account
+    {
+        $account = request()->attributes->get('operator_portal_account');
+
+        return $account instanceof \App\Models\Account ? $account : null;
+    }
+}
+
 if (! function_exists('is_dev_server')) {
     /**
      * True when the app is served from a dev host (APP_URL contains "debian", case-insensitive).

@@ -82,12 +82,14 @@
                     </div>
                     <!-- end card -->
 
+                    @unless (operator_portal_account())
                     <div class="row mt-3">
                         <div class="col-12 text-center">
                             <p class="text-muted">{{ __('auth.login.no_account') }} <a href="{{ route('register') }}"
                                     class="text-primary fw-semibold ms-1">{{ __('auth.login.create_account') }}</a></p>
                         </div> <!-- end col -->
                     </div>
+                    @endunless
                     <!-- end row -->
 
                 </div> <!-- end col -->

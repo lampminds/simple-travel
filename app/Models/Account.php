@@ -245,6 +245,23 @@ class Account extends Model implements HasMedia
     }
 
     /**
+     * Root-relative logo path, so the portal host serves the file itself.
+     */
+    public function portalLogoPath(): ?string
+    {
+        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_LOGO);
+        if ($media === null) {
+            return null;
+        }
+
+        $conversion = $media->hasGeneratedConversion(self::MEDIA_CONVERSION_LOGO_PREVIEW)
+            ? self::MEDIA_CONVERSION_LOGO_PREVIEW
+            : '';
+
+        return '/storage/account-logos/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
+    }
+
+    /**
      * Hostname only: lowercase, no scheme, port, or path.
      */
     public static function normalizePortalHost(?string $value): ?string
