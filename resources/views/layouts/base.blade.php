@@ -11,10 +11,11 @@
     @vite('node_modules/leaflet/dist/leaflet.css')
     @vite('node_modules/jarallax/dist/jarallax.css')
     @vite('resources/scss/theme.scss')
+    @include('layouts.partials.test-site-styles')
     @livewireStyles
 </head>
 
-<body>
+<body @class(['is-test-site' => is_test_site()])>
 
 @yield('content')
 

@@ -70,9 +70,14 @@ class SmplAdmPanelProvider extends PanelProvider
                     ->name('locale');
             })
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => view(
+                'layouts.partials.test-site-styles',
+            )->render().view(
                 'filament.styles.filament-help-tooltip',
             )->render().view(
                 'filament.styles.cluster-sub-navigation-toggle',
+            )->render())
+            ->renderHook(PanelsRenderHook::TOPBAR_LOGO_AFTER, fn (): string => view(
+                'layouts.partials.test-site-badge',
             )->render())
             ->renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE, fn (): string => view(
                 'filament.components.cluster-sub-navigation-toggle',

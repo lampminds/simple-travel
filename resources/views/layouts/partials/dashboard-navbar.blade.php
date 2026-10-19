@@ -2,7 +2,10 @@
     @include('layouts.partials.support-token-header-notice')
     <nav class="navbar navbar-expand-lg topnav-menu {{$classList}} {{$sticky === true ? 'sticky' : ''}}">
         <div class="container{{ $fixedWidth !== true ? '-fluid' : '' }}">
-            <x-site-logo class="navbar-brand me-lg-3 me-auto" />
+            <div class="d-flex align-items-center me-lg-3 me-auto">
+                <x-site-logo class="navbar-brand" />
+                @include('layouts.partials.test-site-badge')
+            </div>
 
             <a href="#" class="navbar-toggler me-3" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content4"
                aria-controls="topnav-menu-content4" aria-expanded="false" aria-label="Toggle navigation">

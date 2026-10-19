@@ -11,6 +11,7 @@ return [
     'my_account' => 'Mi cuenta',
     'logout' => 'Salir',
     'search_placeholder' => '¿Qué estás buscando?',
+    'test_site_badge' => 'Pruebas',
     'toggle_nav' => 'Abrir menú',
     'open_submenu_for' => 'Abrir submenú: :label',
     'link_to_parent' => 'Ir a :label',

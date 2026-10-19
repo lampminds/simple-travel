@@ -2,7 +2,10 @@
 <header>
     <nav class="navbar navbar-expand-lg topnav-menu z-10 {{$topbarColor}} {{$sticky === true ? 'sticky' : ''}}">
         <div class="container {{$fixedWidth !== true ? '-fluid' : ''}}">
-            <x-site-logo variant="navbar" class="navbar-brand logo" />
+            <div class="d-flex align-items-center">
+                <x-site-logo variant="navbar" class="navbar-brand logo" />
+                @include('layouts.partials.test-site-badge')
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content"
                     aria-controls="topnav-menu-content" aria-expanded="false" aria-label="{{ __('nav.toggle_nav') }}">
                 <span class="navbar-toggler-icon"></span>

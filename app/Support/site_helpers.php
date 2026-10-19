@@ -301,3 +301,20 @@ if (! function_exists('is_dev_server')) {
         return $url !== '' && str_contains(strtolower($url), 'debian');
     }
 }
+
+if (! function_exists('is_test_site')) {
+    /**
+     * True on the public test installation (APP_URL host is simple-travel.com.ar).
+     * Production (simple-travel.net) and local/dev hosts stay unmarked.
+     */
+    function is_test_site(): bool
+    {
+        $host = strtolower((string) parse_url((string) config('app.url', ''), PHP_URL_HOST));
+
+        if ($host === '') {
+            return false;
+        }
+
+        return $host === 'simple-travel.com.ar' || str_ends_with($host, '.simple-travel.com.ar');
+    }
+}
