@@ -15,7 +15,7 @@
     @livewireStyles
 </head>
 
-<body @class(['is-test-site' => is_test_site()])>
+<body @class(['is-test-site' => is_test_site(), 'is-dev-server' => is_dev_server() && ! is_test_site()])>
 
 @yield('content')
 

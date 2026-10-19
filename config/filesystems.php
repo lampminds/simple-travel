@@ -57,6 +57,17 @@ return [
         ],
 
         /*
+         * Operator portal logos (Spatie Media Library collection "logo" on accounts).
+         */
+        'account_logos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/account-logos'),
+            'url' => env('APP_URL').'/storage/account-logos',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        /*
          * Service images (Spatie Media Library). Set SERVICE_MEDIA_DISK_DRIVER=s3 and AWS_* to use S3;
          * ServicePathGenerator paths stay the same under the bucket root.
          */

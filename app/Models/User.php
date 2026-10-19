@@ -76,6 +76,14 @@ class User extends BaseUser implements FilamentUser, MustVerifyEmail
     }
 
     /**
+     * Persistent login history shown on the user view sessions tab.
+     */
+    public function lmpSessions(): HasMany
+    {
+        return $this->hasMany(LmpSession::class);
+    }
+
+    /**
      * Persons linked to this login (user_person).
      */
     public function persons(): BelongsToMany

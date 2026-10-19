@@ -12,6 +12,7 @@ return [
     'logout' => 'Salir',
     'search_placeholder' => '¿Qué estás buscando?',
     'test_site_badge' => 'Pruebas',
+    'dev_site_badge' => 'development',
     'toggle_nav' => 'Abrir menú',
     'open_submenu_for' => 'Abrir submenú: :label',
     'link_to_parent' => 'Ir a :label',

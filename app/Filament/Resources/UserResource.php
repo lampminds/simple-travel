@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CrmCluster;
 use App\Filament\Resources\UserResource\Pages;
+use App\Livewire\UserLoginSessions;
 use App\Models\Account;
 use App\Models\User;
 use App\Filament\Actions\OpenWebsiteImpersonationAction;
@@ -18,6 +19,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -200,6 +202,13 @@ class UserResource extends LmpResource
                                         ->addActionLabel(__('filament.resources.user_fields.add_membership'))
                                         ->columnSpanFull(),
                                 ]),
+                        ]),
+                    Tab::make(__('filament.resources.user_tabs.sessions'))
+                        ->visibleOn('view')
+                        ->schema([
+                            Livewire::make(UserLoginSessions::class)
+                                ->key(fn (?User $record): string => 'user-login-sessions-'.($record?->getKey() ?? 'none'))
+                                ->columnSpanFull(),
                         ]),
                 ]),
         ];

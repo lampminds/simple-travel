@@ -305,7 +305,7 @@ if (! function_exists('is_dev_server')) {
 if (! function_exists('is_test_site')) {
     /**
      * True on the public test installation (APP_URL host is simple-travel.com.ar).
-     * Production (simple-travel.net) and local/dev hosts stay unmarked.
+     * Production (simple-travel.net) stays unmarked.
      */
     function is_test_site(): bool
     {
@@ -316,5 +316,23 @@ if (! function_exists('is_test_site')) {
         }
 
         return $host === 'simple-travel.com.ar' || str_ends_with($host, '.simple-travel.com.ar');
+    }
+}
+
+if (! function_exists('site_environment_label')) {
+    /**
+     * Short header/title label for non-production installs, or null on production.
+     */
+    function site_environment_label(): ?string
+    {
+        if (is_test_site()) {
+            return (string) __('nav.test_site_badge');
+        }
+
+        if (is_dev_server()) {
+            return (string) __('nav.dev_site_badge');
+        }
+
+        return null;
     }
 }

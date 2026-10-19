@@ -9,11 +9,14 @@ use App\Models\CatDocument;
 use App\Models\AccountType;
 use App\Models\LmpCity;
 use BackedEnum;
+use Closure;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -48,6 +51,14 @@ class AccountResource extends LmpResource
     public static function getPluralModelLabel(): string
     {
         return (string) __(static::$pluralModelLabel);
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        $main = array_map(fn ($c) => $c->columnSpanFull(), static::getMainFormSchema($schema));
+        $audit = array_map(fn ($c) => $c->columnSpanFull(), static::getAuditFooterSchema());
+
+        return $schema->schema(array_merge($main, $audit));
     }
 
     protected static function getMainFormSchema(Schema $schema): array
@@ -189,6 +200,34 @@ class AccountResource extends LmpResource
                                 ->bulkToggleable(),
                         ])
                         ->visibleOn(['edit', 'view']),
+                    Tab::make(__('filament.resources.account_tabs.portal'))
+                        ->schema([
+                            Section::make('')->schema([
+                                TextInput::make('portal_host')
+                                    ->label(__('filament.resources.account_fields.portal_host'))
+                                    ->placeholder('b2b-test.ebgrouptravel.com')
+                                    ->helperText(__('filament.resources.account_fields.portal_host_help'))
+                                    ->maxLength(255)
+                                    ->dehydrateStateUsing(
+                                        fn (?string $state): ?string => Account::normalizePortalHost($state)
+                                    )
+                                    ->rules([
+                                        fn (Get $get, ?Account $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
+                                            self::validatePortalHost($get, $record, $value, $fail);
+                                        },
+                                    ]),
+                                SpatieMediaLibraryFileUpload::make('portal_logo')
+                                    ->label(__('filament.resources.account_fields.portal_logo'))
+                                    ->helperText(__('filament.resources.account_fields.portal_logo_help'))
+                                    ->collection(Account::MEDIA_COLLECTION_LOGO)
+                                    ->disk('account_logos')
+                                    ->conversion(Account::MEDIA_CONVERSION_LOGO_PREVIEW)
+                                    ->image()
+                                    ->maxSize(Account::MEDIA_MAX_LOGO_KB)
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+                            ])->columns(2),
+                        ])
+                        ->visibleOn(['edit', 'view']),
                 ]),
         ];
     }
@@ -217,6 +256,11 @@ class AccountResource extends LmpResource
                 TextColumn::make('email')
                     ->label(__('filament.resources.account_columns.email'))
                     ->searchable(),
+                TextColumn::make('portal_host')
+                    ->label(__('filament.resources.account_columns.portal_host'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('accountType')
@@ -251,6 +295,50 @@ class AccountResource extends LmpResource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    /**
+     * @param  mixed  $typeIds  Selected account type ids from the form
+     */
+    private static function formSelectsOperatorType(mixed $typeIds): bool
+    {
+        if (! is_array($typeIds) || $typeIds === []) {
+            return false;
+        }
+
+        return AccountType::query()
+            ->whereIn('id', $typeIds)
+            ->where('code', 'operator')
+            ->exists();
+    }
+
+    private static function validatePortalHost(Get $get, ?Account $record, mixed $value, Closure $fail): void
+    {
+        $host = Account::normalizePortalHost(is_string($value) ? $value : null);
+        if ($host === null) {
+            return;
+        }
+
+        if (! self::formSelectsOperatorType($get('accountTypes'))) {
+            $fail(__('filament.resources.account_fields.portal_host_operator_only'));
+
+            return;
+        }
+
+        if (! Account::isValidPortalHost($host)) {
+            $fail(__('filament.resources.account_fields.portal_host_invalid'));
+
+            return;
+        }
+
+        $taken = Account::query()
+            ->where('portal_host', $host)
+            ->when($record !== null, fn (Builder $query) => $query->whereKeyNot($record->getKey()))
+            ->exists();
+
+        if ($taken) {
+            $fail(__('filament.resources.account_fields.portal_host_taken'));
+        }
     }
 
     private static function setLocationLabelsFromCity(mixed $cityId, callable $set): void

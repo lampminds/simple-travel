@@ -111,4 +111,13 @@ return [
         'timeout' => (int) env('NOMINATIM_TIMEOUT', 12),
     ],
 
+    /*
+     * Free IP geolocation (ipwho.is). Results are cached in lmp_ips, one row per address.
+     */
+    'ip_geolocation' => [
+        'url' => env('IP_GEOLOCATION_URL', 'https://ipwho.is'),
+        'timeout' => (int) env('IP_GEOLOCATION_TIMEOUT', 2),
+        'retry_after_minutes' => (int) env('IP_GEOLOCATION_RETRY_AFTER_MINUTES', 1440),
+    ],
+
 ];

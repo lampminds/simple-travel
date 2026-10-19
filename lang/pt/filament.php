@@ -62,6 +62,7 @@ return [
             'main' => 'Dados principais',
             'tax_ids' => 'Identificações fiscais',
             'business_types' => 'Tipos de conta',
+            'portal' => 'Portal B2B',
         ],
 
         'account_type_category_fields' => [
@@ -83,6 +84,13 @@ return [
             'country_id' => 'País',
             'postal_code' => 'Código postal',
             'code_help' => 'Gerado automaticamente na criação.',
+            'portal_host' => 'Host do portal',
+            'portal_host_help' => 'Apenas o domínio, sem https nem caminho. Exemplo: b2b-test.ebgrouptravel.com. Somente contas operador.',
+            'portal_host_invalid' => 'Informe um domínio válido, sem protocolo nem caminho.',
+            'portal_host_taken' => 'Esse domínio já está atribuído a outra conta.',
+            'portal_host_operator_only' => 'O portal só pode ser atribuído a uma conta do tipo operador.',
+            'portal_logo' => 'Logo',
+            'portal_logo_help' => 'Exibido no portal. JPG, PNG, WebP ou GIF. Até 2 MB.',
         ],
 
         'account_columns' => [
@@ -92,6 +100,7 @@ return [
             'name' => 'Nome',
             'commercial_name' => 'Razão social',
             'email' => 'E-mail',
+            'portal_host' => 'Host do portal',
             'account_category' => 'Categoria de conta',
             'account_type' => 'Tipo de conta',
         ],
@@ -219,6 +228,19 @@ return [
         'user_tabs' => [
             'general' => 'Perfil',
             'accounts_roles' => 'Contas e funções',
+            'sessions' => 'Sessões',
+        ],
+
+        'user_sessions' => [
+            'logged_in_at' => 'Data',
+            'ip' => 'IP',
+            'origin' => 'Origem',
+            'user_agent' => 'Navegador',
+            'active' => 'Ativa',
+            'local_network' => 'Rede local',
+            'unavailable' => 'Indisponível',
+            'empty' => 'Este utilizador ainda não tem inícios de sessão registados.',
+            'yes' => 'Sim',
         ],
 
         'user_fields' => [

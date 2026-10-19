@@ -64,6 +64,7 @@ return [
             'main' => 'Datos principales',
             'tax_ids' => 'Identificaciones fiscales',
             'business_types' => 'Tipos de cuenta',
+            'portal' => 'Portal B2B',
         ],
 
         'account_type_category_fields' => [
@@ -85,6 +86,13 @@ return [
             'country_id' => 'País',
             'postal_code' => 'Código postal',
             'code_help' => 'Se genera automáticamente al crear.',
+            'portal_host' => 'Host del portal',
+            'portal_host_help' => 'Solo el dominio, sin https ni ruta. Ejemplo: b2b-test.ebgrouptravel.com. Solo cuentas operador.',
+            'portal_host_invalid' => 'Ingresa un dominio válido, sin protocolo ni ruta.',
+            'portal_host_taken' => 'Ese dominio ya está asignado a otra cuenta.',
+            'portal_host_operator_only' => 'El portal solo puede asignarse a una cuenta con tipo operador.',
+            'portal_logo' => 'Logo',
+            'portal_logo_help' => 'Se muestra en el portal. JPG, PNG, WebP o GIF. Hasta 2 MB.',
         ],
 
         'account_columns' => [
@@ -94,6 +102,7 @@ return [
             'name' => 'Nombre',
             'commercial_name' => 'Razón social',
             'email' => 'Correo electrónico',
+            'portal_host' => 'Host del portal',
             'account_category' => 'Categoría de cuenta',
             'account_type' => 'Tipo de cuenta',
         ],
@@ -221,6 +230,19 @@ return [
         'user_tabs' => [
             'general' => 'Perfil',
             'accounts_roles' => 'Cuentas y roles',
+            'sessions' => 'Sesiones',
+        ],
+
+        'user_sessions' => [
+            'logged_in_at' => 'Fecha',
+            'ip' => 'IP',
+            'origin' => 'Origen',
+            'user_agent' => 'Navegador',
+            'active' => 'Activa',
+            'local_network' => 'Red local',
+            'unavailable' => 'No disponible',
+            'empty' => 'Este usuario todavía no tiene inicios de sesión registrados.',
+            'yes' => 'Sí',
         ],
 
         'user_fields' => [

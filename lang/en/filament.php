@@ -62,6 +62,7 @@ return [
             'main' => 'Main data',
             'tax_ids' => 'Tax IDs',
             'business_types' => 'Business types',
+            'portal' => 'B2B portal',
         ],
 
         'account_type_category_fields' => [
@@ -83,6 +84,13 @@ return [
             'country_id' => 'Country',
             'postal_code' => 'Postal code',
             'code_help' => 'Auto-generated on create.',
+            'portal_host' => 'Portal host',
+            'portal_host_help' => 'Hostname only, without https or a path. Example: b2b-test.ebgrouptravel.com. Operator accounts only.',
+            'portal_host_invalid' => 'Enter a valid hostname, without a protocol or path.',
+            'portal_host_taken' => 'That hostname is already assigned to another account.',
+            'portal_host_operator_only' => 'A portal can only be assigned to an operator account.',
+            'portal_logo' => 'Logo',
+            'portal_logo_help' => 'Shown on the portal. JPG, PNG, WebP, or GIF. Up to 2 MB.',
         ],
 
         'account_columns' => [
@@ -92,6 +100,7 @@ return [
             'name' => 'Name',
             'commercial_name' => 'Commercial name',
             'email' => 'Email',
+            'portal_host' => 'Portal host',
             'account_category' => 'Account category',
             'account_type' => 'Account type',
         ],
@@ -219,6 +228,19 @@ return [
         'user_tabs' => [
             'general' => 'Profile',
             'accounts_roles' => 'Accounts & roles',
+            'sessions' => 'Sessions',
+        ],
+
+        'user_sessions' => [
+            'logged_in_at' => 'Date',
+            'ip' => 'IP',
+            'origin' => 'Location',
+            'user_agent' => 'Browser',
+            'active' => 'Active',
+            'local_network' => 'Local network',
+            'unavailable' => 'Unavailable',
+            'empty' => 'This user has no recorded sign-ins yet.',
+            'yes' => 'Yes',
         ],
 
         'user_fields' => [

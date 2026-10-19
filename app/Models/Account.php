@@ -9,10 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
-class Account extends Model
+class Account extends Model implements HasMedia
 {
-    use HasFactory, AuditTrait, HasUuid;
+    use HasFactory, AuditTrait, HasUuid, InteractsWithMedia;
+
+    public const MEDIA_COLLECTION_LOGO = 'logo';
+
+    public const MEDIA_CONVERSION_LOGO_PREVIEW = 'preview';
+
+    public const MEDIA_MAX_LOGO_KB = 2048;
 
     protected $fillable = [
         'nick',
@@ -25,6 +35,7 @@ class Account extends Model
         'address_line2',
         'city_id',
         'postal_code',
+        'portal_host',
     ];
 
     protected $casts = [
@@ -195,6 +206,80 @@ class Account extends Model
         }
 
         return 'agency.dashboard';
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::MEDIA_COLLECTION_LOGO)
+            ->useDisk('account_logos')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+    }
+
+    /**
+     * Header-sized preview. Not queued, so the portal can use it right after upload.
+     */
+    public function registerMediaConversions(?MediaModel $media = null): void
+    {
+        $this->addMediaConversion(self::MEDIA_CONVERSION_LOGO_PREVIEW)
+            ->fit(Fit::Max, 480, 160)
+            ->nonQueued()
+            ->performOnCollections(self::MEDIA_COLLECTION_LOGO);
+    }
+
+    /**
+     * Public URL of the portal logo, or null when the account has none.
+     */
+    public function portalLogoUrl(): ?string
+    {
+        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_LOGO);
+        if ($media === null) {
+            return null;
+        }
+
+        if ($media->hasGeneratedConversion(self::MEDIA_CONVERSION_LOGO_PREVIEW)) {
+            return $media->getUrl(self::MEDIA_CONVERSION_LOGO_PREVIEW);
+        }
+
+        return $media->getUrl();
+    }
+
+    /**
+     * Hostname only: lowercase, no scheme, port, or path.
+     */
+    public static function normalizePortalHost(?string $value): ?string
+    {
+        $value = strtolower(trim((string) $value));
+        if ($value === '') {
+            return null;
+        }
+
+        if (str_contains($value, '://')) {
+            $host = parse_url($value, PHP_URL_HOST);
+            $value = is_string($host) ? strtolower($host) : $value;
+        }
+
+        $value = explode('/', $value, 2)[0];
+        if (str_contains($value, ':')) {
+            $value = explode(':', $value, 2)[0];
+        }
+
+        $value = rtrim($value, '.');
+
+        return $value !== '' ? $value : null;
+    }
+
+    public function setPortalHostAttribute(?string $value): void
+    {
+        $this->attributes['portal_host'] = static::normalizePortalHost($value);
+    }
+
+    public static function isValidPortalHost(string $host): bool
+    {
+        return (bool) preg_match(
+            '/^(?=.{1,255}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/',
+            $host
+        );
     }
 
     /**
