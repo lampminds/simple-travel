@@ -31,12 +31,6 @@ final class WebsiteImpersonationController extends Controller
                 ->with('error', __('impersonation.token_invalid_or_used'));
         }
 
-        if ($user->belongsToPlatformAccount()) {
-            return redirect()
-                ->route('login')
-                ->with('error', __('impersonation.token_invalid_or_used'));
-        }
-
         $platformAccountId = (int) config('permission.platform_account_id', 1);
         $contextAccountId = $this->resolveContextAccountIdForUser($user, $platformAccountId);
         if ($contextAccountId === null) {

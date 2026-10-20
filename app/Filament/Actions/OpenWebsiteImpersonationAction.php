@@ -30,7 +30,7 @@ final class OpenWebsiteImpersonationAction
                 if (! $admin instanceof User || ! $admin->belongsToPlatformAccount()) {
                     return ['error' => __('filament.resources.user_actions.impersonation_forbidden'), 'url' => ''];
                 }
-                if ((int) $admin->id === (int) $record->id || $record->belongsToPlatformAccount()) {
+                if ((int) $admin->id === (int) $record->id) {
                     return ['error' => __('filament.resources.user_actions.impersonation_invalid_target'), 'url' => ''];
                 }
                 try {

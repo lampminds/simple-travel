@@ -64,7 +64,7 @@ trait InteractsWithUserImpersonation
             return false;
         }
 
-        if ((int) $admin->id === (int) $user->id || $user->belongsToPlatformAccount()) {
+        if ((int) $admin->id === (int) $user->id) {
             return false;
         }
 

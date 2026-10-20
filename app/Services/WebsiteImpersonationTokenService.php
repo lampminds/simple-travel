@@ -28,9 +28,6 @@ final class WebsiteImpersonationTokenService
         if (! $createdBy->belongsToPlatformAccount()) {
             throw new InvalidArgumentException('Only platform staff can create this link.');
         }
-        if ($target->belongsToPlatformAccount()) {
-            throw new InvalidArgumentException('Cannot target platform-linked users.');
-        }
 
         $plain = Str::random(64);
         $key = self::CACHE_PREFIX.hash('sha256', $plain);
