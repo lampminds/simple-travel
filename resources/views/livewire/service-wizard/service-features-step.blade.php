@@ -65,41 +65,24 @@
                                     @foreach ($features as $feature)
                                         @php
                                             $featureLabel = $feature->name !== '' ? $feature->name : $feature->code;
-                                            $featureStates = [
-                                                \App\Livewire\ServiceWizard\ServiceFeaturesStep::INCLUSION_UNSET => [
-                                                    'label' => __('wizard.features_state_unset'),
-                                                    'class' => 'btn-outline-secondary',
-                                                ],
-                                                \App\Models\ServiceFeature::INCLUSION_INCLUDED => [
-                                                    'label' => __('wizard.features_state_included'),
-                                                    'class' => 'btn-outline-success',
-                                                ],
-                                                \App\Models\ServiceFeature::INCLUSION_EXCLUDED => [
-                                                    'label' => __('wizard.features_state_excluded'),
-                                                    'class' => 'btn-outline-danger',
-                                                ],
-                                            ];
+                                            $currentInclusion = $featureInclusions[(string) $feature->id]
+                                                ?? $featureInclusions[$feature->id]
+                                                ?? \App\Livewire\ServiceWizard\ServiceFeaturesStep::INCLUSION_UNSET;
                                         @endphp
-                                        <div class="col-lg-6" wire:key="feature-{{ $feature->id }}">
-                                            <div class="border rounded p-2 h-100">
-                                                <div class="small mb-2">{{ $featureLabel }}</div>
-                                                <div class="btn-group btn-group-sm w-100" role="group" aria-label="{{ $featureLabel }}">
-                                                    @foreach ($featureStates as $state => $stateMeta)
-                                                        <input
-                                                            type="radio"
-                                                            class="btn-check"
-                                                            name="feature-inclusion-{{ $feature->id }}"
-                                                            id="feature-{{ $feature->id }}-{{ $state }}"
-                                                            value="{{ $state }}"
-                                                            wire:model.live="featureInclusions.{{ $feature->id }}"
-                                                            autocomplete="off"
-                                                        >
-                                                        <label class="btn {{ $stateMeta['class'] }}" for="feature-{{ $feature->id }}-{{ $state }}">
-                                                            {{ $stateMeta['label'] }}
-                                                        </label>
-                                                    @endforeach
-                                                </div>
-                                            </div>
+                                        <div class="col-md-6 col-xl-4" wire:key="feature-{{ $feature->id }}">
+                                            <label class="d-flex align-items-center justify-content-between gap-2 border rounded px-2 py-1 mb-0 h-100" for="feature-inclusion-{{ $feature->id }}">
+                                                <span class="small">{{ $featureLabel }}</span>
+                                                <select
+                                                    id="feature-inclusion-{{ $feature->id }}"
+                                                    class="form-select form-select-sm w-auto flex-shrink-0 @if ($currentInclusion === \App\Models\ServiceFeature::INCLUSION_INCLUDED) border-success @elseif ($currentInclusion === \App\Models\ServiceFeature::INCLUSION_EXCLUDED) border-danger @endif"
+                                                    style="min-width: 11rem;"
+                                                    wire:model.live="featureInclusions.{{ $feature->id }}"
+                                                >
+                                                    <option value="{{ \App\Livewire\ServiceWizard\ServiceFeaturesStep::INCLUSION_UNSET }}">➖ {{ __('wizard.features_state_unset') }}</option>
+                                                    <option value="{{ \App\Models\ServiceFeature::INCLUSION_INCLUDED }}">✅ {{ __('wizard.features_state_included') }}</option>
+                                                    <option value="{{ \App\Models\ServiceFeature::INCLUSION_EXCLUDED }}">⛔ {{ __('wizard.features_state_excluded') }}</option>
+                                                </select>
+                                            </label>
                                         </div>
                                     @endforeach
                                 </div>
