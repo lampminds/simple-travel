@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Currency;
 use App\Models\LmpCity;
 use App\Models\Service;
+use App\Models\ServiceFeature;
 use App\Models\ServiceDetail;
 use App\Models\ServiceOffer;
 use App\Models\ServiceTransferPrice;
@@ -62,7 +63,7 @@ final class ServiceOfferPreviewBuilder
             ? []
             : $this->variantFields($variant, $operatorPrice);
 
-        $featureGroups = $this->featureGroups($service);
+        $featureGroups = $this->featureGroups($service, $variant);
         if ($featureGroups !== []) {
             $sections[] = [
                 'key' => ServiceCopySections::FEATURES,
@@ -224,15 +225,19 @@ final class ServiceOfferPreviewBuilder
     }
 
     /**
-     * @return list<array{title: string, items: list<string>}>
+     * Included names stay in items. Excluded names are listed separately.
+     * A variant row replaces the service row for the same feature.
+     *
+     * @return list<array{title: string, items: list<string>, excluded_items: list<string>}>
      */
-    private function featureGroups(Service $service): array
+    private function featureGroups(Service $service, ServiceVariant $variant): array
     {
-        if ($service->features->isEmpty()) {
+        $features = $service->effectiveFeatures($variant);
+        if ($features->isEmpty()) {
             return [];
         }
 
-        $grouped = $service->features
+        $grouped = $features
             ->sortBy(fn ($feature) => [
                 (int) ($feature->serviceFeatureCategory?->sort_order ?? 0),
                 (int) $feature->sort_order,
@@ -242,19 +247,32 @@ final class ServiceOfferPreviewBuilder
                 ?: __('wizard.features_category_fallback'));
 
         $groups = [];
-        foreach ($grouped as $categoryName => $features) {
-            $items = $features
-                ->map(fn ($feature) => trim((string) $feature->name))
-                ->filter(fn (string $name) => $name !== '')
-                ->values()
-                ->all();
+        foreach ($grouped as $categoryName => $categoryFeatures) {
+            $included = [];
+            $excluded = [];
 
-            if ($items !== []) {
-                $groups[] = [
-                    'title' => (string) $categoryName,
-                    'items' => $items,
-                ];
+            foreach ($categoryFeatures as $feature) {
+                $name = trim((string) $feature->name);
+                if ($name === '') {
+                    continue;
+                }
+
+                if (ServiceFeature::normalizeInclusion($feature->pivot->inclusion ?? null) === ServiceFeature::INCLUSION_EXCLUDED) {
+                    $excluded[] = $name;
+                } else {
+                    $included[] = $name;
+                }
             }
+
+            if ($included === [] && $excluded === []) {
+                continue;
+            }
+
+            $groups[] = [
+                'title' => (string) $categoryName,
+                'items' => $included,
+                'excluded_items' => $excluded,
+            ];
         }
 
         return $groups;

@@ -702,6 +702,7 @@ return [
         'operator_preview_close' => 'Cerrar',
         'operator_preview_loading' => 'Cargando…',
         'operator_preview_no_data' => 'Sin datos',
+        'operator_preview_features_excluded' => 'No incluye',
         'operator_preview_yes' => 'Sí',
         'operator_preview_no' => 'No',
         'operator_preview_visibility' => 'Audiencia',

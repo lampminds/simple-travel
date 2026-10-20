@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogueFeatures;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 use Spatie\Image\Enums\Fit;
@@ -20,7 +20,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
 class Service extends Model implements HasMedia
 {
-    use HasFactory, AuditTrait, HasUuid, InteractsWithMedia;
+    use HasFactory, AuditTrait, HasUuid, HasCatalogueFeatures, InteractsWithMedia;
 
     public const MEDIA_COLLECTION_MAIN = 'main';
 
@@ -152,15 +152,31 @@ class Service extends Model implements HasMedia
     }
 
     /**
-     * Catalogue features attached to this service (pivot: service_featurables).
+     * Features that apply to a variant: variant rows replace the service row for the same feature.
+     *
+     * @return Collection<int, ServiceFeature>
      */
-    public function features(): MorphToMany
+    public function effectiveFeatures(?ServiceVariant $variant = null): Collection
     {
-        return $this->morphToMany(
-            ServiceFeature::class,
-            'service_featurable',
-            'service_featurables',
-        )->withTimestamps();
+        $this->loadMissing([
+            'features.serviceFeatureCategory.translations.language.locale',
+            'features.translations.language.locale',
+        ]);
+
+        $byId = $this->features->keyBy(fn (ServiceFeature $feature): int => (int) $feature->id);
+
+        if ($variant !== null) {
+            $variant->loadMissing([
+                'features.serviceFeatureCategory.translations.language.locale',
+                'features.translations.language.locale',
+            ]);
+
+            foreach ($variant->features as $feature) {
+                $byId->put((int) $feature->id, $feature);
+            }
+        }
+
+        return $byId->values();
     }
 
     /**

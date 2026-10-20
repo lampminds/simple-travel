@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogueFeatures;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +17,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media as MediaModel;
 
 class ServiceVariant extends Model implements HasMedia
 {
-    use AuditTrait, HasUuid, InteractsWithMedia;
+    use AuditTrait, HasUuid, HasCatalogueFeatures, InteractsWithMedia;
 
     public const MEDIA_COLLECTION_MAIN = 'main';
 

@@ -74,16 +74,38 @@
             @if (($group['title'] ?? '') !== '')
                 <div class="@if ($forPdf) preview-label @else text-muted text-uppercase fs-12 mb-2 @endif">{{ $group['title'] }}</div>
             @endif
-            @if (($group['items'] ?? []) === [])
+            @php
+                $includedItems = $group['items'] ?? [];
+                $excludedItems = $group['excluded_items'] ?? [];
+            @endphp
+            @if ($includedItems === [] && $excludedItems === [])
                 <p class="@if ($forPdf) preview-muted @else text-muted mb-0 @endif">{{ __('account.service_offers.operator_preview_no_data') }}</p>
-            @elseif ($forPdf)
-                <p class="preview-tags">{{ implode(' · ', $group['items']) }}</p>
             @else
-                <div class="d-flex flex-wrap gap-2">
-                    @foreach ($group['items'] as $item)
-                        <span class="badge badge-soft-primary rounded-pill px-2 py-1">{{ $item }}</span>
-                    @endforeach
-                </div>
+                @if ($includedItems !== [])
+                    @if ($forPdf)
+                        <p class="preview-tags">{{ implode(' · ', $includedItems) }}</p>
+                    @else
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach ($includedItems as $item)
+                                <span class="badge badge-soft-primary rounded-pill px-2 py-1">{{ $item }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
+                @if ($excludedItems !== [])
+                    <div class="@if ($forPdf) preview-label @else text-muted text-uppercase fs-12 mt-2 mb-1 @endif">
+                        {{ __('account.service_offers.operator_preview_features_excluded') }}
+                    </div>
+                    @if ($forPdf)
+                        <p class="preview-tags">{{ implode(' · ', $excludedItems) }}</p>
+                    @else
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach ($excludedItems as $item)
+                                <span class="badge badge-soft-danger rounded-pill px-2 py-1">{{ $item }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
             @endif
         </div>
     @endforeach

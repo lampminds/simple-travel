@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Media;
 use App\Models\Service;
 use App\Models\ServiceVariant;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
@@ -35,10 +36,7 @@ final class ServiceCascadeDeletion
         $add('filament.resources.service_delete_cascade.labels.translations', (int) DB::table('service_translations')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.experience_assignments', (int) DB::table('service_experience_assignments')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.details', (int) DB::table('service_details')->where('service_id', $serviceId)->count());
-        $add('filament.resources.service_delete_cascade.labels.feature_links', (int) DB::table('service_featurables')
-            ->where('service_featurable_type', Service::class)
-            ->where('service_featurable_id', $serviceId)
-            ->count());
+        $add('filament.resources.service_delete_cascade.labels.feature_links', self::featureLinkCount($serviceId, $variantIds));
 
         $variantCount = $variantIds->count();
         $add('filament.resources.service_delete_cascade.labels.variants', $variantCount);
@@ -166,14 +164,50 @@ final class ServiceCascadeDeletion
 
             DB::table('service_details')->where('service_id', $serviceId)->delete();
             DB::table('service_experience_assignments')->where('service_id', $serviceId)->delete();
-            DB::table('service_featurables')
-                ->where('service_featurable_type', Service::class)
-                ->where('service_featurable_id', $serviceId)
-                ->delete();
+            self::deleteFeatureLinks($serviceId, $variantIds);
             DB::table('service_translations')->where('service_id', $serviceId)->delete();
 
             $service->delete();
         });
+    }
+
+    /**
+     * Service rows and variant overrides share service_featurables.
+     *
+     * @param  Collection<int, int>  $variantIds
+     */
+    private static function featureLinkCount(int $serviceId, Collection $variantIds): int
+    {
+        return (int) self::featureLinksQuery($serviceId, $variantIds)->count();
+    }
+
+    /**
+     * @param  Collection<int, int>  $variantIds
+     */
+    private static function deleteFeatureLinks(int $serviceId, Collection $variantIds): void
+    {
+        self::featureLinksQuery($serviceId, $variantIds)->delete();
+    }
+
+    /**
+     * @param  Collection<int, int>  $variantIds
+     */
+    private static function featureLinksQuery(int $serviceId, Collection $variantIds): Builder
+    {
+        return DB::table('service_featurables')
+            ->where(function ($query) use ($serviceId, $variantIds): void {
+                $query->where(function ($serviceQuery) use ($serviceId): void {
+                    $serviceQuery->where('service_featurable_type', Service::class)
+                        ->where('service_featurable_id', $serviceId);
+                });
+
+                if ($variantIds->isNotEmpty()) {
+                    $query->orWhere(function ($variantQuery) use ($variantIds): void {
+                        $variantQuery->where('service_featurable_type', ServiceVariant::class)
+                            ->whereIn('service_featurable_id', $variantIds);
+                    });
+                }
+            });
     }
 
     /**

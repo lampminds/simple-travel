@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Service;
+use App\Models\ServiceFeature;
 use App\Models\ServiceActivity;
 use App\Models\ServiceDetail;
 use App\Models\ServiceGastronomy;
@@ -33,6 +34,7 @@ final class ServiceCopyService
             'experiences',
             'serviceDetails',
             'serviceVariants.translations',
+            'serviceVariants.features',
             'serviceVariants.media',
             'media',
             'serviceType',
@@ -54,7 +56,13 @@ final class ServiceCopyService
             $target = $this->createTargetService($source, $options);
 
             if ($options->includes(ServiceCopySections::FEATURES)) {
-                $target->features()->sync($source->features->pluck('id')->all());
+                $sync = [];
+                foreach ($source->features as $feature) {
+                    $sync[(int) $feature->id] = [
+                        'inclusion' => ServiceFeature::normalizeInclusion($feature->pivot->inclusion ?? null),
+                    ];
+                }
+                $target->features()->sync($sync);
             }
 
             if ($options->includes(ServiceCopySections::EXPERIENCES)) {
@@ -183,6 +191,16 @@ final class ServiceCopyService
                     'name' => $translation->name,
                     'description' => $translation->description,
                 ]);
+            }
+
+            $featureSync = [];
+            foreach ($variant->features as $feature) {
+                $featureSync[(int) $feature->id] = [
+                    'inclusion' => ServiceFeature::normalizeInclusion($feature->pivot->inclusion ?? null),
+                ];
+            }
+            if ($featureSync !== []) {
+                $newVariant->features()->sync($featureSync);
             }
         }
     }

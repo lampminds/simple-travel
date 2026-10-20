@@ -12,6 +12,20 @@ class ServiceFeature extends Model
 {
     use HasFactory, AuditTrait;
 
+    public const INCLUSION_INCLUDED = 'included';
+
+    public const INCLUSION_EXCLUDED = 'excluded';
+
+    /**
+     * Stored pivot value. Anything other than excluded is treated as included.
+     */
+    public static function normalizeInclusion(?string $value): string
+    {
+        return $value === self::INCLUSION_EXCLUDED
+            ? self::INCLUSION_EXCLUDED
+            : self::INCLUSION_INCLUDED;
+    }
+
     protected static function booted(): void
     {
         static::deleting(function (ServiceFeature $feature): void {

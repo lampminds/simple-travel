@@ -3,6 +3,7 @@
 namespace App\Livewire\ServiceWizard;
 
 use App\Models\Service;
+use App\Models\ServiceFeature;
 use App\Models\ServiceFeatureCategory;
 use App\Models\ServiceType;
 use App\Services\ServiceFeatureSelectionService;
@@ -19,8 +20,14 @@ class ServiceFeaturesStep extends Component
 
     public int $serviceTypeId;
 
-    /** @var array<string> */
-    public array $selectedFeatureIds = [];
+    public const INCLUSION_UNSET = 'unset';
+
+    /**
+     * Feature id => unset|included|excluded. Unset is not stored.
+     *
+     * @var array<string, string>
+     */
+    public array $featureInclusions = [];
 
     /** @var array<int> Category accordion panels currently expanded. */
     public array $openAccordionCategoryIds = [];
@@ -33,11 +40,12 @@ class ServiceFeaturesStep extends Component
         $service = $this->authorizedService();
 
         $service->load('features');
-        $this->selectedFeatureIds = $service->features
-            ->pluck('id')
-            ->map(fn ($id) => (string) $id)
-            ->values()
-            ->all();
+        $this->featureInclusions = [];
+        foreach ($service->features as $feature) {
+            $this->featureInclusions[(string) $feature->id] = ServiceFeature::normalizeInclusion(
+                $feature->pivot->inclusion ?? null
+            );
+        }
 
         $this->pruneSelectionToScope();
     }
@@ -79,46 +87,40 @@ class ServiceFeaturesStep extends Component
             ->all();
     }
 
-    public function selectAllFeaturesInCategory(int $categoryId): void
+    public function includeAllFeaturesInCategory(int $categoryId): void
     {
-        $newIds = $this->getFeatureIdStringsForCategory($categoryId);
-        if ($newIds === []) {
-            return;
+        foreach ($this->getFeatureIdStringsForCategory($categoryId) as $id) {
+            $this->featureInclusions[$id] = ServiceFeature::INCLUSION_INCLUDED;
         }
-
-        $this->selectedFeatureIds = collect($this->selectedFeatureIds)
-            ->merge($newIds)
-            ->unique()
-            ->values()
-            ->all();
     }
 
     public function clearFeaturesInCategory(int $categoryId): void
     {
-        $inCategory = collect($this->getFeatureIdStringsForCategory($categoryId))->flip();
-        if ($inCategory->isEmpty()) {
-            return;
+        foreach ($this->getFeatureIdStringsForCategory($categoryId) as $id) {
+            $this->featureInclusions[$id] = self::INCLUSION_UNSET;
         }
-
-        $this->selectedFeatureIds = collect($this->selectedFeatureIds)
-            ->reject(fn (string $id) => $inCategory->has($id))
-            ->values()
-            ->all();
     }
 
     /**
-     * Drop selected features that are no longer in scope for this service type.
+     * Keep one state per in-scope feature. Saved rows outside the scope are dropped.
      */
     protected function pruneSelectionToScope(): void
     {
         $catalog = app(ServiceFeatureSelectionService::class);
         $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
-        $valid = $scoped->flip();
+        $next = [];
 
-        $this->selectedFeatureIds = collect($this->selectedFeatureIds)
-            ->filter(fn (string $id) => $valid->has((int) $id))
-            ->values()
-            ->all();
+        foreach ($scoped as $id) {
+            $key = (string) (int) $id;
+            $current = $this->featureInclusions[$key] ?? self::INCLUSION_UNSET;
+            $next[$key] = in_array($current, [
+                self::INCLUSION_UNSET,
+                ServiceFeature::INCLUSION_INCLUDED,
+                ServiceFeature::INCLUSION_EXCLUDED,
+            ], true) ? $current : self::INCLUSION_UNSET;
+        }
+
+        $this->featureInclusions = $next;
     }
 
     /**
@@ -176,12 +178,36 @@ class ServiceFeaturesStep extends Component
         $scoped = $catalog->scopedFeatureIdsForServiceType($this->serviceTypeId);
 
         $categoryIds = $this->scopedCategoryIdsForServiceType();
-        $requested = collect($this->selectedFeatureIds)->map(fn ($id) => (int) $id)->filter(fn (int $id) => $id > 0)->unique()->values()->all();
+        $requested = [];
+        foreach ($this->featureInclusions as $id => $inclusion) {
+            $featureId = (int) $id;
+            $inclusion = (string) $inclusion;
+            if ($featureId < 1 || $inclusion === self::INCLUSION_UNSET) {
+                continue;
+            }
 
-        $final = $catalog->filterFeatureIdsToCategoriesAndScope($requested, $categoryIds, $scoped);
+            $requested[$featureId] = $inclusion;
+        }
 
-        DB::transaction(function () use ($service, $final): void {
-            $service->features()->sync($final);
+        $allowedIds = array_flip($catalog->filterFeatureIdsToCategoriesAndScope(
+            array_keys($requested),
+            $categoryIds,
+            $scoped,
+        ));
+
+        $sync = [];
+        foreach ($requested as $id => $inclusion) {
+            if (! isset($allowedIds[$id])) {
+                continue;
+            }
+
+            $sync[$id] = [
+                'inclusion' => ServiceFeature::normalizeInclusion($inclusion),
+            ];
+        }
+
+        DB::transaction(function () use ($service, $sync): void {
+            $service->features()->sync($sync);
         });
 
         session()->flash('status', __('wizard.features_saved'));

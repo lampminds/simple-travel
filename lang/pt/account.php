@@ -569,6 +569,7 @@ return [
         'operator_preview_close' => 'Fechar',
         'operator_preview_loading' => 'A carregar…',
         'operator_preview_no_data' => 'Sem dados',
+        'operator_preview_features_excluded' => 'Não inclui',
         'operator_preview_yes' => 'Sim',
         'operator_preview_no' => 'Não',
         'operator_preview_visibility' => 'Audiência',
