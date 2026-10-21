@@ -25,6 +25,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
 class AccountResource extends LmpResource
@@ -245,14 +246,26 @@ class AccountResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('code')
                     ->label(__('filament.resources.account_columns.code'))
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('name')
                     ->label(__('filament.resources.account_columns.name'))
-                    ->searchable()
+                    ->description(function (Account $record): ?HtmlString {
+                        $commercialName = trim((string) $record->commercial_name);
+
+                        if ($commercialName === '') {
+                            return null;
+                        }
+
+                        return new HtmlString('<span style="font-style: italic">'.e($commercialName).'</span>');
+                    })
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->where(function (Builder $query) use ($search): void {
+                            $query->where('name', 'like', '%'.$search.'%')
+                                ->orWhere('commercial_name', 'like', '%'.$search.'%');
+                        });
+                    })
                     ->sortable(),
-                TextColumn::make('commercial_name')
-                    ->label(__('filament.resources.account_columns.commercial_name'))
-                    ->searchable(),
                 TextColumn::make('email')
                     ->label(__('filament.resources.account_columns.email'))
                     ->searchable(),

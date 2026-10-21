@@ -300,11 +300,19 @@ class Account extends Model implements HasMedia
     }
 
     /**
+     * Significant characters allowed in the alias portion of an account code.
+     * Hyphens and the 3-digit numeric suffix do not count toward this limit.
+     */
+    public const CODE_BASE_MAX_SIGNIFICANT_LENGTH = 15;
+
+    /**
      * Generate a unique code in the form [Alias]-NNN,
      * where NNN is 3 random digits from 2-9 (no zeros nor ones).
+     * The alias keeps at most 15 characters, ignoring hyphens.
      */
     public static function generateCode(string $nick): string
     {
+        $base = static::codeBaseFromNick($nick);
         $digits = '23456789';
 
         do {
@@ -312,10 +320,44 @@ class Account extends Model implements HasMedia
             for ($i = 0; $i < 3; $i++) {
                 $nnn .= $digits[random_int(0, 7)];
             }
-            $code = $nick . '-' . $nnn;
+            $code = $base . '-' . $nnn;
         } while (static::where('code', $code)->exists());
 
         return $code;
+    }
+
+    /**
+     * Alias portion of an account code, taken from the nick.
+     * Hyphens are kept as separators and do not count toward the 15-character limit.
+     */
+    public static function codeBaseFromNick(string $nick): string
+    {
+        $base = '';
+        $significant = 0;
+        $length = mb_strlen($nick);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = mb_substr($nick, $i, 1);
+
+            if ($char === '-') {
+                if ($base !== '' && ! str_ends_with($base, '-')) {
+                    $base .= '-';
+                }
+
+                continue;
+            }
+
+            if ($significant >= self::CODE_BASE_MAX_SIGNIFICANT_LENGTH) {
+                break;
+            }
+
+            $base .= $char;
+            $significant++;
+        }
+
+        $base = rtrim($base, '-');
+
+        return $base !== '' ? $base : 'account';
     }
 
     /**
