@@ -339,19 +339,16 @@ final class AccountProviderPriceListController extends Controller
     {
         return ServiceVariant::query()
             ->whereHas('service', fn ($query) => $query->where('account_id', $accountId))
-            ->with(['service.translations.language.locale'])
+            ->with([
+                'translations.language.locale',
+                'service.translations.language.locale',
+            ])
             ->orderBy('service_id')
             ->orderBy('sku')
             ->get()
-            ->mapWithKeys(function (ServiceVariant $variant): array {
-                $serviceName = trim($variant->service?->name ?? '');
-                $sku = trim((string) $variant->sku);
-
-                $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
-                $skuChunk = $sku !== '' ? $sku : ('Variant #'.$variant->id);
-
-                return [$variant->id => $serviceChunk.' — '.$skuChunk];
-            })
+            ->mapWithKeys(fn (ServiceVariant $variant): array => [
+                $variant->id => $variant->dropdownLabel(),
+            ])
             ->all();
     }
 

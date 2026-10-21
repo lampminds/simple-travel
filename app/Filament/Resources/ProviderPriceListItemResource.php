@@ -96,16 +96,15 @@ class ProviderPriceListItemResource extends LmpResource
 
                             return ServiceVariant::query()
                                 ->whereHas('service', fn ($q) => $q->where('account_id', (int) $providerId))
+                                ->with([
+                                    'translations.language.locale',
+                                    'service.translations.language.locale',
+                                ])
                                 ->orderBy('sku')
                                 ->get()
-                                ->mapWithKeys(function (ServiceVariant $variant): array {
-                                    $serviceName = trim((string) ($variant->service?->name ?? ''));
-                                    $sku = trim((string) $variant->sku);
-                                    $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
-                                    $skuChunk = $sku !== '' ? $sku : ('Variant #'.$variant->id);
-
-                                    return [$variant->id => $serviceChunk.' — '.$skuChunk];
-                                })
+                                ->mapWithKeys(fn (ServiceVariant $variant): array => [
+                                    $variant->id => $variant->dropdownLabel(),
+                                ])
                                 ->all();
                         })
                         ->searchable()

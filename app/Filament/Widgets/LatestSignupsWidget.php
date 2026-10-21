@@ -23,7 +23,7 @@ class LatestSignupsWidget extends Widget implements HasActions, HasSchemas
 
     protected static ?int $sort = 2;
 
-    protected int | string | array $columnSpan = 1;
+    protected int | string | array $columnSpan = 'full';
 
     protected string $view = 'filament.widgets.latest-signups-widget';
 

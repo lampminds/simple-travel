@@ -63,7 +63,7 @@
                         @foreach ($row['cells'] as $index => $cell)
                             <td
                                 class="py-2.5 {{ $loop->last ? 'text-end' : '' }}"
-                                style="padding-right: {{ $loop->last ? '0' : '1.25rem' }}; white-space: nowrap;"
+                                style="padding-right: {{ $loop->last ? '0' : '1.25rem' }}; white-space: normal; overflow-wrap: break-word; vertical-align: top;"
                             >
                                 <span
                                     @class([

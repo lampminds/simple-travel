@@ -24,7 +24,7 @@
             >
                 @foreach ($variants as $variant)
                     <option value="{{ $variant->id }}" @selected((int) $selectedVariantId === (int) $variant->id)>
-                        {{ $variant->name !== '' ? $variant->name : ($variant->sku !== '' ? $variant->sku : '#'.$variant->id) }}
+                        {{ $variant->dropdownLabel(includeServiceName: false) }}
                     </option>
                 @endforeach
             </select>
@@ -33,7 +33,7 @@
     @elseif ($variants->count() === 1)
         <p class="text-muted small mb-3">
             <span class="fw-semibold">{{ __('wizard.step7_transfer_field_variant') }}:</span>
-            {{ $variants->first()->name !== '' ? $variants->first()->name : ($variants->first()->sku !== '' ? $variants->first()->sku : '#'.$variants->first()->id) }}
+            {{ $variants->first()->dropdownLabel(includeServiceName: false) }}
         </p>
     @endif
 

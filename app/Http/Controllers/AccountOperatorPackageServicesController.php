@@ -113,29 +113,11 @@ final class AccountOperatorPackageServicesController extends Controller
             ?? ('#'.$offer->provider_id);
 
         $variant = $offer->serviceVariant;
-        $service = $variant?->service;
-        if ($variant === null || $service === null) {
+        if ($variant === null) {
             return $providerLabel;
         }
 
-        $serviceName = trim((string) ($service->name ?? ''));
-        if ($serviceName === '') {
-            $serviceName = 'Service #'.$service->id;
-        }
-
-        $detail = trim((string) ($variant->name ?? ''));
-        if ($detail === '') {
-            $detail = trim((string) ($variant->sku ?? ''));
-        }
-        if ($detail === '') {
-            $detail = 'Variant #'.$variant->id;
-        }
-
-        if (strcasecmp($detail, $serviceName) === 0) {
-            return $providerLabel.' — '.$serviceName;
-        }
-
-        return $providerLabel.' — '.$serviceName.' — '.$detail;
+        return $providerLabel.' — '.$variant->dropdownLabel();
     }
 
     private function resolveOperatorOwnerAccount(Request $request): Account

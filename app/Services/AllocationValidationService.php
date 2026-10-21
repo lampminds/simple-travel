@@ -122,13 +122,7 @@ final class AllocationValidationService
 
     private function variantLabel(ServiceVariant $variant): string
     {
-        $serviceName = trim($variant->service?->name ?? '');
-        $sku = trim((string) $variant->sku);
-
-        $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
-        $skuChunk = $sku !== '' ? $sku : ('Variant #'.$variant->id);
-
-        return $serviceChunk.' — '.$skuChunk;
+        return $variant->dropdownLabel();
     }
 
     private function dateRangesOverlap(?string $startA, ?string $endA, ?string $startB, ?string $endB): bool

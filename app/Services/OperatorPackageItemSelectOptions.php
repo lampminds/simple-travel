@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\OperatorPackageItem;
 use App\Models\Service;
+use App\Models\ServiceVariant;
 
 /**
  * Builds select labels for operator package lines (price lists, etc.).
@@ -24,7 +25,8 @@ final class OperatorPackageItemSelectOptions
             ->with([
                 'catalog.translations',
                 'service',
-                'serviceVariant',
+                'serviceVariant.translations.language.locale',
+                'serviceVariant.service.translations.language.locale',
                 'serviceOffer.providerAccount',
             ])
             ->orderBy('operator_service_catalog_id')
@@ -43,21 +45,17 @@ final class OperatorPackageItemSelectOptions
     public function label(OperatorPackageItem $item): string
     {
         $packageName = $item->catalog?->displayLabel() ?? '#'.$item->operator_service_catalog_id;
-        $serviceName = $item->service instanceof Service
-            ? (string) $item->service->name
-            : __('account.operator_price_lists.package_item_unknown_service');
-
-        $variantPart = '';
-        if ($item->serviceVariant !== null) {
-            $sku = trim((string) ($item->serviceVariant->sku ?? ''));
-            $variantPart = $sku !== '' ? ' ('.$sku.')' : '';
-        }
+        $serviceSegment = $item->serviceVariant instanceof ServiceVariant
+            ? $item->serviceVariant->dropdownLabel()
+            : ($item->service instanceof Service
+                ? (string) $item->service->name
+                : __('account.operator_price_lists.package_item_unknown_service'));
 
         $kind = $item->catalog?->isDirectService()
             ? __('account.catalog_kind.service')
             : __('account.catalog_kind.package');
 
-        $segments = [$kind, $packageName, $serviceName.$variantPart];
+        $segments = [$kind, $packageName, $serviceSegment];
 
         if ($item->day_number !== null) {
             $segments[] = __('account.operator_price_lists.package_item_day', ['day' => $item->day_number]);

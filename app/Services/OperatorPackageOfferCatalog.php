@@ -120,19 +120,6 @@ final class OperatorPackageOfferCatalog
             return null;
         }
 
-        $serviceName = trim((string) ($service->name ?? ''));
-        if ($serviceName === '') {
-            $serviceName = '#'.$service->id;
-        }
-
-        $variantLabel = trim((string) ($variant->sku ?? ''));
-        if ($variantLabel === '') {
-            $variantLabel = trim((string) ($variant->name ?? ''));
-        }
-        if ($variantLabel === '') {
-            $variantLabel = '#'.$variant->id;
-        }
-
-        return $serviceName.' — '.$variantLabel;
+        return $variant->dropdownLabel();
     }
 }

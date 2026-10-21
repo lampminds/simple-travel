@@ -85,15 +85,9 @@ class ServiceTransferResource extends LmpResource
                                             ->orderBy('sort_order')
                                             ->orderBy('id')
                                             ->get()
-                                            ->mapWithKeys(function (ServiceVariant $variant): array {
-                                                $serviceName = trim((string) ($variant->service?->name ?? ''));
-                                                $variantLabel = trim((string) $variant->name) !== ''
-                                                    ? trim((string) $variant->name)
-                                                    : (trim((string) $variant->sku) !== '' ? trim((string) $variant->sku) : '#'.$variant->id);
-                                                $serviceChunk = $serviceName !== '' ? $serviceName : ('Service #'.$variant->service_id);
-
-                                                return [$variant->id => $serviceChunk.' — '.$variantLabel];
-                                            })
+                                            ->mapWithKeys(fn (ServiceVariant $variant): array => [
+                                                $variant->id => $variant->dropdownLabel(),
+                                            ])
                                     )
                                     ->searchable()
                                     ->required()

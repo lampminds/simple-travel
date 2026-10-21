@@ -116,6 +116,45 @@ class ServiceVariant extends Model implements HasMedia
     }
 
     /**
+     * Option label for variant dropdowns: SKU first, then the readable description.
+     *
+     * The description is the service name, plus the variant name when it adds detail.
+     * Inside a single service, pass $includeServiceName false so only the variant name follows the SKU.
+     */
+    public function dropdownLabel(bool $includeServiceName = true): string
+    {
+        $sku = trim((string) ($this->sku ?? ''));
+        $variantName = trim((string) $this->name);
+        $serviceName = $includeServiceName
+            ? trim((string) ($this->service?->name ?? ''))
+            : '';
+
+        $descriptionParts = [];
+        if ($serviceName !== '' && strcasecmp($serviceName, $sku) !== 0) {
+            $descriptionParts[] = $serviceName;
+        }
+        if ($variantName !== '' && strcasecmp($variantName, $serviceName) !== 0 && strcasecmp($variantName, $sku) !== 0) {
+            $descriptionParts[] = $variantName;
+        }
+
+        $description = implode(' — ', $descriptionParts);
+
+        if ($sku !== '' && $description !== '') {
+            return $sku.' — '.$description;
+        }
+
+        if ($sku !== '') {
+            return $sku;
+        }
+
+        if ($description !== '') {
+            return $description;
+        }
+
+        return '#'.$this->id;
+    }
+
+    /**
      * Translation row for display (wizard list, dropdowns).
      */
     protected function getTranslationForDisplay(): ?ServiceVariantTranslation
