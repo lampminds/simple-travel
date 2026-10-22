@@ -42,6 +42,8 @@ class ServiceMediaStep extends Component
 
     public function saveMain(): void
     {
+        $this->ensureImagesBelongToService();
+
         $this->validate(
             [
                 'mainPhoto' => ['required', 'image', 'max:'.Service::MEDIA_MAX_FILE_SIZE_KB],
@@ -64,12 +66,16 @@ class ServiceMediaStep extends Component
 
     public function removeMain(): void
     {
+        $this->ensureImagesBelongToService();
+
         $this->authorizedService()->clearMediaCollection(Service::MEDIA_COLLECTION_MAIN);
         $this->flashMessage = __('wizard.media_main_removed');
     }
 
     public function addGallery(): void
     {
+        $this->ensureImagesBelongToService();
+
         $this->validate(
             [
                 'galleryPhotos' => ['required', 'array', 'min:1'],
@@ -96,6 +102,8 @@ class ServiceMediaStep extends Component
 
     public function removeGalleryMedia(int $mediaId): void
     {
+        $this->ensureImagesBelongToService();
+
         $service = $this->authorizedService();
         $media = $service
             ->media()
@@ -107,6 +115,14 @@ class ServiceMediaStep extends Component
             $media->delete();
             $this->flashMessage = __('wizard.media_gallery_removed');
         }
+    }
+
+    /**
+     * Service-level uploads are rejected when images belong to each variant.
+     */
+    protected function ensureImagesBelongToService(): void
+    {
+        abort_unless(! $this->authorizedService()->imagesBelongToVariants(), 403);
     }
 
     protected function authorizedService(): Service
@@ -125,9 +141,12 @@ class ServiceMediaStep extends Component
         $service = $this->authorizedService();
         $service->load('media');
 
+        $imagesBelongToVariants = $service->imagesBelongToVariants();
+
         return view('livewire.service-wizard.service-media-step', [
-            'mainMedia' => $service->getFirstMedia(Service::MEDIA_COLLECTION_MAIN),
-            'galleryMedia' => $service->getMedia(Service::MEDIA_COLLECTION_GALLERY),
+            'imagesBelongToVariants' => $imagesBelongToVariants,
+            'mainMedia' => $imagesBelongToVariants ? null : $service->getFirstMedia(Service::MEDIA_COLLECTION_MAIN),
+            'galleryMedia' => $imagesBelongToVariants ? collect() : $service->getMedia(Service::MEDIA_COLLECTION_GALLERY),
         ]);
     }
 }

@@ -67,8 +67,8 @@
             font-weight: 600;
         }
         .popover.catalog-helper-popover .popover-body {
-            max-height: min(70vh, 28rem);
-            overflow: auto;
+            max-height: none;
+            overflow: visible;
             background-color: #f8fafc;
             color: #1e293b;
         }

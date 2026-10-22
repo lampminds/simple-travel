@@ -33,8 +33,8 @@
             font-weight: 600;
         }
         .popover.catalog-helper-popover .popover-body {
-            max-height: min(70vh, 28rem);
-            overflow: auto;
+            max-height: none;
+            overflow: visible;
             background-color: #f8fafc;
             color: #1e293b;
         }
@@ -86,6 +86,17 @@
                             ])
                         </div>
                     </div>
+
+                    @if (($serviceType->code ?? null) === \App\Models\ServiceType::CODE_COMBO)
+                        <div class="card mt-3" id="combo-components">
+                            <div class="card-body">
+                                @livewire(\App\Livewire\ServiceWizard\ServiceComponentsStep::class, [
+                                    'serviceId' => $service->id,
+                                    'serviceTypeId' => $serviceType->id,
+                                ], key('service-components-'.$service->id))
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

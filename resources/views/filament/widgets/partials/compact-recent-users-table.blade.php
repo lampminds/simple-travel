@@ -11,7 +11,16 @@
     </p>
 @else
     <div class="overflow-x-auto">
-        <table class="w-full text-sm" style="table-layout: fixed; width: 100%;">
+        <style>
+            .fi-recent-users-table tbody tr:nth-child(even) {
+                background-color: var(--gray-100);
+            }
+
+            .dark .fi-recent-users-table tbody tr:nth-child(even) {
+                background-color: rgb(255 255 255 / 0.06);
+            }
+        </style>
+        <table class="fi-recent-users-table w-full text-sm" style="table-layout: fixed; width: 100%;">
             <colgroup>
                 @if ($showImpersonation)
                     <col style="width: 24%">

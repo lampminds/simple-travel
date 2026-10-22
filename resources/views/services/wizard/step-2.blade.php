@@ -15,6 +15,7 @@
         serviceTypeId: $step2HelperServiceTypeId,
         accountTypeId: $step2HelperAccountTypeId,
     );
+    $catalogStatusHelp = \App\Support\CatalogHelperContent::htmlForQuery($step2HelperQuery('status'));
     $catalogFeaturedHelp = \App\Support\CatalogHelperContent::htmlForQuery($step2HelperQuery('is_featured'));
     $catalogPublicHelp = \App\Support\CatalogHelperContent::htmlForQuery($step2HelperQuery('is_public'));
     $catalogConfirmationTimeHoursHelp = \App\Support\CatalogHelperContent::htmlForQuery($step2HelperQuery('confirmation_time_hours'));
@@ -41,8 +42,8 @@
             font-weight: 600;
         }
         .popover.catalog-helper-popover .popover-body {
-            max-height: min(70vh, 28rem);
-            overflow: auto;
+            max-height: none;
+            overflow: visible;
             background-color: #f8fafc;
             color: #1e293b;
         }
@@ -84,6 +85,7 @@
                             @livewire(\App\Livewire\ServiceWizard\ServiceStatusStep::class, [
                                 'serviceId' => $service->id,
                                 'serviceTypeId' => $serviceType->id,
+                                'catalogStatusHelpHtml' => $catalogStatusHelp,
                                 'catalogFeaturedHelpHtml' => $catalogFeaturedHelp,
                                 'catalogPublicHelpHtml' => $catalogPublicHelp,
                                 'catalogConfirmationTimeHoursHelpHtml' => $catalogConfirmationTimeHoursHelp,

@@ -18,6 +18,8 @@ class ServiceStatusStep extends Component
     /** @var array<string, mixed> */
     public array $form = [];
 
+    public ?string $catalogStatusHelpHtml = null;
+
     public ?string $catalogFeaturedHelpHtml = null;
 
     public ?string $catalogPublicHelpHtml = null;
@@ -27,12 +29,14 @@ class ServiceStatusStep extends Component
     public function mount(
         int $serviceId,
         int $serviceTypeId,
+        ?string $catalogStatusHelpHtml = null,
         ?string $catalogFeaturedHelpHtml = null,
         ?string $catalogPublicHelpHtml = null,
         ?string $catalogConfirmationTimeHoursHelpHtml = null,
     ): void {
         $this->serviceId = $serviceId;
         $this->serviceTypeId = $serviceTypeId;
+        $this->catalogStatusHelpHtml = $catalogStatusHelpHtml;
         $this->catalogFeaturedHelpHtml = $catalogFeaturedHelpHtml;
         $this->catalogPublicHelpHtml = $catalogPublicHelpHtml;
         $this->catalogConfirmationTimeHoursHelpHtml = $catalogConfirmationTimeHoursHelpHtml;
@@ -57,7 +61,9 @@ class ServiceStatusStep extends Component
         $service = $this->authorizedService();
 
         if ($validated['form']['status'] === 'active' && ! $service->canBeActivated()) {
-            $this->addError('form.status', __('wizard.step2_active_requires_variants'));
+            $this->addError('form.status', $service->isCombo()
+                ? __('wizard.step2_active_requires_components')
+                : __('wizard.step2_active_requires_variants'));
 
             return;
         }

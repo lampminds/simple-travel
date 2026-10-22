@@ -1,7 +1,15 @@
 <div>
     <div class="row g-3">
         <div class="col-md-6">
-            <label class="form-label required-label">{{ __('wizard.step2_fields.status') }}</label>
+            <label class="form-label required-label d-inline-flex align-items-center gap-1">
+                {{ __('wizard.step2_fields.status') }}
+                <x-catalog-helper-icon
+                    :html="$catalogStatusHelpHtml"
+                    trigger-id="step2-catalog-helper-status"
+                    content-id="step2-catalog-helper-status-html"
+                    :aria-label="__('wizard.catalog_helper.aria_label_step2_field', ['field' => __('wizard.step2_fields.status')])"
+                />
+            </label>
             <select class="form-select @error('form.status') is-invalid @enderror" wire:model.live="form.status">
                 @foreach (['active', 'onhold', 'suspended', 'discontinued', 'inactive', 'terminated'] as $status)
                     @if ($status !== 'active' || ($canActivateService ?? false))

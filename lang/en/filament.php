@@ -1925,6 +1925,7 @@ return [
             'gallery' => 'Gallery (slider)',
             'gallery_help' => 'Optional images for the slider. Drag to reorder.',
             'max_image_size_hint' => 'Maximum 3 MB per image.',
+            'managed_on_variants' => 'Images for this service are uploaded on each variant, not on the service.',
         ],
 
         'service_variant_fields' => [
@@ -1978,6 +1979,10 @@ return [
             'description' => 'Description',
             'experiences' => 'Experiences',
             'experiences_help' => 'Select the experiences that apply to this service.',
+            'images_scope' => 'Where images are uploaded',
+            'images_scope_service' => 'On the service',
+            'images_scope_variant' => 'On each variant',
+            'images_scope_help' => 'By default, images are uploaded on the service. Choose each variant when every variant has its own images.',
         ],
 
         'service_columns' => [
@@ -1986,6 +1991,7 @@ return [
             'service_type' => 'Service type',
             'name' => 'Name',
             'status' => 'Status',
+            'images_scope' => 'Images',
         ],
 
         'service_delete_cascade' => [

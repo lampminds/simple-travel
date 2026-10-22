@@ -27,6 +27,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Text;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -142,6 +144,16 @@ class ServiceResource extends LmpResource
                                     ])
                                     ->default('active')
                                     ->required(),
+                                Select::make('images_scope')
+                                    ->label(__('filament.resources.service_fields.images_scope'))
+                                    ->options([
+                                        Service::IMAGES_SCOPE_SERVICE => __('filament.resources.service_fields.images_scope_service'),
+                                        Service::IMAGES_SCOPE_VARIANT => __('filament.resources.service_fields.images_scope_variant'),
+                                    ])
+                                    ->default(Service::IMAGES_SCOPE_SERVICE)
+                                    ->required()
+                                    ->live()
+                                    ->helperText(__('filament.resources.service_fields.images_scope_help')),
                             ])->columns(2),
                         ]),
                     Tab::make(__('filament.resources.service_tabs.translations'))
@@ -313,6 +325,8 @@ class ServiceResource extends LmpResource
                         ->visibleOn(['edit', 'view']),
                     Tab::make(__('filament.resources.service_tabs.media'))
                         ->schema([
+                            Text::make(__('filament.resources.service_media.managed_on_variants'))
+                                ->visible(fn (Get $get): bool => ($get('images_scope') ?: Service::IMAGES_SCOPE_SERVICE) === Service::IMAGES_SCOPE_VARIANT),
                             Section::make('')->schema([
                                 SpatieMediaLibraryFileUpload::make('main_image')
                                     ->label(__('filament.resources.service_media.main_image'))
@@ -339,7 +353,9 @@ class ServiceResource extends LmpResource
                                             .__('filament.resources.service_media.max_image_size_hint')
                                     )
                                     ->columnSpanFull(),
-                            ])->columns(1),
+                            ])
+                                ->columns(1)
+                                ->visible(fn (Get $get): bool => ($get('images_scope') ?: Service::IMAGES_SCOPE_SERVICE) !== Service::IMAGES_SCOPE_VARIANT),
                         ])
                         ->visibleOn(['edit', 'view']),
                 ]),
@@ -365,8 +381,14 @@ class ServiceResource extends LmpResource
                     ->sortable(),
                 TextColumn::make('serviceType.name')
                     ->label(__('filament.resources.service_columns.service_type'))
-                    ->searchable()
-                    ->sortable(),
+                    // `name` is a translation accessor on ServiceType, not a DB
+                    // column on cat_service_types: search via translations and
+                    // do not sort by the non-existent column.
+                    ->searchable(query: function ($query, $search): void {
+                        $query->whereHas('serviceType.translations', function ($q) use ($search): void {
+                            $q->where('name', 'like', '%' . $search . '%');
+                        });
+                    }),
                 TextColumn::make('name')
                     ->label(__('filament.resources.service_columns.name'))
                     ->searchable(query: function ($query, $search): void {
@@ -377,6 +399,13 @@ class ServiceResource extends LmpResource
                 TextColumn::make('status')
                     ->label(__('filament.resources.service_columns.status'))
                     ->formatStateUsing(fn (string $state) => __("filament.resources.service_status.{$state}"))
+                    ->sortable(),
+                TextColumn::make('images_scope')
+                    ->label(__('filament.resources.service_columns.images_scope'))
+                    ->formatStateUsing(fn (?string $state): string => __(
+                        'filament.resources.service_fields.images_scope_'.($state ?: Service::IMAGES_SCOPE_SERVICE)
+                    ))
+                    ->badge()
                     ->sortable(),
             ])
             ->filters([

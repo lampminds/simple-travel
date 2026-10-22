@@ -229,6 +229,30 @@ class CatServiceTypeTranslationsTableSeeder extends Seeder
                 'name' => 'Otros',
                 'description' => NULL,
             ),
+            26 =>
+            array (
+                'id' => 39,
+                'service_type_id' => 10,
+                'language_id' => 1,
+                'name' => 'Combo',
+                'description' => 'Bundled services sold as one product',
+            ),
+            27 =>
+            array (
+                'id' => 40,
+                'service_type_id' => 10,
+                'language_id' => 2,
+                'name' => 'Combo',
+                'description' => 'Servicios combinados que se venden como un solo producto',
+            ),
+            28 =>
+            array (
+                'id' => 41,
+                'service_type_id' => 10,
+                'language_id' => 3,
+                'name' => 'Combo',
+                'description' => 'Serviços combinados vendidos como um único produto',
+            ),
         ));
         });
     }

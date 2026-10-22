@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Service;
+use App\Models\ServiceComponent;
 use App\Models\ServiceFeature;
 use App\Models\ServiceActivity;
 use App\Models\ServiceDetail;
@@ -75,12 +76,16 @@ final class ServiceCopyService
 
             if ($options->includes(ServiceCopySections::VARIANTS)) {
                 $this->copyVariants($source, $target);
+                $this->copyComponents($source);
             }
 
             if ($options->includes(ServiceCopySections::IMAGES)) {
-                $this->copyServiceMedia($source, $target);
-                if ($options->includes(ServiceCopySections::VARIANTS)) {
-                    $this->copyVariantMedia($source);
+                if ($source->imagesBelongToVariants()) {
+                    if ($options->includes(ServiceCopySections::VARIANTS)) {
+                        $this->copyVariantMedia($source);
+                    }
+                } else {
+                    $this->copyServiceMedia($source, $target);
                 }
             }
 
@@ -102,6 +107,7 @@ final class ServiceCopyService
             'account_id' => $source->account_id,
             'service_type_id' => $source->service_type_id,
             'city_id' => $source->city_id,
+            'images_scope' => $source->images_scope ?: Service::IMAGES_SCOPE_SERVICE,
             'status' => 'onhold',
             'is_featured' => false,
             'is_public' => false,
@@ -202,6 +208,38 @@ final class ServiceCopyService
             if ($featureSync !== []) {
                 $newVariant->features()->sync($featureSync);
             }
+        }
+    }
+
+    /**
+     * Copy combo composition: parent variants are remapped to the copies,
+     * child variants keep pointing at the (shared) child services.
+     */
+    protected function copyComponents(Service $source): void
+    {
+        if ($this->variantIdMap === []) {
+            return;
+        }
+
+        $components = ServiceComponent::query()
+            ->whereIn('parent_variant_id', array_keys($this->variantIdMap))
+            ->get();
+
+        foreach ($components as $component) {
+            $newParentId = $this->variantIdMap[(int) $component->parent_variant_id] ?? null;
+            if ($newParentId === null) {
+                continue;
+            }
+
+            ServiceComponent::query()->create([
+                'parent_variant_id' => $newParentId,
+                'child_variant_id' => $component->child_variant_id,
+                'quantity' => $component->quantity,
+                'day_number' => $component->day_number,
+                'inclusion_mode' => $component->inclusion_mode,
+                'sort_order' => $component->sort_order,
+                'notes' => $component->notes,
+            ]);
         }
     }
 

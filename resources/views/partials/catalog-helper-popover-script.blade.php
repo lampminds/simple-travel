@@ -1,4 +1,10 @@
 <style>
+    /* Helpers must be fully readable: no internal scrolling. */
+    .popover.catalog-helper-popover .popover-body {
+        max-height: none;
+        overflow: visible;
+    }
+
     .popover.catalog-helper-popover .popover-header {
         display: flex;
         align-items: center;
@@ -107,7 +113,11 @@
                 const popover = new window.bootstrap.Popover(btn, {
                     html: true,
                     sanitize: false,
-                    trigger: 'hover',
+                    // Manual + interactive hover below: opens on mouseenter
+                    // and stays open while the cursor is over the trigger OR
+                    // the popover itself, so long texts can be read (and the
+                    // mouse can be moved into the popover) without it vanishing.
+                    trigger: 'manual',
                     placement: 'auto',
                     title: buildPopoverTitle(),
                     content: content,
@@ -115,10 +125,59 @@
                     container: 'body',
                 });
 
-                btn.addEventListener('shown.bs.popover', function () {
-                    hideAllCatalogHelperPopovers(btn);
+                let helperHideTimer = null;
+
+                // NOTE: Bootstrap 5.3's internal `_isShown` is not a boolean
+                // flag, so track visibility ourselves via shown/hidden events.
+                let helperIsShown = false;
+
+                btn.addEventListener('hidden.bs.popover', function () {
+                    helperIsShown = false;
                 });
 
+                function cancelHelperHide() {
+                    if (helperHideTimer !== null) {
+                        clearTimeout(helperHideTimer);
+                        helperHideTimer = null;
+                    }
+                }
+
+                function scheduleHelperHide() {
+                    cancelHelperHide();
+                    helperHideTimer = setTimeout(function () {
+                        popover.hide();
+                    }, 250);
+                }
+
+                btn.addEventListener('mouseenter', function () {
+                    cancelHelperHide();
+                    hideAllCatalogHelperPopovers(btn);
+                    if (! helperIsShown) {
+                        popover.show();
+                    }
+                });
+
+                btn.addEventListener('mouseleave', scheduleHelperHide);
+
+                btn.addEventListener('shown.bs.popover', function () {
+                    helperIsShown = true;
+                    hideAllCatalogHelperPopovers(btn);
+
+                    // Bootstrap 5.3.2 has no public getTipElement(); the tip
+                    // element id is exposed via aria-describedby on the trigger.
+                    const tipId = btn.getAttribute('aria-describedby');
+                    const tip = tipId ? document.getElementById(tipId) : null;
+
+                    if (tip && ! tip.dataset.catalogHelperHoverBound) {
+                        tip.dataset.catalogHelperHoverBound = '1';
+                        tip.addEventListener('mouseenter', cancelHelperHide);
+                        tip.addEventListener('mouseleave', scheduleHelperHide);
+                    }
+                });
+
+                // Touch devices: click toggles the popover. On hover-capable
+                // devices the click is ignored (mouseenter already opened it,
+                // and a click would instantly toggle it shut).
                 btn.addEventListener('click', function (e) {
                     if (window.matchMedia('(hover: hover)').matches) {
                         e.preventDefault();
@@ -129,7 +188,9 @@
                     e.preventDefault();
                     e.stopPropagation();
 
-                    if (popover._isShown) {
+                    cancelHelperHide();
+
+                    if (helperIsShown) {
                         popover.hide();
                     } else {
                         hideAllCatalogHelperPopovers(btn);

@@ -82,6 +82,13 @@ class CatServiceTypesTableSeeder extends Seeder
                 'sort_order' => 9999,
                 'active' => 1,
             ),
+            9 => 
+            array (
+                'id' => 10,
+                'code' => 'combo',
+                'sort_order' => 9999,
+                'active' => 1,
+            ),
         ));
         
         

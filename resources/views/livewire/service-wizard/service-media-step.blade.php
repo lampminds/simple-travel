@@ -3,6 +3,11 @@
         <div class="alert alert-success py-2 small" role="status">{{ $flashMessage }}</div>
     @endif
 
+    @if ($imagesBelongToVariants)
+        <div class="alert alert-info mb-0" role="status">
+            {{ __('wizard.media_managed_on_variants') }}
+        </div>
+    @else
     <div class="row g-4">
         <div class="col-md-6">
             <h5 class="h6 mb-2">{{ __('wizard.media_main_heading') }}</h5>
@@ -101,4 +106,5 @@
             </button>
         </div>
     </div>
+    @endif
 </div>

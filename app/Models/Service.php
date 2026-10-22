@@ -32,6 +32,12 @@ class Service extends Model implements HasMedia
 
     public const MEDIA_CONVERSION_REGULAR = 'regular';
 
+    /** Images are uploaded once on the service and shared by its variants. */
+    public const IMAGES_SCOPE_SERVICE = 'service';
+
+    /** Each variant has its own images. */
+    public const IMAGES_SCOPE_VARIANT = 'variant';
+
     /**
      * Max upload size per image in kilobytes (Laravel `max` rule for files; Filament `maxSize`).
      * 3 MiB.
@@ -44,6 +50,7 @@ class Service extends Model implements HasMedia
         'city_id',
         'is_featured',
         'is_public',
+        'images_scope',
         'booking_mode',
         'confirmation_time_hours',
         'status',
@@ -52,6 +59,7 @@ class Service extends Model implements HasMedia
     protected $casts = [
         'is_featured' => 'boolean',
         'is_public' => 'boolean',
+        'images_scope' => 'string',
         'booking_mode' => 'string',
         'confirmation_time_hours' => 'integer',
         'status' => 'string',
@@ -128,6 +136,46 @@ class Service extends Model implements HasMedia
     public function serviceVariants(): HasMany
     {
         return $this->hasMany(ServiceVariant::class)->orderBy('sort_order');
+    }
+
+    /** Whether this service is a combo (parent) service. */
+    public function isCombo(): bool
+    {
+        $code = $this->relationLoaded('serviceType')
+            ? $this->serviceType?->code
+            : $this->serviceType()->value('code');
+
+        return strtolower(trim((string) $code)) === ServiceType::CODE_COMBO;
+    }
+
+    /**
+     * Component lines of every variant of this (combo) service.
+     */
+    public function components(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            ServiceComponent::class,
+            ServiceVariant::class,
+            'service_id',
+            'parent_variant_id',
+            'id',
+            'id',
+        )->orderBy('service_components.sort_order');
+    }
+
+    /**
+     * Component lines where a variant of this service is used as a child.
+     */
+    public function componentUsages(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            ServiceComponent::class,
+            ServiceVariant::class,
+            'service_id',
+            'child_variant_id',
+            'id',
+            'id',
+        );
     }
 
     public function availabilityRules(): HasMany
@@ -291,6 +339,27 @@ class Service extends Model implements HasMedia
         return $query->whereHas('serviceVariants');
     }
 
+    /**
+     * Allowed values for {@see $images_scope}.
+     *
+     * @return list<string>
+     */
+    public static function imagesScopes(): array
+    {
+        return [
+            self::IMAGES_SCOPE_SERVICE,
+            self::IMAGES_SCOPE_VARIANT,
+        ];
+    }
+
+    /**
+     * Whether images are stored on each variant instead of on the service.
+     */
+    public function imagesBelongToVariants(): bool
+    {
+        return $this->images_scope === self::IMAGES_SCOPE_VARIANT;
+    }
+
     public function hasVariants(): bool
     {
         if ($this->relationLoaded('serviceVariants')) {
@@ -302,7 +371,18 @@ class Service extends Model implements HasMedia
 
     public function canBeActivated(): bool
     {
-        return $this->hasVariants();
+        if (! $this->hasVariants()) {
+            return false;
+        }
+
+        if (! $this->isCombo()) {
+            return true;
+        }
+
+        // A combo variant without components would sell an empty product.
+        return ! $this->serviceVariants()
+            ->whereDoesntHave('components')
+            ->exists();
     }
 
     /**

@@ -33,7 +33,9 @@
             <table class="table table-hover align-middle bg-white border rounded mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th scope="col" class="text-center" style="width: 4rem;">{{ __('wizard.variants_col_thumb') }}</th>
+                        @if ($imagesBelongToVariants)
+                            <th scope="col" class="text-center" style="width: 4rem;">{{ __('wizard.variants_col_thumb') }}</th>
+                        @endif
                         <th scope="col">{{ __('wizard.variants_col_sku') }}</th>
                         <th scope="col">{{ __('wizard.variants_col_name') }}</th>
                         <th scope="col">{{ __('wizard.variants_col_status') }}</th>
@@ -43,22 +45,24 @@
                 </thead>
                 <tbody>
                     @foreach ($variants as $variant)
-                        @php
-                            $thumb = $variant->getFirstMedia(ServiceVariant::MEDIA_COLLECTION_MAIN);
-                        @endphp
                         <tr>
-                            <td class="text-center">
-                                @if ($thumb)
-                                    <img
-                                        src="{{ $thumb->getAvailableUrl([ServiceVariant::MEDIA_CONVERSION_THUMBNAIL]) }}"
-                                        alt=""
-                                        class="rounded border"
-                                        style="width: 40px; height: 40px; object-fit: cover;"
-                                    >
-                                @else
-                                    <span class="text-muted small">—</span>
-                                @endif
-                            </td>
+                            @if ($imagesBelongToVariants)
+                                @php
+                                    $thumb = $variant->getFirstMedia(ServiceVariant::MEDIA_COLLECTION_MAIN);
+                                @endphp
+                                <td class="text-center">
+                                    @if ($thumb)
+                                        <img
+                                            src="{{ $thumb->getAvailableUrl([ServiceVariant::MEDIA_CONVERSION_THUMBNAIL]) }}"
+                                            alt=""
+                                            class="rounded border"
+                                            style="width: 40px; height: 40px; object-fit: cover;"
+                                        >
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
+                                </td>
+                            @endif
                             <td class="fw-medium">{{ $variant->sku }}</td>
                             <td>{{ $variant->name !== '' ? $variant->name : '—' }}</td>
                             <td>{{ __('filament.resources.service_variant_status.'.$variant->status) }}</td>

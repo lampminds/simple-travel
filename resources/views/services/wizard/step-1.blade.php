@@ -40,8 +40,8 @@
             font-weight: 600;
         }
         .popover.catalog-helper-popover .popover-body {
-            max-height: min(70vh, 28rem);
-            overflow: auto;
+            max-height: none;
+            overflow: visible;
             background-color: #f8fafc;
             color: #1e293b;
         }
@@ -112,6 +112,47 @@
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                             @enderror
                                             @error('city_id')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        @php
+                                            $imagesScope = old(
+                                                'images_scope',
+                                                $service?->images_scope ?? \App\Models\Service::IMAGES_SCOPE_SERVICE
+                                            );
+                                        @endphp
+                                        <div class="mb-3">
+                                            <span class="form-label d-block required-label">{{ __('wizard.step1_images_scope') }}</span>
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input @error('images_scope') is-invalid @enderror"
+                                                    type="radio"
+                                                    name="images_scope"
+                                                    id="images_scope_service"
+                                                    value="{{ \App\Models\Service::IMAGES_SCOPE_SERVICE }}"
+                                                    @checked($imagesScope === \App\Models\Service::IMAGES_SCOPE_SERVICE)
+                                                >
+                                                <label class="form-check-label" for="images_scope_service">
+                                                    {{ __('wizard.step1_images_scope_service') }}
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input
+                                                    class="form-check-input @error('images_scope') is-invalid @enderror"
+                                                    type="radio"
+                                                    name="images_scope"
+                                                    id="images_scope_variant"
+                                                    value="{{ \App\Models\Service::IMAGES_SCOPE_VARIANT }}"
+                                                    @checked($imagesScope === \App\Models\Service::IMAGES_SCOPE_VARIANT)
+                                                >
+                                                <label class="form-check-label" for="images_scope_variant">
+                                                    {{ __('wizard.step1_images_scope_variant') }}
+                                                </label>
+                                            </div>
+                                            <small class="form-text text-muted">{{ __('wizard.step1_images_scope_help') }}</small>
+                                            @error('images_scope')
                                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                                             @enderror
                                         </div>

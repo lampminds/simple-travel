@@ -149,6 +149,16 @@ class CatHelpersTableSeeder extends Seeder
                 'active' => 1,
                 'notes' => NULL,
             ),
+            13 => 
+            array (
+                'id' => 15,
+                'screen_code' => 'service_wizard_step2',
+                'code' => 'status',
+                'account_type_id' => NULL,
+                'service_type_id' => NULL,
+                'active' => 1,
+                'notes' => NULL,
+            ),
         ));
         
         

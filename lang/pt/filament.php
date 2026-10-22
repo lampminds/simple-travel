@@ -1851,6 +1851,7 @@ return [
             'gallery' => 'Galeria (slider)',
             'gallery_help' => 'Imagens opcionais para o carrossel. Arraste para reordenar.',
             'max_image_size_hint' => 'Máximo 3 MB por imagem.',
+            'managed_on_variants' => 'As imagens deste serviço são carregadas em cada variante, não no serviço.',
         ],
 
         'service_variant_fields' => [
@@ -1904,6 +1905,10 @@ return [
             'description' => 'Descrição',
             'experiences' => 'Experiências',
             'experiences_help' => 'Selecione as experiências que se aplicam a este serviço.',
+            'images_scope' => 'Onde as imagens são carregadas',
+            'images_scope_service' => 'No serviço',
+            'images_scope_variant' => 'Em cada variante',
+            'images_scope_help' => 'Por padrão as imagens são carregadas no serviço. Escolha cada variante quando cada uma tiver suas próprias imagens.',
         ],
 
         'service_columns' => [
@@ -1912,6 +1917,7 @@ return [
             'service_type' => 'Tipo de serviço',
             'name' => 'Nome',
             'status' => 'Estado',
+            'images_scope' => 'Imagens',
         ],
 
         'service_delete_cascade' => [

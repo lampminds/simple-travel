@@ -94,6 +94,17 @@
                                             </a>
                                         </li>
                                     @endunless
+                                    @if (($svc->serviceType->code ?? null) === \App\Models\ServiceType::CODE_COMBO)
+                                        <li>
+                                            <a
+                                                href="{{ route('services.wizard.step4', ['serviceType' => $svc->serviceType->code, 'service' => $svc]) }}#combo-components"
+                                                class="dropdown-item"
+                                            >
+                                                <i class="icon-xxs icon me-2 text-warning" data-feather="layers" aria-hidden="true"></i>
+                                                {{ __('wizard.provider_services_action_components') }}
+                                            </a>
+                                        </li>
+                                    @endif
                                     <li>
                                         <a
                                             href="{{ route('services.wizard.step5', ['serviceType' => $svc->serviceType->code, 'service' => $svc]) }}"

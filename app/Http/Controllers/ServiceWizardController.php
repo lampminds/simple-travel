@@ -75,6 +75,7 @@ class ServiceWizardController extends Controller
         $rules = [
             'city_id' => ['required', 'integer', 'exists:addons.lmp_cities,id'],
             'city_name' => ['required', 'string', 'max:255'],
+            'images_scope' => ['required', Rule::in(Service::imagesScopes())],
             'translations' => ['required', 'array'],
         ];
 
@@ -87,6 +88,7 @@ class ServiceWizardController extends Controller
 
         $service->update([
             'city_id' => $validated['city_id'],
+            'images_scope' => $validated['images_scope'],
         ]);
 
         foreach ($languages as $language) {
@@ -125,6 +127,7 @@ class ServiceWizardController extends Controller
         $rules = [
             'city_id' => ['required', 'integer', 'exists:addons.lmp_cities,id'],
             'city_name' => ['required', 'string', 'max:255'],
+            'images_scope' => ['required', Rule::in(Service::imagesScopes())],
             'translations' => ['required', 'array'],
         ];
 
@@ -139,6 +142,7 @@ class ServiceWizardController extends Controller
             'account_id' => $accountId,
             'service_type_id' => $serviceType->id,
             'city_id' => $validated['city_id'],
+            'images_scope' => $validated['images_scope'],
             // New services start paused until the wizard is completed.
             'status' => 'onhold',
         ]);
@@ -327,6 +331,7 @@ class ServiceWizardController extends Controller
         $attrs = [
             'city_id' => __('wizard.validation.city_id'),
             'city_name' => __('wizard.validation.city_name'),
+            'images_scope' => __('wizard.validation.images_scope'),
             'translations' => __('wizard.validation.translations'),
         ];
 

@@ -1,5 +1,9 @@
 @php
     use App\Models\ServiceVariant;
+
+    $activeVariantTab = (! ($imagesBelongToVariants ?? false) && $variantFormTab === 'images')
+        ? 'general'
+        : $variantFormTab;
 @endphp
 
 @if ($errors->any())
@@ -17,7 +21,7 @@
     <li class="nav-item" role="presentation">
         <button
             type="button"
-            class="nav-link @if ($variantFormTab === 'general') active @endif @if ($this->variantTabHasError('general')) text-danger fw-semibold @endif"
+            class="nav-link @if ($activeVariantTab === 'general') active @endif @if ($this->variantTabHasError('general')) text-danger fw-semibold @endif"
             wire:click="$set('variantFormTab', 'general')"
         >
             {{ __('wizard.variants_tab_general') }}
@@ -26,7 +30,7 @@
     <li class="nav-item" role="presentation">
         <button
             type="button"
-            class="nav-link @if ($variantFormTab === 'pricing') active @endif @if ($this->variantTabHasError('pricing')) text-danger fw-semibold @endif"
+            class="nav-link @if ($activeVariantTab === 'pricing') active @endif @if ($this->variantTabHasError('pricing')) text-danger fw-semibold @endif"
             wire:click="$set('variantFormTab', 'pricing')"
         >
             {{ __('wizard.variants_tab_pricing') }}
@@ -35,24 +39,26 @@
     <li class="nav-item" role="presentation">
         <button
             type="button"
-            class="nav-link @if ($variantFormTab === 'descriptions') active @endif @if ($this->variantTabHasError('descriptions')) text-danger fw-semibold @endif"
+            class="nav-link @if ($activeVariantTab === 'descriptions') active @endif @if ($this->variantTabHasError('descriptions')) text-danger fw-semibold @endif"
             wire:click="$set('variantFormTab', 'descriptions')"
         >
             {{ __('wizard.variants_tab_descriptions') }}
         </button>
     </li>
-    <li class="nav-item" role="presentation">
-        <button
-            type="button"
-            class="nav-link @if ($variantFormTab === 'images') active @endif @if ($this->variantTabHasError('images')) text-danger fw-semibold @endif"
-            wire:click="$set('variantFormTab', 'images')"
-        >
-            {{ __('wizard.variants_tab_images') }}
-        </button>
-    </li>
+    @if ($imagesBelongToVariants)
+        <li class="nav-item" role="presentation">
+            <button
+                type="button"
+                class="nav-link @if ($variantFormTab === 'images') active @endif @if ($this->variantTabHasError('images')) text-danger fw-semibold @endif"
+                wire:click="$set('variantFormTab', 'images')"
+            >
+                {{ __('wizard.variants_tab_images') }}
+            </button>
+        </li>
+    @endif
 </ul>
 
-<div @class(['d-none' => $variantFormTab !== 'general'])>
+<div @class(['d-none' => $activeVariantTab !== 'general'])>
     <div class="row g-2">
         <div class="col-md-6">
             @include('livewire.service-wizard.partials.variant-field-label', [
@@ -148,7 +154,7 @@
     </div>
 </div>
 
-<div @class(['d-none' => $variantFormTab !== 'pricing'])>
+<div @class(['d-none' => $activeVariantTab !== 'pricing'])>
     <div class="row g-2">
         <div class="col-md-6">
             @include('livewire.service-wizard.partials.variant-field-label', [
@@ -186,7 +192,7 @@
     </div>
 </div>
 
-<div @class(['d-none' => $variantFormTab !== 'descriptions'])>
+<div @class(['d-none' => $activeVariantTab !== 'descriptions'])>
     <p class="text-muted small mb-3">{{ __('wizard.variants_descriptions_help') }}</p>
     <div class="row g-3">
         @foreach ($languages as $language)
@@ -244,7 +250,8 @@
     </div>
 </div>
 
-<div @class(['d-none' => $variantFormTab !== 'images'])>
+@if ($imagesBelongToVariants)
+<div @class(['d-none' => $activeVariantTab !== 'images'])>
     <p class="text-muted small mb-3">{{ __('wizard.variant_media_help') }}</p>
     <div class="row g-4">
         <div class="col-md-6">
@@ -342,6 +349,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <div class="mt-4 pt-2 border-top">
     <button type="button" class="btn btn-outline-secondary me-2" wire:click="requestCancel">

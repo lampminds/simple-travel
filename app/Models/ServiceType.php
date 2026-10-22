@@ -11,6 +11,12 @@ class ServiceType extends Model
 {
     use HasFactory, AuditTrait;
 
+    /** Provider combo services: parent variants composed of child variants. */
+    public const CODE_COMBO = 'combo';
+
+    /** Operator packages (kept distinct from provider combos). */
+    public const CODE_PACKAGE = 'package';
+
     protected $table = 'cat_service_types';
 
     protected $fillable = [

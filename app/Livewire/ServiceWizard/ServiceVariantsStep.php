@@ -324,7 +324,7 @@ class ServiceVariantsStep extends Component
 
     public function removeVariantMainImage(): void
     {
-        if (! $this->editingVariantId) {
+        if (! $this->editingVariantId || ! $this->serviceStoresImagesOnVariants()) {
             return;
         }
 
@@ -340,7 +340,7 @@ class ServiceVariantsStep extends Component
 
     public function removeVariantGalleryMedia(int $mediaId): void
     {
-        if (! $this->editingVariantId) {
+        if (! $this->editingVariantId || ! $this->serviceStoresImagesOnVariants()) {
             return;
         }
 
@@ -417,8 +417,21 @@ class ServiceVariantsStep extends Component
         $this->clearFlash();
         $this->normalizeFormBeforeValidation();
         $service = $this->authorizedService();
+        $allowsVariantImages = $service->imagesBelongToVariants();
+
+        if (! $allowsVariantImages) {
+            $this->resetImageUploads();
+        }
 
         $languages = $this->wizardLanguages();
+
+        $mediaRules = $allowsVariantImages
+            ? [
+                'mainImage' => ['nullable', 'image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
+                'galleryImages' => ['nullable', 'array'],
+                'galleryImages.*' => ['image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
+            ]
+            : [];
 
         $validator = Validator::make(
             [
@@ -428,11 +441,7 @@ class ServiceVariantsStep extends Component
             ],
             array_merge(
                 $this->validationRulesForSingle($service),
-                [
-                    'mainImage' => ['nullable', 'image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
-                    'galleryImages' => ['nullable', 'array'],
-                    'galleryImages.*' => ['image', 'max:'.ServiceVariant::MEDIA_MAX_FILE_SIZE_KB],
-                ]
+                $mediaRules
             ),
             [],
             $this->validationAttributeNames($languages)
@@ -467,7 +476,7 @@ class ServiceVariantsStep extends Component
         $mainImage = $this->mainImage;
         $galleryImages = $this->galleryImages;
 
-        DB::transaction(function () use ($service, $payload, $row, $mainImage, $galleryImages): void {
+        DB::transaction(function () use ($service, $payload, $row, $mainImage, $galleryImages, $allowsVariantImages): void {
             $id = $this->editingVariantId;
 
             if ($id) {
@@ -481,6 +490,10 @@ class ServiceVariantsStep extends Component
             }
 
             $this->syncVariantTranslations($variant, $row);
+
+            if (! $allowsVariantImages) {
+                return;
+            }
 
             if ($mainImage !== null) {
                 $variant
@@ -883,6 +896,14 @@ class ServiceVariantsStep extends Component
         );
     }
 
+    /**
+     * Variant image uploads are allowed only when the service stores images on each variant.
+     */
+    protected function serviceStoresImagesOnVariants(): bool
+    {
+        return $this->authorizedService()->imagesBelongToVariants();
+    }
+
     protected function authorizedService(): Service
     {
         $accountId = Auth::user()?->currentAccountId();
@@ -928,11 +949,14 @@ class ServiceVariantsStep extends Component
 
         $languages = $this->wizardLanguages();
 
+        $service = $this->authorizedService();
+        $imagesBelongToVariants = $service->imagesBelongToVariants();
+
         $mainMedia = null;
         $galleryMedia = collect();
-        if ($this->showVariantFormModal && $this->editingVariantId) {
+        if ($imagesBelongToVariants && $this->showVariantFormModal && $this->editingVariantId) {
             $variant = ServiceVariant::query()
-                ->where('service_id', $this->authorizedService()->id)
+                ->where('service_id', $service->id)
                 ->whereKey($this->editingVariantId)
                 ->with('media')
                 ->first();
@@ -948,6 +972,7 @@ class ServiceVariantsStep extends Component
             'languages' => $languages,
             'variantMainMedia' => $mainMedia,
             'variantGalleryMedia' => $galleryMedia,
+            'imagesBelongToVariants' => $imagesBelongToVariants,
         ]);
     }
 }

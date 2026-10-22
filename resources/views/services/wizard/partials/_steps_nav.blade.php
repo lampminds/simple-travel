@@ -25,6 +25,9 @@
     if (\App\Support\ServiceWizardSkipsVariantsStep::isSkippedForServiceTypeCode($serviceType->code ?? null)) {
         unset($stepNavigations[4]);
     }
+    if (($serviceType->code ?? null) === \App\Models\ServiceType::CODE_COMBO && isset($stepNavigations[4])) {
+        $stepNavigations[4]['label'] = __('wizard.nav_to_step4_combo');
+    }
     if (\App\Support\ServiceWizardStepEight::isEnabledForServiceTypeCode($serviceType->code ?? null)) {
         $step8Label = ($serviceType->code ?? '') === 'transfer'
             ? __('wizard.nav_to_step8_transfer')

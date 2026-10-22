@@ -68,6 +68,31 @@ class ServiceVariant extends Model implements HasMedia
         return $this->belongsTo(Service::class);
     }
 
+    /** Component lines where this variant is the (combo) parent. */
+    public function components(): HasMany
+    {
+        return $this->hasMany(ServiceComponent::class, 'parent_variant_id')->orderBy('sort_order');
+    }
+
+    /** Component lines where this variant is used as a child. */
+    public function componentOf(): HasMany
+    {
+        return $this->hasMany(ServiceComponent::class, 'child_variant_id');
+    }
+
+    /** Child variants included in this (combo parent) variant. */
+    public function childVariants(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            ServiceVariant::class,
+            'service_components',
+            'parent_variant_id',
+            'child_variant_id',
+        )
+            ->withPivot(['id', 'quantity', 'day_number', 'inclusion_mode', 'sort_order', 'notes'])
+            ->orderByPivot('sort_order');
+    }
+
     /**
      * Transfer profile for this variant (1:1), when the parent service type is transfer.
      */
