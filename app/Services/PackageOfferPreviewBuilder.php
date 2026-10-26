@@ -63,7 +63,20 @@ final class PackageOfferPreviewBuilder
             ? (string) ($agencyPrice['formatted'] ?? '—')
             : '—';
 
-        return array_merge($this->buildForCatalog($catalog), [
+        $preview = $this->buildForCatalog($catalog);
+        // Agencies must not learn which provider supplies each package component.
+        /** @var list<array<string, mixed>> $items */
+        $items = $preview['items'] ?? [];
+        $preview['items'] = array_map(
+            static function (array $item): array {
+                unset($item['provider_name']);
+
+                return $item;
+            },
+            $items,
+        );
+
+        return array_merge($preview, [
             'operator_name' => $operatorLabel,
             'agency_price' => $priceFormatted,
             'agency_price_usd_hint' => $this->localePriceService->buildUsd($agencyPrice, $agencyId),

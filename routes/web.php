@@ -423,7 +423,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Website language switcher (must be before catch-all routes)
 Route::get('locale/{language}', SetLocaleController::class)->name('locale');
 
-// Theme demo: contact / helpcenter forms POST via JS to /contactus (see resources/site/public/assets/js/app.js)
+// Theme demo: contact / helpcenter forms POST via JS to /contactus (see public/site/assets/js/app.js)
 Route::post('contactus', DemoContactFormController::class)->name('site.demo.contact');
 
 // Pricing page (dynamic plans from database; must be before catch-all)

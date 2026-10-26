@@ -54,7 +54,6 @@
                     <tr>
                         <th>{{ __('account.package_offers.agency_preview_col_day') }}</th>
                         <th>{{ __('account.package_offers.agency_preview_col_service') }}</th>
-                        <th>{{ __('account.package_offers.agency_preview_col_provider') }}</th>
                         <th>{{ __('account.package_offers.agency_preview_col_quantity') }}</th>
                         <th>{{ __('account.package_offers.agency_preview_col_inclusion') }}</th>
                         <th>{{ __('account.package_offers.agency_preview_col_notes') }}</th>
@@ -70,7 +69,6 @@
                                     <div class="preview-muted">{{ $item['variant_sku'] }}</div>
                                 @endif
                             </td>
-                            <td>{{ ($item['provider_name'] ?? '') !== '' ? $item['provider_name'] : '—' }}</td>
                             <td>{{ $item['quantity'] ?? 1 }}</td>
                             <td>{{ $item['inclusion_mode_label'] ?? ($item['inclusion_mode'] ?? '—') }}</td>
                             <td>{{ ($item['notes'] ?? '') !== '' ? $item['notes'] : '—' }}</td>
@@ -85,7 +83,6 @@
                         <tr>
                             <th>{{ __('account.package_offers.agency_preview_col_day') }}</th>
                             <th>{{ __('account.package_offers.agency_preview_col_service') }}</th>
-                            <th>{{ __('account.package_offers.agency_preview_col_provider') }}</th>
                             <th class="text-center">{{ __('account.package_offers.agency_preview_col_quantity') }}</th>
                             <th>{{ __('account.package_offers.agency_preview_col_inclusion') }}</th>
                             <th>{{ __('account.package_offers.agency_preview_col_notes') }}</th>
@@ -101,7 +98,6 @@
                                         <span class="text-muted small d-block">{{ $item['variant_sku'] }}</span>
                                     @endif
                                 </td>
-                                <td class="text-muted">{{ ($item['provider_name'] ?? '') !== '' ? $item['provider_name'] : '—' }}</td>
                                 <td class="text-center">{{ $item['quantity'] ?? 1 }}</td>
                                 <td>
                                     <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">

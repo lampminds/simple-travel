@@ -9,7 +9,7 @@ class PublishSiteAssets extends Command
 {
     protected $signature = 'site:publish-assets {--force : Overwrite existing files}';
 
-    protected $description = 'Copy tenant theme static files from resources/site/public/assets to public/{tenant_site.assets_path}';
+    protected $description = 'Copy tenant theme static files from the local theme checkout (resources/site/public/assets, not in git) to public/{tenant_site.assets_path}';
 
     public function handle(): int
     {

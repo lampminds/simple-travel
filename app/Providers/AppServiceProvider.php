@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
 
-        View::addNamespace('site', resource_path('site/resources/views'));
+        View::addNamespace('site', resource_path(config('tenant_site.views_path')));
 
         // Override Filament panel views (e.g. sidebar) so translation keys for nav groups are resolved
         View::prependNamespace('filament-panels', resource_path('views/vendor/filament-panels'));

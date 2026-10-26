@@ -38,7 +38,7 @@ class HomeController extends Controller
             ];
 
             if (site_assets_published()) {
-                return view('tenant.site.home', $data);
+                return view('site::home', $data);
             }
 
             return view('tenant.welcome', $data);
