@@ -8,6 +8,7 @@ use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\LmpCountry;
 use App\Models\LmpState;
+use App\Models\ServiceTransferLocation;
 use App\Services\CitySystemTransferLocationsGeneratorService;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -20,12 +21,16 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
 class LmpCityResource extends BaseResource
@@ -134,11 +139,58 @@ class LmpCityResource extends BaseResource
 
                         return $query->whereHas('state', fn ($stateQuery) => $stateQuery->where('country_id', $countryId));
                     })
-                    ->searchable(),
+                    ->searchable()
+                    ->modifyFormFieldUsing(fn (Select $field): Select => $field
+                        ->afterStateUpdated(function (Get $get, Set $set, mixed $state): void {
+                            $stateId = $get('../state_id.value');
+
+                            if (blank($state) || blank($stateId)) {
+                                $set('../state_id.value', null);
+
+                                return;
+                            }
+
+                            $belongsToCountry = LmpState::query()
+                                ->whereKey($stateId)
+                                ->where('country_id', $state)
+                                ->exists();
+
+                            if (! $belongsToCountry) {
+                                $set('../state_id.value', null);
+                            }
+                        })),
                 SelectFilter::make('state_id')
                     ->label(__('filament.resources.lmp_city_filters.state_id'))
-                    ->options(fn () => LmpState::query()->orderBy('name')->pluck('name', 'id'))
-                    ->searchable(),
+                    ->options(fn ($livewire): array => static::stateOptionsForCountry(
+                        data_get($livewire->tableFilters, 'country_id.value'),
+                    ))
+                    ->searchable()
+                    ->modifyFormFieldUsing(fn (Select $field): Select => $field
+                        ->options(fn (Get $get): array => static::stateOptionsForCountry($get('../country_id.value')))
+                        ->disabled(fn (Get $get): bool => blank($get('../country_id.value')))
+                        ->placeholder(function (Get $get): string {
+                            if (blank($get('../country_id.value'))) {
+                                return __('filament.resources.lmp_city_filters.state_id_placeholder');
+                            }
+
+                            return __('filament-tables::table.filters.select.placeholder');
+                        })),
+                TernaryFilter::make('has_system_points_of_interest')
+                    ->label(__('filament.resources.lmp_city_filters.has_points_of_interest'))
+                    ->placeholder(__('filament-tables::table.filters.select.placeholder'))
+                    ->trueLabel(__('filament.resources.lmp_city_filters.with_points_of_interest'))
+                    ->falseLabel(__('filament.resources.lmp_city_filters.without_points_of_interest'))
+                    ->native(false)
+                    ->queries(
+                        true: fn (Builder $query): Builder => $query->whereIn(
+                            $query->qualifyColumn('id'),
+                            static::cityIdsWithSystemPointsOfInterest(),
+                        ),
+                        false: fn (Builder $query): Builder => $query->whereNotIn(
+                            $query->qualifyColumn('id'),
+                            static::cityIdsWithSystemPointsOfInterest(),
+                        ),
+                    ),
             ], layout: FiltersLayout::AboveContent)
             ->defaultSort('name')
             ->modifyQueryUsing(fn ($query) => $query->with(['state.country']))
@@ -250,6 +302,43 @@ class LmpCityResource extends BaseResource
                     DeleteAction::make(),
                 ]),
             ], position: RecordActionsPosition::BeforeColumns);
+    }
+
+    /**
+     * Provinces shown in the cities index filter.
+     * Stays empty until a country is selected, so the dropdown does not load every province.
+     *
+     * @return array<int|string, string>
+     */
+    protected static function stateOptionsForCountry(mixed $countryId): array
+    {
+        if (blank($countryId)) {
+            return [];
+        }
+
+        return LmpState::query()
+            ->where('country_id', $countryId)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
+    /**
+     * Cities with at least one system transfer point of interest.
+     * Matches the index column: account_id is null. Those rows live on the default
+     * connection, not in the addons database that stores cities.
+     *
+     * @return array<int, int>
+     */
+    protected static function cityIdsWithSystemPointsOfInterest(): array
+    {
+        return ServiceTransferLocation::query()
+            ->whereNull('account_id')
+            ->whereNotNull('city_id')
+            ->distinct()
+            ->pluck('city_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
     }
 
     public static function getPages(): array

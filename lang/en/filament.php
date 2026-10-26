@@ -695,6 +695,10 @@ return [
         'lmp_city_filters' => [
             'country_id' => 'Country',
             'state_id' => 'State / province',
+            'state_id_placeholder' => 'Select a country',
+            'has_points_of_interest' => 'Points of interest',
+            'with_points_of_interest' => 'With points of interest',
+            'without_points_of_interest' => 'Without points of interest',
         ],
 
         'lmp_city_actions' => [
