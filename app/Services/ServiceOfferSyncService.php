@@ -6,11 +6,14 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\AccountRelationship;
+use App\Models\OperatorPackageItem;
+use App\Models\OperatorServiceCatalog;
 use App\Models\Service;
 use App\Models\ServiceOffer;
 use App\Models\ServiceVariant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Syncs variant-level offers from a provider to an operator (pending until accepted).
@@ -289,6 +292,95 @@ final class ServiceOfferSyncService
         );
     }
 
+    /**
+     * Provider withdraws an accepted variant for one operator.
+     * Allowed only when that operator has not placed the offer in a package.
+     */
+    public function updateAcceptedAvailability(
+        int $providerAccountId,
+        int $operatorAccountId,
+        int $serviceOfferId,
+        string $availability,
+        User $actingUser,
+    ): ServiceOffer {
+        abort_unless(
+            AccountRelationship::query()
+                ->where('provider_account_id', $providerAccountId)
+                ->where('operator_account_id', $operatorAccountId)
+                ->where('status', AccountRelationship::STATUS_APPROVED)
+                ->exists(),
+            403
+        );
+
+        abort_unless(in_array($availability, [
+            ServiceOffer::AVAILABILITY_ACTIVE,
+            ServiceOffer::AVAILABILITY_SUSPENDED,
+            ServiceOffer::AVAILABILITY_DISCONTINUED,
+        ], true), 422);
+
+        $offer = ServiceOffer::query()
+            ->where('id', $serviceOfferId)
+            ->where('provider_id', $providerAccountId)
+            ->where('operator_id', $operatorAccountId)
+            ->where('status', ServiceOffer::STATUS_ACCEPTED)
+            ->with([
+                'serviceVariant.service.translations',
+                'serviceVariant.translations.language.locale',
+            ])
+            ->first();
+
+        abort_unless($offer !== null, 404);
+
+        if ($offer->availability === $availability) {
+            return $offer;
+        }
+
+        $packageCount = $this->operatorPackageCount($offer);
+        if ($packageCount > 0) {
+            throw ValidationException::withMessages([
+                'availability' => trans_choice(
+                    'account.service_offers.provider_availability_in_packages',
+                    $packageCount,
+                    ['count' => $packageCount]
+                ),
+            ]);
+        }
+
+        $variantLabel = $this->variantLabelForOffer($offer);
+
+        $offer->update([
+            'availability' => $availability,
+            'withdrawn_at' => $availability === ServiceOffer::AVAILABILITY_DISCONTINUED ? now() : null,
+        ]);
+
+        $this->notifyOperatorOfAvailabilityChange(
+            $providerAccountId,
+            $operatorAccountId,
+            $variantLabel,
+            $availability,
+            (int) $offer->id,
+            $actingUser,
+        );
+
+        return $offer;
+    }
+
+    /**
+     * Commercial packages of this operator that include the offer.
+     * One-line direct services are not packages.
+     */
+    public function operatorPackageCount(ServiceOffer $offer): int
+    {
+        return (int) OperatorPackageItem::query()
+            ->where('service_offer_id', (int) $offer->id)
+            ->whereHas(
+                'catalog',
+                fn ($query) => $query->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE)
+            )
+            ->distinct()
+            ->count('operator_service_catalog_id');
+    }
+
     private function variantLabelForOffer(ServiceOffer $offer): string
     {
         $variant = $offer->serviceVariant;
@@ -340,6 +432,41 @@ final class ServiceOfferSyncService
             recipientUserId: null,
             data: [
                 'provider_account_id' => $providerAccountId,
+                'variant_label' => $variantLabel,
+                'created_by_user_id' => $actingUser->id,
+                'created_by_user_name' => $actingUser->name,
+            ],
+        );
+    }
+
+    private function notifyOperatorOfAvailabilityChange(
+        int $providerAccountId,
+        int $operatorAccountId,
+        string $variantLabel,
+        string $availability,
+        int $serviceOfferId,
+        User $actingUser,
+    ): void {
+        $provider = Account::query()->find($providerAccountId);
+        $providerLabel = $provider?->commercial_name ?? $provider?->name ?? $provider?->nick ?? (string) $providerAccountId;
+        $url = route('account.service-offers.index', ['as' => 'operator'], true);
+
+        $this->accountNotifications->createForAccount(
+            accountId: $operatorAccountId,
+            type: 'service_offer_availability',
+            title: (string) __('account.service_offers.notification_availability_'.$availability.'_title', [
+                'provider' => $providerLabel,
+            ]),
+            message: (string) __('account.service_offers.notification_availability_'.$availability.'_message', [
+                'provider' => $providerLabel,
+                'variant' => $variantLabel,
+                'url' => $url,
+            ]),
+            recipientUserId: null,
+            data: [
+                'provider_account_id' => $providerAccountId,
+                'service_offer_id' => $serviceOfferId,
+                'availability' => $availability,
                 'variant_label' => $variantLabel,
                 'created_by_user_id' => $actingUser->id,
                 'created_by_user_name' => $actingUser->name,

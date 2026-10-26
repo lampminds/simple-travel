@@ -80,6 +80,9 @@
                                     <table class="table table-hover align-middle mb-0">
                                         <thead class="table-light">
                                             <tr>
+                                                <th class="text-center" style="width: 3rem;">
+                                                    <span class="visually-hidden">{{ __('account.service_offers.provider_edit_actions_menu') }}</span>
+                                                </th>
                                                 <th>{{ __('account.service_offers.provider_edit_col_variant') }}</th>
                                                 <th>{{ __('account.service_offers.provider_edit_col_sku') }}</th>
                                                 <th>{{ __('account.service_offers.provider_edit_col_catalog_status') }}</th>
@@ -107,8 +110,84 @@
                                                     $operatorPriceIsZero = (bool) ($variant->operator_price_is_zero ?? false);
                                                     $proposeSelectable = $catalogSelectable && ! $operatorPriceIsZero;
                                                     $bdId = 'operator-price-bd-' . $variant->id;
+                                                    $offerAvailability = (string) ($variant->offer_availability ?? 'active');
+                                                    $offerPackageCount = (int) ($variant->offer_package_count ?? 0);
+                                                    $availabilityActions = [];
+                                                    if ($status === 'accepted' && $offerPackageCount === 0 && $variant->offer_id) {
+                                                        foreach (['active', 'suspended', 'discontinued'] as $availabilityOption) {
+                                                            if ($offerAvailability !== $availabilityOption) {
+                                                                $availabilityActions[] = $availabilityOption;
+                                                            }
+                                                        }
+                                                    }
                                                 @endphp
                                                 <tr>
+                                                    <td class="text-center">
+                                                        <div class="dropdown d-inline-block">
+                                                            <button
+                                                                class="btn btn-sm btn-link text-muted px-1"
+                                                                type="button"
+                                                                id="offerActions{{ $variant->id }}"
+                                                                data-bs-toggle="dropdown"
+                                                                data-bs-popper-config='{"strategy":"fixed"}'
+                                                                aria-expanded="false"
+                                                                aria-label="{{ __('account.service_offers.provider_edit_actions_menu') }}"
+                                                            >
+                                                                <i class="icon icon-xs" data-feather="more-horizontal" aria-hidden="true"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu" aria-labelledby="offerActions{{ $variant->id }}">
+                                                                @if ($status === 'pending' && $variant->offer_id)
+                                                                    <li>
+                                                                        <button
+                                                                            type="submit"
+                                                                            form="revoke-offer-{{ $variant->offer_id }}"
+                                                                            class="dropdown-item text-danger"
+                                                                            onclick="return confirm(@js(__('account.service_offers.provider_edit_revoke_confirm')))"
+                                                                        >
+                                                                            <i class="icon-xxs icon me-2" data-feather="x" aria-hidden="true"></i>
+                                                                            {{ __('account.service_offers.provider_edit_revoke') }}
+                                                                        </button>
+                                                                    </li>
+                                                                @elseif ($availabilityActions !== [])
+                                                                    @foreach ($availabilityActions as $availabilityOption)
+                                                                        @php
+                                                                            $actionKey = match ($availabilityOption) {
+                                                                                'active' => 'reactivate',
+                                                                                'suspended' => 'suspend',
+                                                                                default => 'discontinue',
+                                                                            };
+                                                                            $actionIcon = match ($availabilityOption) {
+                                                                                'active' => 'check-circle',
+                                                                                'suspended' => 'pause-circle',
+                                                                                default => 'x-circle',
+                                                                            };
+                                                                        @endphp
+                                                                        <li>
+                                                                            <button
+                                                                                type="submit"
+                                                                                form="offer-availability-{{ $variant->offer_id }}-{{ $availabilityOption }}"
+                                                                                class="dropdown-item @if ($availabilityOption === 'discontinued') text-danger @endif"
+                                                                                onclick="return confirm(@js(__('account.service_offers.provider_edit_'.$actionKey.'_confirm')))"
+                                                                            >
+                                                                                <i class="icon-xxs icon me-2" data-feather="{{ $actionIcon }}" aria-hidden="true"></i>
+                                                                                {{ __('account.service_offers.provider_edit_'.$actionKey) }}
+                                                                            </button>
+                                                                        </li>
+                                                                    @endforeach
+                                                                @elseif ($status === 'accepted' && $offerPackageCount > 0)
+                                                                    <li>
+                                                                        <span class="dropdown-item-text text-muted small">
+                                                                            {{ trans_choice('account.service_offers.provider_edit_in_packages', $offerPackageCount, ['count' => $offerPackageCount]) }}
+                                                                        </span>
+                                                                    </li>
+                                                                @else
+                                                                    <li>
+                                                                        <span class="dropdown-item-text text-muted small">{{ __('account.service_offers.provider_edit_actions_none') }}</span>
+                                                                    </li>
+                                                                @endif
+                                                            </ul>
+                                                        </div>
+                                                    </td>
                                                     <td>{{ $variant->name !== '' ? $variant->name : '—' }}</td>
                                                     <td><code class="small">{{ $variant->sku }}</code></td>
                                                     <td class="small">
@@ -125,8 +204,17 @@
                                                         <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
                                                             {{ __('account.service_offers.provider_edit_state_' . $status) }}
                                                         </span>
-                                                        @if ($status === 'accepted')
-                                                            <div class="small text-muted mt-1">{{ __('account.service_offers.provider_edit_accepted_note') }}</div>
+                                                        @if ($status === 'accepted' && $offerAvailability !== 'active')
+                                                            <div class="mt-1">
+                                                                <span class="badge {{ $offerAvailability === 'suspended' ? 'text-bg-warning' : 'text-bg-dark' }}">
+                                                                    {{ __('account.service_offers.provider_edit_availability_'.$offerAvailability) }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                        @if ($status === 'accepted' && $offerPackageCount > 0)
+                                                            <div class="small text-muted mt-1">
+                                                                {{ trans_choice('account.service_offers.provider_edit_in_packages', $offerPackageCount, ['count' => $offerPackageCount]) }}
+                                                            </div>
                                                         @endif
                                                     </td>
                                                     <td class="small">
@@ -160,16 +248,6 @@
                                                                 disabled
                                                                 title="{{ __('account.service_offers.provider_edit_pending_locked_hint') }}"
                                                             >
-                                                            @if ($variant->offer_id)
-                                                                <button
-                                                                    type="submit"
-                                                                    form="revoke-offer-{{ $variant->offer_id }}"
-                                                                    class="btn btn-sm btn-outline-danger mt-1 d-block mx-auto"
-                                                                    onclick="return confirm(@js(__('account.service_offers.provider_edit_revoke_confirm')))"
-                                                                >
-                                                                    {{ __('account.service_offers.provider_edit_revoke') }}
-                                                                </button>
-                                                            @endif
                                                         @else
                                                             <input
                                                                 type="checkbox"
@@ -216,6 +294,23 @@
                                 <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
                             @endif
                         </form>
+                    @endif
+                    @if (($variant->offer_status ?? 'none') === 'accepted' && (int) ($variant->offer_package_count ?? 0) === 0 && $variant->offer_id)
+                        @foreach (['active', 'suspended', 'discontinued'] as $availabilityOption)
+                            @continue ((string) ($variant->offer_availability ?? 'active') === $availabilityOption)
+                            <form
+                                id="offer-availability-{{ $variant->offer_id }}-{{ $availabilityOption }}"
+                                method="POST"
+                                action="{{ route('account.service-offers.operators.availability', ['operator' => $operator, 'offer' => $variant->offer_uuid]) }}"
+                                class="d-none"
+                            >
+                                @csrf
+                                <input type="hidden" name="availability" value="{{ $availabilityOption }}">
+                                @if ($serviceStatusFilter !== '')
+                                    <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
+                                @endif
+                            </form>
+                        @endforeach
                     @endif
                 @endforeach
             @endforeach

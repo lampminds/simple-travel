@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\AccountRelationship;
+use App\Models\OperatorPackageItem;
+use App\Models\OperatorServiceCatalog;
 use App\Models\Service;
 use App\Models\ServiceOffer;
 use App\Models\ServiceVariant;
+use App\Services\OperatorDirectServiceCatalogService;
 use App\Services\OperatorVariantPriceResolver;
 use App\Services\ServiceOfferSyncService;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +71,10 @@ final class AccountProviderServiceOfferController extends Controller
             ->get()
             ->keyBy(fn (ServiceOffer $o) => (int) $o->service_variant_id);
 
+        $packageCounts = $this->packageCountsByOfferIds(
+            $variantOffers->map(fn (ServiceOffer $offer): int => (int) $offer->id)->all()
+        );
+
         $serviceStatusOptions = $this->eligibleServiceStatusesForOperatorOffers($account);
         $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
             (string) $request->query('service_status', ''),
@@ -106,6 +113,11 @@ final class AccountProviderServiceOfferController extends Controller
                 $variant->setAttribute('offer_status', $offer?->status ?? 'none');
                 $variant->setAttribute('offer_id', $offer?->id);
                 $variant->setAttribute('offer_uuid', $offer?->uuid);
+                $variant->setAttribute('offer_availability', $offer?->availability ?? ServiceOffer::AVAILABILITY_ACTIVE);
+                $variant->setAttribute(
+                    'offer_package_count',
+                    $offer !== null ? (int) ($packageCounts[(int) $offer->id] ?? 0) : 0
+                );
                 $operatorPrice = $priceResolver->resolve($variant, (int) $account->id, (int) $operator->id);
                 $variant->setAttribute('operator_price', $operatorPrice);
                 $variant->setAttribute('operator_price_is_zero', $priceResolver->resolvedAmountIsZero($operatorPrice));
@@ -261,6 +273,77 @@ final class AccountProviderServiceOfferController extends Controller
     }
 
     /**
+     * Provider suspends, discontinues, or reactivates an accepted variant
+     * that this operator has not included in a package.
+     */
+    public function updateAvailability(
+        Request $request,
+        Account $operator,
+        ServiceOffer $offer,
+        ServiceOfferSyncService $syncService,
+        OperatorDirectServiceCatalogService $directServices,
+    ): RedirectResponse {
+        $account = $this->resolveProviderAccount($request);
+        abort_unless(
+            AccountRelationship::query()
+                ->where('provider_account_id', $account->id)
+                ->where('operator_account_id', $operator->id)
+                ->where('status', AccountRelationship::STATUS_APPROVED)
+                ->exists(),
+            404
+        );
+
+        $validated = $request->validate([
+            'availability' => [
+                'required',
+                'string',
+                Rule::in([
+                    ServiceOffer::AVAILABILITY_ACTIVE,
+                    ServiceOffer::AVAILABILITY_SUSPENDED,
+                    ServiceOffer::AVAILABILITY_DISCONTINUED,
+                ]),
+            ],
+        ]);
+
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
+        $previousAvailability = (string) $offer->availability;
+
+        $updated = $syncService->updateAcceptedAvailability(
+            (int) $account->id,
+            (int) $operator->id,
+            (int) $offer->id,
+            (string) $validated['availability'],
+            $user,
+        );
+
+        $pausedDirectService = $previousAvailability !== $updated->availability
+            && $updated->availability !== ServiceOffer::AVAILABILITY_ACTIVE
+            && $directServices->disable($updated);
+
+        $statusKey = match ($updated->availability) {
+            ServiceOffer::AVAILABILITY_SUSPENDED => 'account.service_offers.provider_status_suspended',
+            ServiceOffer::AVAILABILITY_DISCONTINUED => 'account.service_offers.provider_status_discontinued',
+            default => 'account.service_offers.provider_status_reactivated',
+        };
+        $status = __($statusKey);
+        if ($pausedDirectService) {
+            $status .= ' '.__('account.service_offers.direct_service_paused_with_offer');
+        }
+
+        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
+            (string) ($request->input('service_status') ?? $request->query('service_status', '')),
+            $this->eligibleServiceStatusesForOperatorOffers($account),
+        );
+        $query = $serviceStatusFilter !== '' ? ['service_status' => $serviceStatusFilter] : [];
+
+        return redirect()
+            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
+            ->with('status', $status);
+    }
+
+    /**
      * Distinct service.status values in the operator-offers picker (services with variants only).
      *
      * @return Collection<int, string>
@@ -344,6 +427,26 @@ final class AccountProviderServiceOfferController extends Controller
         }
 
         return $out;
+    }
+
+    /**
+     * @param  list<int>  $offerIds
+     * @return array<int, int>
+     */
+    private function packageCountsByOfferIds(array $offerIds): array
+    {
+        if ($offerIds === []) {
+            return [];
+        }
+
+        return OperatorPackageItem::query()
+            ->whereIn('service_offer_id', $offerIds)
+            ->whereHas('catalog', fn ($query) => $query->where('catalog_kind', OperatorServiceCatalog::KIND_PACKAGE))
+            ->selectRaw('service_offer_id, COUNT(DISTINCT operator_service_catalog_id) as packages_count')
+            ->groupBy('service_offer_id')
+            ->pluck('packages_count', 'service_offer_id')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
     }
 
     private function resolveProviderAccount(Request $request): Account

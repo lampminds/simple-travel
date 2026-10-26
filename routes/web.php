@@ -163,6 +163,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.service-offers.operators.update');
     Route::post('account/service-offers/operators/{operator}/offers/{offer}/revoke', [AccountProviderServiceOfferController::class, 'revoke'])
         ->name('account.service-offers.operators.revoke');
+    Route::post('account/service-offers/operators/{operator}/offers/{offer}/availability', [AccountProviderServiceOfferController::class, 'updateAvailability'])
+        ->name('account.service-offers.operators.availability');
 
     Route::get('account/service-offers/{offer}/preview.pdf', [AccountOperatorServiceOfferController::class, 'previewPdf'])
         ->name('account.service-offers.preview-pdf');
