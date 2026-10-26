@@ -19,7 +19,11 @@
                     {{ __('wizard.provider_services_empty') }}
                 </div>
             @else
-                @livewire('catalog.provider-services-table', ['services' => $services], key('provider-services-table-'.$services->pluck('id')->join('-')))
+                @livewire('catalog.provider-services-table', [
+                    'services' => $services,
+                    'catalogType' => $catalogTypeFilter ?? null,
+                    'catalogStatus' => $catalogStatusFilter ?? null,
+                ], key('provider-services-table-'.$services->pluck('id')->join('-')))
             @endif
         </div>
     </div>

@@ -14,9 +14,15 @@ class ProviderServicesTable extends Component
     /** @var Collection<int, Service> */
     public Collection $services;
 
-    public function mount(Collection $services): void
+    public ?string $catalogType = null;
+
+    public ?string $catalogStatus = null;
+
+    public function mount(Collection $services, ?string $catalogType = null, ?string $catalogStatus = null): void
     {
         $this->services = $services;
+        $this->catalogType = $catalogType !== null && $catalogType !== '' ? $catalogType : null;
+        $this->catalogStatus = $catalogStatus !== null && $catalogStatus !== '' ? $catalogStatus : null;
     }
 
     public function requestCopy(int $serviceId): void

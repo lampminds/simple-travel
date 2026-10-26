@@ -27,6 +27,7 @@ use App\Http\Controllers\AccountTransferVehicleTypesController;
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AccountOperatorServiceOfferController;
 use App\Http\Controllers\AccountProviderServiceOfferController;
+use App\Http\Controllers\AccountProviderServiceStatusReportController;
 use App\Http\Controllers\AccountServiceOfferHubController;
 use App\Http\Controllers\AccountPackageOfferHubController;
 use App\Http\Controllers\AccountOperatorPackageOfferController;
@@ -156,6 +157,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.contacts.message');
     Route::get('account/service-offers', [AccountServiceOfferHubController::class, 'index'])
         ->name('account.service-offers.index');
+
+    Route::get('account/services/{service}/status-report', [AccountProviderServiceStatusReportController::class, 'show'])
+        ->name('account.services.status-report');
 
     Route::get('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'edit'])
         ->name('account.service-offers.operators.edit');

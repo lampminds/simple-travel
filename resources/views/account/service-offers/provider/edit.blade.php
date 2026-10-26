@@ -136,6 +136,20 @@
                                                                 <i class="icon icon-xs" data-feather="more-horizontal" aria-hidden="true"></i>
                                                             </button>
                                                             <ul class="dropdown-menu" aria-labelledby="offerActions{{ $variant->id }}">
+                                                                <li>
+                                                                    <a
+                                                                        class="dropdown-item"
+                                                                        href="{{ route('account.services.status-report', ['service' => $service, 'operator' => $operator->uuid]) }}"
+                                                                        target="_blank"
+                                                                        rel="noopener"
+                                                                    >
+                                                                        <i class="icon-xxs icon me-2" data-feather="file-text" aria-hidden="true"></i>
+                                                                        {{ __('account.service_status_report.menu') }}
+                                                                    </a>
+                                                                </li>
+                                                                @if (($status === 'pending' && $variant->offer_id) || $availabilityActions !== [] || ($status === 'accepted' && $offerPackageCount > 0))
+                                                                    <li><hr class="dropdown-divider"></li>
+                                                                @endif
                                                                 @if ($status === 'pending' && $variant->offer_id)
                                                                     <li>
                                                                         <button
@@ -179,10 +193,6 @@
                                                                         <span class="dropdown-item-text text-muted small">
                                                                             {{ trans_choice('account.service_offers.provider_edit_in_packages', $offerPackageCount, ['count' => $offerPackageCount]) }}
                                                                         </span>
-                                                                    </li>
-                                                                @else
-                                                                    <li>
-                                                                        <span class="dropdown-item-text text-muted small">{{ __('account.service_offers.provider_edit_actions_none') }}</span>
                                                                     </li>
                                                                 @endif
                                                             </ul>

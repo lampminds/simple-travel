@@ -2,60 +2,60 @@
     <table class="table table-hover align-middle bg-white rounded border">
         <thead class="table-light">
             <tr>
+                <th scope="col" class="text-center" style="width: 3rem;">
+                    <span class="visually-hidden">{{ __('wizard.provider_services_actions_menu') }}</span>
+                </th>
                 <th scope="col" class="text-center" style="width: 76px;">{{ __('wizard.provider_services_col_thumb') }}</th>
                 <th scope="col">{{ __('wizard.provider_services_col_name') }}</th>
                 <th scope="col">{{ __('wizard.provider_services_col_type') }}</th>
                 <th scope="col">{{ __('wizard.provider_services_col_status') }}</th>
                 <th scope="col" class="text-center">{{ __('wizard.provider_services_col_variants') }}</th>
-                <th scope="col" class="text-end">{{ __('wizard.provider_services_col_actions') }}</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($services as $svc)
                 <tr wire:key="provider-service-row-{{ $svc->id }}">
                     <td class="text-center align-middle">
-                        @if ($url = $svc->mainImageUrl(\App\Models\Service::MEDIA_CONVERSION_THUMBNAIL))
-                            <img src="{{ $url }}" alt="" class="rounded border" style="width: 56px; height: 56px; object-fit: cover;">
-                        @else
-                            <span class="text-muted small">—</span>
-                        @endif
-                    </td>
-                    <td>{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
-                    <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
-                    <td>
-                        @include('catalog.partials.catalog-status-badge', [
-                            'presentation' => \App\Support\ServiceCatalogStatus::forService($svc->status ?? null),
-                        ])
-                    </td>
-                    <td class="text-center">
-                        @if ($this->skipsVariantsForType($svc->serviceType?->code))
-                            <span class="text-muted small">—</span>
-                        @else
-                            {{ (int) ($svc->service_variants_count ?? 0) }}
-                        @endif
-                    </td>
-                    <td class="text-end text-nowrap">
                         @if ($svc->serviceType)
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-outline-primary me-1"
-                                title="{{ __('wizard.service_copy_button') }}"
-                                aria-label="{{ __('wizard.service_copy_button') }}"
-                                wire:click="requestCopy({{ $svc->id }})"
-                            >
-                                <i class="icon icon-xs" data-feather="copy" aria-hidden="true"></i>
-                            </button>
                             <div class="dropdown d-inline-block">
                                 <button
-                                    class="btn btn-sm btn-outline-secondary"
+                                    class="btn btn-sm btn-link text-muted px-1"
                                     type="button"
                                     data-bs-toggle="dropdown"
+                                    data-bs-popper-config='{"strategy":"fixed"}'
                                     aria-expanded="false"
                                     aria-label="{{ __('wizard.provider_services_actions_menu') }}"
                                 >
-                                    <i class="icon icon-xs text-primary" data-feather="more-horizontal" aria-hidden="true"></i>
+                                    <i class="icon icon-xs" data-feather="more-horizontal" aria-hidden="true"></i>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a
+                                            class="dropdown-item"
+                                            href="{{ route('account.services.status-report', array_filter([
+                                                'service' => $svc,
+                                                'from' => 'catalog',
+                                                'type' => $catalogType,
+                                                'status' => $catalogStatus,
+                                            ], fn ($value) => $value !== null && $value !== '')) }}"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            <i class="icon-xxs icon me-2" data-feather="clipboard" aria-hidden="true"></i>
+                                            {{ __('account.service_status_report.menu') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            class="dropdown-item"
+                                            wire:click="requestCopy({{ $svc->id }})"
+                                        >
+                                            <i class="icon-xxs icon me-2" data-feather="copy" aria-hidden="true"></i>
+                                            {{ __('wizard.service_copy_button') }}
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a
                                             href="{{ route('services.wizard.step1.edit', ['serviceType' => $svc->serviceType->code, 'service' => $svc]) }}"
@@ -147,6 +147,27 @@
                             </div>
                         @else
                             <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td class="text-center align-middle">
+                        @if ($url = $svc->mainImageUrl(\App\Models\Service::MEDIA_CONVERSION_THUMBNAIL))
+                            <img src="{{ $url }}" alt="" class="rounded border" style="width: 56px; height: 56px; object-fit: cover;">
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
+                    <td>{{ $svc->name !== '' ? $svc->name : ('#'.$svc->id) }}</td>
+                    <td>{{ $svc->serviceType?->name ?: strtoupper($svc->serviceType?->code ?? '') }}</td>
+                    <td>
+                        @include('catalog.partials.catalog-status-badge', [
+                            'presentation' => \App\Support\ServiceCatalogStatus::forService($svc->status ?? null),
+                        ])
+                    </td>
+                    <td class="text-center">
+                        @if ($this->skipsVariantsForType($svc->serviceType?->code))
+                            <span class="text-muted small">—</span>
+                        @else
+                            {{ (int) ($svc->service_variants_count ?? 0) }}
                         @endif
                     </td>
                 </tr>
