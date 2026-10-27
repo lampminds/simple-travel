@@ -6,6 +6,7 @@
     'url' => null,
     'link' => true,
     'platform' => false,
+    'onWhite' => false,
     'class' => '',
 ])
 
@@ -13,12 +14,14 @@
     $url = $url ?? route('home');
     $linkClass = trim('d-inline-flex align-items-center ' . $class);
     $portalAccount = $platform ? null : operator_portal_account();
-    $portalLogo = $portalAccount?->portalLogoPath();
+    $portalLogo = $onWhite
+        ? ($portalAccount?->portalLogoOnWhitePath() ?: $portalAccount?->portalLogoPath())
+        : $portalAccount?->portalLogoPath();
     $portalName = $portalAccount?->commercial_name ?? $portalAccount?->name ?? $portalAccount?->nick;
 @endphp
 
 @if($link)
-    <a href="{{ $url }}" class="{{ $linkClass }}" {{ $attributes->except(['height', 'variant', 'url', 'link', 'platform', 'class']) }}>
+    <a href="{{ $url }}" class="{{ $linkClass }}" {{ $attributes->except(['height', 'variant', 'url', 'link', 'platform', 'onWhite', 'class']) }}>
         @if($portalAccount)
             @if($portalLogo)
                 <img src="{{ $portalLogo }}" height="{{ $height }}" class="align-top d-inline-block" alt="{{ $portalName }}"/>
@@ -33,7 +36,7 @@
         @endif
     </a>
 @else
-    <span class="{{ $linkClass }}" {{ $attributes->except(['height', 'variant', 'url', 'link', 'platform', 'class']) }}>
+    <span class="{{ $linkClass }}" {{ $attributes->except(['height', 'variant', 'url', 'link', 'platform', 'onWhite', 'class']) }}>
         @if($portalAccount)
             @if($portalLogo)
                 <img src="{{ $portalLogo }}" height="{{ $height }}" class="align-top d-inline-block" alt="{{ $portalName }}"/>

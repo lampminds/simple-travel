@@ -43,6 +43,10 @@ class RoutingController extends BaseController
      */
     public function root(Request $request, $first)
     {
+        if ((string) $first === 'signup' && tenant_website_account() !== null) {
+            return redirect()->route('login');
+        }
+
         if ($siteView = $this->tenantSiteView($request, (string) $first)) {
             return view($siteView, $this->tenantSiteSharedData($request));
         }

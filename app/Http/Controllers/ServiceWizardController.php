@@ -356,8 +356,9 @@ class ServiceWizardController extends Controller
 
         if ($cityId === null && $service === null) {
             $account = $request->user()?->currentAccount();
-            if ($account instanceof Account && $account->city_id !== null) {
-                $cityId = (int) $account->city_id;
+            $accountCityId = $account instanceof Account ? $account->primaryAddress()?->city_id : null;
+            if ($accountCityId !== null) {
+                $cityId = (int) $accountCityId;
             }
         }
 

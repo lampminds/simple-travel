@@ -60,9 +60,11 @@ return [
 
         'account_tabs' => [
             'main' => 'Dados principais',
+            'contact_methods' => 'Meios de contacto',
             'tax_ids' => 'Identificações fiscais',
             'business_types' => 'Tipos de conta',
             'portal' => 'Portal B2B',
+            'website' => 'Site',
         ],
 
         'account_type_category_fields' => [
@@ -89,8 +91,21 @@ return [
             'portal_host_invalid' => 'Informe um domínio válido, sem protocolo nem caminho.',
             'portal_host_taken' => 'Esse domínio já está atribuído a outra conta.',
             'portal_host_operator_only' => 'O portal só pode ser atribuído a uma conta do tipo operador.',
-            'portal_logo' => 'Logo',
-            'portal_logo_help' => 'Exibido no portal. JPG, PNG, WebP ou GIF. Até 2 MB.',
+            'portal_logo' => 'Logo para fundo fotográfico',
+            'portal_logo_help' => 'Exibido no cabeçalho do site, sobre a foto. SVG, PNG, JPG, WebP ou GIF. Até 2 MB. Um SVG mantém o fundo transparente e se adapta ao tamanho.',
+            'portal_logo_on_white' => 'Logo para fundo branco',
+            'portal_logo_on_white_help' => 'Exibido no início de sessão, dentro do cartão branco. SVG, PNG, JPG, WebP ou GIF. Até 2 MB. Se não houver um, usa-se o logo do cabeçalho.',
+            'portal_logo_svg_invalid' => 'O SVG é inválido ou inclui conteúdo que não pode ser publicado.',
+            'public_profile_business_hours' => 'Horário de atendimento',
+            'public_profile_business_hours_placeholder' => 'Atendimento de 08:00h às 19:00h',
+            'public_profile_business_hours_help' => 'Opcional. Texto curto exibido na barra superior do site.',
+            'public_profile_video_url' => 'Vídeo',
+            'public_profile_video_url_help' => 'Opcional. Ligação do YouTube ou Vimeo para o vídeo de capa.',
+            'public_profile_home_background' => 'Imagem de fundo',
+            'public_profile_home_background_help' => 'Opcional. O ideal é 1920×1080. JPG, PNG, WebP ou AVIF. Até 5 MB. Sem imagem, a página inicial usa a do modelo.',
+            'public_profile_title' => 'Título',
+            'public_profile_subtitle' => 'Subtítulo',
+            'public_profile_about' => 'Quem somos',
         ],
 
         'account_columns' => [

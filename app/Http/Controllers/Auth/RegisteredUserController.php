@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\AccountType;
 use App\Models\AccountPerson;
 use App\Models\ContactDepartment;
+use App\Models\ContactType;
 use App\Models\ContactPosition;
 use App\Models\Person;
 use App\Models\Role;
@@ -40,8 +41,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
+        if (tenant_website_account() !== null && ! $request->filled('token')) {
+            return redirect()->route('login');
+        }
+
         $companyTypes = AccountType::query()
             ->with('translations')
             ->where('active', true)
@@ -107,6 +112,10 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (tenant_website_account() !== null && ! $request->filled('invitation_token')) {
+            abort(404);
+        }
+
         if ($request->filled('invitation_token')) {
             $token = $request->string('invitation_token');
             $invitation = UserInvitation::query()
@@ -444,8 +453,17 @@ class RegisteredUserController extends Controller
                 'nick' => $nick,
                 'name' => $companyName,
                 'commercial_name' => $companyName,
-                'email' => $email,
             ]);
+
+            $emailTypeId = ContactType::query()->where('code', 'email')->value('id');
+            if ($emailTypeId !== null) {
+                $account->contactMethods()->create([
+                    'contact_type_id' => (int) $emailTypeId,
+                    'value' => $email,
+                    'is_primary' => true,
+                    'is_verified' => false,
+                ]);
+            }
 
             $user->accounts()->attach($account->id);
 

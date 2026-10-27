@@ -45,6 +45,14 @@ class ContactType extends Model
     }
 
     /**
+     * Values stored on accounts for this channel type (email, phone, etc.).
+     */
+    public function accountContactMethods(): HasMany
+    {
+        return $this->hasMany(AccountContactMethod::class, 'contact_type_id');
+    }
+
+    /**
      * Get code for display (prefers translation name for current locale, else parent code).
      */
     public function getCodeAttribute(): ?string

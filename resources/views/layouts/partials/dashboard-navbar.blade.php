@@ -209,6 +209,12 @@
                                 <i class="icon icon-xxs me-1 icon-dual" data-feather="briefcase"></i>
                                 {{ __('profile.menu_company') }}
                             </a>
+                            @if (auth()->user()->currentAccount()?->hasActiveType('operator'))
+                                <a class="dropdown-item p-2" href="{{ route('account.public-profile.edit') }}">
+                                    <i class="icon icon-xxs me-1 icon-dual" data-feather="globe"></i>
+                                    {{ __('public_profile.menu') }}
+                                </a>
+                            @endif
                             <!-- item end -->
 
                             @if(auth()->user()->hasRoleForCurrentAccount('owner'))

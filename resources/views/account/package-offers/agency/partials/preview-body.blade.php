@@ -3,6 +3,7 @@
     $forPdf = $forPdf ?? false;
     $locales = $preview['locales'] ?? [];
     $items = $preview['items'] ?? [];
+    $featureGroups = $preview['feature_groups'] ?? [];
     $conditions = $preview['conditions'] ?? [];
     $heroImages = $preview['hero_images'] ?? [];
     $galleries = $preview['galleries'] ?? [];
@@ -112,6 +113,17 @@
             </div>
         @endif
     </div>
+
+    @if ($featureGroups !== [])
+        <div class="mb-4">
+            <h6 class="text-uppercase fs-12 text-muted mb-3">{{ __('account.package_offers.agency_preview_features_heading') }}</h6>
+            @include('account.service-offers.operator.partials.preview-section', [
+                'section' => ['groups' => $featureGroups],
+                'sectionKey' => 'package-features',
+                'forPdf' => $forPdf,
+            ])
+        </div>
+    @endif
 
     @if ($conditions !== [])
         <div>

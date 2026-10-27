@@ -6,7 +6,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-10 col-lg-8 col-xl-6">
                     <div class="mx-auto mb-3">
-                        <x-site-logo class="d-flex justify-content-center align-items-center" />
+                        <x-site-logo on-white class="d-flex justify-content-center align-items-center" />
                     </div>
                     <div class="card">
                         <div class="card-body p-0">

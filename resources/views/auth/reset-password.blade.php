@@ -9,7 +9,7 @@
                         <div class="card-body p-0">
                             <div class="p-xl-5 p-3">
                                 <div class="mx-auto mb-5">
-                                    <x-site-logo class="d-flex align-self-center" />
+                                    <x-site-logo on-white class="d-flex align-self-center" />
                                 </div>
 
                                 <h6 class="h5 mb-0 mt-3">Nueva contraseña</h6>

@@ -103,6 +103,18 @@
     "src": "resources/js/operator-currency-rates-chart.js",
     "isEntry": true
   },
+  "resources/js/public-profile-editor.js": {
+    "file": "assets/public-profile-editor-CSUp-AHB.js",
+    "name": "public-profile-editor",
+    "src": "resources/js/public-profile-editor.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers-BosuxZz1.js"
+    ],
+    "css": [
+      "assets/public-profile-editor-Cv4gvsAF.css"
+    ]
+  },
   "resources/js/swiper.js": {
     "file": "assets/swiper-CHdDMG9O.js",
     "name": "swiper",
@@ -110,7 +122,7 @@
     "isEntry": true
   },
   "resources/js/theme.js": {
-    "file": "assets/theme-DTyuZIzj.js",
+    "file": "assets/theme-DzexpDBN.js",
     "name": "theme",
     "src": "resources/js/theme.js",
     "isEntry": true,

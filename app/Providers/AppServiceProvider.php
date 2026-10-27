@@ -3,17 +3,22 @@
 namespace App\Providers;
 
 use App\Filament\Forms\Components\Actions\HttpSafeCopyAction;
+use App\Models\Account;
 use App\Models\AccountNotification;
 use App\Models\Language;
 use App\Models\User;
 use App\Support\Filament\CopyableTextCell;
+use App\Support\SvgSanitizer;
 use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
+use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->registerFilamentCopyMacros();
+        $this->sanitizeSvgLogosOnUpload();
 
         View::composer(['layouts.partials.dashboard-navbar'], function ($view): void {
             /** @var User|null $user */
@@ -125,5 +131,46 @@ class AppServiceProvider extends ServiceProvider
                 });
             });
         }
+    }
+
+    /**
+     * Store logo SVGs as vectors and drop script or embedded HTML before they are public.
+     */
+    protected function sanitizeSvgLogosOnUpload(): void
+    {
+        Event::listen(MediaHasBeenAddedEvent::class, function (MediaHasBeenAddedEvent $event): void {
+            $media = $event->media;
+            $logoCollections = [
+                Account::MEDIA_COLLECTION_LOGO,
+                Account::MEDIA_COLLECTION_LOGO_ON_WHITE,
+            ];
+            if (! in_array($media->collection_name, $logoCollections, true) || ! is_a($media->model_type, Account::class, true)) {
+                return;
+            }
+
+            if (! Account::mediaIsSvg($media)) {
+                return;
+            }
+
+            $path = $media->getPath();
+            $contents = is_file($path) ? file_get_contents($path) : false;
+            $clean = is_string($contents) ? SvgSanitizer::sanitize($contents) : null;
+            if ($clean === null) {
+                $media->delete();
+                $field = $media->collection_name === Account::MEDIA_COLLECTION_LOGO_ON_WHITE
+                    ? 'portal_logo_on_white'
+                    : 'portal_logo';
+
+                throw ValidationException::withMessages([
+                    $field => __('filament.resources.account_fields.portal_logo_svg_invalid'),
+                ]);
+            }
+
+            if ($clean !== $contents) {
+                file_put_contents($path, $clean);
+                $media->size = strlen($clean);
+                $media->saveQuietly();
+            }
+        });
     }
 }

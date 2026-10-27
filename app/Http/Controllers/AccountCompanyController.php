@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\AccountContactMethod;
 use App\Models\AccountDocument;
 use App\Models\AccountType;
+use App\Models\ContactType;
 use App\Models\CatDocument;
 use App\Models\LmpCity;
 use App\Models\TodoTask;
@@ -47,7 +49,8 @@ final class AccountCompanyController extends Controller
             ->values()
             ->all();
 
-        $cityId = old('city_id', $account->city_id);
+        $primaryAddress = $account->primaryAddress();
+        $cityId = old('city_id', $primaryAddress?->city_id);
         $currentCity = null;
         if (is_numeric($cityId)) {
             $currentCity = LmpCity::query()
@@ -57,6 +60,7 @@ final class AccountCompanyController extends Controller
 
         return view('account.company-edit', [
             'account' => $account,
+            'primaryAddress' => $primaryAddress,
             'currentCity' => $currentCity,
             'companyTypes' => $companyTypes,
             'selectedCompanyTypeIds' => $selectedCompanyTypeIds,
@@ -68,6 +72,14 @@ final class AccountCompanyController extends Controller
                 ->get(),
             'taxIds' => $account->documents()
                 ->with(['document.translations.language'])
+                ->orderBy('id')
+                ->get(),
+            'contactTypes' => ContactType::query()
+                ->where('active', true)
+                ->with(['translations.language.locale'])
+                ->orderBy('sort_order')
+                ->get(),
+            'contactMethods' => $account->contactMethods()
                 ->orderBy('id')
                 ->get(),
         ]);
@@ -139,8 +151,6 @@ final class AccountCompanyController extends Controller
             [
                 'name' => ['required', 'string', 'max:255'],
                 'commercial_name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'max:255'],
-                'phone' => ['required', 'string', 'max:255'],
                 'address_line1' => ['required', 'string', 'max:255'],
                 'address_line2' => ['nullable', 'string', 'max:255'],
                 // Use the model class so validation runs on connection `addons` (see LmpCity::$connection).
@@ -156,26 +166,36 @@ final class AccountCompanyController extends Controller
                 ],
                 'tax_ids.*.value' => ['nullable', 'string', 'max:255', 'required_with:tax_ids.*.document_id'],
                 'tax_ids.*.delete' => ['nullable', 'boolean'],
+                'contact_methods' => ['array'],
+                'contact_methods.*.id' => ['nullable', 'integer', 'exists:account_contact_methods,id'],
+                'contact_methods.*.contact_type_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('cat_contact_types', 'id')->where('active', true),
+                    'required_with:contact_methods.*.value',
+                ],
+                'contact_methods.*.value' => ['nullable', 'string', 'max:255', 'required_with:contact_methods.*.contact_type_id'],
+                'contact_methods.*.is_primary' => ['nullable', 'boolean'],
+                'contact_methods.*.delete' => ['nullable', 'boolean'],
             ],
             [
                 'tax_ids.*.document_id.required_with' => 'Selecciona un tipo fiscal.',
                 'tax_ids.*.value.required_with' => 'Ingresa el valor fiscal.',
+                'contact_methods.*.contact_type_id.required_with' => 'Selecciona un tipo de contacto.',
+                'contact_methods.*.value.required_with' => 'Ingresa el medio de contacto.',
             ]
         );
 
         $account->fill(Arr::only($data, [
             'name',
             'commercial_name',
-            'email',
-            'phone',
-            'address_line1',
-            'address_line2',
-            'city_id',
-            'postal_code',
         ]));
         $account->save();
+        $account->syncPrimaryAddress($data);
         $this->assertNoDuplicateTaxIdTypes($data['tax_ids'] ?? []);
+        $this->assertContactMethods($data['contact_methods'] ?? []);
         $this->syncTaxIds($account, $data['tax_ids'] ?? []);
+        $this->syncContactMethods($account, $data['contact_methods'] ?? []);
         $this->registerCompleteProfileTaskCompletion($account->id, $user->id);
 
         return redirect()
@@ -223,6 +243,107 @@ final class AccountCompanyController extends Controller
                 'document_id' => $documentId,
                 'value' => $value,
             ]);
+        }
+    }
+
+    /**
+     * Sync account contact methods from form rows (create, update, delete).
+     *
+     * @param  array<int, array{id?: int|null, contact_type_id?: int|null, value?: string|null, is_primary?: bool|null, delete?: bool|null}>  $rows
+     */
+    private function syncContactMethods(Account $account, array $rows): void
+    {
+        foreach ($rows as $row) {
+            $id = isset($row['id']) ? (int) $row['id'] : null;
+            $delete = (bool) ($row['delete'] ?? false);
+            $typeId = isset($row['contact_type_id']) ? (int) $row['contact_type_id'] : 0;
+            $value = trim((string) ($row['value'] ?? ''));
+            $isPrimary = (bool) ($row['is_primary'] ?? false);
+
+            if ($id !== null) {
+                $existing = $account->contactMethods()->whereKey($id)->first();
+                if (! $existing instanceof AccountContactMethod) {
+                    continue;
+                }
+                if ($delete) {
+                    $existing->delete();
+                    continue;
+                }
+                if ($typeId < 1 || $value === '') {
+                    continue;
+                }
+                $existing->update([
+                    'contact_type_id' => $typeId,
+                    'value' => $value,
+                    'is_primary' => $isPrimary,
+                ]);
+                continue;
+            }
+
+            if ($delete || $typeId < 1 || $value === '') {
+                continue;
+            }
+
+            $account->contactMethods()->create([
+                'contact_type_id' => $typeId,
+                'value' => $value,
+                'is_primary' => $isPrimary,
+                'is_verified' => false,
+            ]);
+        }
+    }
+
+    /**
+     * Reject duplicate channel values and invalid emails in the same submit.
+     *
+     * @param  array<int, array{contact_type_id?: int|null, value?: string|null, delete?: bool|null}>  $rows
+     */
+    private function assertContactMethods(array $rows): void
+    {
+        $typeIds = [];
+        foreach ($rows as $row) {
+            if ((bool) ($row['delete'] ?? false)) {
+                continue;
+            }
+            $typeId = isset($row['contact_type_id']) ? (int) $row['contact_type_id'] : 0;
+            if ($typeId > 0) {
+                $typeIds[] = $typeId;
+            }
+        }
+
+        $emailTypeIds = ContactType::query()
+            ->whereIn('id', array_unique($typeIds))
+            ->get()
+            ->filter(fn (ContactType $type): bool => ($type->getRawOriginal('code') ?? '') === 'email')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $seen = [];
+        foreach ($rows as $idx => $row) {
+            if ((bool) ($row['delete'] ?? false)) {
+                continue;
+            }
+
+            $typeId = isset($row['contact_type_id']) ? (int) $row['contact_type_id'] : 0;
+            $value = trim((string) ($row['value'] ?? ''));
+            if ($typeId < 1 || $value === '') {
+                continue;
+            }
+
+            if (in_array($typeId, $emailTypeIds, true) && filter_var($value, FILTER_VALIDATE_EMAIL) === false) {
+                throw ValidationException::withMessages([
+                    "contact_methods.$idx.value" => 'Ingresa un correo electrónico válido.',
+                ]);
+            }
+
+            $key = $typeId.'|'.mb_strtolower($value);
+            if (isset($seen[$key])) {
+                throw ValidationException::withMessages([
+                    "contact_methods.$idx.value" => 'Ese medio de contacto ya está cargado.',
+                ]);
+            }
+            $seen[$key] = true;
         }
     }
 

@@ -57,12 +57,23 @@ return [
         ],
 
         /*
-         * Operator portal logos (Spatie Media Library collection "logo" on accounts).
+         * Account logos (Spatie collections "logo" and "logo_on_white").
          */
         'account_logos' => [
             'driver' => 'local',
             'root' => storage_path('app/public/account-logos'),
             'url' => env('APP_URL').'/storage/account-logos',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        /*
+         * Optional home-page hero images (Spatie collection "home_background" on accounts).
+         */
+        'account_home_backgrounds' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/account-home-backgrounds'),
+            'url' => env('APP_URL').'/storage/account-home-backgrounds',
             'visibility' => 'public',
             'throw' => false,
         ],

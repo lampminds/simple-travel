@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\AccountPerson;
 use App\Models\AccountType;
+use App\Models\ContactType;
 use App\Models\LmpCity;
 use App\Models\Person;
 use App\Models\User;
@@ -133,8 +134,9 @@ final class FakeAccountGeneratorService
                 'nick' => $identity['nick'],
                 'name' => $identity['company_name'],
                 'commercial_name' => $identity['company_name'],
-                'email' => $identity['email'],
-                'phone' => fake()->phoneNumber(),
+            ]);
+
+            $account->syncPrimaryAddress([
                 'address_line1' => fake()->streetAddress(),
                 'address_line2' => fake()->boolean(30) ? fake()->secondaryAddress() : null,
                 'city_id' => $city?->id,
@@ -142,6 +144,8 @@ final class FakeAccountGeneratorService
             ]);
 
             $user->accounts()->attach($account->id);
+
+            $this->storeGeneratedContactMethods($account, $identity['email'], fake()->phoneNumber());
 
             $this->permissionRegistrar->setPermissionsTeamId((int) $account->id);
             $this->replicateDefaultRolesToAccount->replicateTo((int) $account->id, null, (int) $user->id);
@@ -211,6 +215,31 @@ final class FakeAccountGeneratorService
         }
 
         throw new RuntimeException('Could not generate a unique fake account identity after several attempts.');
+    }
+
+    private function storeGeneratedContactMethods(Account $account, string $email, string $phone): void
+    {
+        $typeIds = ContactType::query()
+            ->whereIn('code', ['email', 'phone'])
+            ->pluck('id', 'code');
+
+        if (isset($typeIds['email'])) {
+            $account->contactMethods()->create([
+                'contact_type_id' => (int) $typeIds['email'],
+                'value' => $email,
+                'is_primary' => true,
+                'is_verified' => true,
+            ]);
+        }
+
+        if (isset($typeIds['phone'])) {
+            $account->contactMethods()->create([
+                'contact_type_id' => (int) $typeIds['phone'],
+                'value' => $phone,
+                'is_primary' => true,
+                'is_verified' => false,
+            ]);
+        }
     }
 
     private function randomSuffix(): string

@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
@@ -20,21 +22,52 @@ class Account extends Model implements HasMedia
 
     public const MEDIA_COLLECTION_LOGO = 'logo';
 
+    /** Mark meant to sit on a white surface, such as the sign-in card. */
+    public const MEDIA_COLLECTION_LOGO_ON_WHITE = 'logo_on_white';
+
     public const MEDIA_CONVERSION_LOGO_PREVIEW = 'preview';
 
     public const MEDIA_MAX_LOGO_KB = 2048;
+
+    /**
+     * Raster logos plus SVG, so the mark can stay sharp and transparent.
+     *
+     * @var list<string>
+     */
+    public const LOGO_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/svg+xml',
+    ];
+
+    public const MEDIA_COLLECTION_HOME_BACKGROUND = 'home_background';
+
+    public const MEDIA_CONVERSION_HOME_BACKGROUND = 'cover';
+
+    public const MEDIA_MAX_HOME_BACKGROUND_KB = 5120;
+
+    /**
+     * Hero images. The check uses the detected type, not the filename:
+     * an export can keep a .jpeg name while the bytes are AVIF.
+     *
+     * @var list<string>
+     */
+    public const HOME_BACKGROUND_MIME_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/avif',
+    ];
+
+    public const ADDRESS_TYPE_PRIMARY = 'primary';
 
     protected $fillable = [
         'nick',
         'code',
         'name',
         'commercial_name',
-        'email',
-        'phone',
-        'address_line1',
-        'address_line2',
-        'city_id',
-        'postal_code',
         'portal_host',
     ];
 
@@ -43,11 +76,144 @@ class Account extends Model implements HasMedia
     ];
 
     /**
-     * Get the city that belongs to the account.
+     * Address links for this account. The edit forms maintain {@see self::ADDRESS_TYPE_PRIMARY}.
      */
-    public function city(): BelongsTo
+    public function accountAddresses(): HasMany
     {
-        return $this->belongsTo(LmpCity::class);
+        return $this->hasMany(AccountAddress::class);
+    }
+
+    public function primaryAddressLink(): HasOne
+    {
+        return $this->hasOne(AccountAddress::class)->where('type', self::ADDRESS_TYPE_PRIMARY);
+    }
+
+    public function primaryAddress(): ?Address
+    {
+        $link = $this->relationLoaded('primaryAddressLink')
+            ? $this->primaryAddressLink
+            : $this->primaryAddressLink()->with('address')->first();
+
+        return $link?->address;
+    }
+
+    /**
+     * Create or update the single primary address. An empty payload removes it.
+     *
+     * @param  array{address_line1?: string|null, address_line2?: string|null, city_id?: int|string|null, postal_code?: string|null}  $input
+     */
+    public function syncPrimaryAddress(array $input): void
+    {
+        $line1 = trim((string) ($input['address_line1'] ?? ''));
+        $line2 = trim((string) ($input['address_line2'] ?? ''));
+        $postal = trim((string) ($input['postal_code'] ?? ''));
+        $cityId = is_numeric($input['city_id'] ?? null) ? (int) $input['city_id'] : null;
+        if ($cityId !== null && $cityId < 1) {
+            $cityId = null;
+        }
+
+        $link = $this->primaryAddressLink()->with('address')->first();
+
+        if ($line1 === '' && $line2 === '' && $postal === '' && $cityId === null) {
+            $this->deletePrimaryAddress($link);
+
+            return;
+        }
+
+        $payload = [
+            'address_line_1' => $line1,
+            'address_line_2' => $line2 !== '' ? $line2 : null,
+            'postal_code' => $postal !== '' ? $postal : null,
+            'city_id' => null,
+            'city' => null,
+            'state_id' => null,
+            'state' => null,
+            'country_id' => null,
+        ];
+
+        if ($cityId !== null) {
+            $city = LmpCity::query()->with(['state.country'])->find($cityId);
+            if ($city instanceof LmpCity) {
+                $payload['city_id'] = (int) $city->id;
+                $payload['city'] = $city->name;
+                $payload['state_id'] = $city->state_id;
+                $payload['state'] = $city->state?->name;
+                $payload['country_id'] = $city->state?->country_id;
+            }
+        }
+
+        if ($link?->address instanceof Address) {
+            $link->address->update($payload);
+
+            return;
+        }
+
+        $address = Address::query()->create($payload);
+        $this->accountAddresses()->create([
+            'address_id' => $address->id,
+            'type' => self::ADDRESS_TYPE_PRIMARY,
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{address_line1: mixed, address_line2: mixed, city_id: mixed, postal_code: mixed}
+     */
+    public static function pullAddressInput(array &$data): array
+    {
+        $input = [
+            'address_line1' => $data['address_line1'] ?? null,
+            'address_line2' => $data['address_line2'] ?? null,
+            'city_id' => $data['city_id'] ?? null,
+            'postal_code' => $data['postal_code'] ?? null,
+        ];
+
+        unset(
+            $data['address_line1'],
+            $data['address_line2'],
+            $data['city_id'],
+            $data['postal_code'],
+            $data['state_name'],
+            $data['country_name'],
+        );
+
+        return $input;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function mergePrimaryAddressIntoFormData(array $data): array
+    {
+        $address = $this->primaryAddress();
+        $data['address_line1'] = $address?->address_line_1;
+        $data['address_line2'] = $address?->address_line_2;
+        $data['city_id'] = $address?->city_id;
+        $data['postal_code'] = $address?->postal_code;
+
+        return $data;
+    }
+
+    private function deletePrimaryAddress(?AccountAddress $link): void
+    {
+        if (! $link instanceof AccountAddress) {
+            return;
+        }
+
+        $address = $link->address;
+        $link->delete();
+
+        if (! $address instanceof Address) {
+            return;
+        }
+
+        $stillLinked = AccountAddress::query()->where('address_id', $address->id)->exists()
+            || OrganizationAddress::query()->where('address_id', $address->id)->exists();
+
+        if (! $stillLinked) {
+            $address->delete();
+        }
     }
 
     /**
@@ -69,6 +235,30 @@ class Account extends Model implements HasMedia
     public function documents(): HasMany
     {
         return $this->hasMany(AccountDocument::class);
+    }
+
+    /**
+     * Contact channels stored on this account (email, phone, WhatsApp, …).
+     */
+    public function contactMethods(): HasMany
+    {
+        return $this->hasMany(AccountContactMethod::class);
+    }
+
+    public function publicProfile(): HasOne
+    {
+        return $this->hasOne(AccountPublicProfile::class);
+    }
+
+    public function hasActiveType(string $code): bool
+    {
+        $types = $this->relationLoaded('accountTypes')
+            ? $this->accountTypes
+            : $this->accountTypes()->get();
+
+        return $types->contains(
+            fn (AccountType $type): bool => $type->code === $code && (bool) $type->active
+        );
     }
 
     /**
@@ -210,10 +400,17 @@ class Account extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection(self::MEDIA_COLLECTION_LOGO)
-            ->useDisk('account_logos')
+        foreach ([self::MEDIA_COLLECTION_LOGO, self::MEDIA_COLLECTION_LOGO_ON_WHITE] as $collection) {
+            $this->addMediaCollection($collection)
+                ->useDisk('account_logos')
+                ->singleFile()
+                ->acceptsMimeTypes(self::LOGO_MIME_TYPES);
+        }
+
+        $this->addMediaCollection(self::MEDIA_COLLECTION_HOME_BACKGROUND)
+            ->useDisk('account_home_backgrounds')
             ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+            ->acceptsMimeTypes(self::HOME_BACKGROUND_MIME_TYPES);
     }
 
     /**
@@ -221,18 +418,53 @@ class Account extends Model implements HasMedia
      */
     public function registerMediaConversions(?MediaModel $media = null): void
     {
-        $this->addMediaConversion(self::MEDIA_CONVERSION_LOGO_PREVIEW)
-            ->fit(Fit::Max, 480, 160)
-            ->nonQueued()
-            ->performOnCollections(self::MEDIA_COLLECTION_LOGO);
+        // SVG stays a vector. A raster preview would flatten transparency and the original size.
+        if (! self::mediaIsSvg($media)) {
+            $this->addMediaConversion(self::MEDIA_CONVERSION_LOGO_PREVIEW)
+                ->fit(Fit::Max, 480, 160)
+                ->nonQueued()
+                ->performOnCollections(
+                    self::MEDIA_COLLECTION_LOGO,
+                    self::MEDIA_COLLECTION_LOGO_ON_WHITE,
+                );
+        }
+
+        // AVIF is stored as uploaded. GD may not decode it, and a failed
+        // conversion would reject the whole save.
+        if (! self::mediaIsAvif($media)) {
+            $this->addMediaConversion(self::MEDIA_CONVERSION_HOME_BACKGROUND)
+                ->fit(Fit::Max, 1920, 1080)
+                ->nonQueued()
+                ->performOnCollections(self::MEDIA_COLLECTION_HOME_BACKGROUND);
+        }
     }
 
     /**
-     * Public URL of the portal logo, or null when the account has none.
+     * Storage name for a home background.
+     *
+     * The extension follows the detected MIME type. The public disk sends
+     * Content-Type from the extension, so AVIF bytes named .jpeg would not render.
      */
-    public function portalLogoUrl(): ?string
+    public static function homeBackgroundFileName(UploadedFile $file): string
     {
-        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_LOGO);
+        $extension = match ($file->getMimeType()) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/avif' => 'avif',
+            default => strtolower($file->getClientOriginalExtension()) ?: 'jpg',
+        };
+
+        return Str::ulid().'.'.$extension;
+    }
+
+    /**
+     * Public URL of a logo, or null when the account has none.
+     * Defaults to the mark used over photographs.
+     */
+    public function portalLogoUrl(?string $collection = null): ?string
+    {
+        $media = $this->logoMedia($collection);
         if ($media === null) {
             return null;
         }
@@ -246,10 +478,11 @@ class Account extends Model implements HasMedia
 
     /**
      * Root-relative logo path, so the portal host serves the file itself.
+     * Defaults to the mark used over photographs (site header).
      */
-    public function portalLogoPath(): ?string
+    public function portalLogoPath(?string $collection = null): ?string
     {
-        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_LOGO);
+        $media = $this->logoMedia($collection);
         if ($media === null) {
             return null;
         }
@@ -259,6 +492,102 @@ class Account extends Model implements HasMedia
             : '';
 
         return '/storage/account-logos/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
+    }
+
+    /**
+     * Logo for white surfaces, such as the sign-in card. Null when none was uploaded.
+     */
+    public function portalLogoOnWhitePath(): ?string
+    {
+        return $this->portalLogoPath(self::MEDIA_COLLECTION_LOGO_ON_WHITE);
+    }
+
+    private function logoMedia(?string $collection = null): ?MediaModel
+    {
+        return $this->getFirstMedia($collection ?? self::MEDIA_COLLECTION_LOGO);
+    }
+
+    /**
+     * Root-relative home hero image, or null when the account has none.
+     */
+    public function homeBackgroundUrl(): ?string
+    {
+        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_HOME_BACKGROUND);
+        if ($media === null) {
+            return null;
+        }
+
+        $conversion = $media->hasGeneratedConversion(self::MEDIA_CONVERSION_HOME_BACKGROUND)
+            ? self::MEDIA_CONVERSION_HOME_BACKGROUND
+            : '';
+
+        return '/storage/account-home-backgrounds/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
+    }
+
+    /**
+     * True when this media file is a vector logo and must not be rasterized.
+     */
+    public static function mediaIsSvg(?MediaModel $media): bool
+    {
+        if (! $media instanceof MediaModel) {
+            return false;
+        }
+
+        return $media->mime_type === 'image/svg+xml'
+            || strtolower((string) $media->extension) === 'svg';
+    }
+
+    /**
+     * True when this media file is AVIF and must not be passed through GD.
+     */
+    public static function mediaIsAvif(?MediaModel $media): bool
+    {
+        if (! $media instanceof MediaModel) {
+            return false;
+        }
+
+        return $media->mime_type === 'image/avif'
+            || strtolower((string) $media->extension) === 'avif';
+    }
+
+    /**
+     * City and country of the primary address, for the public site header.
+     */
+    public function publicLocationLabel(): ?string
+    {
+        $address = $this->primaryAddress();
+        if (! $address instanceof Address) {
+            return null;
+        }
+
+        $city = trim((string) $address->city);
+        if ($city === '' && $address->city_id) {
+            $city = trim((string) (LmpCity::query()->find($address->city_id)?->name ?? ''));
+        }
+
+        $country = '';
+        if ($address->country_id) {
+            $country = trim((string) (LmpCountry::query()->find($address->country_id)?->name ?? ''));
+        }
+
+        $parts = array_values(array_filter([$city, $country], fn (string $part): bool => $part !== ''));
+
+        return $parts === [] ? null : implode(', ', $parts);
+    }
+
+    /**
+     * Primary email contact method, or the first email when none is marked primary.
+     */
+    public function publicEmail(): ?string
+    {
+        $query = $this->contactMethods()
+            ->whereHas('contactType', fn ($types) => $types->where('code', 'email'));
+
+        $email = (clone $query)->where('is_primary', true)->value('value')
+            ?? $query->value('value');
+        $email = trim((string) $email);
+
+        return $email !== '' ? $email : null;
     }
 
     /**

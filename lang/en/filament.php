@@ -60,9 +60,11 @@ return [
 
         'account_tabs' => [
             'main' => 'Main data',
+            'contact_methods' => 'Contact methods',
             'tax_ids' => 'Tax IDs',
             'business_types' => 'Business types',
             'portal' => 'B2B portal',
+            'website' => 'Website',
         ],
 
         'account_type_category_fields' => [
@@ -89,8 +91,21 @@ return [
             'portal_host_invalid' => 'Enter a valid hostname, without a protocol or path.',
             'portal_host_taken' => 'That hostname is already assigned to another account.',
             'portal_host_operator_only' => 'A portal can only be assigned to an operator account.',
-            'portal_logo' => 'Logo',
-            'portal_logo_help' => 'Shown on the portal. JPG, PNG, WebP, or GIF. Up to 2 MB.',
+            'portal_logo' => 'Logo for photo backgrounds',
+            'portal_logo_help' => 'Shown in the site header, over the photo. SVG, PNG, JPG, WebP, or GIF. Up to 2 MB. An SVG keeps a transparent background and scales cleanly.',
+            'portal_logo_on_white' => 'Logo for white backgrounds',
+            'portal_logo_on_white_help' => 'Shown on the sign-in screen, inside the white card. SVG, PNG, JPG, WebP, or GIF. Up to 2 MB. If you skip it, the header logo is used.',
+            'portal_logo_svg_invalid' => 'The SVG is invalid or includes content that cannot be published.',
+            'public_profile_business_hours' => 'Business hours',
+            'public_profile_business_hours_placeholder' => 'Open from 08:00 to 19:00',
+            'public_profile_business_hours_help' => 'Optional. Short text shown in the top bar of the site.',
+            'public_profile_video_url' => 'Video',
+            'public_profile_video_url_help' => 'Optional. YouTube or Vimeo link for the cover video.',
+            'public_profile_home_background' => 'Background image',
+            'public_profile_home_background_help' => 'Optional. 1920×1080 is ideal. JPG, PNG, WebP, or AVIF. Up to 5 MB. Without an image, the home page uses the template photo.',
+            'public_profile_title' => 'Title',
+            'public_profile_subtitle' => 'Subtitle',
+            'public_profile_about' => 'About us',
         ],
 
         'account_columns' => [

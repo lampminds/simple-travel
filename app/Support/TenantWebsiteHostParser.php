@@ -8,7 +8,8 @@ use Illuminate\Support\Str;
  * Derives tenant website account nicks from the HTTP Host header.
  *
  * Production: {nick}.{production_domain}
- * Development (when APP_URL ends with .debian): {nick}-st.debian (suffix configurable).
+ * Development (when APP_URL ends with .debian): {nick}{development_host_suffix}
+ * (default {nick}-st.simple-travel.debian, so the host stays on this project's vhost).
  */
 final class TenantWebsiteHostParser
 {
@@ -37,7 +38,7 @@ final class TenantWebsiteHostParser
         $host = strtolower($host);
 
         if (static::isDevelopmentHostPattern()) {
-            $suffix = (string) config('tenant_website.development_host_suffix', '-st.debian');
+            $suffix = (string) config('tenant_website.development_host_suffix', '-st.simple-travel.debian');
             if ($suffix === '' || ! Str::endsWith($host, $suffix)) {
                 return null;
             }
@@ -80,7 +81,7 @@ final class TenantWebsiteHostParser
         $scheme = in_array($scheme, ['http', 'https'], true) ? $scheme : 'https';
 
         if (static::isDevelopmentHostPattern()) {
-            $suffix = (string) config('tenant_website.development_host_suffix', '-st.debian');
+            $suffix = (string) config('tenant_website.development_host_suffix', '-st.simple-travel.debian');
             $host = $nick.$suffix;
         } else {
             $domain = strtolower((string) config('tenant_website.production_domain', 'simple-travel.net'));

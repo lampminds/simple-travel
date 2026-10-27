@@ -7,14 +7,19 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Models\Account;
 use App\Models\CatDocument;
 use App\Models\AccountType;
+use App\Models\ContactType;
+use App\Models\Language;
 use App\Models\LmpCity;
 use BackedEnum;
 use Closure;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Tabs;
@@ -25,6 +30,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\HtmlString;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
@@ -93,17 +99,6 @@ class AccountResource extends LmpResource
                                     ->placeholder(__('filament.resources.account_fields.commercial_name'))
                                     ->required(fn (string $operation): bool => $operation === 'edit')
                                     ->maxLength(255),
-                                TextInput::make('email')
-                                    ->label(__('filament.resources.account_fields.email'))
-                                    ->placeholder(__('filament.resources.account_fields.email'))
-                                    ->email()
-                                    ->required(fn (string $operation): bool => $operation === 'edit')
-                                    ->maxLength(255),
-                                TextInput::make('phone')
-                                    ->label(__('filament.resources.account_fields.phone'))
-                                    ->placeholder(__('filament.resources.account_fields.phone'))
-                                    ->tel()
-                                    ->maxLength(255),
                                 TextInput::make('address_line1')
                                     ->label(__('filament.resources.account_fields.address_line1'))
                                     ->placeholder(__('filament.resources.account_fields.address_line1'))
@@ -151,6 +146,41 @@ class AccountResource extends LmpResource
                                     ->maxLength(255),
                             ]),
                         ]),
+                    Tab::make(__('filament.resources.account_tabs.contact_methods'))
+                        ->schema([
+                            Repeater::make('contactMethods')
+                                ->relationship()
+                                ->schema([
+                                    Select::make('contact_type_id')
+                                        ->label(__('filament.resources.person_fields.contact_type_id'))
+                                        ->options(
+                                            fn () => ContactType::query()
+                                                ->where('active', true)
+                                                ->with(['translations.language.locale'])
+                                                ->orderBy('sort_order')
+                                                ->get()
+                                                ->mapWithKeys(
+                                                    fn (ContactType $type) => [$type->id => (string) $type->code]
+                                                )
+                                        )
+                                        ->searchable()
+                                        ->required(),
+                                    TextInput::make('value')
+                                        ->label(__('filament.resources.person_fields.contact_method_value'))
+                                        ->required()
+                                        ->maxLength(255),
+                                    Toggle::make('is_primary')
+                                        ->label(__('filament.resources.person_fields.contact_method_is_primary'))
+                                        ->default(false),
+                                    Toggle::make('is_verified')
+                                        ->label(__('filament.resources.person_fields.is_verified'))
+                                        ->default(false),
+                                ])
+                                ->columns(4)
+                                ->defaultItems(0)
+                                ->addActionLabel(__('filament.resources.person_fields.add_contact_method')),
+                        ])
+                        ->visibleOn(['edit', 'view']),
                     Tab::make(__('filament.resources.account_tabs.tax_ids'))
                         ->schema([
                             Repeater::make('documents')
@@ -209,6 +239,7 @@ class AccountResource extends LmpResource
                                     ->placeholder('b2b-test.ebgrouptravel.com')
                                     ->helperText(__('filament.resources.account_fields.portal_host_help'))
                                     ->maxLength(255)
+                                    ->columnSpanFull()
                                     ->dehydrateStateUsing(
                                         fn (?string $state): ?string => Account::normalizePortalHost($state)
                                     )
@@ -225,12 +256,121 @@ class AccountResource extends LmpResource
                                     ->conversion(Account::MEDIA_CONVERSION_LOGO_PREVIEW)
                                     ->image()
                                     ->maxSize(Account::MEDIA_MAX_LOGO_KB)
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+                                    ->acceptedFileTypes(Account::LOGO_MIME_TYPES),
+                                SpatieMediaLibraryFileUpload::make('portal_logo_on_white')
+                                    ->label(__('filament.resources.account_fields.portal_logo_on_white'))
+                                    ->helperText(__('filament.resources.account_fields.portal_logo_on_white_help'))
+                                    ->collection(Account::MEDIA_COLLECTION_LOGO_ON_WHITE)
+                                    ->disk('account_logos')
+                                    ->conversion(Account::MEDIA_CONVERSION_LOGO_PREVIEW)
+                                    ->image()
+                                    ->maxSize(Account::MEDIA_MAX_LOGO_KB)
+                                    ->acceptedFileTypes(Account::LOGO_MIME_TYPES),
                             ])->columns(2),
                         ])
                         ->visibleOn(['edit', 'view']),
+                    static::publicProfileTab(),
                 ]),
         ];
+    }
+
+    private static function publicProfileTab(): Tab
+    {
+        $languages = Language::query()->with('locale')->get();
+
+        $rows = $languages->map(function (Language $language): Section {
+            return Section::make($language->display_name)
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextInput::make("public_profile_translations.{$language->id}.title")
+                            ->label(__('filament.resources.account_fields.public_profile_title'))
+                            ->maxLength(255),
+                        TextInput::make("public_profile_translations.{$language->id}.subtitle")
+                            ->label(__('filament.resources.account_fields.public_profile_subtitle'))
+                            ->maxLength(255),
+                    ]),
+                    RichEditor::make("public_profile_translations.{$language->id}.about")
+                        ->label(__('filament.resources.account_fields.public_profile_about'))
+                        ->fileAttachments(false)
+                        ->columnSpanFull(),
+                ]);
+        })->all();
+
+        return Tab::make(__('filament.resources.account_tabs.website'))
+            ->schema([
+                Section::make('')->schema([
+                    SpatieMediaLibraryFileUpload::make('home_background')
+                        ->label(__('filament.resources.account_fields.public_profile_home_background'))
+                        ->helperText(__('filament.resources.account_fields.public_profile_home_background_help'))
+                        ->collection(Account::MEDIA_COLLECTION_HOME_BACKGROUND)
+                        ->disk('account_home_backgrounds')
+                        ->conversion(Account::MEDIA_CONVERSION_HOME_BACKGROUND)
+                        ->image()
+                        ->maxSize(Account::MEDIA_MAX_HOME_BACKGROUND_KB)
+                        ->acceptedFileTypes(Account::HOME_BACKGROUND_MIME_TYPES)
+                        ->getUploadedFileNameForStorageUsing(
+                            fn (UploadedFile $file): string => Account::homeBackgroundFileName($file)
+                        )
+                        ->columnSpanFull(),
+                    TextInput::make('public_profile_business_hours')
+                        ->label(__('filament.resources.account_fields.public_profile_business_hours'))
+                        ->helperText(__('filament.resources.account_fields.public_profile_business_hours_help'))
+                        ->placeholder(__('filament.resources.account_fields.public_profile_business_hours_placeholder'))
+                        ->nullable()
+                        ->maxLength(120)
+                        ->columnSpanFull(),
+                    TextInput::make('public_profile_video_url')
+                        ->label(__('filament.resources.account_fields.public_profile_video_url'))
+                        ->helperText(__('filament.resources.account_fields.public_profile_video_url_help'))
+                        ->nullable()
+                        ->url()
+                        ->maxLength(500)
+                        ->columnSpanFull(),
+                    ...$rows,
+                ]),
+            ])
+            ->visible(fn (?Account $record): bool => $record instanceof Account && $record->hasActiveType('operator'))
+            ->visibleOn(['edit', 'view']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function mergePublicProfileIntoFormData(Account $account, array $data): array
+    {
+        $account->loadMissing('publicProfile.translations');
+        $profile = $account->publicProfile;
+        $data['public_profile_video_url'] = $profile?->video_url;
+        $data['public_profile_business_hours'] = $profile?->business_hours;
+
+        foreach (Language::query()->with('locale')->get() as $language) {
+            $translation = $profile?->translations->firstWhere('language_id', $language->id);
+            $data['public_profile_translations'][$language->id] = [
+                'title' => $translation?->title ?? '',
+                'subtitle' => $translation?->subtitle ?? '',
+                'about' => $translation?->about ?? '',
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{video_url: mixed, business_hours: mixed, translations: mixed}
+     */
+    public static function pullPublicProfileInput(array &$data): array
+    {
+        $input = [
+            'video_url' => $data['public_profile_video_url'] ?? null,
+            'business_hours' => $data['public_profile_business_hours'] ?? null,
+            'translations' => $data['public_profile_translations'] ?? [],
+        ];
+
+        unset($data['public_profile_video_url'], $data['public_profile_business_hours'], $data['public_profile_translations']);
+
+        return $input;
     }
 
     public static function table(Table $table): Table
@@ -266,9 +406,6 @@ class AccountResource extends LmpResource
                         });
                     })
                     ->sortable(),
-                TextColumn::make('email')
-                    ->label(__('filament.resources.account_columns.email'))
-                    ->searchable(),
                 TextColumn::make('portal_host')
                     ->label(__('filament.resources.account_columns.portal_host'))
                     ->placeholder('—')

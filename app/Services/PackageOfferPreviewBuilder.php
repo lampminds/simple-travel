@@ -8,6 +8,7 @@ use App\Models\OperatorPackageItem;
 use App\Models\OperatorServiceCatalog;
 use App\Models\PackageOffer;
 use App\Models\Service;
+use App\Models\ServiceFeature;
 use App\Models\ServiceVariant;
 
 /**
@@ -98,6 +99,12 @@ final class PackageOfferPreviewBuilder
             'items.service.translations.language.locale',
             'items.service.media',
             'items.serviceOffer.providerAccount',
+            'items.service.features.serviceFeatureCategory.translations.language.locale',
+            'items.service.features.translations.language.locale',
+            'items.serviceVariant.features.serviceFeatureCategory.translations.language.locale',
+            'items.serviceVariant.features.translations.language.locale',
+            'items.serviceVariant.service.features.serviceFeatureCategory.translations.language.locale',
+            'items.serviceVariant.service.features.translations.language.locale',
             'items.conditionOverrides.translations.language.locale',
             'conditionOverrides.translations.language.locale',
         ]);
@@ -118,6 +125,7 @@ final class PackageOfferPreviewBuilder
             'is_public' => (bool) $catalog->is_public,
             'locales' => $this->packageLocales($catalog),
             'items' => $this->packageItems($catalog),
+            'feature_groups' => $this->featureGroups($catalog),
             'conditions' => $conditionRows,
             'hero_images' => $heroImages,
             'galleries' => $galleries,
@@ -295,6 +303,105 @@ final class PackageOfferPreviewBuilder
         }
 
         return $locales;
+    }
+
+    /**
+     * Characteristics of included package lines, grouped by category.
+     * A variant mark replaces the service mark for the same characteristic.
+     * When several lines disagree, included wins over excluded.
+     *
+     * @return list<array{title: string, items: list<string>, excluded_items: list<string>}>
+     */
+    private function featureGroups(OperatorServiceCatalog $catalog): array
+    {
+        /** @var array<int, array{name: string, category_id: int, category: string, category_sort: int, feature_sort: int, included: bool}> $byId */
+        $byId = [];
+
+        foreach ($catalog->items->sortBy(['sort_order', 'id']) as $item) {
+            if (! $item instanceof OperatorPackageItem || $item->inclusion_mode !== 'included') {
+                continue;
+            }
+
+            $service = $item->service instanceof Service
+                ? $item->service
+                : $item->serviceVariant?->service;
+            if (! $service instanceof Service) {
+                continue;
+            }
+
+            foreach ($service->effectiveFeatures($item->serviceVariant) as $feature) {
+                if (! $feature instanceof ServiceFeature) {
+                    continue;
+                }
+
+                $name = trim((string) $feature->name);
+                if ($name === '') {
+                    continue;
+                }
+
+                $id = (int) $feature->id;
+                $included = ServiceFeature::normalizeInclusion($feature->pivot->inclusion ?? null)
+                    !== ServiceFeature::INCLUSION_EXCLUDED;
+                $category = $feature->serviceFeatureCategory;
+                $categoryName = trim((string) ($category?->name ?? ''));
+                if ($categoryName === '') {
+                    $categoryName = (string) __('wizard.features_category_fallback');
+                }
+
+                if (! isset($byId[$id])) {
+                    $byId[$id] = [
+                        'name' => $name,
+                        'category_id' => (int) ($category?->id ?? 0),
+                        'category' => $categoryName,
+                        'category_sort' => (int) ($category?->sort_order ?? 0),
+                        'feature_sort' => (int) $feature->sort_order,
+                        'included' => $included,
+                    ];
+
+                    continue;
+                }
+
+                if ($included) {
+                    $byId[$id]['included'] = true;
+                }
+            }
+        }
+
+        $rows = array_values($byId);
+        usort(
+            $rows,
+            fn (array $a, array $b): int => [
+                $a['category_sort'],
+                $a['category'],
+                $a['feature_sort'],
+                $a['name'],
+            ] <=> [
+                $b['category_sort'],
+                $b['category'],
+                $b['feature_sort'],
+                $b['name'],
+            ],
+        );
+
+        $groups = [];
+        foreach ($rows as $row) {
+            $categoryId = $row['category_id'];
+            if (! isset($groups[$categoryId])) {
+                $groups[$categoryId] = [
+                    'title' => $row['category'],
+                    'items' => [],
+                    'excluded_items' => [],
+                ];
+            }
+
+            if ($row['included']) {
+                $groups[$categoryId]['items'][] = $row['name'];
+            } else {
+                $groups[$categoryId]['excluded_items'][] = $row['name'];
+            }
+        }
+
+        return array_values($groups);
     }
 
     /**

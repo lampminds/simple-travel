@@ -302,6 +302,34 @@ if (! function_exists('operator_portal_account')) {
     }
 }
 
+if (! function_exists('tenant_website_account')) {
+    /**
+     * Public operator website account for the current host, or null on the platform site.
+     */
+    function tenant_website_account(): ?\App\Models\Account
+    {
+        $account = request()->attributes->get('tenant_website_account');
+
+        return $account instanceof \App\Models\Account ? $account : null;
+    }
+}
+
+if (! function_exists('tenant_auth_view')) {
+    /**
+     * Tenant-themed auth view when the request is an operator website; otherwise the platform view.
+     */
+    function tenant_auth_view(string $name): string
+    {
+        $tenantView = 'site::auth.'.$name;
+
+        if (tenant_website_account() !== null && site_assets_published() && view()->exists($tenantView)) {
+            return $tenantView;
+        }
+
+        return 'auth.'.$name;
+    }
+}
+
 if (! function_exists('is_dev_server')) {
     /**
      * True when the app is served from a dev host (APP_URL contains "debian", case-insensitive).

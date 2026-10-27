@@ -26,6 +26,61 @@
         <!-- Main Css -->
         <link href="{{ site_asset('libs/@mdi/font/css/materialdesignicons.min.css') }}" rel="stylesheet" type="text/css">
         <link href="{{ site_asset('css/tailwind.css') }}" rel="stylesheet" type="text/css">
+        @if (request()->attributes->get('tenant_website_account') instanceof \App\Models\Account)
+            <style>
+                /* The mark stays transparent so the hero photo shows through it. */
+                #topnav .logo:has(.tenant-logo),
+                #topnav .logo:has(.tenant-logo-name) {
+                    background-color: transparent;
+                }
+                #topnav .logo .tenant-logo {
+                    height: 42px;
+                    width: auto;
+                    max-width: 58vw;
+                    vertical-align: middle;
+                    background-color: transparent;
+                }
+                @media (min-width: 992px) {
+                    #topnav .logo .tenant-logo {
+                        height: 56px;
+                        max-width: 280px;
+                    }
+                }
+                @media (min-width: 576px) {
+                    #topnav.tenant-nav.tagline-height:not(.nav-sticky) {
+                        top: 50px !important;
+                    }
+                }
+                @media (max-width: 991px) {
+                    #topnav.tenant-nav:not(.nav-sticky) {
+                        background-color: transparent !important;
+                        box-shadow: none;
+                    }
+                    #topnav.tenant-nav:not(.nav-sticky) .navbar-toggle span {
+                        background-color: #fff;
+                    }
+                    #topnav.tenant-nav:not(.nav-sticky) .search-dropdown .dark-icon {
+                        display: none;
+                    }
+                    #topnav.tenant-nav:not(.nav-sticky) .search-dropdown .white-icon {
+                        display: inline-block;
+                    }
+                #topnav.tenant-nav #navigation {
+                    background-color: #fff;
+                }
+                #topnav .account-avatar {
+                    width: 32px;
+                    height: 32px;
+                    object-fit: cover;
+                    display: block;
+                }
+                #topnav .navigation-menu > li > a.menu-current,
+                #topnav .navigation-menu > li > a.menu-current:hover {
+                    color: #ef4444;
+                }
+                }
+            </style>
+        @endif
 
     </head>
     

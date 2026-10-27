@@ -23,6 +23,7 @@
     "jquery": "^3.7.1",
     "leaflet": "^1.9.4",
     "magnific-popup": "^1.1.0",
+    "quill": "^2.0.3",
     "sticky-js": "^1.3.0",
     "swiper": "^11.1.9",
     "typed.js": "^2.0.11"

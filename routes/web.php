@@ -16,6 +16,7 @@ use App\Http\Controllers\SetLocaleController;
 use App\Http\Controllers\DemoContactFormController;
 use App\Http\Controllers\PublicPlaceholderPageController;
 use App\Http\Controllers\AccountCompanyController;
+use App\Http\Controllers\AccountPublicProfileController;
 use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\AccountContactsController;
 use App\Http\Controllers\AccountRelationshipController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\WelcomeCompanyController;
 use App\Http\Controllers\AccountTasksController;
 use App\Http\Controllers\AccountAssistantController;
 use App\Http\Controllers\TenantSite\HomeController;
+use App\Http\Controllers\TenantSite\ServiceCategoryController;
 use App\Http\Controllers\WebsiteImpersonationController;
 use App\Support\AccountTypeCategoryIds;
 
@@ -65,6 +67,10 @@ require __DIR__ . '/auth.php';
 
 // Public home: SaaS landing on main host; tenant welcome when Host matches tenant website pattern
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('services/{code}', ServiceCategoryController::class)
+    ->where('code', '[a-z0-9_-]+')
+    ->name('site.services.category');
 
 // Profile: auth only (no verified) so users can fix email before re-verifying after a change.
 Route::middleware(['auth'])->group(function () {
@@ -121,6 +127,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('account/settings', [AccountSettingsController::class, 'update'])->name('account.settings.update');
     Route::get('account/company', [AccountCompanyController::class, 'edit'])->name('account.company.edit');
     Route::put('account/company', [AccountCompanyController::class, 'update'])->name('account.company.update');
+    Route::get('account/website', [AccountPublicProfileController::class, 'edit'])->name('account.public-profile.edit');
+    Route::put('account/website', [AccountPublicProfileController::class, 'update'])->name('account.public-profile.update');
     Route::get('account/company/cities/{cityId}', [AccountCompanyController::class, 'cityDetails'])->name('account.company.city.details');
     Route::get('account/cities/search', [AccountCompanyController::class, 'searchCities'])->name('account.cities.search');
     Route::get('account/tasks', [AccountTasksController::class, 'index'])->name('account.tasks.index');

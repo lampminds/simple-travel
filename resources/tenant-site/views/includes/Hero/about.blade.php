@@ -28,11 +28,17 @@
 
     <div class="md:col-span-7">
         <div class="lg:ms-8">
-            <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">World Best Travel <br> Agency: Site</h3>
+            @if (filled($about ?? null))
+                <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">{{ __('tenant.about_heading') }}</h3>
 
-            <p class="text-slate-400 max-w-xl mb-6">Get instant helpful resources about anything on the go, easily implement secure money transfer solutions, boost your daily efficiency, connect to other app users and create your own Site network, and much more with just a few taps. commodo consequat. Duis aute irure.</p>
+                <div class="public-about text-slate-400 max-w-xl mb-6 space-y-3 [&_a]:underline [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:list-decimal [&_ol]:ps-5">{!! \App\Models\AccountPublicProfile::renderAbout($about) !!}</div>
+            @else
+                <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">World Best Travel <br> Agency: Site</h3>
 
-            <a href="" class="py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-red-500 text-white rounded-md">Read More <i class="mdi mdi-chevron-right align-middle ms-0.5"></i></a>
+                <p class="text-slate-400 max-w-xl mb-6">Get instant helpful resources about anything on the go, easily implement secure money transfer solutions, boost your daily efficiency, connect to other app users and create your own Site network, and much more with just a few taps. commodo consequat. Duis aute irure.</p>
+
+                <a href="" class="py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-red-500 text-white rounded-md">Read More <i class="mdi mdi-chevron-right align-middle ms-0.5"></i></a>
+            @endif
         </div>
     </div>
 

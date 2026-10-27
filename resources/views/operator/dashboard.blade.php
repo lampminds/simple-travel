@@ -24,6 +24,9 @@
                 <a href="{{ route('account.package-offers.index') }}" class="btn btn-outline-primary">
                     {{ __('account.package_offers_nav') }}
                 </a>
+                <a href="{{ route('account.public-profile.edit') }}" class="btn btn-outline-primary">
+                    {{ __('public_profile.menu') }}
+                </a>
                 @if (auth()->user()?->shouldShowBackToAccountDashboard())
                     <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-secondary">
                         {{ __('catalog.back_dashboard') }}

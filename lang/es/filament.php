@@ -62,9 +62,11 @@ return [
 
         'account_tabs' => [
             'main' => 'Datos principales',
+            'contact_methods' => 'Medios de contacto',
             'tax_ids' => 'Identificaciones fiscales',
             'business_types' => 'Tipos de cuenta',
             'portal' => 'Portal B2B',
+            'website' => 'Sitio web',
         ],
 
         'account_type_category_fields' => [
@@ -91,8 +93,21 @@ return [
             'portal_host_invalid' => 'Ingresa un dominio válido, sin protocolo ni ruta.',
             'portal_host_taken' => 'Ese dominio ya está asignado a otra cuenta.',
             'portal_host_operator_only' => 'El portal solo puede asignarse a una cuenta con tipo operador.',
-            'portal_logo' => 'Logo',
-            'portal_logo_help' => 'Se muestra en el portal. JPG, PNG, WebP o GIF. Hasta 2 MB.',
+            'portal_logo' => 'Logo para fondo fotográfico',
+            'portal_logo_help' => 'Se muestra en el encabezado del sitio, sobre la foto. SVG, PNG, JPG, WebP o GIF. Hasta 2 MB. Un SVG conserva el fondo transparente y se adapta al tamaño.',
+            'portal_logo_on_white' => 'Logo para fondo blanco',
+            'portal_logo_on_white_help' => 'Se muestra en el inicio de sesión, dentro del recuadro blanco. SVG, PNG, JPG, WebP o GIF. Hasta 2 MB. Si no cargas uno, se usa el logo del encabezado.',
+            'portal_logo_svg_invalid' => 'El SVG no es válido o incluye contenido que no se puede publicar.',
+            'public_profile_business_hours' => 'Horario de atención',
+            'public_profile_business_hours_placeholder' => 'Atención de 08:00h a 19:00h',
+            'public_profile_business_hours_help' => 'Opcional. Texto corto que se muestra en la barra superior del sitio.',
+            'public_profile_video_url' => 'Video',
+            'public_profile_video_url_help' => 'Opcional. Enlace de YouTube o Vimeo para el video de portada.',
+            'public_profile_home_background' => 'Imagen de fondo',
+            'public_profile_home_background_help' => 'Opcional. Lo ideal es 1920×1080. JPG, PNG, WebP o AVIF. Hasta 5 MB. Si no hay imagen, la portada usa la de la plantilla.',
+            'public_profile_title' => 'Título',
+            'public_profile_subtitle' => 'Subtítulo',
+            'public_profile_about' => 'Quiénes somos',
         ],
 
         'account_columns' => [

@@ -65,13 +65,22 @@
                         <div class="card-body">
                             @php
                                 $errorKeys = $errors->keys();
-                                $hasGeneralErrors = collect($errorKeys)->contains(function (string $key): bool {
-                                    return ! \Illuminate\Support\Str::startsWith($key, 'tax_ids.');
-                                });
                                 $hasTaxErrors = collect($errorKeys)->contains(function (string $key): bool {
                                     return \Illuminate\Support\Str::startsWith($key, 'tax_ids.');
                                 });
-                                $activeCompanyTab = $hasTaxErrors && ! $hasGeneralErrors ? 'tax_ids' : 'general';
+                                $hasContactErrors = collect($errorKeys)->contains(function (string $key): bool {
+                                    return \Illuminate\Support\Str::startsWith($key, 'contact_methods.');
+                                });
+                                $hasGeneralErrors = collect($errorKeys)->contains(function (string $key): bool {
+                                    return ! \Illuminate\Support\Str::startsWith($key, 'tax_ids.')
+                                        && ! \Illuminate\Support\Str::startsWith($key, 'contact_methods.');
+                                });
+                                $activeCompanyTab = 'general';
+                                if ($hasContactErrors && ! $hasGeneralErrors) {
+                                    $activeCompanyTab = 'contact_methods';
+                                } elseif ($hasTaxErrors && ! $hasGeneralErrors) {
+                                    $activeCompanyTab = 'tax_ids';
+                                }
                             @endphp
 
                             @if ($errors->any())
@@ -90,6 +99,11 @@
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link @if ($activeCompanyTab === 'general') active @endif @if ($hasGeneralErrors) text-danger @endif" id="tab-general" data-bs-toggle="tab" data-bs-target="#tab-pane-general" type="button" role="tab" aria-controls="tab-pane-general" aria-selected="{{ $activeCompanyTab === 'general' ? 'true' : 'false' }}">
                                                 General
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link @if ($activeCompanyTab === 'contact_methods') active @endif @if ($hasContactErrors) text-danger @endif" id="tab-contact-methods" data-bs-toggle="tab" data-bs-target="#tab-pane-contact-methods" type="button" role="tab" aria-controls="tab-pane-contact-methods" aria-selected="{{ $activeCompanyTab === 'contact_methods' ? 'true' : 'false' }}">
+                                                Medios de contacto
                                             </button>
                                         </li>
                                         <li class="nav-item" role="presentation">
@@ -169,42 +183,6 @@
                                         <div class="row">
                                             <div class="col-lg-6">
                                                 <div class="mb-3">
-                                                    <label for="company_email" class="form-label">Email</label>
-                                                    <input
-                                                        type="email"
-                                                        id="company_email"
-                                                        name="email"
-                                                        required
-                                                        class="form-control @error('email') is-invalid @enderror"
-                                                        value="{{ old('email', $account->email) }}"
-                                                    >
-                                                    @error('email')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-6">
-                                                <div class="mb-3">
-                                                    <label for="company_phone" class="form-label">Teléfono</label>
-                                                    <input
-                                                        type="text"
-                                                        id="company_phone"
-                                                        name="phone"
-                                                        required
-                                                        class="form-control @error('phone') is-invalid @enderror"
-                                                        value="{{ old('phone', $account->phone) }}"
-                                                    >
-                                                    @error('phone')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-6">
-                                                <div class="mb-3">
                                                     <label for="company_address_line1" class="form-label">Dirección (línea 1)</label>
                                                     <input
                                                         type="text"
@@ -212,7 +190,7 @@
                                                         name="address_line1"
                                                         required
                                                         class="form-control @error('address_line1') is-invalid @enderror"
-                                                        value="{{ old('address_line1', $account->address_line1) }}"
+                                                        value="{{ old('address_line1', $primaryAddress?->address_line_1) }}"
                                                     >
                                                     @error('address_line1')
                                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -228,7 +206,7 @@
                                                         id="company_address_line2"
                                                         name="address_line2"
                                                         class="form-control @error('address_line2') is-invalid @enderror"
-                                                        value="{{ old('address_line2', $account->address_line2) }}"
+                                                        value="{{ old('address_line2', $primaryAddress?->address_line_2) }}"
                                                     >
                                                     @error('address_line2')
                                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -250,7 +228,7 @@
                                                         value="{{ old('city_search', $currentCity?->name ?? '') }}"
                                                     >
                                                     <small id="city-search-hint" class="form-text text-muted">La búsqueda empieza con 4 caracteres.</small>
-                                                    <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $account->city_id) }}" required>
+                                                    <input type="hidden" id="city_id" name="city_id" value="{{ old('city_id', $primaryAddress?->city_id) }}" required>
                                                     <div id="city-results" class="list-group position-absolute w-100 mt-1 shadow-sm z-3 overflow-auto" style="max-height: 22rem;"></div>
                                                     @error('city_id')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -295,7 +273,7 @@
                                                         name="postal_code"
                                                         required
                                                         class="form-control @error('postal_code') is-invalid @enderror"
-                                                        value="{{ old('postal_code', $account->postal_code) }}"
+                                                        value="{{ old('postal_code', $primaryAddress?->postal_code) }}"
                                                     >
                                                     @error('postal_code')
                                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -303,6 +281,89 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="tab-pane fade @if ($activeCompanyTab === 'contact_methods') show active @endif" id="tab-pane-contact-methods" role="tabpanel" aria-labelledby="tab-contact-methods" tabindex="0">
+                                        @php
+                                            $oldContactMethods = old('contact_methods');
+                                            $contactRows = [];
+                                            if (is_array($oldContactMethods)) {
+                                                $contactRows = array_values($oldContactMethods);
+                                            } else {
+                                                foreach ($contactMethods as $method) {
+                                                    $contactRows[] = [
+                                                        'id' => $method->id,
+                                                        'contact_type_id' => $method->contact_type_id,
+                                                        'value' => $method->value,
+                                                        'is_primary' => (bool) $method->is_primary,
+                                                        'delete' => false,
+                                                    ];
+                                                }
+                                            }
+                                            $nextContactIndex = count($contactRows);
+                                        @endphp
+
+                                        <div id="contact-method-rows">
+                                            @forelse($contactRows as $idx => $row)
+                                                @php $existingContactId = isset($row['id']) ? (int) $row['id'] : null; @endphp
+                                                <div class="row g-2 align-items-end border rounded p-2 mb-2 contact-method-row">
+                                                    @if($existingContactId)
+                                                        <input type="hidden" name="contact_methods[{{ $idx }}][id]" value="{{ $existingContactId }}">
+                                                    @endif
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Tipo</label>
+                                                        <select name="contact_methods[{{ $idx }}][contact_type_id]" class="form-select @error("contact_methods.$idx.contact_type_id") is-invalid @enderror">
+                                                            <option value="">Selecciona un tipo</option>
+                                                            @foreach($contactTypes as $type)
+                                                                <option value="{{ $type->id }}" @selected((int) ($row['contact_type_id'] ?? 0) === (int) $type->id)>
+                                                                    {{ $type->code }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error("contact_methods.$idx.contact_type_id")
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        <label class="form-label">Valor</label>
+                                                        <input type="text"
+                                                               name="contact_methods[{{ $idx }}][value]"
+                                                               class="form-control @error("contact_methods.$idx.value") is-invalid @enderror"
+                                                               value="{{ (string) ($row['value'] ?? '') }}"
+                                                               placeholder="Correo, teléfono o WhatsApp">
+                                                        @error("contact_methods.$idx.value")
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                   id="primary-contact-{{ $idx }}"
+                                                                   name="contact_methods[{{ $idx }}][is_primary]" value="1"
+                                                                   @checked((bool) ($row['is_primary'] ?? false))>
+                                                            <label class="form-check-label" for="primary-contact-{{ $idx }}">Principal</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        @if($existingContactId)
+                                                            <div class="form-check mb-2">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                       id="delete-contact-{{ $existingContactId }}"
+                                                                       name="contact_methods[{{ $idx }}][delete]" value="1"
+                                                                       @checked((bool) ($row['delete'] ?? false))>
+                                                                <label class="form-check-label" for="delete-contact-{{ $existingContactId }}">Eliminar</label>
+                                                            </div>
+                                                        @else
+                                                            <button type="button" class="btn btn-outline-danger btn-sm js-remove-contact-row">Quitar</button>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <p class="text-muted js-contact-empty">Todavía no hay medios de contacto cargados.</p>
+                                            @endforelse
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-secondary" id="btn-add-contact-row">Agregar medio de contacto</button>
                                     </div>
 
                                     <div class="tab-pane fade @if ($activeCompanyTab === 'tax_ids') show active @endif" id="tab-pane-tax-ids" role="tabpanel" aria-labelledby="tab-tax-ids" tabindex="0">
@@ -403,6 +464,8 @@
             const countryInput = document.getElementById('country_name');
             const taxRowsContainer = document.getElementById('tax-id-rows');
             const addTaxRowBtn = document.getElementById('btn-add-tax-row');
+            const contactRowsContainer = document.getElementById('contact-method-rows');
+            const addContactRowBtn = document.getElementById('btn-add-contact-row');
             const MIN_CITY_QUERY_LEN = 4;
             const cityDetailsUrl = (id) => `{{ url('/account/company/cities') }}/${encodeURIComponent(id)}`;
 
@@ -577,6 +640,59 @@
                     const target = event.target;
                     if (target && target.classList.contains('js-remove-tax-row')) {
                         const row = target.closest('.tax-id-row');
+                        if (row) {
+                            row.remove();
+                        }
+                    }
+                });
+            }
+
+            if (contactRowsContainer && addContactRowBtn) {
+                let contactNextIndex = {{ $nextContactIndex ?? 0 }};
+                const contactTypeOptions = @json(collect($contactTypes)->map(fn ($type) => ['id' => (int) $type->id, 'label' => (string) $type->code])->values());
+                function buildContactTypeOptions() {
+                    let html = '<option value="">Selecciona un tipo</option>';
+                    contactTypeOptions.forEach(function (opt) {
+                        html += '<option value="' + opt.id + '">' + opt.label + '</option>';
+                    });
+                    return html;
+                }
+
+                addContactRowBtn.addEventListener('click', function () {
+                    const emptyNote = contactRowsContainer.querySelector('.js-contact-empty');
+                    if (emptyNote) {
+                        emptyNote.remove();
+                    }
+                    const idx = contactNextIndex++;
+                    const row = document.createElement('div');
+                    row.className = 'row g-2 align-items-end border rounded p-2 mb-2 contact-method-row';
+                    row.innerHTML =
+                        '<div class="col-md-3">' +
+                            '<label class="form-label">Tipo</label>' +
+                            '<select name="contact_methods[' + idx + '][contact_type_id]" class="form-select">' +
+                                buildContactTypeOptions() +
+                            '</select>' +
+                        '</div>' +
+                        '<div class="col-md-5">' +
+                            '<label class="form-label">Valor</label>' +
+                            '<input type="text" name="contact_methods[' + idx + '][value]" class="form-control" placeholder="Correo, teléfono o WhatsApp">' +
+                        '</div>' +
+                        '<div class="col-md-2">' +
+                            '<div class="form-check mb-2">' +
+                                '<input class="form-check-input" type="checkbox" id="primary-contact-' + idx + '" name="contact_methods[' + idx + '][is_primary]" value="1">' +
+                                '<label class="form-check-label" for="primary-contact-' + idx + '">Principal</label>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="col-md-2">' +
+                            '<button type="button" class="btn btn-outline-danger btn-sm js-remove-contact-row">Quitar</button>' +
+                        '</div>';
+                    contactRowsContainer.appendChild(row);
+                });
+
+                contactRowsContainer.addEventListener('click', function (event) {
+                    const target = event.target;
+                    if (target && target.classList.contains('js-remove-contact-row')) {
+                        const row = target.closest('.contact-method-row');
                         if (row) {
                             row.remove();
                         }

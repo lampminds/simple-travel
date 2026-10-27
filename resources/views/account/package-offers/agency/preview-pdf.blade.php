@@ -71,6 +71,15 @@
             color: #6b7280;
         }
         .preview-muted { color: #6b7280; }
+        .preview-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+        .preview-block { margin-bottom: 12px; }
+        .preview-tags { margin: 0; color: #374151; }
         .preview-conditions-list {
             margin: 0;
             padding: 0;
