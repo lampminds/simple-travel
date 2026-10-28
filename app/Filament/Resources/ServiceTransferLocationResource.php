@@ -106,7 +106,6 @@ class ServiceTransferLocationResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (ServiceTransferLocationType $t) => [$t->id => ($t->name !== '' ? $t->name : $t->code)])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 TextInput::make('address')
                                     ->label(__('filament.resources.service_transfer_location_fields.address'))

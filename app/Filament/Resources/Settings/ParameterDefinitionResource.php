@@ -212,7 +212,6 @@ class ParameterDefinitionResource extends BaseResource
                                         return $out;
                                     })
                                     ->required()
-                                    ->searchable()
                                     ->live(),
                                 TextInput::make('sort_order')
                                     ->label(__('filament.resources.parameter_definition_fields.sort_order'))
@@ -295,7 +294,6 @@ class ParameterDefinitionResource extends BaseResource
                                                 $get('../../ui_component') ?? $get('../../../ui_component'),
                                                 $get('../../options') ?? $get('../../../options')
                                             ))
-                                            ->searchable()
                                             ->visible(fn (Get $get): bool => static::optionChoicesFromFormState(
                                                 $get('../../ui_component') ?? $get('../../../ui_component'),
                                                 $get('../../options') ?? $get('../../../options')

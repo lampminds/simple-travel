@@ -108,8 +108,7 @@ class ServiceFeatureResource extends LmpResource
                                         ->get()
                                         ->pluck('name', 'id')
                                 )
-                                ->required()
-                                ->searchable(),
+                                ->required(),
                             TextInput::make('code')
                                 ->label(__('filament.resources.service_feature_fields.code'))
                                 ->placeholder(__('filament.resources.service_feature_fields.code'))
@@ -127,6 +126,7 @@ class ServiceFeatureResource extends LmpResource
                                 ->nullable()
                                 ->searchable()
                                 ->preload()
+                                ->dynamicOptions(false)
                                 ->optionsLimit(500)
                                 ->options(
                                     fn () => ServiceFeature::query()
@@ -310,6 +310,7 @@ class ServiceFeatureResource extends LmpResource
                                 ->nullable()
                                 ->searchable()
                                 ->preload()
+                                ->dynamicOptions(false)
                                 ->optionsLimit(500)
                                 ->options(
                                     fn () => ServiceFeature::query()

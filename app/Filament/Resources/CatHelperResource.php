@@ -126,8 +126,6 @@ class CatHelperResource extends BaseResource
 
                                         return $name !== '' ? "{$name} ({$record->code})" : $record->code;
                                     })
-                                    ->searchable()
-                                    ->preload()
                                     ->nullable(),
                                 Select::make('service_type_id')
                                     ->label(__('filament.resources.cat_helper_fields.service_type'))
@@ -144,8 +142,6 @@ class CatHelperResource extends BaseResource
 
                                         return $name !== '' ? "{$name} ({$record->code})" : $record->code;
                                     })
-                                    ->searchable()
-                                    ->preload()
                                     ->nullable(),
                                 Toggle::make('active')
                                     ->label(__('filament.common.active'))

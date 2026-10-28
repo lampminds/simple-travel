@@ -6,6 +6,9 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\AccountRelationship;
+use App\Models\Service;
+use App\Models\ServiceOffer;
+use App\Models\ServiceVariant;
 use App\Models\UserInvitation;
 use Illuminate\Support\Collection;
 
@@ -79,6 +82,42 @@ final class AccountRelationshipsListingService
     }
 
     /**
+     * Accepted services and combos versus the provider catalog, for one operator.
+     *
+     * A catalog item counts as accepted when at least one of its variants has an
+     * accepted offer for this operator. Total is every service or combo the
+     * provider still has available to offer (discontinued and terminated entries
+     * are left out, same as the offer picker).
+     *
+     * @param  Collection<int, array<string, mixed>>  $rows
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function attachProviderCatalogCoverage(Collection $rows, int $operatorAccountId): Collection
+    {
+        $providerIds = $rows
+            ->filter(fn (array $row): bool => ($row['counterpart_kind'] ?? '') === 'provider')
+            ->map(fn (array $row): int => (int) $row['counterpart']->id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $coverage = $this->providerCatalogCoverage($operatorAccountId, $providerIds);
+
+        return $rows->map(function (array $row) use ($coverage): array {
+            if (($row['counterpart_kind'] ?? '') !== 'provider') {
+                return $row;
+            }
+
+            $providerId = (int) $row['counterpart']->id;
+            $counts = $coverage[$providerId] ?? ['accepted' => 0, 'total' => 0];
+            $row['catalog_accepted'] = $counts['accepted'];
+            $row['catalog_total'] = $counts['total'];
+
+            return $row;
+        });
+    }
+
+    /**
      * Pending external invitations addressed to this company (existing-user flow).
      *
      * @return Collection<int, UserInvitation>
@@ -146,5 +185,72 @@ final class AccountRelationshipsListingService
         }
 
         return 'other';
+    }
+
+    /**
+     * @param  list<int>  $providerAccountIds
+     * @return array<int, array{accepted: int, total: int}>
+     */
+    private function providerCatalogCoverage(int $operatorAccountId, array $providerAccountIds): array
+    {
+        $providerAccountIds = array_values(array_unique(array_filter(
+            array_map('intval', $providerAccountIds),
+            fn (int $id): bool => $id > 0,
+        )));
+
+        $coverage = [];
+        foreach ($providerAccountIds as $providerId) {
+            $coverage[$providerId] = ['accepted' => 0, 'total' => 0];
+        }
+
+        if ($providerAccountIds === []) {
+            return $coverage;
+        }
+
+        $omittedServiceStatuses = Service::catalogStatusesOmittedFromOperatorOffers();
+        $omittedVariantStatuses = ServiceVariant::catalogStatusesOmittedFromOperatorOffers();
+
+        $totals = Service::query()
+            ->whereIn('account_id', $providerAccountIds)
+            ->whereNotIn('status', $omittedServiceStatuses)
+            ->whereHas(
+                'serviceVariants',
+                fn ($query) => $query->whereNotIn('status', $omittedVariantStatuses),
+            )
+            ->selectRaw('account_id, COUNT(*) as catalog_total')
+            ->groupBy('account_id')
+            ->pluck('catalog_total', 'account_id');
+
+        foreach ($totals as $providerId => $total) {
+            $providerId = (int) $providerId;
+            if (! isset($coverage[$providerId])) {
+                continue;
+            }
+
+            $coverage[$providerId]['total'] = (int) $total;
+        }
+
+        $accepted = ServiceOffer::query()
+            ->join('service_variants', 'service_offers.service_variant_id', '=', 'service_variants.id')
+            ->join('services', 'service_variants.service_id', '=', 'services.id')
+            ->where('service_offers.operator_id', $operatorAccountId)
+            ->whereIn('service_offers.provider_id', $providerAccountIds)
+            ->where('service_offers.status', ServiceOffer::STATUS_ACCEPTED)
+            ->whereNotIn('services.status', $omittedServiceStatuses)
+            ->whereNotIn('service_variants.status', $omittedVariantStatuses)
+            ->selectRaw('service_offers.provider_id, COUNT(DISTINCT services.id) as catalog_accepted')
+            ->groupBy('service_offers.provider_id')
+            ->pluck('catalog_accepted', 'provider_id');
+
+        foreach ($accepted as $providerId => $count) {
+            $providerId = (int) $providerId;
+            if (! isset($coverage[$providerId])) {
+                continue;
+            }
+
+            $coverage[$providerId]['accepted'] = (int) $count;
+        }
+
+        return $coverage;
     }
 }

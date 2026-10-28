@@ -92,8 +92,7 @@ class ServiceGastronomyFeatureResource extends LmpResource
                                         ->get()
                                         ->pluck('name', 'id')
                                 )
-                                ->required()
-                                ->searchable(),
+                                ->required(),
                             TextInput::make('code')
                                 ->label(__('filament.resources.service_gastronomy_feature_fields.code'))
                                 ->placeholder(__('filament.resources.service_gastronomy_feature_fields.code'))

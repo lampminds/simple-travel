@@ -94,7 +94,6 @@ class ServiceActivityTypeResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (ServiceActivityTypeCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.service_activity_type_fields.code'))

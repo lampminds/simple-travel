@@ -106,7 +106,6 @@ class ServiceTransferLocationTypeResource extends LmpResource
                                                 $c->id => ($c->name !== '' ? $c->name : $c->code),
                                             ])
                                     )
-                                    ->searchable()
                                     ->nullable(),
                                 Toggle::make('active')
                                     ->label(__('filament.common.active'))

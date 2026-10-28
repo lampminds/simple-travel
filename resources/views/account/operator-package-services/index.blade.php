@@ -64,7 +64,6 @@
                                                 <th>{{ __('account.operator_package_services.col_package') }}</th>
                                                 <th>{{ __('account.operator_package_services.col_status') }}</th>
                                                 @if ($serviceOfferFilter !== null)
-                                                    <th>{{ __('account.operator_package_services.col_day') }}</th>
                                                     <th>{{ __('account.operator_package_services.col_quantity') }}</th>
                                                     <th>{{ __('account.operator_package_services.col_inclusion') }}</th>
                                                 @else
@@ -84,7 +83,6 @@
                                                                     {{ __('account.operator_packages.status.' . $package->status) }}
                                                                 </span>
                                                             </td>
-                                                            <td>{{ $item->day_number ?? '—' }}</td>
                                                             <td>{{ number_format((int) $item->quantity) }}</td>
                                                             <td>{{ __('account.operator_packages.inclusion_mode.' . ($item->inclusion_mode ?? 'included')) }}</td>
                                                             <td class="text-end text-nowrap">

@@ -100,7 +100,6 @@ class ServiceGastronomyTypeAssignmentResource extends LmpResource
                                                 $t->id => $t->name !== '' ? $t->name : $t->code,
                                             ])
                                     )
-                                    ->searchable()
                                     ->required()
                                     ->unique(
                                         table: 'service_gastronomy_type_assignments',

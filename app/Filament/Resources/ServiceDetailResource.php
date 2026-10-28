@@ -90,8 +90,7 @@ class ServiceDetailResource extends LmpResource
                                 ->get()
                                 ->mapWithKeys(fn (ServiceDetailTopic $topic) => [$topic->id => $topic->name ?: $topic->code])
                         )
-                        ->required()
-                        ->searchable(),
+                        ->required(),
                     Select::make('language_id')
                         ->label(__('filament.resources.service_detail_fields.language_id'))
                         ->options(
@@ -101,8 +100,7 @@ class ServiceDetailResource extends LmpResource
                                 ->get()
                                 ->mapWithKeys(fn (Language $lang) => [$lang->id => $lang->display_name])
                         )
-                        ->required()
-                        ->searchable(),
+                        ->required(),
                     Textarea::make('description')
                         ->label(__('filament.resources.service_detail_fields.description'))
                         ->rows(4),

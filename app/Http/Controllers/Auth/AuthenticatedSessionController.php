@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthLoginRedirectService;
+use App\Support\SafeReturnUrl;
 use App\Models\UserInvitation;
 use App\Services\UserInvitationAcceptanceService;
 use Illuminate\Http\Request;
@@ -18,8 +19,10 @@ class AuthenticatedSessionController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function create()
+    public function create(Request $request)
     {
+        SafeReturnUrl::remember($request);
+
         return view(tenant_auth_view('login'));
     }
 

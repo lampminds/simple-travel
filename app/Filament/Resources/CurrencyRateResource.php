@@ -177,7 +177,6 @@ class CurrencyRateResource extends BaseResource
                             ->mapWithKeys(fn (Currency $c): array => [$c->id => $c->display_name])
                             ->all()
                     )
-                    ->searchable()
                     ->required()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set): void {

@@ -81,8 +81,7 @@ class ServiceFeatureScopeResource extends LmpResource
                                 ])
                         )
                         ->required()
-                        ->live()
-                        ->searchable(),
+                        ->live(),
                     Select::make('service_feature_id')
                         ->label(__('filament.resources.service_feature_scope_fields.feature'))
                         ->options(
@@ -107,7 +106,8 @@ class ServiceFeatureScopeResource extends LmpResource
                         ->validationMessages([
                             'unique' => __('filament.resources.service_feature_scope_validation.unique_pair'),
                         ])
-                        ->searchable(),
+                        ->searchable()
+                        ->dynamicOptions(false),
                 ])
                 ->columns(2),
         ];

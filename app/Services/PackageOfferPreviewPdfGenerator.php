@@ -41,6 +41,33 @@ final class PackageOfferPreviewPdfGenerator
 
         $preview = $this->previewBuilder->build($offer, $agencyPrice);
 
+        $filename = Str::slug(Str::limit((string) ($preview['title'] ?? 'package'), 80, ''));
+        if ($filename === '') {
+            $filename = 'package-offer-'.($offer->uuid ?: $offer->id);
+        }
+
+        $filenameSuffix = $includePhotos ? '-ficha' : '-ficha-sin-fotos';
+
+        return $this->downloadPreparedPreview(
+            $preview,
+            $filename.$filenameSuffix,
+            $this->footerMeta(),
+            $includePhotos,
+        );
+    }
+
+    /**
+     * Download a sheet already shaped like the agency package preview.
+     *
+     * @param  array<string, mixed>  $preview
+     * @param  array{left: string, center: string}  $footerMeta
+     */
+    public function downloadPreparedPreview(
+        array $preview,
+        string $filename,
+        array $footerMeta,
+        bool $includePhotos = true,
+    ): Response {
         if ($includePhotos) {
             $preview = $this->embedPreviewMedia($preview);
         } else {
@@ -66,20 +93,18 @@ final class PackageOfferPreviewPdfGenerator
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $this->applyFooter($dompdf, $this->footerMeta());
+        $this->applyFooter($dompdf, $footerMeta);
 
-        $filename = Str::slug(Str::limit((string) ($preview['title'] ?? 'package'), 80, ''));
-        if ($filename === '') {
-            $filename = 'package-offer-'.($offer->uuid ?: $offer->id);
+        $downloadName = trim($filename);
+        if ($downloadName === '') {
+            $downloadName = 'paquete';
         }
-
-        $filenameSuffix = $includePhotos ? '-ficha' : '-ficha-sin-fotos';
 
         return response()->streamDownload(
             static function () use ($dompdf): void {
                 echo $dompdf->output();
             },
-            $filename.$filenameSuffix.'.pdf',
+            $downloadName.'.pdf',
             ['Content-Type' => 'application/pdf'],
         );
     }

@@ -119,7 +119,6 @@ class ServiceResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (ServiceType $type) => [$type->id => $type->dropdown_label])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 Select::make('city_id')
                                     ->label(__('filament.resources.service_fields.city_id'))
@@ -211,8 +210,7 @@ class ServiceResource extends LmpResource
                                                 ->get()
                                                 ->mapWithKeys(fn (Currency $c) => [$c->id => $c->display_name])
                                         )
-                                        ->required()
-                                        ->searchable(),
+                                        ->required(),
                                     Select::make('inventory_type')
                                         ->label(__('filament.resources.service_variant_fields.inventory_type'))
                                         ->options([
@@ -275,8 +273,7 @@ class ServiceResource extends LmpResource
                                                 ->get()
                                                 ->mapWithKeys(fn (ServiceDetailTopic $topic) => [$topic->id => $topic->name ?: $topic->code])
                                         )
-                                        ->required()
-                                        ->searchable(),
+                                        ->required(),
                                     Select::make('language_id')
                                         ->label(__('filament.resources.service_detail_fields.language_id'))
                                         ->options(
@@ -286,8 +283,7 @@ class ServiceResource extends LmpResource
                                                 ->get()
                                                 ->mapWithKeys(fn (Language $lang) => [$lang->id => $lang->display_name])
                                         )
-                                        ->required()
-                                        ->searchable(),
+                                        ->required(),
                                     Textarea::make('description')
                                         ->label(__('filament.resources.service_detail_fields.description'))
                                         ->rows(4),
@@ -317,8 +313,8 @@ class ServiceResource extends LmpResource
                                         fn (ServiceExperience $record): string => $record->name !== '' ? $record->name : (string) $record->code
                                     )
                                     ->multiple()
-                                    ->searchable()
                                     ->preload()
+                                    ->dynamicOptions(false)
                                     ->helperText(__('filament.resources.service_fields.experiences_help')),
                             ])->columns(1),
                         ])

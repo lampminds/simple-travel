@@ -17,7 +17,7 @@
                                     <form method="POST" action="{{ route('account.switch') }}">
                                         @csrf
                                         <input type="hidden" name="account_id" value="{{ $account->id }}">
-                                        <input type="hidden" name="redirect_to" value="{{ route('account.dashboard', absolute: false) }}">
+                                        <input type="hidden" name="redirect_to" value="{{ $returnPath }}">
                                         <button type="submit" class="btn btn-outline-primary w-100 text-start">
                                             <span class="fw-semibold">{{ $account->commercial_name ?? $account->name ?? $account->nick }}</span>
                                             @if($account->code)

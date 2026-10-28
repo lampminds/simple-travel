@@ -96,7 +96,6 @@ class ServiceHotelTypeResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (ServiceHotelTypeCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.service_hotel_type_fields.code'))

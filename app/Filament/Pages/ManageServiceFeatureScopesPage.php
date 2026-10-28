@@ -93,7 +93,6 @@ class ManageServiceFeatureScopesPage extends Page
                         ])
                         ->all()
                 )
-                ->searchable()
                 ->live()
                 ->afterStateUpdated(fn () => $this->loadScopeState())
                 ->required()

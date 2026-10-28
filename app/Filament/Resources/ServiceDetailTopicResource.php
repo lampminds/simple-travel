@@ -105,8 +105,6 @@ class ServiceDetailTopicResource extends LmpResource
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (ServiceDetailTopicCategory $record) => $record->name ?: $record->code)
                                     ->placeholder(__('filament.common.select_option'))
-                                    ->searchable()
-                                    ->preload()
                                     ->nullable(),
                                 Select::make('visibility')
                                     ->label(__('filament.resources.service_detail_topic_fields.visibility'))
@@ -138,8 +136,6 @@ class ServiceDetailTopicResource extends LmpResource
                                         fn (ServiceDetailConditionKey $record): string => $record->category.'.'.$record->code
                                     )
                                     ->placeholder(__('filament.common.select_option'))
-                                    ->searchable()
-                                    ->preload()
                                     ->nullable(),
                                 Toggle::make('active')
                                     ->label(__('filament.resources.service_detail_topic_fields.active'))

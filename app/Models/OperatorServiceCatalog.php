@@ -131,4 +131,33 @@ class OperatorServiceCatalog extends Model
 
         return '#'.$this->id;
     }
+
+    /**
+     * Translation for the current app locale, or the first stored translation.
+     */
+    public function translationForDisplay(): ?OperatorServiceCatalogTranslation
+    {
+        $translations = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->with('language.locale')->get();
+
+        if ($translations->isEmpty()) {
+            return null;
+        }
+
+        $locale = app()->getLocale();
+        foreach ($translations as $translation) {
+            $language = $translation->language;
+            if (! $language instanceof Language) {
+                continue;
+            }
+
+            $language->loadMissing('locale');
+            if (Locale::primaryTagMatches($language->locale, $locale)) {
+                return $translation;
+            }
+        }
+
+        return $translations->first();
+    }
 }

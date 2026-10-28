@@ -146,6 +146,107 @@ final class OperatorPackageAgencyPriceResolver
     }
 
     /**
+     * Package total from one operator price list, without an agency assignment adjustment.
+     * Included lines only. Per-person lines count one passenger.
+     * Returns an empty amount when any included line cannot be priced.
+     *
+     * @return array{
+     *     amount: float|null,
+     *     has_amount: bool,
+     *     formatted: string,
+     *     currency_id: int|null,
+     *     currency_code: string|null,
+     *     is_zero: bool
+     * }
+     */
+    public function resolveCatalogListTotal(
+        OperatorServiceCatalog $package,
+        OperatorPriceList $priceList,
+        int $operatorAccountId,
+        ?CarbonInterface $pricingDate = null,
+    ): array {
+        $pricingDate ??= Carbon::today();
+        $empty = [
+            'amount' => null,
+            'has_amount' => false,
+            'formatted' => '—',
+            'currency_id' => null,
+            'currency_code' => null,
+            'is_zero' => true,
+        ];
+
+        if ((int) $priceList->operator_id !== $operatorAccountId) {
+            return $empty;
+        }
+
+        $package->loadMissing([
+            'items.serviceVariant',
+            'items.serviceOffer',
+        ]);
+
+        $includedItems = $package->items
+            ->filter(fn (OperatorPackageItem $item): bool => $item->inclusion_mode === 'included')
+            ->values();
+
+        if ($includedItems->isEmpty()) {
+            return $empty;
+        }
+
+        $listItems = OperatorPriceListItem::query()
+            ->where('operator_price_list_id', $priceList->id)
+            ->get()
+            ->keyBy(fn (OperatorPriceListItem $row) => (int) $row->operator_package_item_id);
+
+        $listCurrencyId = (int) $priceList->currency_id;
+        $subtotal = 0.0;
+        $hasLine = false;
+
+        foreach ($includedItems as $packageItem) {
+            $listItem = $listItems->get((int) $packageItem->id);
+            if ($listItem === null) {
+                return $empty;
+            }
+
+            $line = $this->itemPricingService->calculate(
+                $packageItem,
+                $operatorAccountId,
+                $listCurrencyId,
+                $this->normalizeListItemMode($listItem),
+                (float) $listItem->price,
+                $pricingDate,
+            );
+
+            if (! $line['final_price_has'] || $line['final_price'] === null) {
+                return $empty;
+            }
+
+            $unit = (float) $line['final_price'];
+            $qty = BookingPassengersSnapshot::lineQuantity($packageItem, null);
+            $subtotal += $unit * $qty;
+            $hasLine = true;
+        }
+
+        if (! $hasLine) {
+            return $empty;
+        }
+
+        $priceList->loadMissing('currency.lmpCurrency');
+
+        return [
+            'amount' => $subtotal,
+            'has_amount' => true,
+            'formatted' => $this->priceFormatService->formatWithCurrency(
+                $subtotal,
+                currency: $priceList->currency,
+                accountId: $operatorAccountId,
+            ),
+            'currency_id' => $listCurrencyId,
+            'currency_code' => $priceList->currency?->currency_code,
+            'is_zero' => $subtotal <= 0.0,
+        ];
+    }
+
+    /**
      * @return array{
      *     lines_subtotal: float,
      *     assignment_adjustment_type: string|null,

@@ -90,15 +90,23 @@ final class AccountRelationshipController extends Controller
             $counterpartKind = $operatorTab === 'agencies' ? 'agency' : 'provider';
         }
 
+        $rows = $this->listing->forAccount((int) $account->id, $perspective, $counterpartKind);
+        $showCatalogCoverage = $perspective === 'operator' && $operatorTab === 'providers';
+
+        if ($showCatalogCoverage) {
+            $rows = $this->listing->attachProviderCatalogCoverage($rows, (int) $account->id);
+        }
+
         return view('account.relationships.index', [
             'account' => $account,
             'accountLabel' => $this->listing->accountDisplayName($account),
             'perspective' => $perspective,
-            'rows' => $this->listing->forAccount((int) $account->id, $perspective, $counterpartKind),
+            'rows' => $rows,
             'pendingIncomingInvitations' => $pendingIncoming,
             'showRoleColumn' => false,
             'showHubBack' => $typeCodes->contains('provider') && $typeCodes->contains('operator'),
             'operatorTab' => $operatorTab,
+            'showCatalogCoverage' => $showCatalogCoverage,
         ]);
     }
 

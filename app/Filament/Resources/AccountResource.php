@@ -163,7 +163,6 @@ class AccountResource extends LmpResource
                                                     fn (ContactType $type) => [$type->id => (string) $type->code]
                                                 )
                                         )
-                                        ->searchable()
                                         ->required(),
                                     TextInput::make('value')
                                         ->label(__('filament.resources.person_fields.contact_method_value'))
@@ -197,8 +196,7 @@ class AccountResource extends LmpResource
                                                 ->get()
                                                 ->mapWithKeys(fn ($c) => [$c->id => $c->name])
                                         )
-                                        ->required()
-                                        ->searchable(),
+                                        ->required(),
                                     TextInput::make('value')
                                         ->label(__('filament.resources.account_document_fields.value'))
                                         ->required()

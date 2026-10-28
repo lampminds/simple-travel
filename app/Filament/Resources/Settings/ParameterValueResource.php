@@ -104,8 +104,6 @@ class ParameterValueResource extends BaseResource
                                 fn (?string $part): bool => filled($part),
                             ))
                         )
-                        ->searchable()
-                        ->preload()
                         ->required()
                         ->live(onBlur: false)
                         ->disabled(fn (string $operation): bool => $operation === 'edit')
@@ -150,7 +148,6 @@ class ParameterValueResource extends BaseResource
                     Select::make('value_select')
                         ->label(__('filament.resources.parameter_value_fields.value'))
                         ->options(fn (Get $get): array => static::valueSelectOptions((int) $get('parameter_definition_id')))
-                        ->searchable()
                         ->nullable()
                         ->visible(fn (Get $get): bool => ParameterDefinition::queryUsesOptionBackedValue((int) $get('parameter_definition_id')))
                         ->helperText(__('filament.resources.parameter_value_fields.value_help')),

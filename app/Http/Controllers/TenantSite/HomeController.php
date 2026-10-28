@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\AccountPublicProfile;
 use App\Models\Language;
 use App\Services\CatFaqListService;
+use App\Services\OperatorPublicPackageCatalog;
 use App\Services\OperatorPublicProductCategories;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,6 +17,7 @@ class HomeController extends Controller
     public function __construct(
         private readonly CatFaqListService $faqListService,
         private readonly OperatorPublicProductCategories $productCategories,
+        private readonly OperatorPublicPackageCatalog $publicPackages,
     ) {}
 
     /**
@@ -56,6 +58,8 @@ class HomeController extends Controller
             ];
 
             if (site_assets_published()) {
+                $data['packages'] = $this->publicPackages->cards($account);
+
                 return view('site::home', $data);
             }
 

@@ -119,8 +119,6 @@ class CatFaqResource extends BaseResource
 
                                         return $name !== '' ? "{$name} ({$record->code})" : $record->code;
                                     })
-                                    ->searchable()
-                                    ->preload()
                                     ->nullable(),
                                 TextInput::make('sort_order')
                                     ->label(__('filament.resources.cat_faq_fields.sort_order'))

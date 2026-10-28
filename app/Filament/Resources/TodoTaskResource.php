@@ -133,7 +133,6 @@ class TodoTaskResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (TodoCategory $c) => [$c->id => $c->displayLabel()])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 Select::make('original_task_id')
                                     ->label(__('filament.resources.todo_task_fields.original_task_id'))

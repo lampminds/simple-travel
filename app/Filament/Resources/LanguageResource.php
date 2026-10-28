@@ -53,8 +53,6 @@ class LanguageResource extends LmpResource
                 Select::make('language_id')
                     ->label(__('filament.resources.language_fields.language'))
                     ->relationship('locale', 'name_en')
-                    ->searchable()
-                    ->preload()
                     ->required(),
             ])->columns(2),
         ];

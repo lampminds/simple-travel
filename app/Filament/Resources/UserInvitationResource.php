@@ -112,8 +112,6 @@ class UserInvitationResource extends LmpResource
 
                             return getAccountRoles($accountId, ['guest', 'admin']);
                         })
-                        ->searchable()
-                        ->preload()
                         ->default(function (Get $get): ?int {
                             if (($get('type') ?? UserInvitation::TYPE_INTERNAL) === UserInvitation::TYPE_INTERNAL) {
                                 return null;

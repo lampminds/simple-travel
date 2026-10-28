@@ -97,7 +97,6 @@ class ServiceTransferVehicleResource extends LmpResource
                                             ->orderBy('name')
                                             ->pluck('name', 'id')
                                     )
-                                    ->searchable()
                                     ->required()
                                     ->unique(
                                         table: 'service_transfer_vehicles',

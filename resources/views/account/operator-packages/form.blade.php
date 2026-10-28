@@ -223,7 +223,6 @@
                                                     <tr>
                                                         <th>{{ __('account.operator_packages.fields.provider') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.offer') }}</th>
-                                                        <th>{{ __('account.operator_packages.fields.day_number') }}</th>
                                                         <th class="text-center text-nowrap" style="width: 1%;">{{ __('account.operator_packages.fields.sort_order') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.quantity') }}</th>
                                                         <th>{{ __('account.operator_packages.fields.inclusion_mode') }}</th>

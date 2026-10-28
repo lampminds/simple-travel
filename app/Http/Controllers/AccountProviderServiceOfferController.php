@@ -80,6 +80,9 @@ final class AccountProviderServiceOfferController extends Controller
             (string) $request->query('service_status', ''),
             $serviceStatusOptions,
         );
+        $proposalStateFilter = $this->resolveProposalStateFilter(
+            (string) $request->query('offer_state', ''),
+        );
 
         $services = Service::query()
             ->where('account_id', $account->id)
@@ -127,12 +130,16 @@ final class AccountProviderServiceOfferController extends Controller
             }
         }
 
+        $services = $this->filterServicesByProposalState($services, $proposalStateFilter);
+
         return view('account.service-offers.provider.edit', [
             'account' => $account,
             'operator' => $operator,
             'services' => $services,
             'serviceStatusOptions' => $serviceStatusOptions,
             'serviceStatusFilter' => $serviceStatusFilter,
+            'proposalStateOptions' => $this->proposalStateOptions(),
+            'proposalStateFilter' => $proposalStateFilter,
             'operatorHasPriceList' => $operatorHasPriceList,
             'operatorPriceListName' => $operatorPriceListName,
             'operatorPriceListValidity' => $operatorPriceListValidity,
@@ -183,6 +190,7 @@ final class AccountProviderServiceOfferController extends Controller
                 }),
             ],
             'service_status' => $serviceStatusRules,
+            'offer_state' => ['nullable', 'string', Rule::in($this->proposalStateOptions())],
         ]);
 
         $user = $request->user();
@@ -224,14 +232,11 @@ final class AccountProviderServiceOfferController extends Controller
             $user,
         );
 
-        $filterForRedirect = $this->resolveServiceStatusFilterForList(
-            (string) ($validated['service_status'] ?? ''),
-            $allowedStatusesCollection,
-        );
-        $query = $filterForRedirect !== '' ? ['service_status' => $filterForRedirect] : [];
-
         return redirect()
-            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
+            ->route('account.service-offers.operators.edit', array_merge(
+                ['operator' => $operator],
+                $this->operatorOfferListFilterQuery($request, $account),
+            ))
             ->with('status', __('account.service_offers.provider_status_saved'));
     }
 
@@ -261,14 +266,11 @@ final class AccountProviderServiceOfferController extends Controller
             $user,
         );
 
-        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
-            (string) ($request->input('service_status') ?? $request->query('service_status', '')),
-            $this->eligibleServiceStatusesForOperatorOffers($account),
-        );
-        $query = $serviceStatusFilter !== '' ? ['service_status' => $serviceStatusFilter] : [];
-
         return redirect()
-            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
+            ->route('account.service-offers.operators.edit', array_merge(
+                ['operator' => $operator],
+                $this->operatorOfferListFilterQuery($request, $account),
+            ))
             ->with('status', __('account.service_offers.provider_status_revoked'));
     }
 
@@ -332,14 +334,11 @@ final class AccountProviderServiceOfferController extends Controller
             $status .= ' '.__('account.service_offers.direct_service_paused_with_offer');
         }
 
-        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
-            (string) ($request->input('service_status') ?? $request->query('service_status', '')),
-            $this->eligibleServiceStatusesForOperatorOffers($account),
-        );
-        $query = $serviceStatusFilter !== '' ? ['service_status' => $serviceStatusFilter] : [];
-
         return redirect()
-            ->route('account.service-offers.operators.edit', array_merge(['operator' => $operator], $query))
+            ->route('account.service-offers.operators.edit', array_merge(
+                ['operator' => $operator],
+                $this->operatorOfferListFilterQuery($request, $account),
+            ))
             ->with('status', $status);
     }
 
@@ -375,6 +374,80 @@ final class AccountProviderServiceOfferController extends Controller
         }
 
         return $raw;
+    }
+
+    /**
+     * Proposal states shown in the operator-offer list filter.
+     * "none" means the variant has no offer yet.
+     *
+     * @return list<string>
+     */
+    private function proposalStateOptions(): array
+    {
+        return [
+            'none',
+            ServiceOffer::STATUS_PENDING,
+            ServiceOffer::STATUS_ACCEPTED,
+            ServiceOffer::STATUS_REJECTED,
+        ];
+    }
+
+    private function resolveProposalStateFilter(string $raw): string
+    {
+        $raw = trim($raw);
+        if (! in_array($raw, $this->proposalStateOptions(), true)) {
+            return '';
+        }
+
+        return $raw;
+    }
+
+    /**
+     * Keeps only variants whose proposal state matches the filter, and drops services left empty.
+     *
+     * @param  Collection<int, Service>  $services
+     * @return Collection<int, Service>
+     */
+    private function filterServicesByProposalState(Collection $services, string $proposalStateFilter): Collection
+    {
+        if ($proposalStateFilter === '') {
+            return $services;
+        }
+
+        return $services
+            ->map(function (Service $service) use ($proposalStateFilter): Service {
+                $service->setRelation(
+                    'serviceVariants',
+                    $service->serviceVariants
+                        ->filter(fn (ServiceVariant $variant): bool => (string) $variant->offer_status === $proposalStateFilter)
+                        ->values(),
+                );
+
+                return $service;
+            })
+            ->filter(fn (Service $service): bool => $service->serviceVariants->isNotEmpty())
+            ->values();
+    }
+
+    /**
+     * Query string that keeps the list filters after save, revoke, or availability changes.
+     *
+     * @return array<string, string>
+     */
+    private function operatorOfferListFilterQuery(Request $request, Account $account): array
+    {
+        $serviceStatusFilter = $this->resolveServiceStatusFilterForList(
+            (string) ($request->input('service_status') ?? $request->query('service_status', '')),
+            $this->eligibleServiceStatusesForOperatorOffers($account),
+        );
+        $proposalStateFilter = $this->resolveProposalStateFilter(
+            (string) ($request->input('offer_state') ?? $request->query('offer_state', '')),
+        );
+
+        return array_filter([
+            'service_status' => $serviceStatusFilter,
+            'offer_state' => $proposalStateFilter,
+        ], fn (string $value): bool => $value !== '');
     }
 
     /**

@@ -153,7 +153,6 @@ class ServiceTransferPriceResource extends LmpResource
                                             ->orderBy('name')
                                             ->pluck('name', 'id')
                                     )
-                                    ->searchable()
                                     ->nullable(),
                                 Select::make('pricing_type')
                                     ->label(__('filament.resources.service_transfer_price_fields.pricing_type'))
@@ -169,7 +168,6 @@ class ServiceTransferPriceResource extends LmpResource
                                             fn (Currency $c) => [$c->id => $c->display_name]
                                         )
                                     )
-                                    ->searchable()
                                     ->required(),
                                 TextInput::make('base_price')
                                     ->label(__('filament.resources.service_transfer_price_fields.base_price'))

@@ -106,7 +106,6 @@ class PersonResource extends LmpResource
                                                 $g->id => $g->name !== '' ? $g->name : (string) $g->getRawOriginal('code'),
                                             ])
                                     )
-                                    ->searchable()
                                     ->nullable(),
                                 Select::make('nationality_id')
                                     ->label(__('filament.resources.person_fields.nationality_id'))
@@ -160,7 +159,6 @@ class PersonResource extends LmpResource
                                                         ->get()
                                                         ->mapWithKeys(fn (ContactDepartment $d) => [$d->id => $d->code])
                                                 )
-                                                ->searchable()
                                                 ->required(),
                                             Select::make('contact_position_id')
                                                 ->label(__('filament.resources.person_fields.contact_position_id'))
@@ -171,7 +169,6 @@ class PersonResource extends LmpResource
                                                         ->get()
                                                         ->mapWithKeys(fn (ContactPosition $p) => [$p->id => $p->code])
                                                 )
-                                                ->searchable()
                                                 ->required(),
                                             Toggle::make('is_primary')
                                                 ->label(__('filament.resources.person_fields.is_primary'))
@@ -213,7 +210,6 @@ class PersonResource extends LmpResource
                                                             ]
                                                         )
                                                 )
-                                                ->searchable()
                                                 ->required(),
                                             TextInput::make('value')
                                                 ->label(__('filament.resources.person_fields.contact_method_value'))

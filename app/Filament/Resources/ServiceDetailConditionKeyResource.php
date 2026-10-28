@@ -79,9 +79,7 @@ class ServiceDetailConditionKeyResource extends LmpResource
                     Select::make('category')
                         ->label(__('filament.resources.service_detail_condition_key_fields.category'))
                         ->options($categoryOptions)
-                        ->required()
-                        ->searchable()
-                        ->native(false),
+                        ->required(),
                     TextInput::make('code')
                         ->label(__('filament.resources.service_detail_condition_key_fields.code'))
                         ->required()

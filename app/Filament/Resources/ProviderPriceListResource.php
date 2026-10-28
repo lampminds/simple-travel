@@ -95,7 +95,6 @@ class ProviderPriceListResource extends LmpResource
                                     Select::make('currency_id')
                                         ->label(__('filament.resources.provider_price_list_fields.currency_id'))
                                         ->options(fn () => Currency::query()->with('lmpCurrency')->orderBy('id')->get()->mapWithKeys(fn (Currency $c) => [$c->id => $c->display_name]))
-                                        ->searchable()
                                         ->required(),
                                     Toggle::make('is_active')
                                         ->label(__('filament.resources.provider_price_list_fields.is_active'))

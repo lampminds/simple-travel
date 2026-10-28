@@ -162,6 +162,12 @@
                                                 <th>{{ __('account.relationships.columns.status') }}</th>
                                                 <th>{{ __('account.relationships.columns.created_via') }}</th>
                                                 <th>{{ __('account.relationships.columns.approved_at') }}</th>
+                                                @if ($showCatalogCoverage ?? false)
+                                                    <th class="text-center">
+                                                        {{ __('account.relationships.columns.catalog_coverage') }}
+                                                        <div class="small fw-normal text-muted">{{ __('account.relationships.catalog_coverage_ratio') }}</div>
+                                                    </th>
+                                                @endif
                                                 <th class="text-end">{{ __('account.relationships.columns.actions') }}</th>
                                             </tr>
                                         </thead>
@@ -196,6 +202,17 @@
                                                             —
                                                         @endif
                                                     </td>
+                                                    @if ($showCatalogCoverage ?? false)
+                                                        @php
+                                                            $catalogAccepted = (int) ($row['catalog_accepted'] ?? 0);
+                                                            $catalogTotal = (int) ($row['catalog_total'] ?? 0);
+                                                        @endphp
+                                                        <td class="text-center text-nowrap">
+                                                            <span title="{{ __('account.relationships.catalog_coverage_hint', ['accepted' => $catalogAccepted, 'total' => $catalogTotal]) }}">
+                                                                {{ $catalogAccepted }} / {{ $catalogTotal }}
+                                                            </span>
+                                                        </td>
+                                                    @endif
                                                     <td class="text-end">
                                                         @if ($status === 'approved' && $row['viewer_role'] === 'provider')
                                                             <a href="{{ route('account.service-offers.operators.edit', $row['counterpart']) }}" class="btn btn-sm btn-primary">

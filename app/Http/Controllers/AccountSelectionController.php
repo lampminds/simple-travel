@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Support\CurrentAccountSession;
+use App\Support\SafeReturnUrl;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,11 +29,15 @@ class AccountSelectionController extends Controller
             }
             $request->session()->forget(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION);
 
-            return redirect()->route('account.dashboard');
+            return redirect()->intended(route('account.dashboard'));
         }
 
         return view('account.select-account', [
             'accounts' => $accounts,
+            'returnPath' => SafeReturnUrl::relativePath(
+                $request,
+                route('account.dashboard', absolute: false),
+            ),
         ]);
     }
 }

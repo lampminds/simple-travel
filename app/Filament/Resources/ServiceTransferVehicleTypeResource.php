@@ -95,7 +95,6 @@ class ServiceTransferVehicleTypeResource extends LmpResource
                                             ->get()
                                             ->mapWithKeys(fn (ServiceTransferVehicleTypeCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
                                     )
-                                    ->searchable()
                                     ->required(),
                                 TextInput::make('code')
                                     ->label(__('filament.resources.service_transfer_vehicle_type_fields.code'))

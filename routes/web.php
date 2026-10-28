@@ -48,6 +48,7 @@ use App\Http\Controllers\WelcomeCompanyController;
 use App\Http\Controllers\AccountTasksController;
 use App\Http\Controllers\AccountAssistantController;
 use App\Http\Controllers\TenantSite\HomeController;
+use App\Http\Controllers\TenantSite\PackageController;
 use App\Http\Controllers\TenantSite\ServiceCategoryController;
 use App\Http\Controllers\WebsiteImpersonationController;
 use App\Support\AccountTypeCategoryIds;
@@ -71,6 +72,14 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('services/{code}', ServiceCategoryController::class)
     ->where('code', '[a-z0-9_-]+')
     ->name('site.services.category');
+
+Route::get('paquetes/{package}/pdf', [PackageController::class, 'pdf'])
+    ->where('package', '[0-9a-fA-F-]{36}')
+    ->name('site.packages.pdf');
+
+Route::get('paquetes/{package}', [PackageController::class, 'show'])
+    ->where('package', '[0-9a-fA-F-]{36}')
+    ->name('site.packages.show');
 
 // Profile: auth only (no verified) so users can fix email before re-verifying after a change.
 Route::middleware(['auth'])->group(function () {

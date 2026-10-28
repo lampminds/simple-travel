@@ -29,10 +29,10 @@
                 </div>
             </div>
 
-            @if ($serviceStatusOptions->count() > 1)
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <form method="get" action="{{ route('account.service-offers.operators.edit', $operator) }}" class="d-flex flex-wrap align-items-end gap-2 mb-0">
+            <div class="row mt-3">
+                <div class="col-lg-12">
+                    <form method="get" action="{{ route('account.service-offers.operators.edit', $operator) }}" class="d-flex flex-wrap align-items-end gap-2 mb-0">
+                        @if ($serviceStatusOptions->count() > 1)
                             <div>
                                 <label for="service_status" class="form-label small mb-1">{{ __('account.service_offers.provider_edit_filter_service_status_label') }}</label>
                                 <select name="service_status" id="service_status" class="form-select form-select-sm" style="min-width: 14rem;" onchange="this.form.submit()">
@@ -43,10 +43,21 @@
                                     @endforeach
                                 </select>
                             </div>
-                        </form>
-                    </div>
+                        @endif
+                        <div>
+                            <label for="offer_state" class="form-label small mb-1">{{ __('account.service_offers.provider_edit_filter_offer_state_label') }}</label>
+                            <select name="offer_state" id="offer_state" class="form-select form-select-sm" style="min-width: 14rem;" onchange="this.form.submit()">
+                                <option value="">{{ __('account.service_offers.provider_edit_filter_offer_state_all') }}</option>
+                                @foreach ($proposalStateOptions as $proposalState)
+                                    <option value="{{ $proposalState }}" @selected($proposalStateFilter === $proposalState)>
+                                        {{ __('account.service_offers.provider_edit_state_' . $proposalState) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </form>
                 </div>
-            @endif
+            </div>
 
             <div class="row mt-3">
                 <div class="col-lg-12">
@@ -61,6 +72,9 @@
                 @method('PUT')
                 @if ($serviceStatusFilter !== '')
                     <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
+                @endif
+                @if ($proposalStateFilter !== '')
+                    <input type="hidden" name="offer_state" value="{{ $proposalStateFilter }}">
                 @endif
 
                 @if ($services->isEmpty())
@@ -211,7 +225,14 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">
+                                                        @php
+                                                            $offerStateBadge = match ($status) {
+                                                                'accepted' => 'bg-success-subtle text-success-emphasis border border-success-subtle',
+                                                                'pending' => 'badge-offer-pending',
+                                                                default => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
+                                                            };
+                                                        @endphp
+                                                        <span class="badge {{ $offerStateBadge }}">
                                                             {{ __('account.service_offers.provider_edit_state_' . $status) }}
                                                         </span>
                                                         @if ($status === 'accepted' && $offerAvailability !== 'active')
@@ -303,6 +324,9 @@
                             @if ($serviceStatusFilter !== '')
                                 <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
                             @endif
+                            @if ($proposalStateFilter !== '')
+                                <input type="hidden" name="offer_state" value="{{ $proposalStateFilter }}">
+                            @endif
                         </form>
                     @endif
                     @if (($variant->offer_status ?? 'none') === 'accepted' && (int) ($variant->offer_package_count ?? 0) === 0 && $variant->offer_id)
@@ -318,6 +342,9 @@
                                 <input type="hidden" name="availability" value="{{ $availabilityOption }}">
                                 @if ($serviceStatusFilter !== '')
                                     <input type="hidden" name="service_status" value="{{ $serviceStatusFilter }}">
+                                @endif
+                                @if ($proposalStateFilter !== '')
+                                    <input type="hidden" name="offer_state" value="{{ $proposalStateFilter }}">
                                 @endif
                             </form>
                         @endforeach
@@ -336,6 +363,13 @@
     <style>
         .operator-price-breakdown-popover .popover-body {
             max-width: 24rem;
+        }
+
+        /* Soft orange, same weight as Bootstrap success-subtle (pale fill, dark text). */
+        .badge.badge-offer-pending {
+            color: color-mix(in srgb, var(--bs-orange) 40%, black);
+            background-color: color-mix(in srgb, var(--bs-orange) 20%, white);
+            border: 1px solid color-mix(in srgb, var(--bs-orange) 40%, white);
         }
     </style>
     <script>

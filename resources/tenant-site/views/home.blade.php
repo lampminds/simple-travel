@@ -72,31 +72,54 @@
         </div>
     </section>
 
-    <section class="relative md:py-24 py-16 overflow-hidden">
+    <section class="relative md:py-24 py-16 overflow-hidden" id="paquetes">
         <div class="container relative">
             <div class="grid grid-cols-1 pb-8 text-center">
-                <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">Top Destinations</h3>
-                <p class="text-slate-400 max-w-xl mx-auto">{{ $subtitle ?? __('tenant.hero_lead') }}</p>
+                <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">{{ __('tenant.packages_heading') }}</h3>
+                <p class="text-slate-400 max-w-xl mx-auto">{{ __('tenant.packages_lead') }}</p>
             </div>
 
-            <div class="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 relative mt-6 gap-6">
-                @include('site::includes.Hero.top-destinations2')
-            </div>
-        </div>
+            @if (($packages ?? []) === [])
+                <p class="text-center text-slate-400">{{ __('tenant.packages_empty') }}</p>
+            @else
+                <div class="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 mt-6 gap-6">
+                    @foreach ($packages as $package)
+                        <div class="group rounded-md shadow-sm dark:shadow-gray-700">
+                            <div class="relative overflow-hidden rounded-md shadow-sm dark:shadow-gray-700 mx-2 mt-2 h-44 bg-slate-100 dark:bg-slate-800">
+                                @if (! empty($package['cover_url']))
+                                    <img src="{{ $package['cover_url'] }}" class="size-full object-cover scale-125 group-hover:scale-100 duration-500" alt="{{ $package['title'] }}">
+                                @else
+                                    <div class="size-full flex items-center justify-center text-slate-300">
+                                        <i data-feather="image" class="size-8"></i>
+                                    </div>
+                                @endif
+                            </div>
 
-        <div class="container relative md:mt-24 mt-16">
-            @include('site::includes.Hero.about')
-        </div>
+                            <div class="p-3">
+                                @if (($package['location'] ?? '') !== '')
+                                    <p class="flex items-center text-slate-400 font-medium mb-2"><i data-feather="map-pin" class="text-red-500 size-4 me-1"></i> {{ $package['location'] }}</p>
+                                @endif
+                                <a href="{{ $package['url'] }}" class="text-lg font-medium hover:text-red-500 duration-500 ease-in-out">{{ $package['title'] }}</a>
 
-        <div class="container relative md:mt-24 mt-16">
-            <div class="grid grid-cols-1 pb-8 text-center">
-                <h3 class="mb-6 md:text-3xl text-2xl md:leading-normal leading-normal font-semibold">Tours Packages</h3>
-                <p class="text-slate-400 max-w-xl mx-auto">{{ $subtitle ?? __('tenant.hero_lead') }}</p>
-            </div>
+                                <div class="mt-3 pt-3 flex justify-between items-end gap-3 border-t border-slate-100 dark:border-gray-800">
+                                    <div>
+                                        @forelse ($package['prices'] as $price)
+                                            <h5 class="text-lg font-medium text-red-500">{{ $price }}</h5>
+                                        @empty
+                                            <span class="text-slate-400">{{ __('tenant.package_price_on_request') }}</span>
+                                            @if ($package['show_login'] ?? false)
+                                                <a href="{{ $package['login_url'] }}" class="mt-2 py-1 px-3 inline-block tracking-wide align-middle duration-500 text-sm text-center bg-red-500 text-white rounded-md">{{ __('tenant.package_login') }}</a>
+                                            @endif
+                                        @endforelse
+                                    </div>
 
-            <div class="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 mt-6 gap-6">
-                @include('site::includes.Hero.tours-packages3')
-            </div>
+                                    <a href="{{ $package['url'] }}" class="text-slate-400 hover:text-red-500 shrink-0">{{ __('tenant.packages_details') }} <i class="mdi mdi-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         <div class="container relative md:mt-24 mt-16">
@@ -120,6 +143,14 @@
             </div>
         </div>
     </div>
+
+    @if (filled($about ?? null))
+        <section class="relative md:py-24 py-16 overflow-hidden">
+            <div class="container relative">
+                @include('site::includes.Hero.about')
+            </div>
+        </section>
+    @endif
 @endsection
 
 @if (! $heroBackground)

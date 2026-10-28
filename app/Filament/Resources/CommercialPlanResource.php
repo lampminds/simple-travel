@@ -154,7 +154,6 @@ class CommercialPlanResource extends LmpResource
                                                 ->all()
                                         )
                                         ->required()
-                                        ->searchable()
                                         ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
                                 ])
                                 ->defaultItems(0)

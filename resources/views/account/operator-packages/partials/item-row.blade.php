@@ -28,9 +28,7 @@
             @endforeach
         </select>
         <input type="hidden" name="items[{{ $index }}][service_variant_id]" class="package-item-variant-id" value="{{ $item['service_variant_id'] ?? '' }}">
-    </td>
-    <td>
-        <input type="number" name="items[{{ $index }}][day_number]" class="form-control" min="1" max="999" value="{{ $item['day_number'] ?? '' }}">
+        <input type="hidden" name="items[{{ $index }}][day_number]" value="{{ $item['day_number'] ?? '' }}">
     </td>
     <td class="text-center text-nowrap">
         <div class="btn-group btn-group-sm" role="group" aria-label="{{ __('account.operator_packages.fields.sort_order') }}">

@@ -235,9 +235,7 @@ class MenuResource extends BaseResource
                                     )
                                     ->getOptionLabelFromRecordUsing(
                                         fn (Menu $record): string => $record->admin_label.' ('.$record->slug.')'
-                                    )
-                                    ->searchable()
-                                    ->preload(),
+                                    ),
                                 TextInput::make('icon')
                                     ->label(__('filament.resources.menu_fields.icon'))
                                     ->maxLength(255)

@@ -50,7 +50,6 @@
                 <table class="table table-sm align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>{{ __('account.operator_packages.preview_col_day') }}</th>
                             <th>{{ __('account.operator_packages.preview_col_service') }}</th>
                             <th>{{ __('account.operator_packages.preview_col_provider') }}</th>
                             <th class="text-center">{{ __('account.operator_packages.preview_col_quantity') }}</th>
@@ -61,7 +60,6 @@
                     <tbody>
                         @foreach ($items as $item)
                             <tr>
-                                <td class="text-muted">{{ $item['day_number'] ?? '—' }}</td>
                                 <td>
                                     <span class="fw-medium">{{ $item['service_name'] ?? '—' }}</span>
                                     @if (($item['variant_sku'] ?? '') !== '')
