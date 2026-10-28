@@ -412,9 +412,7 @@ class ServiceResource extends LmpResource
                     ->preload(),
                 SelectFilter::make('service_type_id')
                     ->label(__('filament.resources.service_columns.service_type'))
-                    ->relationship('serviceType', 'code', fn ($query) => $query->where('active', true))
-                    ->searchable()
-                    ->preload(),
+                    ->relationship('serviceType', 'code', fn ($query) => $query->where('active', true)),
                 SelectFilter::make('status')
                     ->label(__('filament.resources.service_columns.status'))
                     ->options([

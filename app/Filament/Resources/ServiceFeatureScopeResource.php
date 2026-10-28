@@ -147,8 +147,7 @@ class ServiceFeatureScopeResource extends LmpResource
                             ->mapWithKeys(fn (ServiceType $type) => [
                                 $type->id => $type->dropdown_label,
                             ])
-                    )
-                    ->searchable(),
+                    ),
                 SelectFilter::make('service_feature_id')
                     ->label(__('filament.resources.service_feature_scope_filters.feature'))
                     ->options(

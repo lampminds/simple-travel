@@ -10,6 +10,7 @@ use App\Models\OperatorPackageItem;
 use App\Models\OperatorPriceList;
 use App\Models\OperatorPriceListAssignment;
 use App\Models\OperatorServiceCatalog;
+use App\Models\PackageOffer;
 use App\Models\Service;
 use App\Models\ServiceVariant;
 use App\Models\User;
@@ -28,6 +29,10 @@ use Illuminate\Support\Facades\Auth;
  * price list assigned to their agency, including that assignment's adjustment, in the
  * list currency. Per-person lines count one passenger. When several assigned lists share
  * a currency, the oldest list is kept. A list that cannot price every included line is skipped.
+ *
+ * The detail sheet can start a booking only when the signed-in account is that agency
+ * and it has an accepted, active offer for the package. A pending offer is reported
+ * so the page can send the agency to accept it first.
  */
 final class OperatorPublicPackageCatalog
 {
@@ -115,6 +120,7 @@ final class OperatorPublicPackageCatalog
         $card['conditions'] = $preview['conditions'] ?? [];
         $card['hero_images'] = $preview['hero_images'] ?? [];
         $card['galleries'] = $preview['galleries'] ?? [];
+        $card['booking'] = $this->bookingPanel($account, $catalog, $agencyId);
         $card['pdf_preview'] = array_merge($preview, [
             'title' => $card['title'],
             'operator_name' => $operatorName,
@@ -194,6 +200,84 @@ final class OperatorPublicPackageCatalog
         }
 
         return null;
+    }
+
+    /**
+     * Booking box for the detail page.
+     *
+     * can_book is true only for the agency account currently selected in the session,
+     * and only when that agency already accepted an active offer of this package.
+     * show_status tells the page to explain why booking is closed (pending offer, or none).
+     *
+     * @return array{can_book: bool, offer_uuid: ?string, pending: bool, show_status: bool}
+     */
+    private function bookingPanel(Account $operator, OperatorServiceCatalog $catalog, ?int $agencyId): array
+    {
+        $closed = [
+            'can_book' => false,
+            'offer_uuid' => null,
+            'pending' => false,
+            'show_status' => false,
+        ];
+
+        if ($agencyId === null || ! $this->viewerIsCurrentAgency($agencyId)) {
+            return $closed;
+        }
+
+        $offer = PackageOffer::query()
+            ->where('operator_id', $operator->id)
+            ->where('agency_id', $agencyId)
+            ->where('operator_service_catalog_id', $catalog->id)
+            ->where('status', PackageOffer::STATUS_ACCEPTED)
+            ->where('availability', PackageOffer::AVAILABILITY_ACTIVE)
+            ->whereHas('catalog', fn (Builder $query) => $query->where('status', 'active'))
+            ->orderByDesc('id')
+            ->first();
+
+        if ($offer instanceof PackageOffer) {
+            return [
+                'can_book' => true,
+                'offer_uuid' => (string) $offer->uuid,
+                'pending' => false,
+                'show_status' => false,
+            ];
+        }
+
+        $pending = PackageOffer::query()
+            ->where('operator_id', $operator->id)
+            ->where('agency_id', $agencyId)
+            ->where('operator_service_catalog_id', $catalog->id)
+            ->where('status', PackageOffer::STATUS_PENDING)
+            ->exists();
+
+        return [
+            'can_book' => false,
+            'offer_uuid' => null,
+            'pending' => $pending,
+            'show_status' => true,
+        ];
+    }
+
+    /**
+     * The price shown on the site follows the agency tied to this visit.
+     * Booking must use that same account, because the reservation is stored against the session account.
+     */
+    private function viewerIsCurrentAgency(int $agencyId): bool
+    {
+        $user = Auth::user();
+        if (! $user instanceof User || (int) $user->currentAccountId() !== $agencyId) {
+            return false;
+        }
+
+        $account = $user->currentAccount();
+        if (! $account instanceof Account) {
+            return false;
+        }
+
+        return $account->accountTypes()
+            ->where('cat_account_types.active', true)
+            ->where('cat_account_types.code', 'agency')
+            ->exists();
     }
 
     /**

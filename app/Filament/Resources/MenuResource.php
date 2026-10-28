@@ -341,8 +341,6 @@ class MenuResource extends BaseResource
                             (string) $c->getKey() => $c->name !== '' ? $c->name : (string) $c->code,
                         ])
                         ->all())
-                    ->searchable()
-                    ->preload()
                     ->placeholder(__('filament.resources.menu_filter.account_type_placeholder'))
                     ->query(function (Builder $query, array $data): void {
                         $id = $data['value'] ?? null;

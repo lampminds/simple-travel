@@ -220,8 +220,6 @@ class CommercialPlanResource extends LmpResource
                             (string) $type->getKey() => $type->name !== '' ? $type->name : (string) $type->code,
                         ])
                         ->all())
-                    ->searchable()
-                    ->preload()
                     ->placeholder(__('filament.resources.plan_filter.account_type_placeholder'))
                     ->query(function (Builder $query, array $data): void {
                         $id = $data['value'] ?? null;

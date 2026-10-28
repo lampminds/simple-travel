@@ -90,27 +90,122 @@
 
                     @if (($package['feature_groups'] ?? []) !== [])
                         <h4 class="text-xl font-semibold mb-4">{{ __('tenant.package_features') }}</h4>
-                        <div class="space-y-6 mb-10">
+                        <style>
+                            .package-feature-groups { margin-bottom: 2.5rem; }
+                            .package-feature-group {
+                                border: 1px solid var(--color-slate-100);
+                                border-radius: var(--radius-md);
+                                overflow: hidden;
+                            }
+                            .package-feature-group + .package-feature-group { margin-top: 1.25rem; }
+                            .dark .package-feature-group { border-color: var(--color-gray-800); }
+                            .package-feature-group__title {
+                                margin: 0;
+                                padding: 0.75rem 1rem;
+                                font-size: 0.875rem;
+                                font-weight: 600;
+                                border-bottom: 1px solid var(--color-slate-100);
+                            }
+                            .dark .package-feature-group__title { border-bottom-color: var(--color-gray-800); }
+                            .package-feature-cols { display: grid; grid-template-columns: 1fr; }
+                            .package-feature-col { padding: 1rem 1.125rem 1.125rem; }
+                            .package-feature-col--included { background: var(--color-emerald-50); }
+                            .package-feature-col--excluded { background: var(--color-rose-50); }
+                            .dark .package-feature-col--included { background: color-mix(in oklch, var(--color-emerald-500) 18%, transparent); }
+                            .dark .package-feature-col--excluded { background: color-mix(in oklch, var(--color-rose-500) 18%, transparent); }
+                            .package-feature-col__label {
+                                display: flex;
+                                align-items: center;
+                                gap: 0.375rem;
+                                margin: 0 0 0.75rem;
+                                font-size: 0.75rem;
+                                font-weight: 700;
+                                letter-spacing: 0.04em;
+                                text-transform: uppercase;
+                            }
+                            .package-feature-col--included .package-feature-col__label,
+                            .package-feature-col--included .package-feature-col__icon { color: var(--color-emerald-700); }
+                            .package-feature-col--excluded .package-feature-col__label,
+                            .package-feature-col--excluded .package-feature-col__icon { color: var(--color-rose-700); }
+                            .dark .package-feature-col--included .package-feature-col__label,
+                            .dark .package-feature-col--included .package-feature-col__icon { color: var(--color-emerald-300); }
+                            .dark .package-feature-col--excluded .package-feature-col__label,
+                            .dark .package-feature-col--excluded .package-feature-col__icon { color: var(--color-rose-300); }
+                            .package-feature-col__list { list-style: none; margin: 0; padding: 0; }
+                            .package-feature-col__list li {
+                                display: flex;
+                                align-items: flex-start;
+                                gap: 0.5rem;
+                                font-size: 0.875rem;
+                                line-height: 1.4;
+                            }
+                            .package-feature-col__list li + li { margin-top: 0.45rem; }
+                            .package-feature-col__icon { font-size: 1rem; line-height: 1.25rem; flex-shrink: 0; }
+                            .package-feature-cols--split .package-feature-col--excluded {
+                                border-top: 1px solid var(--color-slate-200);
+                            }
+                            .dark .package-feature-cols--split .package-feature-col--excluded { border-top-color: var(--color-gray-800); }
+                            @media (min-width: 720px) {
+                                .package-feature-cols--split { grid-template-columns: 1fr 1fr; }
+                                .package-feature-cols--split .package-feature-col--excluded {
+                                    border-top: 0;
+                                    border-inline-start: 1px solid var(--color-slate-200);
+                                }
+                                .dark .package-feature-cols--split .package-feature-col--excluded {
+                                    border-inline-start-color: var(--color-gray-800);
+                                }
+                            }
+                        </style>
+                        <div class="package-feature-groups">
                             @foreach ($package['feature_groups'] as $group)
-                                <div>
+                                @php
+                                    $includedFeatures = $group['items'] ?? [];
+                                    $excludedFeatures = $group['excluded_items'] ?? [];
+                                @endphp
+                                @if ($includedFeatures === [] && $excludedFeatures === [])
+                                    @continue
+                                @endif
+                                <div class="package-feature-group">
                                     @if (($group['title'] ?? '') !== '')
-                                        <p class="text-xs uppercase tracking-wide text-slate-400 mb-2">{{ $group['title'] }}</p>
+                                        <p class="package-feature-group__title">{{ $group['title'] }}</p>
                                     @endif
-                                    @if (($group['items'] ?? []) !== [])
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach ($group['items'] as $feature)
-                                                <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-sm">{{ $feature }}</span>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                    @if (($group['excluded_items'] ?? []) !== [])
-                                        <p class="text-xs uppercase tracking-wide text-slate-400 mt-3 mb-2">{{ __('tenant.package_features_excluded') }}</p>
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach ($group['excluded_items'] as $feature)
-                                                <span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 text-sm">{{ $feature }}</span>
-                                            @endforeach
-                                        </div>
-                                    @endif
+                                    <div @class([
+                                        'package-feature-cols',
+                                        'package-feature-cols--split' => $includedFeatures !== [] && $excludedFeatures !== [],
+                                    ])>
+                                        @if ($includedFeatures !== [])
+                                            <div class="package-feature-col package-feature-col--included">
+                                                <p class="package-feature-col__label">
+                                                    <i class="mdi mdi-check package-feature-col__icon" aria-hidden="true"></i>
+                                                    {{ __('tenant.package_features_included') }}
+                                                </p>
+                                                <ul class="package-feature-col__list">
+                                                    @foreach ($includedFeatures as $feature)
+                                                        <li>
+                                                            <i class="mdi mdi-check package-feature-col__icon" aria-hidden="true"></i>
+                                                            <span>{{ $feature }}</span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                        @if ($excludedFeatures !== [])
+                                            <div class="package-feature-col package-feature-col--excluded">
+                                                <p class="package-feature-col__label">
+                                                    <i class="mdi mdi-close package-feature-col__icon" aria-hidden="true"></i>
+                                                    {{ __('tenant.package_features_excluded') }}
+                                                </p>
+                                                <ul class="package-feature-col__list">
+                                                    @foreach ($excludedFeatures as $feature)
+                                                        <li>
+                                                            <i class="mdi mdi-close package-feature-col__icon" aria-hidden="true"></i>
+                                                            <span>{{ $feature }}</span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -158,7 +253,13 @@
                             @endif
                         @endforelse
 
-                        <a href="{{ $package['pdf_url'] }}" class="mt-6 py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center bg-red-500 text-white rounded-md w-full">
+                        @include('site::partials.package-booking')
+
+                        <a href="{{ $package['pdf_url'] }}" @class([
+                            'py-2 px-5 inline-block tracking-wide align-middle duration-500 text-base text-center rounded-md w-full',
+                            'mt-3 border border-red-500 text-red-500 bg-transparent hover:bg-red-500 hover:text-white' => ($package['booking']['can_book'] ?? false),
+                            'mt-6 bg-red-500 text-white' => ! ($package['booking']['can_book'] ?? false),
+                        ])>
                             {{ __('tenant.package_download_pdf') }}
                         </a>
                     </div>

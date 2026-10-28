@@ -297,8 +297,7 @@ class ServiceFeatureResource extends LmpResource
                             ->ordered()
                             ->get()
                             ->pluck('name', 'id')
-                    )
-                    ->searchable(),
+                    ),
             ], layout: FiltersLayout::AboveContent)
             ->bulkActions([
                 BulkActionGroup::make([

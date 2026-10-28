@@ -181,9 +181,7 @@ class CatFaqResource extends BaseResource
                         'code',
                         fn (Builder $query): Builder => $query->where('active', true)->orderBy('sort_order'),
                     )
-                    ->columnSpan(2)
-                    ->searchable()
-                    ->preload(),
+                    ->columnSpan(2),
                 SelectFilter::make('active')
                     ->label(__('filament.resources.cat_faq_filter.active_status'))
                     ->options([

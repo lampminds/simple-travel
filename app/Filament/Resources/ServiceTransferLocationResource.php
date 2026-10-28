@@ -185,9 +185,7 @@ class ServiceTransferLocationResource extends LmpResource
                             ->get()
                             ->mapWithKeys(fn (ServiceTransferLocationType $t) => [$t->id => ($t->name !== '' ? $t->name : $t->code)])
                             ->all()
-                    )
-                    ->searchable()
-                    ->preload(),
+                    ),
                 SelectFilter::make('city_id')
                     ->label(__('filament.resources.service_transfer_location_columns.city'))
                     ->options(function (): array {

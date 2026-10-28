@@ -165,8 +165,7 @@ class ServiceTransferVehicleTypeResource extends LmpResource
                             ->where('active', true)
                             ->get()
                             ->mapWithKeys(fn (ServiceTransferVehicleTypeCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
-                    )
-                    ->searchable(),
+                    ),
                 SelectFilter::make('account_id')
                     ->label(__('filament.resources.service_transfer_vehicle_type_columns.account'))
                     ->options(fn () => Account::query()->orderBy('id')->pluck('nick', 'id')->all())

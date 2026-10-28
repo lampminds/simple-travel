@@ -200,8 +200,7 @@ class ServiceDetailTopicResource extends LmpResource
                             ->orderBy('sort_order')
                             ->get()
                             ->mapWithKeys(fn (ServiceDetailTopicCategory $c) => [$c->id => $c->name ?: $c->code])
-                    )
-                    ->searchable(),
+                    ),
                 SelectFilter::make('visibility')
                     ->label(__('filament.resources.service_detail_topic_columns.visibility'))
                     ->options([

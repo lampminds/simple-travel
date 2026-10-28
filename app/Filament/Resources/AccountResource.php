@@ -423,9 +423,7 @@ class AccountResource extends LmpResource
                     )
                     ->getOptionLabelFromRecordUsing(
                         fn (AccountType $record): string => $record->name ?: (string) $record->code
-                    )
-                    ->searchable()
-                    ->preload(),
+                    ),
             ], layout: FiltersLayout::AboveContent)
             ->defaultSort('id');
     }

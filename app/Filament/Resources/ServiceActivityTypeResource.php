@@ -147,8 +147,7 @@ class ServiceActivityTypeResource extends LmpResource
                             ->where('active', true)
                             ->get()
                             ->mapWithKeys(fn (ServiceActivityTypeCategory $cat) => [$cat->id => $cat->name ?: $cat->code])
-                    )
-                    ->searchable(),
+                    ),
             ], layout: FiltersLayout::AboveContent)
             ->defaultSort('sort_order')
             ->reorderable('sort_order')

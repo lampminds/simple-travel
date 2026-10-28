@@ -219,8 +219,7 @@ class CatHelperResource extends BaseResource
                         ->distinct()
                         ->orderBy('screen_code')
                         ->pluck('screen_code', 'screen_code')
-                        ->all())
-                    ->searchable(),
+                        ->all()),
             ], layout: FiltersLayout::AboveContent)
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'translations',

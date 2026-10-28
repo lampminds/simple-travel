@@ -189,8 +189,6 @@ class UserResource extends LmpResource
                                             Select::make('role_ids')
                                                 ->label(__('filament.resources.user_fields.roles'))
                                                 ->multiple()
-                                                ->searchable()
-                                                ->preload()
                                                 ->options(fn (Get $get): array => static::roleOptionsForAccount(
                                                     filled($get('account_id')) ? (int) $get('account_id') : null
                                                 )),
