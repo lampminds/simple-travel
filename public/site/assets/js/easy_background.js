@@ -73,6 +73,11 @@ function easy_background(selector, sld_args) {
   var li = 0;
 
   function slider() {
+    // Each cycle starts from the first frame. The stock script left these
+    // counters running, so later loops scheduled the wrong image.
+    n = 1;
+    li = 0;
+
     //switching all images one by one
     sld_args.slide.forEach(function(vvv, iii) {
       //here go all slides except first
@@ -104,10 +109,13 @@ function easy_background(selector, sld_args) {
 
   slider();
 
-  setInterval(function() { // REPEAT
+  // The stock build used delay.length (the number of frames) as milliseconds.
+  var cycle = sld_args.delay.reduce(function (total, value) {
+    return total + value;
+  }, 0);
 
-    slider();
-    //here used length of array of delays in object instead you tot_time variable
-  }, sld_args.delay.length);
+  if (cycle > 0 && sld_args.slide.length > 1) {
+    setInterval(slider, cycle);
+  }
 
 }

@@ -1,7 +1,16 @@
 @extends('site::layouts.main')
 
 @php
-    $heroBackground = $account->homeBackgroundUrl();
+    // Placeholder frames until each account stores its own slides.
+    $heroSlides = [];
+    $uploadedHero = $account->homeBackgroundUrl();
+    if (is_string($uploadedHero) && $uploadedHero !== '') {
+        $heroSlides[] = $uploadedHero;
+    }
+    foreach (['images/bg/4.jpg', 'images/bg/5.jpg', 'images/bg/6.jpg'] as $fallbackSlide) {
+        $heroSlides[] = site_asset($fallbackSlide);
+    }
+    $showPassengerSearch = ! $account->hasActiveType('operator');
 @endphp
 
 @section('meta_title', $title ?? $account->nick)
@@ -9,9 +18,9 @@
 @section('content')
     @include('site::includes.navbar')
 
-    {{-- Hero matches the purchased index-three layout: title and search sit together over the photo. --}}
+    {{-- Hero matches index-three: the title sits over a rotating background. --}}
     <section class="relative md:pt-48 md:pb-36 py-36 table w-full items-center bg-center bg-cover" id="home"
-        @if ($heroBackground) style="background-image: url('{{ $heroBackground }}');" @endif>
+        style="background-image: url('{{ $heroSlides[0] }}');">
         <div class="absolute inset-0 bg-slate-900/40"></div>
         <div class="container relative">
             <div class="grid grid-cols-1">
@@ -19,6 +28,7 @@
                     <h1 class="font-bold text-white lg:leading-normal leading-normal text-4xl lg:text-6xl mb-6 mt-5">{{ $title ?? $account->nick }}</h1>
                     <p class="text-white/70 text-xl max-w-xl mx-auto">{{ $subtitle ?? __('tenant.hero_lead') }}</p>
 
+                    @if ($showPassengerSearch)
                     <div class="mt-6">
                         <form method="get" action="{{ url('/') }}" class="p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-gray-700">
                             <div class="registration-form text-slate-900 text-start">
@@ -67,6 +77,7 @@
                             </div>
                         </form>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -153,15 +164,11 @@
     @endif
 @endsection
 
-@if (! $heroBackground)
-    @push('scripts')
-        <script>
-            easy_background("#home",
-                {
-                    slide: ["{{ site_asset('images/bg/4.jpg') }}", "{{ site_asset('images/bg/5.jpg') }}", "{{ site_asset('images/bg/6.jpg') }}"],
-                    delay: [4000, 4000, 4000],
-                }
-            );
-        </script>
-    @endpush
-@endif
+@push('scripts')
+    <script>
+        easy_background("#home", {
+            slide: @json($heroSlides),
+            delay: @json(array_fill(0, count($heroSlides), 4000)),
+        });
+    </script>
+@endpush

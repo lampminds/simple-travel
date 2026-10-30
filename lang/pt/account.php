@@ -105,6 +105,7 @@ return [
             'variant' => 'Variante de serviço',
             'service_all_variants' => 'Serviço (todas as variantes)',
             'variant_specific' => 'Variante',
+            'original_price' => 'Preço original',
             'service_placeholder' => '— serviço completo —',
             'variant_placeholder' => 'Selecione variante',
             'pricing_mode' => 'Modo de preço',

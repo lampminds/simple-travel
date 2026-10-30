@@ -88,6 +88,15 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-12">
+            <div class="d-flex align-items-center gap-2">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="has-differentiated-prices" wire:model.live="form.has_differentiated_prices">
+                </div>
+                <label class="form-check-label mb-0" for="has-differentiated-prices">{{ __('wizard.step2_fields.has_differentiated_prices') }}</label>
+            </div>
+        </div>
     </div>
 
     <div class="mt-4">

@@ -114,6 +114,7 @@ return [
             'variant' => 'Service variant',
             'service_all_variants' => 'Service (all variants)',
             'variant_specific' => 'Variant',
+            'original_price' => 'Original price',
             'service_placeholder' => '— whole service —',
             'variant_placeholder' => 'Select variant',
             'pricing_mode' => 'Pricing mode',

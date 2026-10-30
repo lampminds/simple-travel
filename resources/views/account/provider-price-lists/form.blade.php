@@ -228,18 +228,14 @@
                                         role="tabpanel"
                                         aria-labelledby="price-list-tab-items-link"
                                     >
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <h5 class="mb-0">{{ __('account.price_lists.items_heading') }}</h5>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-item">
-                                                {{ __('account.price_lists.add_item_button') }}
-                                            </button>
-                                        </div>
+                                        <h5 class="mb-2">{{ __('account.price_lists.items_heading') }}</h5>
 
                                         <div class="table-responsive">
                                             <table class="table align-middle" id="items-table">
                                                 <thead>
                                                     <tr>
                                                         <th>{{ __('account.price_lists.fields.variant_specific') }}</th>
+                                                        <th class="text-nowrap">{{ __('account.price_lists.fields.original_price') }}</th>
                                                         <th>
                                                             <span class="d-inline-flex align-items-center gap-1">
                                                                 {{ __('account.price_lists.fields.pricing_mode') }}
@@ -259,15 +255,23 @@
                                                     @foreach($items as $index => $item)
                                                         <tr>
                                                             <td>
-                                                                <select name="items[{{ $index }}][service_variant_id]" class="form-select" data-role="item-variant" required>
-                                                                    <option value="">{{ __('account.price_lists.fields.variant_placeholder') }}</option>
-                                                                    @foreach($serviceVariantOptions as $variantId => $variantLabel)
-                                                                        <option value="{{ $variantId }}" @selected((string) ($item['service_variant_id'] ?? '') === (string) $variantId)>
-                                                                            {{ $variantLabel }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
+                                                                <div style="max-width: 26rem;">
+                                                                    <select name="items[{{ $index }}][service_variant_id]" class="form-select" data-role="item-variant" required>
+                                                                        <option value="">{{ __('account.price_lists.fields.variant_placeholder') }}</option>
+                                                                        @foreach($serviceVariantOptions as $variantId => $variantOption)
+                                                                            <option
+                                                                                value="{{ $variantId }}"
+                                                                                title="{{ $variantOption['title'] }}"
+                                                                                @selected((string) ($item['service_variant_id'] ?? '') === (string) $variantId)
+                                                                            >
+                                                                                {{ $variantOption['label'] }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                    <div class="small text-muted mt-1 d-none" data-role="variant-full-description"></div>
+                                                                </div>
                                                             </td>
+                                                            <td class="text-nowrap" data-role="variant-original-price">—</td>
                                                             <td>
                                                                 <select name="items[{{ $index }}][pricing_mode]" class="form-select" data-role="pricing-mode-select">
                                                                     <option value="" @selected(($item['pricing_mode'] ?? null) === null || ($item['pricing_mode'] ?? '') === '')>{{ __('account.price_lists.pricing_mode.variant_base') }}</option>
@@ -281,14 +285,17 @@
                                                                     class="form-control bg-light text-muted border-0 px-0 d-none"
                                                                     aria-hidden="true"
                                                                 ></div>
-                                                                <input
-                                                                    type="number"
-                                                                    name="items[{{ $index }}][price]"
-                                                                    class="form-control"
-                                                                    data-role="item-price"
-                                                                    step="{{ $priceStep }}"
-                                                                    value="{{ $item['price'] ?? '' }}"
-                                                                >
+                                                                <div class="input-group" data-role="item-price-group">
+                                                                    <input
+                                                                        type="number"
+                                                                        name="items[{{ $index }}][price]"
+                                                                        class="form-control"
+                                                                        data-role="item-price"
+                                                                        step="{{ $priceStep }}"
+                                                                        value="{{ $item['price'] ?? '' }}"
+                                                                    >
+                                                                    <span class="input-group-text" data-role="item-price-currency"></span>
+                                                                </div>
                                                                 <small class="form-text text-muted" data-role="item-price-help"></small>
                                                             </td>
                                                             <td class="text-end">
@@ -301,6 +308,10 @@
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btn-add-item">
+                                            {{ __('account.price_lists.add_item_button') }}
+                                        </button>
                                     </div>
 
                                     @if ($requiresNotificationTab)
@@ -434,8 +445,14 @@
             }
 
             const variantOptionsHtml = @json(collect($serviceVariantOptions)->map(
-                fn ($label, $id) => '<option value="'.e((string) $id).'">'.e($label).'</option>'
+                fn ($option, $id) => '<option value="'.e((string) $id).'" title="'.e($option['title']).'">'.e($option['label']).'</option>'
             )->implode(''));
+            const variantOptionTitles = @json(collect($serviceVariantOptions)->map(
+                fn ($option) => $option['title']
+            ));
+            const variantDescriptions = @json(collect($serviceVariantOptions)->map(
+                fn ($option) => $option['description']
+            ));
 
             const variantPlaceholder = @json(__('account.price_lists.fields.variant_placeholder'));
             function rowsCount() {
@@ -501,26 +518,70 @@
                 return decimals > 0 ? intPart + decSep + fracPart : intPart;
             }
 
-            function variantBasePriceLabel(variantId) {
-                const code = selectedListCurrencyCode();
+            function variantBaseData(variantId) {
                 if (variantId === '' || variantId === null || variantId === undefined) {
-                    return variantBasePriceUnavailable.replace(':code', code || '—');
+                    return null;
                 }
 
-                const data = variantBasePrices[variantId] ?? variantBasePrices[String(variantId)] ?? variantBasePrices[Number(variantId)];
+                return variantBasePrices[variantId]
+                    ?? variantBasePrices[String(variantId)]
+                    ?? variantBasePrices[Number(variantId)]
+                    ?? null;
+            }
+
+            function variantBasePriceLabel(variantId) {
+                const data = variantBaseData(variantId);
+                const code = (data && data.currency_code) ? data.currency_code : '—';
+
                 if (!data || data.amount === null || data.amount === undefined) {
-                    return variantBasePriceUnavailable.replace(':code', code || '—');
+                    return variantBasePriceUnavailable.replace(':code', code);
                 }
 
                 return variantBasePriceDisplay
-                    .replace(':code', code || '—')
+                    .replace(':code', code)
                     .replace(':amount', formatPriceAmount(data.amount));
+            }
+
+            function originalPriceLabel(variantId) {
+                const data = variantBaseData(variantId);
+                if (!data || data.amount === null || data.amount === undefined) {
+                    return '—';
+                }
+
+                const code = data.currency_code && data.currency_code !== '—' ? data.currency_code : '';
+                const amount = formatPriceAmount(data.amount);
+
+                return code !== '' ? amount + ' ' + code : amount;
             }
 
             function applyPricingBehavior(row) {
                 const pricingModeSelect = row.querySelector('[data-role="pricing-mode-select"]');
                 const variantSelect = row.querySelector('[data-role="item-variant"]');
+                const originalPriceCell = row.querySelector('[data-role="variant-original-price"]');
+
+                if (originalPriceCell instanceof HTMLElement) {
+                    const variantId = variantSelect instanceof HTMLSelectElement ? variantSelect.value : '';
+                    originalPriceCell.textContent = originalPriceLabel(variantId);
+                }
+
+                if (variantSelect instanceof HTMLSelectElement) {
+                    const variantId = variantSelect.value;
+                    variantSelect.title = variantOptionTitles[variantId]
+                        ?? variantOptionTitles[String(variantId)]
+                        ?? '';
+
+                    const descriptionEl = row.querySelector('[data-role="variant-full-description"]');
+                    if (descriptionEl instanceof HTMLElement) {
+                        const description = variantDescriptions[variantId]
+                            ?? variantDescriptions[String(variantId)]
+                            ?? '';
+                        descriptionEl.textContent = description;
+                        descriptionEl.classList.toggle('d-none', description === '');
+                    }
+                }
                 const priceInput = row.querySelector('[data-role="item-price"]');
+                const priceGroup = row.querySelector('[data-role="item-price-group"]');
+                const priceCurrency = row.querySelector('[data-role="item-price-currency"]');
                 const priceDisplay = row.querySelector('[data-role="item-price-variant-base"]');
                 const priceHelp = row.querySelector('[data-role="item-price-help"]');
 
@@ -534,8 +595,8 @@
 
                 if (isVariantBase) {
                     priceInput.value = '';
-                    priceInput.classList.add('d-none');
                     priceInput.removeAttribute('required');
+                    priceGroup?.classList.add('d-none');
                     priceHelp.textContent = '';
                     priceHelp.classList.add('d-none');
 
@@ -546,11 +607,15 @@
                         priceDisplay.removeAttribute('aria-hidden');
                     }
                 } else {
-                    priceInput.classList.remove('d-none');
+                    priceGroup?.classList.remove('d-none');
                     priceInput.setAttribute('required', 'required');
                     priceInput.placeholder = isPercentage ? percentagePlaceholder : amountPlaceholder;
                     priceHelp.textContent = isPercentage ? hintPercentageBase : hintFixedList;
                     priceHelp.classList.remove('d-none');
+
+                    if (priceCurrency instanceof HTMLElement) {
+                        priceCurrency.textContent = isPercentage ? '%' : (selectedListCurrencyCode() || '—');
+                    }
 
                     if (priceDisplay instanceof HTMLElement) {
                         priceDisplay.textContent = '';
@@ -580,11 +645,15 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <select name="items[${index}][service_variant_id]" class="form-select" data-role="item-variant" required>
-                            <option value="">${variantPlaceholder}</option>
-                            ${variantOptionsHtml}
-                        </select>
+                        <div style="max-width: 26rem;">
+                            <select name="items[${index}][service_variant_id]" class="form-select" data-role="item-variant" required>
+                                <option value="">${variantPlaceholder}</option>
+                                ${variantOptionsHtml}
+                            </select>
+                            <div class="small text-muted mt-1 d-none" data-role="variant-full-description"></div>
+                        </div>
                     </td>
+                    <td class="text-nowrap" data-role="variant-original-price">—</td>
                     <td>
                         <select name="items[${index}][pricing_mode]" class="form-select" data-role="pricing-mode-select">
                             <option value="">${labelVariantBase}</option>
@@ -594,7 +663,10 @@
                     </td>
                     <td>
                         <div data-role="item-price-variant-base" class="form-control bg-light text-muted border-0 px-0 d-none" aria-hidden="true"></div>
-                        <input type="number" name="items[${index}][price]" class="form-control" data-role="item-price" step="${priceStep}">
+                        <div class="input-group" data-role="item-price-group">
+                            <input type="number" name="items[${index}][price]" class="form-control" data-role="item-price" step="${priceStep}">
+                            <span class="input-group-text" data-role="item-price-currency"></span>
+                        </div>
                         <small class="form-text text-muted" data-role="item-price-help"></small>
                     </td>
                     <td class="text-end">
@@ -605,6 +677,7 @@
                 `;
                 itemsBody.appendChild(row);
                 bindRowEvents(row);
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
             addButton.addEventListener('click', addRow);

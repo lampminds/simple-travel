@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountSwitchController;
+use App\Http\Controllers\OpenKbPortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileInvitationController;
 use App\Http\Controllers\ProviderDashboardController;
@@ -110,6 +111,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('account/exchange-rates', [AccountExchangeRateController::class, 'index'])->name('account.exchange-rates.index');
     Route::get('account/exchange-rates/edit', [AccountExchangeRateController::class, 'edit'])->name('account.exchange-rates.edit');
     Route::post('account/exchange-rates', [AccountExchangeRateController::class, 'store'])->name('account.exchange-rates.store');
+
+    Route::get('/kb', OpenKbPortalController::class)->name('kb.open');
 
 });
 

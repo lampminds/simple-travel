@@ -111,7 +111,12 @@ class CatalogController extends Controller
         CatalogServiceStatusFilter::applyToQuery($servicesQuery, $statusFilter);
 
         $services = $servicesQuery
-            ->with(['serviceType.translations.language.locale', 'translations.language.locale', 'media'])
+            ->with([
+                'serviceType.translations.language.locale',
+                'translations.language.locale',
+                'media',
+                'serviceVariants.currency.lmpCurrency',
+            ])
             ->withCount('serviceVariants')
             ->orderByDesc('id')
             ->get();

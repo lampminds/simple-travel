@@ -23,6 +23,7 @@ return [
     'panel' => [
         'cluster_subnav_hide' => 'Hide module menu',
         'cluster_subnav_show' => 'Show module menu',
+        'tickets' => 'Tickets',
         'back_to_site' => 'Back to site',
     ],
 
@@ -2002,6 +2003,8 @@ return [
             'images_scope_service' => 'On the service',
             'images_scope_variant' => 'On each variant',
             'images_scope_help' => 'By default, images are uploaded on the service. Choose each variant when every variant has its own images.',
+            'has_differentiated_prices' => 'Differentiated fares',
+            'has_differentiated_prices_help' => 'When booking, the account passenger categories are applied on top of the regular price.',
         ],
 
         'service_columns' => [
@@ -2140,6 +2143,63 @@ return [
             'none' => 'No adjustment',
             'percentage' => 'Percentage',
             'fixed' => 'Fixed amount',
+        ],
+
+        'passenger_category' => 'Passenger category',
+        'passenger_categories' => 'Passenger categories',
+        'passenger_category_tabs' => [
+            'general' => 'General',
+        ],
+        'passenger_category_fields' => [
+            'account_id' => 'Account',
+            'name' => 'Name',
+            'code' => 'Code',
+            'age_min' => 'Minimum age',
+            'age_max' => 'Maximum age',
+            'is_active' => 'Active',
+        ],
+        'passenger_category_columns' => [
+            'account' => 'Account',
+            'name' => 'Name',
+            'code' => 'Code',
+            'age_range' => 'Ages',
+            'is_active' => 'Active',
+        ],
+        'passenger_category_validation' => [
+            'age_min_greater_than_max' => 'Minimum age cannot be greater than maximum age.',
+            'age_overlap' => 'That range overlaps :category (:range).',
+        ],
+
+        'passenger_category_price_rule' => 'Category price rule',
+        'passenger_category_price_rules' => 'Category price rules',
+        'passenger_category_price_rule_tabs' => [
+            'general' => 'General',
+        ],
+        'passenger_category_price_rule_fields' => [
+            'passenger_category_id' => 'Category',
+            'adjustment_type' => 'Adjustment type',
+            'adjustment_value' => 'Value',
+            'currency_id' => 'Currency',
+            'is_active' => 'Active',
+        ],
+        'passenger_category_price_rule_columns' => [
+            'account' => 'Account',
+            'category' => 'Category',
+            'adjustment_type' => 'Adjustment type',
+            'adjustment_value' => 'Value',
+            'currency' => 'Currency',
+            'is_active' => 'Active',
+        ],
+        'passenger_category_price_rule_adjustment_type' => [
+            'regular' => 'Regular price',
+            'percentage_discount' => 'Percentage discount',
+            'percentage_surcharge' => 'Percentage surcharge',
+            'fixed_discount' => 'Fixed discount',
+            'fixed_surcharge' => 'Fixed surcharge',
+            'fixed_price' => 'Fixed amount',
+        ],
+        'passenger_category_price_rule_validation' => [
+            'currency_required' => 'Choose a currency for the fixed amount.',
         ],
 
         'provider_price_list' => 'Provider price list',

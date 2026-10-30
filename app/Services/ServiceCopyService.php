@@ -111,6 +111,7 @@ final class ServiceCopyService
             'status' => 'onhold',
             'is_featured' => false,
             'is_public' => false,
+            'has_differentiated_prices' => false,
             'booking_mode' => 'instant',
             'confirmation_time_hours' => null,
         ];
@@ -119,6 +120,7 @@ final class ServiceCopyService
             $attributes['status'] = $source->status;
             $attributes['is_featured'] = $source->is_featured;
             $attributes['is_public'] = $source->is_public;
+            $attributes['has_differentiated_prices'] = $source->has_differentiated_prices;
             $attributes['booking_mode'] = $source->booking_mode;
             $attributes['confirmation_time_hours'] = $source->confirmation_time_hours;
         }

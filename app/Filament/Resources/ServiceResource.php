@@ -153,6 +153,10 @@ class ServiceResource extends LmpResource
                                     ->required()
                                     ->live()
                                     ->helperText(__('filament.resources.service_fields.images_scope_help')),
+                                Toggle::make('has_differentiated_prices')
+                                    ->label(__('filament.resources.service_fields.has_differentiated_prices'))
+                                    ->helperText(__('filament.resources.service_fields.has_differentiated_prices_help'))
+                                    ->default(false),
                             ])->columns(2),
                         ]),
                     Tab::make(__('filament.resources.service_tabs.translations'))

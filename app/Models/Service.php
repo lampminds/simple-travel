@@ -50,6 +50,7 @@ class Service extends Model implements HasMedia
         'city_id',
         'is_featured',
         'is_public',
+        'has_differentiated_prices',
         'images_scope',
         'booking_mode',
         'confirmation_time_hours',
@@ -59,6 +60,7 @@ class Service extends Model implements HasMedia
     protected $casts = [
         'is_featured' => 'boolean',
         'is_public' => 'boolean',
+        'has_differentiated_prices' => 'boolean',
         'images_scope' => 'string',
         'booking_mode' => 'string',
         'confirmation_time_hours' => 'integer',

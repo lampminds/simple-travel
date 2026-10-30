@@ -120,4 +120,9 @@ return [
         'retry_after_minutes' => (int) env('IP_GEOLOCATION_RETRY_AFTER_MINUTES', 1440),
     ],
 
+    'kb' => [
+        'url' => env('KB_URL'),
+        'key' => env('KB_API_KEY'),
+    ],
+
 ];

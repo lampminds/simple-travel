@@ -84,12 +84,7 @@
                                         {{ __('account.operator_price_lists.fields.adjustment_value') }}: 12{{ $thousandsSeparator }}345{{ $decimalSeparator }}{{ str_repeat('0', max(1, $priceDecimals)) }}
                                     </p>
 
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <h5 class="mb-0">{{ __('account.operator_price_lists.assignments_rows_title') }}</h5>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-assignment">
-                                            {{ __('account.operator_price_lists.add_assignment_button') }}
-                                        </button>
-                                    </div>
+                                    <h5 class="mb-2">{{ __('account.operator_price_lists.assignments_rows_title') }}</h5>
 
                                     <div class="table-responsive">
                                         <table class="table align-middle" id="assignments-table">
@@ -183,6 +178,10 @@
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btn-add-assignment">
+                                        {{ __('account.operator_price_lists.add_assignment_button') }}
+                                    </button>
 
                                     <div class="d-flex flex-wrap gap-2 mt-4">
                                         <a class="btn btn-light" href="{{ route('account.operator-price-lists.index') }}">{{ __('account.operator_price_lists.assignments_cancel') }}</a>
@@ -291,6 +290,7 @@
                     if (window.LocaleDateInput) {
                         window.LocaleDateInput.initAll(row);
                     }
+                    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
 
                 addAssignmentBtn.addEventListener('click', addAssignmentRow);

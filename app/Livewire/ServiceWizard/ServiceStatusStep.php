@@ -47,6 +47,7 @@ class ServiceStatusStep extends Component
             'status' => (string) ($service->status ?: 'onhold'),
             'is_featured' => (bool) $service->is_featured,
             'is_public' => (bool) $service->is_public,
+            'has_differentiated_prices' => (bool) $service->has_differentiated_prices,
             'booking_mode' => (string) ($service->booking_mode ?: 'instant'),
             'confirmation_time_hours' => $service->confirmation_time_hours !== null
                 ? (string) $service->confirmation_time_hours
@@ -72,6 +73,7 @@ class ServiceStatusStep extends Component
             'status' => $validated['form']['status'],
             'is_featured' => (bool) $validated['form']['is_featured'],
             'is_public' => (bool) $validated['form']['is_public'],
+            'has_differentiated_prices' => (bool) $validated['form']['has_differentiated_prices'],
             'booking_mode' => $validated['form']['booking_mode'],
             'confirmation_time_hours' => $validated['form']['confirmation_time_hours'] === ''
                 ? null
@@ -97,6 +99,7 @@ class ServiceStatusStep extends Component
             'form.status' => ['required', Rule::in(['active', 'onhold', 'suspended', 'discontinued', 'inactive', 'terminated'])],
             'form.is_featured' => ['required', 'boolean'],
             'form.is_public' => ['required', 'boolean'],
+            'form.has_differentiated_prices' => ['required', 'boolean'],
             'form.booking_mode' => ['required', Rule::in(['instant', 'request', 'external', 'quote'])],
             'form.confirmation_time_hours' => ['nullable', 'integer', 'min:0'],
         ];
@@ -113,6 +116,7 @@ class ServiceStatusStep extends Component
             'form.status' => __($f.'.status'),
             'form.is_featured' => __($f.'.is_featured'),
             'form.is_public' => __($f.'.is_public'),
+            'form.has_differentiated_prices' => __($f.'.has_differentiated_prices'),
             'form.booking_mode' => __($f.'.booking_mode'),
             'form.confirmation_time_hours' => __($f.'.confirmation_time_hours'),
         ];

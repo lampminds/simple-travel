@@ -93,12 +93,7 @@
                                     @if ($catalog->usesTimeSlotInventory())
                                         <div class="col-12">
                                             <hr>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <label class="form-label mb-0">{{ __('account.availability.fields.time_slots') }}</label>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-time-slot">
-                                                    {{ __('account.package_availability.add_time_slot') }}
-                                                </button>
-                                            </div>
+                                            <label class="form-label mb-2">{{ __('account.availability.fields.time_slots') }}</label>
                                             <div id="time-slots-wrap">
                                                 @foreach ($timeSlots as $index => $slot)
                                                     @php
@@ -134,6 +129,9 @@
                                                     </div>
                                                 @endforeach
                                             </div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="add-time-slot">
+                                                {{ __('account.package_availability.add_time_slot') }}
+                                            </button>
                                         </div>
                                     @endif
                                 </div>
@@ -212,6 +210,10 @@
                     const clone = template.content.cloneNode(true);
                     wrap.appendChild(clone);
                     reindexRows();
+                    const row = wrap.lastElementChild;
+                    if (row) {
+                        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 });
 
                 wrap.addEventListener('click', function (event) {

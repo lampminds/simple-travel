@@ -317,29 +317,32 @@ final class AccountProviderPriceListController extends Controller
     }
 
     /**
-     * @return array<int, array{amount: float|null}>
+     * @return array<int, array{amount: float|null, currency_code: string}>
      */
     private function variantBasePricesForAccount(int $accountId): array
     {
         return ServiceVariant::query()
             ->whereHas('service', fn ($query) => $query->where('account_id', $accountId))
-            ->get(['id', 'base_price'])
+            ->with('currency.lmpCurrency')
+            ->get(['id', 'base_price', 'currency_id'])
             ->mapWithKeys(fn (ServiceVariant $variant): array => [
                 $variant->id => [
                     'amount' => $variant->base_price !== null ? (float) $variant->base_price : null,
+                    'currency_code' => $variant->currency?->currency_code ?? '',
                 ],
             ])
             ->all();
     }
 
     /**
-     * @return array<int, string>
+     * @return array<int, array{label: string, title: string, description: string}>
      */
     private function serviceVariantOptionsForAccount(int $accountId): array
     {
         return ServiceVariant::query()
             ->whereHas('service', fn ($query) => $query->where('account_id', $accountId))
             ->with([
+                'currency.lmpCurrency',
                 'translations.language.locale',
                 'service.translations.language.locale',
             ])
@@ -347,9 +350,36 @@ final class AccountProviderPriceListController extends Controller
             ->orderBy('sku')
             ->get()
             ->mapWithKeys(fn (ServiceVariant $variant): array => [
-                $variant->id => $variant->dropdownLabel(),
+                $variant->id => $this->compactVariantOption($variant, $accountId),
             ])
             ->all();
+    }
+
+    /**
+     * Short dropdown label: first 40 characters of the variant name, plus its catalog price.
+     *
+     * @return array{label: string, title: string, description: string}
+     */
+    private function compactVariantOption(ServiceVariant $variant, int $accountId): array
+    {
+        $full = $variant->dropdownLabel();
+        $short = mb_strlen($full) > 40
+            ? rtrim(mb_substr($full, 0, 40)).'…'
+            : $full;
+
+        $price = $this->priceFormatService->formatWithCurrency(
+            $variant->base_price,
+            $variant->currency,
+            accountId: $accountId,
+        );
+
+        $label = $price === '—' ? $short : $short.' · '.$price;
+
+        return [
+            'label' => $label,
+            'title' => $full,
+            'description' => $full,
+        ];
     }
 
     /**

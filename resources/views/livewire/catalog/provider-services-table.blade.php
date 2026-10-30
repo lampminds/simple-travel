@@ -9,6 +9,7 @@
                 <th scope="col">{{ __('wizard.provider_services_col_name') }}</th>
                 <th scope="col">{{ __('wizard.provider_services_col_type') }}</th>
                 <th scope="col">{{ __('wizard.provider_services_col_status') }}</th>
+                <th scope="col">{{ __('wizard.provider_services_col_prices') }}</th>
                 <th scope="col" class="text-center">{{ __('wizard.provider_services_col_variants') }}</th>
             </tr>
         </thead>
@@ -162,6 +163,19 @@
                         @include('catalog.partials.catalog-status-badge', [
                             'presentation' => \App\Support\ServiceCatalogStatus::forService($svc->status ?? null),
                         ])
+                    </td>
+                    <td>
+                        @php $prices = $this->variantPriceLabels($svc); @endphp
+                        @if ($prices === [])
+                            <span class="text-muted small">—</span>
+                        @else
+                            @foreach ($prices as $index => $price)
+                                @if ($index > 0)
+                                    <span class="text-muted">; </span>
+                                @endif
+                                <span class="text-nowrap">{{ $price }}</span>
+                            @endforeach
+                        @endif
                     </td>
                     <td class="text-center">
                         @if ($this->skipsVariantsForType($svc->serviceType?->code))

@@ -23,6 +23,7 @@ return [
     'panel' => [
         'cluster_subnav_hide' => 'Ocultar menu do módulo',
         'cluster_subnav_show' => 'Mostrar menu do módulo',
+        'tickets' => 'Tickets',
         'back_to_site' => 'Voltar ao site',
     ],
 
@@ -1928,6 +1929,8 @@ return [
             'images_scope_service' => 'No serviço',
             'images_scope_variant' => 'Em cada variante',
             'images_scope_help' => 'Por padrão as imagens são carregadas no serviço. Escolha cada variante quando cada uma tiver suas próprias imagens.',
+            'has_differentiated_prices' => 'Tarifas diferenciadas',
+            'has_differentiated_prices_help' => 'Na reserva, as categorias de passageiro da conta são aplicadas sobre o preço regular.',
         ],
 
         'service_columns' => [
@@ -2068,6 +2071,61 @@ return [
             'fixed' => 'Montante fixo',
         ],
 
+        'passenger_category' => 'Categoria de passageiro',
+        'passenger_categories' => 'Categorias de passageiro',
+        'passenger_category_tabs' => [
+            'general' => 'Geral',
+        ],
+        'passenger_category_fields' => [
+            'account_id' => 'Conta',
+            'name' => 'Nome',
+            'code' => 'Código',
+            'age_min' => 'Idade mínima',
+            'age_max' => 'Idade máxima',
+            'is_active' => 'Ativa',
+        ],
+        'passenger_category_columns' => [
+            'account' => 'Conta',
+            'name' => 'Nome',
+            'code' => 'Código',
+            'age_range' => 'Idades',
+            'is_active' => 'Ativa',
+        ],
+        'passenger_category_validation' => [
+            'age_min_greater_than_max' => 'A idade mínima não pode ser maior que a idade máxima.',
+            'age_overlap' => 'Esse intervalo se sobrepõe a :category (:range).',
+        ],
+        'passenger_category_price_rule' => 'Regra de preço por categoria',
+        'passenger_category_price_rules' => 'Regras de preço por categoria',
+        'passenger_category_price_rule_tabs' => [
+            'general' => 'Geral',
+        ],
+        'passenger_category_price_rule_fields' => [
+            'passenger_category_id' => 'Categoria',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor',
+            'currency_id' => 'Moeda',
+            'is_active' => 'Ativa',
+        ],
+        'passenger_category_price_rule_columns' => [
+            'account' => 'Conta',
+            'category' => 'Categoria',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor',
+            'currency' => 'Moeda',
+            'is_active' => 'Ativa',
+        ],
+        'passenger_category_price_rule_adjustment_type' => [
+            'regular' => 'Preço regular',
+            'percentage_discount' => 'Desconto percentual',
+            'percentage_surcharge' => 'Acréscimo percentual',
+            'fixed_discount' => 'Desconto fixo',
+            'fixed_surcharge' => 'Acréscimo fixo',
+            'fixed_price' => 'Valor fixo',
+        ],
+        'passenger_category_price_rule_validation' => [
+            'currency_required' => 'Informe a moeda do valor fixo.',
+        ],
         'provider_price_list' => 'Lista de preços (fornecedor)',
         'provider_price_lists' => 'Listas de preços (fornecedor)',
 

@@ -168,12 +168,7 @@
                                         role="tabpanel"
                                         aria-labelledby="price-list-tab-items-link"
                                     >
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <h5 class="mb-0">{{ __('account.operator_price_lists.items_heading') }}</h5>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-item">
-                                                {{ __('account.operator_price_lists.add_item_button') }}
-                                            </button>
-                                        </div>
+                                        <h5 class="mb-2">{{ __('account.operator_price_lists.items_heading') }}</h5>
                                         <p class="small text-muted mb-3">{{ __('account.operator_price_lists.items_help') }}</p>
                                         <p class="small text-muted mb-3">{{ __('account.operator_price_lists.items_target_help') }}</p>
                                         <p class="small text-muted mb-3">
@@ -208,6 +203,10 @@
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="btn-add-item">
+                                            {{ __('account.operator_price_lists.add_item_button') }}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -434,6 +433,7 @@
                 }
                 itemsBody.appendChild(row);
                 bindRowEvents(row);
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
             addButton.addEventListener('click', addRow);

@@ -44,6 +44,11 @@ class SmplAdmPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->navigationItems([
+                NavigationItem::make('kb-tickets')
+                    ->label(fn (): string => __('filament.panel.tickets'))
+                    ->url(fn (): string => route('kb.open'), shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-ticket')
+                    ->sort(998),
                 NavigationItem::make('back-to-site')
                     ->label(fn (): string => __('filament.panel.back_to_site'))
                     ->url(fn (): string => route('home'))
