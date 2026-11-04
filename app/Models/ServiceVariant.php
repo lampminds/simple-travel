@@ -222,16 +222,21 @@ class ServiceVariant extends Model implements HasMedia
 
     public function registerMediaConversions(?MediaModel $media = null): void
     {
+        // Not queued: same reason as Service. Derivatives must land on the
+        // active media disk before Filament asks for the thumbnail URL.
         $this->addMediaConversion(self::MEDIA_CONVERSION_THUMBNAIL)
             ->fit(Fit::Max, 200, 10_000)
+            ->nonQueued()
             ->performOnCollections(self::MEDIA_COLLECTION_MAIN, self::MEDIA_COLLECTION_GALLERY);
 
         $this->addMediaConversion(self::MEDIA_CONVERSION_SMALL)
             ->fit(Fit::Max, 800, 10_000)
+            ->nonQueued()
             ->performOnCollections(self::MEDIA_COLLECTION_MAIN, self::MEDIA_COLLECTION_GALLERY);
 
         $this->addMediaConversion(self::MEDIA_CONVERSION_REGULAR)
             ->fit(Fit::Max, 1600, 10_000)
+            ->nonQueued()
             ->performOnCollections(self::MEDIA_COLLECTION_MAIN, self::MEDIA_COLLECTION_GALLERY);
     }
 
