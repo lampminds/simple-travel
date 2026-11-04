@@ -368,8 +368,10 @@ class ServiceResource extends LmpResource
             ->columns([
                 SpatieMediaLibraryImageColumn::make('main_thumb')
                     ->label('Thumb')
+                    // No conversion: Filament treats this disk as private and asks
+                    // for the thumbnail object even when it was never stored.
+                    // The original is the file that exists on Vultr.
                     ->collection(Service::MEDIA_COLLECTION_MAIN)
-                    ->conversion(Service::MEDIA_CONVERSION_THUMBNAIL)
                     ->square()
                     ->defaultImageUrl(null),
                 TextColumn::make('id')
