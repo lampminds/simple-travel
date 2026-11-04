@@ -477,8 +477,8 @@ class Account extends Model implements HasMedia
     }
 
     /**
-     * Root-relative logo path, so the portal host serves the file itself.
-     * Defaults to the mark used over photographs (site header).
+     * Logo URL for the site header. Local disks stay root-relative so the
+     * tenant host serves the file. Object storage returns a signed URL.
      */
     public function portalLogoPath(?string $collection = null): ?string
     {
@@ -491,7 +491,7 @@ class Account extends Model implements HasMedia
             ? self::MEDIA_CONVERSION_LOGO_PREVIEW
             : '';
 
-        return '/storage/account-logos/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
+        return $this->storedMediaUrl($media, 'account-logos', $conversion);
     }
 
     /**
@@ -508,7 +508,8 @@ class Account extends Model implements HasMedia
     }
 
     /**
-     * Root-relative home hero image, or null when the account has none.
+     * Home hero image URL, or null when the account has none.
+     * Local disks stay root-relative. Object storage returns a signed URL.
      */
     public function homeBackgroundUrl(): ?string
     {
@@ -521,7 +522,24 @@ class Account extends Model implements HasMedia
             ? self::MEDIA_CONVERSION_HOME_BACKGROUND
             : '';
 
-        return '/storage/account-home-backgrounds/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
+        return $this->storedMediaUrl($media, 'account-home-backgrounds', $conversion);
+    }
+
+    /**
+     * Local disks stay root-relative so each tenant host serves its own files.
+     * Private object storage returns a signed URL from Media::getUrl().
+     */
+    private function storedMediaUrl(MediaModel $media, string $localDirectory, string $conversion = ''): string
+    {
+        $driver = (string) (config('filesystems.disks.'.$media->disk.'.driver') ?? 'local');
+
+        if ($driver !== 'local') {
+            return $conversion !== ''
+                ? $media->getUrl($conversion)
+                : $media->getUrl();
+        }
+
+        return '/storage/'.$localDirectory.'/'.ltrim($media->getPathRelativeToRoot($conversion), '/');
     }
 
     /**

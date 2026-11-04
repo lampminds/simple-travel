@@ -13,6 +13,7 @@ use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\HtmlString;
@@ -152,8 +153,20 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
-            $path = $media->getPath();
-            $contents = is_file($path) ? file_get_contents($path) : false;
+            $relativePath = $media->getPathRelativeToRoot();
+            $disk = Storage::disk($media->disk);
+
+            try {
+                $contents = $disk->get($relativePath);
+            } catch (\Throwable) {
+                $contents = false;
+            }
+
+            if (! is_string($contents) || $contents === '') {
+                $absolute = $media->getPath();
+                $contents = is_file($absolute) ? file_get_contents($absolute) : false;
+            }
+
             $clean = is_string($contents) ? SvgSanitizer::sanitize($contents) : null;
             if ($clean === null) {
                 $media->delete();
@@ -167,7 +180,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($clean !== $contents) {
-                file_put_contents($path, $clean);
+                $disk->put($relativePath, $clean);
                 $media->size = strlen($clean);
                 $media->saveQuietly();
             }
