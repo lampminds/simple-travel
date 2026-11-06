@@ -250,6 +250,11 @@ class Account extends Model implements HasMedia
         return $this->hasOne(AccountPublicProfile::class);
     }
 
+    public function providerPassengerPolicies(): HasMany
+    {
+        return $this->hasMany(ProviderPassengerPolicy::class, 'provider_id');
+    }
+
     public function hasActiveType(string $code): bool
     {
         $types = $this->relationLoaded('accountTypes')

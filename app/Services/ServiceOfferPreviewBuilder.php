@@ -22,6 +22,7 @@ final class ServiceOfferPreviewBuilder
     public function __construct(
         private readonly OperatorVariantPriceResolver $priceResolver,
         private readonly OperatorPreviewLocalePriceService $localePriceService,
+        private readonly OperatorPassengerPricingSummary $passengerPricing,
     ) {
     }
 
@@ -124,6 +125,11 @@ final class ServiceOfferPreviewBuilder
             'proposed_variant_id' => (int) $variant->id,
             'operator_price' => $priceFormatted,
             'operator_price_usd_hint' => $usdPriceHint,
+            'passenger_pricing' => $this->passengerPricing->summarize(
+                $variant,
+                (int) $offer->provider_id,
+                $operatorId,
+            ),
             'price_list' => $this->assignedPriceListSummary((int) $offer->provider_id, $operatorId),
             'hero_images' => $this->heroImages($service, $variant),
             'summary' => [

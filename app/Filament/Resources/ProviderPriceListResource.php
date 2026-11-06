@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ProviderPriceListResource\Pages;
+use App\Enums\PriceAdjustmentType;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\PriceList;
+use App\Models\PriceListItem;
 use BackedEnum;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
@@ -146,6 +148,66 @@ class ProviderPriceListResource extends LmpResource
                                         ->columns(2)
                                         ->defaultItems(0)
                                         ->addActionLabel(__('filament.resources.provider_price_list_assignment_fields.add')),
+                                ]),
+                        ])
+                        ->visibleOn(['edit']),
+                    Tab::make(__('filament.resources.provider_price_list_tabs.passenger_fares'))
+                        ->schema([
+                            Section::make('')
+                                ->schema([
+                                    Repeater::make('passenger_fares')
+                                        ->label(__('filament.resources.passenger_policy_fields.variant_prices'))
+                                        ->schema([
+                                            Select::make('provider_price_list_item_id')
+                                                ->label(__('filament.resources.passenger_policy_fields.list_item'))
+                                                ->options(function (?PriceList $record): array {
+                                                    if (! $record instanceof PriceList) {
+                                                        return [];
+                                                    }
+
+                                                    return $record->items()
+                                                        ->with('serviceVariant')
+                                                        ->get()
+                                                        ->mapWithKeys(fn (PriceListItem $item): array => [
+                                                            $item->id => $item->serviceVariant?->sku ?: '#'.$item->id,
+                                                        ])
+                                                        ->all();
+                                                })
+                                                ->required()
+                                                ->live(),
+                                            Select::make('passenger_category_id')
+                                                ->label(__('filament.resources.passenger_policy_fields.category'))
+                                                ->options(function (Get $get): array {
+                                                    $itemId = (int) $get('provider_price_list_item_id');
+                                                    if ($itemId < 1) {
+                                                        return [];
+                                                    }
+
+                                                    $item = PriceListItem::query()
+                                                        ->with('serviceVariant.service.passengerPolicy.rules.category.translations.language.locale')
+                                                        ->find($itemId);
+
+                                                    return $item?->serviceVariant?->service?->passengerPolicy?->rules
+                                                        ?->mapWithKeys(fn ($rule): array => [
+                                                            $rule->passenger_category_id => $rule->category?->name ?? '#'.$rule->passenger_category_id,
+                                                        ])
+                                                        ->all() ?? [];
+                                                })
+                                                ->required(),
+                                            Select::make('adjustment_type')
+                                                ->label(__('filament.resources.passenger_policy_fields.adjustment_type'))
+                                                ->options(PriceAdjustmentType::options())
+                                                ->required(),
+                                            TextInput::make('adjustment_value')
+                                                ->label(__('filament.resources.passenger_policy_fields.adjustment_value'))
+                                                ->numeric()
+                                                ->minValue(0)
+                                                ->step(0.01)
+                                                ->required(),
+                                        ])
+                                        ->columns(4)
+                                        ->defaultItems(0)
+                                        ->addActionLabel(__('filament.resources.passenger_policy_fields.add_price')),
                                 ]),
                         ])
                         ->visibleOn(['edit']),

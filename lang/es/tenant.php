@@ -39,7 +39,7 @@ return [
     'package_book_submit' => 'Reservar',
     'package_book_hint' => 'La reserva queda pendiente de validación del operador.',
     'package_book_passengers' => 'Pasajeros',
-    'package_book_passengers_hint' => 'Indica al menos un pasajero.',
+    'package_book_passengers_hint' => 'Indica la edad de cada pasajero. Se requiere al menos una edad.',
     'package_book_pending' => 'Acepta la oferta de este paquete para poder reservar.',
     'package_book_pending_action' => 'Ver ofertas',
     'package_book_unavailable' => 'Este paquete todavía no está habilitado para reservar.',

@@ -24,6 +24,7 @@ final class AgencyBookingFromPackageOfferService
         private readonly BookingCodeGenerator $bookingCodeGenerator,
         private readonly OperatorPackageAgencyPriceResolver $packagePriceResolver,
         private readonly OperatorPriceListItemPricingService $itemPricingService,
+        private readonly AgencyPassengerLinePricer $passengerLinePricer,
         private readonly BookingNotificationService $bookingNotifications,
         private readonly BookingAvailabilityValidationService $availabilityValidation,
     ) {
@@ -33,7 +34,7 @@ final class AgencyBookingFromPackageOfferService
      * @param  array{
      *     travel_start_date: string,
      *     travel_end_date: string,
-     *     passengers_snapshot: array{adult: int, child: int, infant: int, senior: int, total: int},
+     *     passengers_snapshot: array{ages: list<int>, total: int},
      *     remarks_customer?: string|null
      * }  $payload
      */
@@ -41,7 +42,7 @@ final class AgencyBookingFromPackageOfferService
     {
         $this->assertOfferIsBookable($offer, $agencyAccountId);
 
-        $passengersSnapshot = BookingPassengersSnapshot::normalize($payload['passengers_snapshot']);
+        $passengersSnapshot = BookingPassengersSnapshot::fromAges($payload['passengers_snapshot']['ages'] ?? []);
         BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
 
         $catalog = $offer->catalog;
@@ -167,20 +168,28 @@ final class AgencyBookingFromPackageOfferService
                     continue;
                 }
 
-                $line = $this->itemPricingService->calculate(
+                $ages = $passengersSnapshot['ages'];
+                $priced = $this->passengerLinePricer->price(
                     $packageItem,
                     (int) $offer->operator_id,
                     $currencyId,
                     $this->normalizeListItemMode($listItem),
                     (float) $listItem->price,
                     $travelStart,
+                    $ages,
                 );
 
-                $unitPrice = $line['final_price_has'] && $line['final_price'] !== null
-                    ? (float) $line['final_price']
-                    : 0.0;
+                if (! $priced['has_amount'] || $priced['total'] === null) {
+                    throw ValidationException::withMessages([
+                        'package_offer' => __('account.reservations.validation.price_not_available'),
+                    ]);
+                }
+
                 $quantity = BookingPassengersSnapshot::lineQuantity($packageItem, $passengersSnapshot);
-                $lineTotal = $unitPrice * $quantity;
+                $snapshot = $this->buildPackageSnapshot($packageItem);
+                if ($priced['fares'] !== []) {
+                    $snapshot['passenger_fares'] = $priced['fares'];
+                }
 
                 BookingItem::query()->create([
                     'booking_id' => (int) $booking->id,
@@ -189,10 +198,10 @@ final class AgencyBookingFromPackageOfferService
                     'start_date' => $travelStart->toDateString(),
                     'end_date' => $travelEnd->toDateString(),
                     'quantity' => $quantity,
-                    'price' => $unitPrice,
+                    'price' => (float) ($priced['regular_unit'] ?? 0),
                     'currency_id' => $currencyId,
-                    'package_snapshot' => $this->buildPackageSnapshot($packageItem),
-                    'total' => $lineTotal,
+                    'package_snapshot' => $snapshot,
+                    'total' => (float) $priced['total'],
                 ]);
             }
 

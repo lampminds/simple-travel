@@ -4,26 +4,21 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\PassengerCategoryResource\Pages;
-use App\Models\Account;
+use App\Models\Language;
 use App\Models\PassengerCategory;
 use BackedEnum;
-use Closure;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
-use Illuminate\Validation\Rules\Unique;
+use Illuminate\Database\Eloquent\Builder;
 use Lampminds\Customization\Filament\LmpCustomization\Resources\LmpResource;
 
 class PassengerCategoryResource extends LmpResource
@@ -38,7 +33,7 @@ class PassengerCategoryResource extends LmpResource
 
     protected static ?string $pluralModelLabel = 'filament.resources.passenger_categories';
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'code';
 
     protected static \UnitEnum|string|null $navigationGroup = 'filament.resources.nav_accounts_price_lists';
 
@@ -73,6 +68,14 @@ class PassengerCategoryResource extends LmpResource
 
     protected static function getMainFormSchema(Schema $schema): array
     {
+        $languages = Language::query()->with('locale')->orderBy('id')->get();
+
+        $nameFields = $languages->map(function (Language $language) {
+            return TextInput::make('translations.'.$language->id.'.name')
+                ->label($language->display_name)
+                ->maxLength(50);
+        })->all();
+
         return [
             Tabs::make()
                 ->tabs([
@@ -80,60 +83,20 @@ class PassengerCategoryResource extends LmpResource
                         ->schema([
                             Section::make('')
                                 ->schema([
-                                    Select::make('account_id')
-                                        ->label(__('filament.resources.passenger_category_fields.account_id'))
-                                        ->options(fn (): array => static::accountOptions())
-                                        ->searchable()
-                                        ->required()
-                                        ->live(),
-                                    TextInput::make('name')
-                                        ->label(__('filament.resources.passenger_category_fields.name'))
-                                        ->required()
-                                        ->maxLength(100),
                                     TextInput::make('code')
                                         ->label(__('filament.resources.passenger_category_fields.code'))
                                         ->required()
-                                        ->maxLength(50)
-                                        ->unique(
-                                            table: 'passenger_categories',
-                                            column: 'code',
-                                            ignoreRecord: true,
-                                            modifyRuleUsing: fn (Unique $rule, callable $get): Unique => $rule->where(
-                                                'account_id',
-                                                $get('account_id'),
-                                            ),
-                                        ),
-                                    TextInput::make('age_min')
-                                        ->label(__('filament.resources.passenger_category_fields.age_min'))
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->maxValue(65535)
-                                        ->nullable()
-                                        ->rules([
-                                            fn (Get $get, ?PassengerCategory $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($get, $record): void {
-                                                $message = PassengerCategory::ageRangeConflictMessage(
-                                                    (int) $get('account_id'),
-                                                    PassengerCategory::normalizeAge($get('age_min')),
-                                                    PassengerCategory::normalizeAge($get('age_max')),
-                                                    $record?->getKey() !== null ? (int) $record->getKey() : null,
-                                                );
-
-                                                if ($message !== null) {
-                                                    $fail($message);
-                                                }
-                                            },
-                                        ]),
-                                    TextInput::make('age_max')
-                                        ->label(__('filament.resources.passenger_category_fields.age_max'))
-                                        ->numeric()
-                                        ->minValue(0)
-                                        ->maxValue(65535)
-                                        ->nullable(),
-                                    Toggle::make('is_active')
-                                        ->label(__('filament.resources.passenger_category_fields.is_active'))
-                                        ->default(true),
+                                        ->maxLength(30)
+                                        ->alphaDash()
+                                        ->unique(ignoreRecord: true),
                                 ])
                                 ->columns(2),
+                        ]),
+                    Tab::make(__('filament.resources.passenger_category_tabs.translations'))
+                        ->schema([
+                            Section::make('')
+                                ->schema($nameFields)
+                                ->columns(3),
                         ]),
                 ]),
         ];
@@ -143,38 +106,27 @@ class PassengerCategoryResource extends LmpResource
     {
         return parent::table($table)
             ->columns([
-                TextColumn::make('account_id')
-                    ->label(__('filament.resources.passenger_category_columns.account'))
-                    ->state(fn (PassengerCategory $record): string => static::accountLabel($record->account)),
                 TextColumn::make('name')
                     ->label(__('filament.resources.passenger_category_columns.name'))
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->whereHas('translations', function (Builder $translation) use ($search): void {
+                            $translation->where('name', 'like', '%'.$search.'%');
+                        });
+                    }),
                 TextColumn::make('code')
                     ->label(__('filament.resources.passenger_category_columns.code'))
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('age_range')
-                    ->label(__('filament.resources.passenger_category_columns.age_range'))
-                    ->state(fn (PassengerCategory $record): string => $record->ageRangeLabel()),
-                IconColumn::make('is_active')
-                    ->label(__('filament.resources.passenger_category_columns.is_active'))
-                    ->boolean()
-                    ->sortable(),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('translations.language.locale'))
             ->recordActions([
                 ActionGroup::make([
                     EditAction::make(),
                     DeleteAction::make(),
                 ]),
             ], position: RecordActionsPosition::BeforeColumns);
-    }
-
-    public static function getNavigationBadge(): ?string
-    {
-        return (string) static::getModel()::count();
     }
 
     public static function getPages(): array
@@ -187,25 +139,35 @@ class PassengerCategoryResource extends LmpResource
     }
 
     /**
-     * @return array<int, string>
+     * @param  array<int|string, array<string, mixed>>  $translations
      */
-    public static function accountOptions(): array
+    public static function syncTranslations(PassengerCategory $record, array $translations, bool $forCreate): void
     {
-        return Account::query()
-            ->orderBy('name')
-            ->get()
-            ->mapWithKeys(fn (Account $account): array => [$account->id => static::accountLabel($account)])
-            ->all();
-    }
+        foreach ($translations as $languageId => $row) {
+            $languageId = (int) $languageId;
+            $name = isset($row['name']) ? trim((string) $row['name']) : '';
 
-    public static function accountLabel(?Account $account): string
-    {
-        if ($account === null) {
-            return '—';
+            if ($name === '') {
+                if (! $forCreate) {
+                    $record->translations()->where('language_id', $languageId)->delete();
+                }
+
+                continue;
+            }
+
+            if ($forCreate) {
+                $record->translations()->create([
+                    'language_id' => $languageId,
+                    'name' => $name,
+                ]);
+
+                continue;
+            }
+
+            $record->translations()->updateOrCreate(
+                ['language_id' => $languageId],
+                ['name' => $name],
+            );
         }
-
-        $label = trim((string) ($account->commercial_name ?: $account->name ?: $account->nick));
-
-        return $label !== '' ? $label : '#'.$account->id;
     }
 }

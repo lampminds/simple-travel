@@ -50,6 +50,13 @@
     </div>
 @endif
 
+@if (is_array($preview['passenger_pricing'] ?? null))
+    @include('account.service-offers.operator.partials.preview-passenger-pricing', [
+        'pricing' => $preview['passenger_pricing'],
+        'forPdf' => $forPdf,
+    ])
+@endif
+
 @if ($hasIntroColumn)
     <div class="@if ($forPdf) preview-intro @else mb-4 pb-3 border-bottom @endif">
         @foreach ($summary['base_fields'] ?? [] as $field)

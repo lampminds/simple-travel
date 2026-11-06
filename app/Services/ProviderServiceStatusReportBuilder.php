@@ -414,21 +414,7 @@ final class ProviderServiceStatusReportBuilder
             return '—';
         }
 
-        $normalized = BookingPassengersSnapshot::normalize($snapshot);
-        $parts = [];
-        foreach (BookingPassengersSnapshot::types() as $type) {
-            $count = (int) $normalized[$type];
-            if ($count < 1) {
-                continue;
-            }
-            $parts[] = trans_choice(
-                'account.reservations.passenger_types_count.'.$type,
-                $count,
-                ['count' => $count],
-            );
-        }
-
-        return $parts === [] ? '—' : implode(', ', $parts);
+        return BookingPassengersSnapshot::formatSummary($snapshot);
     }
 
     private function referenceLabel(BookingItem $item): string

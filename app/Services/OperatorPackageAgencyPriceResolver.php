@@ -9,6 +9,7 @@ use App\Models\OperatorPriceList;
 use App\Models\OperatorPriceListAssignment;
 use App\Models\OperatorPriceListItem;
 use App\Models\OperatorServiceCatalog;
+use App\Models\ServiceVariant;
 use App\Support\BookingPassengersSnapshot;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -22,6 +23,7 @@ final class OperatorPackageAgencyPriceResolver
     public function __construct(
         private readonly OperatorPriceListItemPricingService $itemPricingService,
         private readonly PriceFormatService $priceFormatService,
+        private readonly AgencyPassengerLinePricer $passengerLinePricer,
     ) {
     }
 
@@ -63,7 +65,7 @@ final class OperatorPackageAgencyPriceResolver
         }
 
         $package->loadMissing([
-            'items.serviceVariant',
+            'items.serviceVariant.paxBands',
             'items.serviceOffer',
         ]);
 
@@ -83,6 +85,7 @@ final class OperatorPackageAgencyPriceResolver
         $listCurrencyId = (int) $priceList->currency_id;
         $subtotal = 0.0;
         $hasLine = false;
+        $ages = $this->passengerAges($passengersSnapshot);
 
         foreach ($includedItems as $packageItem) {
             $listItem = $listItems->get((int) $packageItem->id);
@@ -90,12 +93,40 @@ final class OperatorPackageAgencyPriceResolver
                 return $empty;
             }
 
+            $pricingMode = $this->normalizeListItemMode($listItem);
+            $operatorPrice = (float) $listItem->price;
+
+            $variant = $packageItem->serviceVariant;
+            $pricesEachPassenger = $variant instanceof ServiceVariant
+                && ($variant->pricing_type === 'per_person' || $variant->usesPaxBands());
+
+            if ($ages !== null && $pricesEachPassenger) {
+                $priced = $this->passengerLinePricer->price(
+                    $packageItem,
+                    $operatorAccountId,
+                    $listCurrencyId,
+                    $pricingMode,
+                    $operatorPrice,
+                    $pricingDate,
+                    $ages,
+                );
+
+                if (! $priced['has_amount'] || $priced['total'] === null) {
+                    return $empty;
+                }
+
+                $subtotal += (float) $priced['total'];
+                $hasLine = true;
+
+                continue;
+            }
+
             $line = $this->itemPricingService->calculate(
                 $packageItem,
                 $operatorAccountId,
                 $listCurrencyId,
-                $this->normalizeListItemMode($listItem),
-                (float) $listItem->price,
+                $pricingMode,
+                $operatorPrice,
                 $pricingDate,
             );
 
@@ -461,6 +492,23 @@ final class OperatorPackageAgencyPriceResolver
         }
 
         return true;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $passengersSnapshot
+     * @return list<int>|null
+     */
+    private function passengerAges(?array $passengersSnapshot): ?array
+    {
+        if (! is_array($passengersSnapshot) || ! isset($passengersSnapshot['ages']) || ! is_array($passengersSnapshot['ages'])) {
+            return null;
+        }
+
+        if ($passengersSnapshot['ages'] === []) {
+            return null;
+        }
+
+        return array_map(static fn (mixed $age): int => (int) $age, array_values($passengersSnapshot['ages']));
     }
 
     private function findActiveAssignment(

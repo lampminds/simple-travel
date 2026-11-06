@@ -133,6 +133,15 @@
                                             {{ __('wizard.provider_services_action_step7') }}
                                         </a>
                                     </li>
+                                    <li>
+                                        <a
+                                            href="{{ route('account.services.passenger-policy.edit', $svc) }}"
+                                            class="dropdown-item"
+                                        >
+                                            <i class="icon-xxs icon me-2 text-primary" data-feather="users" aria-hidden="true"></i>
+                                            {{ __('account.passenger_policies.service_link') }}
+                                        </a>
+                                    </li>
                                     @if ($this->hasAdvancedStepForType($svc->serviceType->code))
                                         <li>
                                             <a
@@ -173,7 +182,15 @@
                                 @if ($index > 0)
                                     <span class="text-muted">; </span>
                                 @endif
-                                <span class="text-nowrap">{{ $price }}</span>
+                                <span class="text-nowrap">
+                                    {{ $price['label'] }}
+                                    @if ($price['has_policy'])
+                                        <span
+                                            class="badge text-bg-info align-middle"
+                                            title="{{ __('account.passenger_policies.catalog_badge_title') }}"
+                                        >{{ __('account.passenger_policies.catalog_badge') }}</span>
+                                    @endif
+                                </span>
                             @endforeach
                         @endif
                     </td>

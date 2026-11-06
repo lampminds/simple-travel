@@ -23,31 +23,80 @@
             </div>
         @endif
 
+        @php
+            $ageValues = old('ages', ['']);
+            if (! is_array($ageValues) || $ageValues === []) {
+                $ageValues = [''];
+            }
+        @endphp
+
         <p class="text-sm font-medium mb-2">{{ __('tenant.package_book_passengers') }}</p>
         <p class="text-slate-400 text-xs mb-3">{{ __('tenant.package_book_passengers_hint') }}</p>
 
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            @foreach (\App\Support\BookingPassengersSnapshot::types() as $passengerType)
-                @php
-                    $defaultValue = $passengerType === 'adult' ? 1 : 0;
-                @endphp
-                <div>
-                    <label for="passengers_{{ $passengerType }}" class="form-label text-sm text-slate-400">
-                        {{ __('account.reservations.passenger_types.'.$passengerType) }}
-                    </label>
-                    <input
-                        type="number"
-                        name="passengers[{{ $passengerType }}]"
-                        id="passengers_{{ $passengerType }}"
-                        class="{{ $inputClass }} mt-1"
-                        value="{{ old('passengers.'.$passengerType, $defaultValue) }}"
-                        min="0"
-                        max="999"
-                        required
-                    >
+        <div id="tenant-passenger-ages" class="space-y-3 mb-3">
+            @foreach ($ageValues as $index => $ageValue)
+                <div class="tenant-passenger-age flex items-end gap-2">
+                    <div class="flex-1">
+                        <label class="form-label text-sm text-slate-400" @if ($index === 0) for="tenant_passenger_age_0" @endif>
+                            {{ __('account.reservations.field_age') }}
+                        </label>
+                        <input
+                            type="number"
+                            name="ages[]"
+                            @if ($index === 0) id="tenant_passenger_age_0" @endif
+                            class="{{ $inputClass }} mt-1"
+                            value="{{ $ageValue }}"
+                            min="0"
+                            max="120"
+                            required
+                        >
+                    </div>
+                    <button type="button" class="tenant-remove-passenger-age py-2 px-3 text-sm border border-slate-200 rounded-md">
+                        {{ __('account.reservations.remove_passenger') }}
+                    </button>
                 </div>
             @endforeach
         </div>
+        <button type="button" id="tenant-add-passenger-age" class="mb-4 py-2 px-3 text-sm border border-slate-200 rounded-md">
+            {{ __('account.reservations.add_passenger') }}
+        </button>
+        <template id="tenant-passenger-age-template">
+            <div class="tenant-passenger-age flex items-end gap-2">
+                <div class="flex-1">
+                    <label class="form-label text-sm text-slate-400">{{ __('account.reservations.field_age') }}</label>
+                    <input type="number" name="ages[]" class="{{ $inputClass }} mt-1" min="0" max="120" required>
+                </div>
+                <button type="button" class="tenant-remove-passenger-age py-2 px-3 text-sm border border-slate-200 rounded-md">
+                    {{ __('account.reservations.remove_passenger') }}
+                </button>
+            </div>
+        </template>
+        <script>
+            (function () {
+                var list = document.getElementById('tenant-passenger-ages');
+                var addButton = document.getElementById('tenant-add-passenger-age');
+                var template = document.getElementById('tenant-passenger-age-template');
+                if (!list || !addButton || !template) {
+                    return;
+                }
+                addButton.addEventListener('click', function () {
+                    if (list.querySelectorAll('.tenant-passenger-age').length >= 30) {
+                        return;
+                    }
+                    list.appendChild(template.content.cloneNode(true));
+                });
+                list.addEventListener('click', function (event) {
+                    var button = event.target.closest('.tenant-remove-passenger-age');
+                    if (!button) {
+                        return;
+                    }
+                    if (list.querySelectorAll('.tenant-passenger-age').length < 2) {
+                        return;
+                    }
+                    button.closest('.tenant-passenger-age').remove();
+                });
+            })();
+        </script>
 
         <div class="grid grid-cols-1 gap-3 mb-4">
             <div>

@@ -2,8 +2,10 @@
 
 namespace App\Livewire\ServiceWizard;
 
+use App\Models\ProviderPassengerPolicy;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Services\PassengerPolicyWriter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -47,7 +49,9 @@ class ServiceStatusStep extends Component
             'status' => (string) ($service->status ?: 'onhold'),
             'is_featured' => (bool) $service->is_featured,
             'is_public' => (bool) $service->is_public,
-            'has_differentiated_prices' => (bool) $service->has_differentiated_prices,
+            'provider_passenger_policy_id' => $service->provider_passenger_policy_id !== null
+                ? (string) $service->provider_passenger_policy_id
+                : '',
             'booking_mode' => (string) ($service->booking_mode ?: 'instant'),
             'confirmation_time_hours' => $service->confirmation_time_hours !== null
                 ? (string) $service->confirmation_time_hours
@@ -69,16 +73,22 @@ class ServiceStatusStep extends Component
             return;
         }
 
+        $policyId = $validated['form']['provider_passenger_policy_id'];
+        $policyId = $policyId === '' || $policyId === null ? null : (int) $policyId;
+
         $service->update([
             'status' => $validated['form']['status'],
             'is_featured' => (bool) $validated['form']['is_featured'],
             'is_public' => (bool) $validated['form']['is_public'],
-            'has_differentiated_prices' => (bool) $validated['form']['has_differentiated_prices'],
+            'provider_passenger_policy_id' => $policyId,
             'booking_mode' => $validated['form']['booking_mode'],
             'confirmation_time_hours' => $validated['form']['confirmation_time_hours'] === ''
                 ? null
                 : (int) $validated['form']['confirmation_time_hours'],
         ]);
+
+        $service->unsetRelation('passengerPolicy');
+        app(PassengerPolicyWriter::class)->deletePricesOutsidePolicy($service);
 
         session()->flash('status', __('wizard.step2_saved'));
 
@@ -95,11 +105,17 @@ class ServiceStatusStep extends Component
      */
     protected function rules(): array
     {
+        $accountId = (int) $this->authorizedService()->account_id;
+
         return [
             'form.status' => ['required', Rule::in(['active', 'onhold', 'suspended', 'discontinued', 'inactive', 'terminated'])],
             'form.is_featured' => ['required', 'boolean'],
             'form.is_public' => ['required', 'boolean'],
-            'form.has_differentiated_prices' => ['required', 'boolean'],
+            'form.provider_passenger_policy_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('provider_passenger_policies', 'id')->where('provider_id', $accountId),
+            ],
             'form.booking_mode' => ['required', Rule::in(['instant', 'request', 'external', 'quote'])],
             'form.confirmation_time_hours' => ['nullable', 'integer', 'min:0'],
         ];
@@ -116,7 +132,7 @@ class ServiceStatusStep extends Component
             'form.status' => __($f.'.status'),
             'form.is_featured' => __($f.'.is_featured'),
             'form.is_public' => __($f.'.is_public'),
-            'form.has_differentiated_prices' => __($f.'.has_differentiated_prices'),
+            'form.provider_passenger_policy_id' => __($f.'.passenger_policy'),
             'form.booking_mode' => __($f.'.booking_mode'),
             'form.confirmation_time_hours' => __($f.'.confirmation_time_hours'),
         ];
@@ -140,6 +156,10 @@ class ServiceStatusStep extends Component
 
         return view('livewire.service-wizard.service-status-step', [
             'canActivateService' => $canActivate,
+            'passengerPolicies' => ProviderPassengerPolicy::query()
+                ->where('provider_id', $service->account_id)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 }

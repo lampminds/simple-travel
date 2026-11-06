@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class PriceListItem extends Model
@@ -34,6 +35,11 @@ class PriceListItem extends Model
     public function serviceVariant(): BelongsTo
     {
         return $this->belongsTo(ServiceVariant::class);
+    }
+
+    public function passengerPriceRules(): HasMany
+    {
+        return $this->hasMany(ServicePriceRule::class, 'provider_price_list_item_id');
     }
 
     public function service(): HasOneThrough

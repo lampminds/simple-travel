@@ -127,6 +127,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CommercialPlanTranslationsTableSeeder::class);
         $this->call(CommercialModulePricesTableSeeder::class);
         $this->call(CommercialModulePriceTiersTableSeeder::class);
+        $this->call(PassengerCategorySeeder::class);
     }
 }
 

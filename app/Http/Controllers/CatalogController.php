@@ -116,6 +116,8 @@ class CatalogController extends Controller
                 'translations.language.locale',
                 'media',
                 'serviceVariants.currency.lmpCurrency',
+                'serviceVariants.paxBands',
+                'serviceVariants.passengerPriceRules',
             ])
             ->withCount('serviceVariants')
             ->orderByDesc('id')

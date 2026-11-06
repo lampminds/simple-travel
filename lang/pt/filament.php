@@ -1864,6 +1864,7 @@ return [
             'details' => 'Condições',
             'experiences' => 'Experiências',
             'media' => 'Imagens',
+            'passenger_fares' => 'Tarifas de passageiros',
         ],
 
         'service_media' => [
@@ -1929,8 +1930,8 @@ return [
             'images_scope_service' => 'No serviço',
             'images_scope_variant' => 'Em cada variante',
             'images_scope_help' => 'Por padrão as imagens são carregadas no serviço. Escolha cada variante quando cada uma tiver suas próprias imagens.',
-            'has_differentiated_prices' => 'Tarifas diferenciadas',
-            'has_differentiated_prices_help' => 'Na reserva, as categorias de passageiro da conta são aplicadas sobre o preço regular.',
+            'passenger_policy' => 'Política de passageiros',
+            'passenger_policy_help' => 'Opcional. Se não escolher uma política, este serviço não usa preços por idade.',
         ],
 
         'service_columns' => [
@@ -2075,21 +2076,15 @@ return [
         'passenger_categories' => 'Categorias de passageiro',
         'passenger_category_tabs' => [
             'general' => 'Geral',
+            'translations' => 'Traduções',
         ],
         'passenger_category_fields' => [
-            'account_id' => 'Conta',
             'name' => 'Nome',
             'code' => 'Código',
-            'age_min' => 'Idade mínima',
-            'age_max' => 'Idade máxima',
-            'is_active' => 'Ativa',
         ],
         'passenger_category_columns' => [
-            'account' => 'Conta',
             'name' => 'Nome',
             'code' => 'Código',
-            'age_range' => 'Idades',
-            'is_active' => 'Ativa',
         ],
         'passenger_category_validation' => [
             'age_min_greater_than_max' => 'A idade mínima não pode ser maior que a idade máxima.',
@@ -2126,12 +2121,40 @@ return [
         'passenger_category_price_rule_validation' => [
             'currency_required' => 'Informe a moeda do valor fixo.',
         ],
+        'provider_passenger_policy' => 'Política de passageiros do fornecedor',
+        'provider_passenger_policies' => 'Políticas de passageiros do fornecedor',
+        'service_passenger_policy' => 'Política de passageiros do serviço',
+        'service_passenger_policies' => 'Políticas de passageiros do serviço',
+        'passenger_policy_tabs' => [
+            'ages' => 'Idades',
+            'prices' => 'Tarifas',
+        ],
+        'passenger_policy_fields' => [
+            'provider' => 'Fornecedor',
+            'name' => 'Nome',
+            'service' => 'Serviço',
+            'included' => 'Usar esta categoria',
+            'age_min' => 'Idade mínima',
+            'age_max' => 'Idade máxima',
+            'age_max_help' => 'Vazio: sem limite superior. O intervalo é inclusivo.',
+            'variant' => 'Variante',
+            'category' => 'Categoria',
+            'adjustment_type' => 'Tipo de ajuste',
+            'adjustment_value' => 'Valor',
+            'variant_prices' => 'Tarifas por variante',
+            'add_price' => 'Adicionar tarifa',
+            'list_item' => 'Item da lista',
+        ],
+        'passenger_policy_columns' => [
+            'bands' => 'Categorias',
+        ],
         'provider_price_list' => 'Lista de preços (fornecedor)',
         'provider_price_lists' => 'Listas de preços (fornecedor)',
 
         'provider_price_list_tabs' => [
             'general' => 'Geral',
             'assignments' => 'Atribuições a operadores',
+            'passenger_fares' => 'Tarifas por passageiro',
         ],
 
         'provider_price_list_fields' => [

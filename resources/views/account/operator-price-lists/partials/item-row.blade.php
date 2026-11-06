@@ -1,8 +1,9 @@
 @php
     $index = $index ?? 0;
     $item = $item ?? [];
-    $packageItemOptions = $packageItemOptions ?? [];
+    $packageItemCatalogById = $packageItemCatalogById ?? [];
     $selectedPackageItemId = (string) ($item['operator_package_item_id'] ?? '');
+    $selectedPackageItem = $packageItemCatalogById[$selectedPackageItemId] ?? null;
     $rawPricingMode = $item['pricing_mode'] ?? null;
     $pricingMode = match (true) {
         $rawPricingMode === null, $rawPricingMode === '' => '',
@@ -11,20 +12,32 @@
     };
 @endphp
 <tr class="price-list-item-row" data-role="price-list-item-row">
-    <td>
-        <select
+    <td class="position-relative" style="min-width: 18rem;">
+        <input
+            type="text"
             name="items[{{ $index }}][operator_package_item_id]"
-            class="form-select @error('items.'.$index.'.operator_package_item_id') is-invalid @enderror"
+            value="{{ $selectedPackageItemId }}"
+            class="package-item-value-proxy @error('items.'.$index.'.operator_package_item_id') is-invalid @enderror"
             data-role="package-item-select"
             required
+            tabindex="-1"
+            autocomplete="off"
+            aria-hidden="true"
         >
-            <option value="">{{ __('account.operator_price_lists.fields.package_item_placeholder') }}</option>
-            @foreach ($packageItemOptions as $optionId => $optionLabel)
-                <option value="{{ $optionId }}" @selected($selectedPackageItemId === (string) $optionId)>
-                    {{ $optionLabel }}
-                </option>
-            @endforeach
-        </select>
+        <div
+            class="border rounded p-2 bg-white @error('items.'.$index.'.operator_package_item_id') border-danger @enderror"
+            data-role="package-item-picker"
+        >
+            @include('account.operator-price-lists.partials.item-summary', [
+                'record' => $selectedPackageItem,
+                'selectedPackageItemId' => $selectedPackageItemId,
+            ])
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-role="open-package-item-picker">
+                {{ $selectedPackageItemId !== ''
+                    ? __('account.operator_price_lists.picker.change')
+                    : __('account.operator_price_lists.picker.open') }}
+            </button>
+        </div>
         @error('items.'.$index.'.operator_package_item_id')
             <div class="invalid-feedback d-block">{{ $message }}</div>
         @enderror

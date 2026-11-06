@@ -10,6 +10,7 @@ use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\AccountSelectionController;
 use App\Http\Controllers\OperatorDashboardController;
 use App\Http\Controllers\AgencyDashboardController;
+use App\Http\Controllers\AccountPassengerPolicyController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Controllers\SelectDashboardLaneController;
@@ -180,6 +181,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('account/services/{service}/status-report', [AccountProviderServiceStatusReportController::class, 'show'])
         ->name('account.services.status-report');
+    Route::get('account/passenger-policies', [AccountPassengerPolicyController::class, 'index'])
+        ->name('account.passenger-policies.index');
+    Route::get('account/passenger-policies/create', [AccountPassengerPolicyController::class, 'create'])
+        ->name('account.passenger-policies.create');
+    Route::post('account/passenger-policies', [AccountPassengerPolicyController::class, 'store'])
+        ->name('account.passenger-policies.store');
+    Route::get('account/passenger-policies/{policy}/edit', [AccountPassengerPolicyController::class, 'edit'])
+        ->name('account.passenger-policies.edit');
+    Route::put('account/passenger-policies/{policy}', [AccountPassengerPolicyController::class, 'update'])
+        ->name('account.passenger-policies.update');
+    Route::delete('account/passenger-policies/{policy}', [AccountPassengerPolicyController::class, 'destroy'])
+        ->name('account.passenger-policies.destroy');
+    Route::get('account/services/{service}/passenger-policy', [AccountPassengerPolicyController::class, 'editService'])
+        ->name('account.services.passenger-policy.edit');
+    Route::put('account/services/{service}/passenger-policy', [AccountPassengerPolicyController::class, 'updateService'])
+        ->name('account.services.passenger-policy.update');
+    Route::delete('account/services/{service}/passenger-policy', [AccountPassengerPolicyController::class, 'destroyService'])
+        ->name('account.services.passenger-policy.destroy');
 
     Route::get('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'edit'])
         ->name('account.service-offers.operators.edit');
@@ -256,6 +275,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.reservations.index');
     Route::get('account/reservations/create/{packageOffer}', [AccountAgencyReservationController::class, 'create'])
         ->name('account.reservations.create');
+    Route::post('account/reservations/preview', [AccountAgencyReservationController::class, 'preview'])
+        ->name('account.reservations.preview');
     Route::post('account/reservations', [AccountAgencyReservationController::class, 'store'])
         ->name('account.reservations.store');
     Route::get('account/reservations/{booking}', [AccountAgencyReservationController::class, 'show'])
@@ -280,6 +301,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.provider-price-lists.assignments.edit');
     Route::put('account/provider-price-lists/{priceList}/assignments', [AccountProviderPriceListController::class, 'updateAssignments'])
         ->name('account.provider-price-lists.assignments.update');
+    Route::get('account/provider-price-lists/{priceList}/passenger-fares', [AccountPassengerPolicyController::class, 'editPriceList'])
+        ->name('account.provider-price-lists.passenger-fares.edit');
+    Route::put('account/provider-price-lists/{priceList}/passenger-fares', [AccountPassengerPolicyController::class, 'updatePriceList'])
+        ->name('account.provider-price-lists.passenger-fares.update');
     Route::get('account/provider-price-lists/{priceList}/edit', [AccountProviderPriceListController::class, 'edit'])->name('account.provider-price-lists.edit');
     Route::put('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'update'])->name('account.provider-price-lists.update');
     Route::delete('account/provider-price-lists/{priceList}', [AccountProviderPriceListController::class, 'destroy'])->name('account.provider-price-lists.destroy');
@@ -321,6 +346,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/operator-price-lists', [AccountOperatorPriceListController::class, 'store'])->name('account.operator-price-lists.store');
     Route::post('account/operator-price-lists/preview-item', [AccountOperatorPriceListController::class, 'previewItem'])
         ->name('account.operator-price-lists.preview-item');
+    Route::post('account/operator-price-lists/catalog-costs', [AccountOperatorPriceListController::class, 'catalogCosts'])
+        ->name('account.operator-price-lists.catalog-costs');
     Route::get('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'editAssignments'])
         ->name('account.operator-price-lists.assignments.edit');
     Route::put('account/operator-price-lists/{operatorPriceList}/assignments', [AccountOperatorPriceListController::class, 'updateAssignments'])

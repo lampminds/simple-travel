@@ -42,6 +42,15 @@
                                     <td class="small">{{ $line['quantity_explanation'] }}</td>
                                     <td class="text-end text-nowrap fw-medium">{{ $line['line_total_formatted'] }}</td>
                                 </tr>
+                                @foreach ($line['fares'] ?? [] as $fare)
+                                    <tr>
+                                        <td colspan="4" class="small text-muted ps-4 border-0">
+                                            {{ __('account.reservations.price_breakdown.fare_line', ['age' => $fare['age'], 'category' => $fare['category']]) }}
+                                            <span class="text-muted">· {{ __('account.reservations.price_breakdown.fare_per_passenger') }}</span>
+                                        </td>
+                                        <td class="text-end text-nowrap small border-0">{{ $fare['amount_formatted'] }}</td>
+                                    </tr>
+                                @endforeach
                             @endforeach
                         </tbody>
                         <tfoot class="table-group-divider">

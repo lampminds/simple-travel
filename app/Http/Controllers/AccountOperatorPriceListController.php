@@ -57,9 +57,10 @@ final class AccountOperatorPriceListController extends Controller
             'account' => $account,
             'priceList' => null,
             'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'packageItemOptions' => $this->packageItemSelectOptions->optionsForOperator($account->id),
+            'packageItemCatalog' => $this->packageItemSelectOptions->catalogForOperator($account->id),
             'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
             'itemPreviewUrl' => route('account.operator-price-lists.preview-item'),
+            'catalogCostsUrl' => route('account.operator-price-lists.catalog-costs'),
             'submitRoute' => route('account.operator-price-lists.store'),
             'submitMethod' => 'POST',
             'cancelRoute' => route('account.operator-price-lists.index'),
@@ -129,6 +130,40 @@ final class AccountOperatorPriceListController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * Unit provider cost for every package line, in the price-list currency.
+     * The picker shows this beside the name so similar lines can be distinguished.
+     */
+    public function catalogCosts(Request $request): JsonResponse
+    {
+        $account = $this->resolveCurrentAccount($request);
+        AccountBusinessTypeGate::assertHasActiveType($account, 'operator');
+
+        $validated = $request->validate([
+            'currency_id' => ['required', 'integer', Rule::exists('cat_currencies', 'id')],
+        ]);
+
+        $currencyId = (int) $validated['currency_id'];
+        $costs = new \stdClass();
+
+        foreach ($this->packageItemSelectOptions->itemsForOperator($account->id) as $packageItem) {
+            $result = $this->itemPricingService->calculate(
+                $packageItem,
+                $account->id,
+                $currencyId,
+                null,
+                0.0,
+            );
+
+            $costs->{(string) $packageItem->id} = [
+                'formatted' => $result['provider_cost_formatted'],
+                'has' => $result['provider_cost_has'],
+            ];
+        }
+
+        return response()->json(['costs' => $costs]);
+    }
+
     public function edit(Request $request, OperatorPriceList $operatorPriceList): View
     {
         $account = $this->resolveCurrentAccount($request);
@@ -140,9 +175,10 @@ final class AccountOperatorPriceListController extends Controller
             'account' => $account,
             'priceList' => $operatorPriceList,
             'currencies' => Currency::query()->with('lmpCurrency')->orderBy('id')->get(),
-            'packageItemOptions' => $this->packageItemSelectOptions->optionsForOperator($account->id),
+            'packageItemCatalog' => $this->packageItemSelectOptions->catalogForOperator($account->id),
             'priceFormatSettings' => $this->priceFormatService->resolveSettings($account->id),
             'itemPreviewUrl' => route('account.operator-price-lists.preview-item'),
+            'catalogCostsUrl' => route('account.operator-price-lists.catalog-costs'),
             'submitRoute' => route('account.operator-price-lists.update', $operatorPriceList),
             'submitMethod' => 'PUT',
             'cancelRoute' => route('account.operator-price-lists.index'),

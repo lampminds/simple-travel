@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Clusters\CuentasCluster;
 use App\Filament\Resources\ServiceResource\Pages;
+use App\Filament\Support\PassengerPolicyForm;
 use App\Models\Account;
 use App\Models\Currency;
+use App\Models\ProviderPassengerPolicy;
 use App\Models\Language;
 use App\Models\LmpCity;
 use App\Models\Service;
@@ -108,7 +110,25 @@ class ServiceResource extends LmpResource
                                     ->label(__('filament.resources.service_fields.account_id'))
                                     ->options(fn () => Account::query()->orderBy('name')->pluck('name', 'id'))
                                     ->searchable()
-                                    ->required(),
+                                    ->required()
+                                    ->live(),
+                                Select::make('provider_passenger_policy_id')
+                                    ->label(__('filament.resources.service_fields.passenger_policy'))
+                                    ->helperText(__('filament.resources.service_fields.passenger_policy_help'))
+                                    ->options(function (Get $get): array {
+                                        $accountId = (int) $get('account_id');
+                                        if ($accountId < 1) {
+                                            return [];
+                                        }
+
+                                        return ProviderPassengerPolicy::query()
+                                            ->where('provider_id', $accountId)
+                                            ->orderBy('name')
+                                            ->pluck('name', 'id')
+                                            ->all();
+                                    })
+                                    ->nullable()
+                                    ->live(),
                                 Select::make('service_type_id')
                                     ->label(__('filament.resources.service_fields.service_type_id'))
                                     ->options(
@@ -153,10 +173,6 @@ class ServiceResource extends LmpResource
                                     ->required()
                                     ->live()
                                     ->helperText(__('filament.resources.service_fields.images_scope_help')),
-                                Toggle::make('has_differentiated_prices')
-                                    ->label(__('filament.resources.service_fields.has_differentiated_prices'))
-                                    ->helperText(__('filament.resources.service_fields.has_differentiated_prices_help'))
-                                    ->default(false),
                             ])->columns(2),
                         ]),
                     Tab::make(__('filament.resources.service_tabs.translations'))
@@ -358,6 +374,21 @@ class ServiceResource extends LmpResource
                                 ->visible(fn (Get $get): bool => ($get('images_scope') ?: Service::IMAGES_SCOPE_SERVICE) !== Service::IMAGES_SCOPE_VARIANT),
                         ])
                         ->visibleOn(['edit', 'view']),
+                    Tab::make(__('filament.resources.service_tabs.passenger_fares'))
+                        ->schema([
+                            Section::make('')
+                                ->schema([
+                                    Text::make(__('filament.resources.service_fields.passenger_policy_help')),
+                                    Repeater::make('variant_prices')
+                                        ->label(__('filament.resources.passenger_policy_fields.variant_prices'))
+                                        ->schema(PassengerPolicyForm::serviceVariantPriceFields())
+                                        ->columns(4)
+                                        ->defaultItems(0)
+                                        ->addActionLabel(__('filament.resources.passenger_policy_fields.add_price'))
+                                        ->visible(fn (Get $get): bool => (int) $get('provider_passenger_policy_id') > 0),
+                                ]),
+                        ])
+                        ->visibleOn(['edit']),
                 ]),
         ];
     }

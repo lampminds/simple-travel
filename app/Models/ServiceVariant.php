@@ -68,6 +68,41 @@ class ServiceVariant extends Model implements HasMedia
         return $this->belongsTo(Service::class);
     }
 
+    public function passengerPriceRules(): HasMany
+    {
+        return $this->hasMany(ServicePriceRule::class, 'service_variant_id');
+    }
+
+    public function paxBands(): HasMany
+    {
+        return $this->hasMany(ServiceVariantPaxBand::class)
+            ->orderBy('min_pax')
+            ->orderBy('sort_order');
+    }
+
+    public function usesPaxBands(): bool
+    {
+        if ($this->relationLoaded('paxBands')) {
+            return $this->paxBands->isNotEmpty();
+        }
+
+        return $this->paxBands()->exists();
+    }
+
+    /**
+     * Inclusive party-size band. Every passenger counts, including infants.
+     */
+    public function paxBandFor(int $partySize): ?ServiceVariantPaxBand
+    {
+        foreach ($this->paxBands as $band) {
+            if ($band->covers($partySize)) {
+                return $band;
+            }
+        }
+
+        return null;
+    }
+
     /** Component lines where this variant is the (combo) parent. */
     public function components(): HasMany
     {

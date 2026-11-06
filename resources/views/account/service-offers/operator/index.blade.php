@@ -89,6 +89,19 @@
                                                         @if (($opPrice['usd_hint'] ?? '') !== '')
                                                             <div class="small text-muted fw-normal mt-1">{{ $opPrice['usd_hint'] }}</div>
                                                         @endif
+                                                        @php
+                                                            $passengerPricing = $offer->operator_passenger_pricing ?? null;
+                                                        @endphp
+                                                        @if (is_array($passengerPricing) && ($passengerPricing['lines'] ?? []) !== [])
+                                                            <div class="small text-muted fw-normal mt-1">
+                                                                @if (($passengerPricing['policy_name'] ?? '') !== '')
+                                                                    <div>{{ $passengerPricing['policy_name'] }}</div>
+                                                                @endif
+                                                                @foreach ($passengerPricing['lines'] as $line)
+                                                                    <div>{{ $line }}</div>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                     <td>
                                                         @include('account.service-offers.operator._allocation-cell', [

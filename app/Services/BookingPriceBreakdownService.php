@@ -67,12 +67,14 @@ final class BookingPriceBreakdownService
             $linesSubtotal += $lineTotal;
 
             $pricingType = trim((string) ($snapshot['pricing_type'] ?? ''));
+            $fares = $this->fareRows($snapshot, $currencyCode, $accountId);
 
             $lines[] = [
                 'label' => $this->lineLabel($snapshot),
                 'provider_name' => $this->providerName($snapshot),
                 'pricing_type' => $pricingType,
                 'pricing_type_label' => $this->pricingTypeLabel($pricingType),
+                'fares' => $fares,
                 'unit_price' => $unitPrice,
                 'unit_price_formatted' => $this->priceFormatService->formatWithCurrency(
                     $unitPrice,
@@ -134,6 +136,41 @@ final class BookingPriceBreakdownService
 
     /**
      * @param  array<string, mixed>  $snapshot
+     * @return list<array{age: int, category: string, amount_formatted: string}>
+     */
+    private function fareRows(array $snapshot, ?string $currencyCode, int $accountId): array
+    {
+        $rawFares = $snapshot['passenger_fares'] ?? null;
+        if (! is_array($rawFares)) {
+            return [];
+        }
+
+        $rows = [];
+        foreach ($rawFares as $fare) {
+            if (! is_array($fare)) {
+                continue;
+            }
+
+            $category = trim((string) ($fare['category_name'] ?? ''));
+            $amount = (float) ($fare['agency_amount'] ?? 0);
+            $rows[] = [
+                'age' => (int) ($fare['age'] ?? 0),
+                'category' => $category !== ''
+                    ? $category
+                    : (string) __('account.reservations.price_breakdown.regular_fare'),
+                'amount_formatted' => $this->priceFormatService->formatWithCurrency(
+                    $amount,
+                    currencyCode: $currencyCode,
+                    accountId: $accountId,
+                ),
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $snapshot
      */
     private function providerName(array $snapshot): ?string
     {
@@ -164,7 +201,10 @@ final class BookingPriceBreakdownService
         $packageUnits = max(1, (int) ($snapshot['quantity'] ?? 1));
 
         if ($pricingType === 'per_person') {
-            $passengerTotal = max(1, (int) ($passengersSnapshot['total'] ?? $billableQuantity));
+            $passengerTotal = BookingPassengersSnapshot::headcount($passengersSnapshot);
+            if ($passengerTotal < 1) {
+                $passengerTotal = max(1, (int) ($passengersSnapshot['total'] ?? $billableQuantity));
+            }
 
             if ($packageUnits > 1) {
                 return (string) __('account.reservations.price_breakdown.qty_per_person_with_units', [

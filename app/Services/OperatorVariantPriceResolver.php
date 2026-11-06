@@ -152,7 +152,7 @@ final class OperatorVariantPriceResolver
             return $this->pack(null, $code, $lines, $providerAccountId, $listCurrencyId > 0 ? $listCurrencyId : null);
         }
 
-        $final = $this->applyAssignmentAdjustment($afterLine, $assignment);
+        $final = $this->applyAssignmentAdjustment((float) $afterLine, $assignment);
         $adjType = (string) ($assignment->adjustment_type ?? 'none');
         $adjVal = (float) ($assignment->adjustment_value ?? 0.0);
 
@@ -313,7 +313,202 @@ final class OperatorVariantPriceResolver
         );
     }
 
-    private function applyAssignmentAdjustment(float $amount, PriceListAssignment $assignment): float
+    /**
+     * Provider tariff after the variant base and the price-list line, before the
+     * assignment markup. Passenger category rules apply to this amount.
+     *
+     * @return array{
+     *     amount: float|null,
+     *     currency_id: int|null,
+     *     currency_code: string,
+     *     provider_price_list_item_id: int|null,
+     *     variant_currency_id: int,
+     *     assignment: PriceListAssignment|null
+     * }
+     */
+    public function resolveTariffBeforeAssignment(
+        ServiceVariant $variant,
+        int $providerAccountId,
+        int $operatorAccountId,
+        ?CarbonInterface $pricingDate = null,
+    ): array {
+        $d = Carbon::parse($pricingDate ?? Carbon::today())->startOfDay();
+        $variantCurrencyId = (int) ($variant->currency_id ?? 0);
+        $baseNumeric = $variant->base_price !== null ? (float) $variant->base_price : null;
+        $assignment = $this->findActiveAssignment($providerAccountId, $operatorAccountId, $d);
+
+        if ($assignment === null) {
+            return [
+                'amount' => $baseNumeric,
+                'currency_id' => $variantCurrencyId > 0 ? $variantCurrencyId : null,
+                'currency_code' => $this->currencyCode($variant),
+                'provider_price_list_item_id' => null,
+                'variant_currency_id' => $variantCurrencyId,
+                'assignment' => null,
+            ];
+        }
+
+        $list = $assignment->priceList;
+        $listCurrencyId = (int) ($list->currency_id ?? 0);
+        $item = $this->findPriceListItemForVariant((int) $list->id, $variant);
+        $isFixedListPrice = $item !== null && $item->pricing_mode === 'fixed';
+        $workingBase = $baseNumeric;
+
+        if (! $isFixedListPrice && $workingBase !== null && $variantCurrencyId !== $listCurrencyId && $listCurrencyId > 0) {
+            $workingBase = $this->currencyConversion->convert(
+                $workingBase,
+                $variantCurrencyId,
+                $listCurrencyId,
+                CurrencyRateSide::Buy,
+                CurrencyRateSide::Sell,
+                $operatorAccountId,
+                $d,
+            );
+        }
+
+        $afterLine = $this->computeAfterListLine($workingBase, $item);
+
+        return [
+            'amount' => $afterLine,
+            'currency_id' => $listCurrencyId > 0 ? $listCurrencyId : null,
+            'currency_code' => $this->listCurrencyCode($list),
+            'provider_price_list_item_id' => $item?->id !== null ? (int) $item->id : null,
+            'variant_currency_id' => $variantCurrencyId,
+            'assignment' => $assignment,
+        ];
+    }
+
+    /**
+     * Move a per-person amount into the provider-list currency and apply a percentage
+     * list line plus the assignment markup. A fixed list price is left unused so a
+     * pax band can keep its own amount.
+     *
+     * @return array{
+     *     amount: float|null,
+     *     currency_id: int|null,
+     *     currency_code: string,
+     *     assignment: PriceListAssignment|null
+     * }
+     */
+    /**
+     * Commercial scale for a pax-band amount: FX into the provider-list currency,
+     * then the percentage list line and the assignment markup. A fixed list price
+     * is ignored. result = amount * factor + offset.
+     *
+     * @return array{
+     *     failed: bool,
+     *     factor: float,
+     *     offset: float,
+     *     currency_id: int|null,
+     *     currency_code: string,
+     *     assignment: PriceListAssignment|null
+     * }
+     */
+    public function paxBandCommercialScale(
+        ServiceVariant $variant,
+        int $providerAccountId,
+        int $operatorAccountId,
+        ?CarbonInterface $pricingDate = null,
+    ): array {
+        $d = Carbon::parse($pricingDate ?? Carbon::today())->startOfDay();
+        $variantCurrencyId = (int) ($variant->currency_id ?? 0);
+        $assignment = $this->findActiveAssignment($providerAccountId, $operatorAccountId, $d);
+
+        if ($assignment === null) {
+            return [
+                'failed' => false,
+                'factor' => 1.0,
+                'offset' => 0.0,
+                'currency_id' => $variantCurrencyId > 0 ? $variantCurrencyId : null,
+                'currency_code' => $this->currencyCode($variant),
+                'assignment' => null,
+            ];
+        }
+
+        $list = $assignment->priceList;
+        $listCurrencyId = (int) ($list->currency_id ?? 0);
+        $factor = 1.0;
+
+        if ($variantCurrencyId !== $listCurrencyId && $listCurrencyId > 0 && $variantCurrencyId > 0) {
+            $converted = $this->currencyConversion->convert(
+                1.0,
+                $variantCurrencyId,
+                $listCurrencyId,
+                CurrencyRateSide::Buy,
+                CurrencyRateSide::Sell,
+                $operatorAccountId,
+                $d,
+            );
+
+            if ($converted === null) {
+                return [
+                    'failed' => true,
+                    'factor' => 1.0,
+                    'offset' => 0.0,
+                    'currency_id' => $listCurrencyId,
+                    'currency_code' => $this->listCurrencyCode($list),
+                    'assignment' => $assignment,
+                ];
+            }
+
+            $factor = $converted;
+        }
+
+        $item = $this->findPriceListItemForVariant((int) $list->id, $variant);
+        if ($item !== null && $item->pricing_mode === 'percentage') {
+            $factor *= 1.0 + (((float) $item->price) / 100.0);
+        }
+
+        $offset = 0.0;
+        $adjustment = (float) ($assignment->adjustment_value ?? 0.0);
+        if ($assignment->adjustment_type === 'percentage') {
+            $factor *= 1.0 + ($adjustment / 100.0);
+        } elseif ($assignment->adjustment_type === 'fixed') {
+            $offset = $adjustment;
+        }
+
+        return [
+            'failed' => false,
+            'factor' => $factor,
+            'offset' => $offset,
+            'currency_id' => $listCurrencyId > 0 ? $listCurrencyId : null,
+            'currency_code' => $this->listCurrencyCode($list),
+            'assignment' => $assignment,
+        ];
+    }
+
+    public function adjustPaxBandAmount(
+        ServiceVariant $variant,
+        float $amount,
+        int $providerAccountId,
+        int $operatorAccountId,
+        ?CarbonInterface $pricingDate = null,
+    ): array {
+        $scale = $this->paxBandCommercialScale(
+            $variant,
+            $providerAccountId,
+            $operatorAccountId,
+            $pricingDate,
+        );
+
+        if ($scale['failed']) {
+            return [
+                'amount' => null,
+                'currency_id' => $scale['currency_id'],
+                'currency_code' => $scale['currency_code'],
+                'assignment' => $scale['assignment'],
+            ];
+        }
+
+        return [
+            'amount' => round(($amount * $scale['factor']) + $scale['offset'], 2),
+            'currency_id' => $scale['currency_id'],
+            'currency_code' => $scale['currency_code'],
+            'assignment' => $scale['assignment'],
+        ];
+    }
+
+    public function applyAssignmentAdjustment(float $amount, PriceListAssignment $assignment): float
     {
         return match ($assignment->adjustment_type) {
             'percentage' => $amount * (1.0 + ((float) ($assignment->adjustment_value ?? 0.0) / 100.0)),

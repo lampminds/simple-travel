@@ -8,6 +8,7 @@ use App\Models\OperatorPackageItem;
 use App\Models\OperatorServiceCatalog;
 use App\Models\ServiceOffer;
 use App\Services\OperatorDirectServiceCatalogService;
+use App\Services\OperatorPassengerPricingSummary;
 use App\Services\OperatorPreviewLocalePriceService;
 use App\Services\OperatorVariantPriceResolver;
 use App\Services\ServiceOfferPreviewPdfGenerator;
@@ -32,6 +33,7 @@ final class AccountOperatorServiceOfferController extends Controller
     {
         $account = $this->resolveOperatorAccount($request);
         $priceResolver = app(OperatorVariantPriceResolver::class);
+        $passengerPricing = app(OperatorPassengerPricingSummary::class);
         $usdHintService = app(OperatorPreviewLocalePriceService::class);
         $statusFilter = $this->resolveOfferStatusFilter($request);
 
@@ -39,8 +41,11 @@ final class AccountOperatorServiceOfferController extends Controller
             ->with([
                 'providerAccount',
                 'serviceVariant.service.translations',
+                'serviceVariant.service.passengerPolicy.rules.category.translations.language.locale',
                 'serviceVariant.translations.language.locale',
                 'serviceVariant.currency.lmpCurrency',
+                'serviceVariant.paxBands.prices',
+                'serviceVariant.passengerPriceRules',
             ])
             ->orderByDesc('offered_at')
             ->orderByDesc('id')
@@ -57,6 +62,13 @@ final class AccountOperatorServiceOfferController extends Controller
             $operatorPrice['usd_hint'] = $usdHintService->buildUsd($operatorPrice, $operatorId) ?? '';
 
             $offer->setAttribute('operator_price', $operatorPrice);
+            $variant = $offer->serviceVariant;
+            $offer->setAttribute(
+                'operator_passenger_pricing',
+                $variant === null
+                    ? null
+                    : $passengerPricing->summarize($variant, (int) $offer->provider_id, $operatorId),
+            );
             $offer->setAttribute('operator_service_label', $this->serviceLabelForOffer($offer));
             $offer->setAttribute('packages_count', $packageCountsByOfferId[(int) $offer->id] ?? 0);
             $offer->setAttribute(

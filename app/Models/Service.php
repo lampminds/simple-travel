@@ -50,7 +50,7 @@ class Service extends Model implements HasMedia
         'city_id',
         'is_featured',
         'is_public',
-        'has_differentiated_prices',
+        'provider_passenger_policy_id',
         'images_scope',
         'booking_mode',
         'confirmation_time_hours',
@@ -60,7 +60,6 @@ class Service extends Model implements HasMedia
     protected $casts = [
         'is_featured' => 'boolean',
         'is_public' => 'boolean',
-        'has_differentiated_prices' => 'boolean',
         'images_scope' => 'string',
         'booking_mode' => 'string',
         'confirmation_time_hours' => 'integer',
@@ -138,6 +137,11 @@ class Service extends Model implements HasMedia
     public function serviceVariants(): HasMany
     {
         return $this->hasMany(ServiceVariant::class)->orderBy('sort_order');
+    }
+
+    public function passengerPolicy(): BelongsTo
+    {
+        return $this->belongsTo(ProviderPassengerPolicy::class, 'provider_passenger_policy_id');
     }
 
     /** Whether this service is a combo (parent) service. */

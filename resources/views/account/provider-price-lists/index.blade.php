@@ -21,7 +21,10 @@
                             :subtitle="$account->commercial_name ?? $account->name ?? $account->nick"
                             :instructions="__('account.price_lists.intro_instructions')"
                         />
-                        <div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('account.passenger-policies.index') }}" class="btn btn-outline-secondary">
+                                {{ __('account.passenger_policies.provider_link') }}
+                            </a>
                             <a href="{{ route('account.provider-price-lists.create') }}" class="btn btn-primary">
                                 {{ __('account.price_lists.create_button') }}
                             </a>
@@ -100,6 +103,15 @@
                                                                 >
                                                                     <i class="icon-xxs icon me-2 text-primary" data-feather="users" aria-hidden="true"></i>
                                                                     {{ __('account.price_lists.columns.assignments') }}
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a
+                                                                    href="{{ route('account.provider-price-lists.passenger-fares.edit', $priceList) }}"
+                                                                    class="dropdown-item"
+                                                                >
+                                                                    <i class="icon-xxs icon me-2 text-primary" data-feather="users" aria-hidden="true"></i>
+                                                                    {{ __('account.passenger_policies.price_list_link') }}
                                                                 </a>
                                                             </li>
                                                             <li>

@@ -1,7 +1,12 @@
 @php
     $isEdit = $priceList !== null;
-    $packageItemOptions = $packageItemOptions ?? [];
+    $packageItemCatalog = $packageItemCatalog ?? [];
+    $packageItemCatalogById = [];
+    foreach ($packageItemCatalog as $catalogRecord) {
+        $packageItemCatalogById[(string) ($catalogRecord['id'] ?? '')] = $catalogRecord;
+    }
     $itemPreviewUrl = $itemPreviewUrl ?? '';
+    $catalogCostsUrl = $catalogCostsUrl ?? '';
     $itemsOld = old('items');
     $items = is_array($itemsOld)
         ? $itemsOld
@@ -31,6 +36,62 @@
 @endphp
 
 @extends('layouts.base', ['title' => $isEdit ? __('account.operator_price_lists.edit_page_title') : __('account.operator_price_lists.create_page_title')])
+
+@section('css')
+    <style>
+        .package-item-value-proxy {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .package-item-picker-scroll {
+            max-height: 60vh;
+            overflow: auto;
+        }
+
+        #package-item-picker-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        #package-item-picker-table td {
+            vertical-align: top;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        #package-item-picker-table thead th {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+            white-space: nowrap;
+        }
+
+        #package-item-picker-table .picker-col-sku,
+        #package-item-picker-table .picker-col-schedule,
+        #package-item-picker-table .picker-col-day,
+        #package-item-picker-table .picker-col-cost {
+            white-space: nowrap;
+        }
+
+        #package-item-picker-table tbody tr.is-available {
+            cursor: pointer;
+        }
+
+        #package-item-picker-table tbody tr.is-available:hover {
+            background: rgba(13, 110, 253, 0.06);
+        }
+    </style>
+@endsection
 
 @section('content')
 
@@ -175,7 +236,7 @@
                                             {{ __('account.price_lists.fields.price') }}: 12{{ $thousandsSeparator }}345{{ $decimalSeparator }}{{ str_repeat('0', max(1, $priceDecimals)) }}
                                         </p>
 
-                                        @if ($packageItemOptions === [])
+                                        @if ($packageItemCatalog === [])
                                             <div class="alert alert-info mb-3">{{ __('account.operator_price_lists.no_package_items') }}</div>
                                         @endif
 
@@ -196,7 +257,7 @@
                                                         @include('account.operator-price-lists.partials.item-row', [
                                                             'index' => $index,
                                                             'item' => $item,
-                                                            'packageItemOptions' => $packageItemOptions,
+                                                            'packageItemCatalogById' => $packageItemCatalogById,
                                                             'priceStep' => $priceStep,
                                                         ])
                                                     @endforeach
@@ -210,7 +271,7 @@
                                     </div>
                                 </div>
 
-                                <div class="d-flex gap-2 mt-4">
+                                <div class="d-flex justify-content-end gap-2 mt-4">
                                     <a class="btn btn-light" href="{{ $cancelRoute }}">{{ __('account.operator_price_lists.cancel_button') }}</a>
                                     <button type="submit" class="btn btn-primary">
                                         {{ $isEdit ? __('account.operator_price_lists.update_button') : __('account.operator_price_lists.save_button') }}
@@ -224,11 +285,78 @@
         </div>
     </section>
 
+    <div
+        class="modal fade"
+        id="package-item-picker-modal"
+        tabindex="-1"
+        aria-labelledby="package-item-picker-title"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-xl my-3 mx-auto">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="package-item-picker-title">{{ __('account.operator_price_lists.picker.title') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('account.operator_price_lists.picker.close') }}"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">{{ __('account.operator_price_lists.picker.help') }}</p>
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-lg-8">
+                            <input
+                                type="search"
+                                id="package-item-picker-search"
+                                class="form-control"
+                                placeholder="{{ __('account.operator_price_lists.picker.search_placeholder') }}"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <div class="col-lg-4 text-lg-end">
+                            <span class="small text-muted" id="package-item-picker-count"></span>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2" id="package-item-picker-cost-status"></p>
+                    <div class="package-item-picker-scroll border rounded">
+                        <table class="table table-sm align-middle mb-0" id="package-item-picker-table">
+                            <colgroup>
+                                <col style="width: 16%">
+                                <col style="width: 10%">
+                                <col style="width: 22%">
+                                <col style="width: 9%">
+                                <col style="width: 6%">
+                                <col style="width: 9%">
+                                <col style="width: 14%">
+                                <col style="width: 12%">
+                                <col style="width: 12%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>{{ __('account.operator_price_lists.picker.columns.package') }}</th>
+                                    <th class="picker-col-sku">{{ __('account.operator_price_lists.picker.columns.sku') }}</th>
+                                    <th>{{ __('account.operator_price_lists.picker.columns.service') }}</th>
+                                    <th class="picker-col-schedule">{{ __('account.operator_price_lists.picker.columns.schedule') }}</th>
+                                    <th class="picker-col-day">{{ __('account.operator_price_lists.picker.columns.day') }}</th>
+                                    <th>{{ __('account.operator_price_lists.picker.columns.inclusion') }}</th>
+                                    <th>{{ __('account.operator_price_lists.picker.columns.provider') }}</th>
+                                    <th class="text-end picker-col-cost">{{ __('account.operator_price_lists.picker.columns.cost') }}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="package-item-picker-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('account.operator_price_lists.picker.close') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <template id="price-list-item-row-template">
         @include('account.operator-price-lists.partials.item-row', [
             'index' => '__INDEX__',
             'item' => ['operator_package_item_id' => '', 'pricing_mode' => '', 'price' => ''],
-            'packageItemOptions' => $packageItemOptions,
+            'packageItemCatalogById' => $packageItemCatalogById,
             'priceStep' => $priceStep,
         ])
     </template>
@@ -240,7 +368,24 @@
             const rowTemplate = document.getElementById('price-list-item-row-template');
             const currencySelect = document.getElementById('currency_id');
             const previewUrl = @json($itemPreviewUrl);
+            const catalogCostsUrl = @json($catalogCostsUrl);
             const csrfToken = @json(csrf_token());
+            const packageCatalog = @json(array_values($packageItemCatalog));
+            const catalogById = new Map(packageCatalog.map((item) => [String(item.id), item]));
+            const pickerLabels = {
+                open: @json(__('account.operator_price_lists.picker.open')),
+                change: @json(__('account.operator_price_lists.picker.change')),
+                choose: @json(__('account.operator_price_lists.picker.choose')),
+                alreadyUsed: @json(__('account.operator_price_lists.picker.already_used')),
+                empty: @json(__('account.operator_price_lists.picker.empty')),
+                placeholder: @json(__('account.operator_price_lists.fields.package_item_placeholder')),
+                costNeedsCurrency: @json(__('account.operator_price_lists.picker.cost_needs_currency')),
+                loadingCosts: @json(__('account.operator_price_lists.picker.loading_costs')),
+                costPrefix: @json(__('account.operator_price_lists.picker.cost_prefix')),
+                resultsCount: @json(__('account.operator_price_lists.picker.results_count')),
+                missingLine: @json(__('account.operator_price_lists.picker.missing_line')),
+                schedule: @json(__('account.operator_price_lists.picker.columns.schedule')),
+            };
 
             if (!itemsBody || !addButton || !rowTemplate) {
                 return;
@@ -254,7 +399,12 @@
             const modeProviderCost = '';
             const modeFixedPrice = 'fixed_price';
 
-            let previewTimer = null;
+            const previewTimers = new WeakMap();
+            const costCache = new Map();
+            let activeCosts = null;
+            let costRequestSerial = 0;
+            let activePickerRow = null;
+            let pickerModal = null;
 
             function rowsCount() {
                 return itemsBody.querySelectorAll('[data-role="price-list-item-row"]').length;
@@ -351,6 +501,13 @@
                         ? data.provider_cost_formatted
                         : providerCostUnavailable;
                 }
+                const summaryCost = row.querySelector('[data-role="package-item-summary-cost"]');
+                if (summaryCost) {
+                    const packageItemId = row.querySelector('[data-role="package-item-select"]')?.value ?? '';
+                    summaryCost.textContent = packageItemId && data?.provider_cost_has
+                        ? pickerLabels.costPrefix + ': ' + data.provider_cost_formatted
+                        : '';
+                }
                 if (warningBox) {
                     const warning = data?.warning ?? '';
                     warningBox.textContent = warning;
@@ -409,8 +566,277 @@
             }
 
             function scheduleRowPreview(row) {
-                window.clearTimeout(previewTimer);
-                previewTimer = window.setTimeout(() => refreshRowPreview(row), 300);
+                window.clearTimeout(previewTimers.get(row));
+                previewTimers.set(row, window.setTimeout(() => refreshRowPreview(row), 300));
+            }
+
+            function element(tag, className, text) {
+                const node = document.createElement(tag);
+                if (className) {
+                    node.className = className;
+                }
+                if (text !== undefined && text !== null && text !== '') {
+                    node.textContent = String(text);
+                }
+
+                return node;
+            }
+
+            function renderSummary(container, item, fallbackId) {
+                container.replaceChildren();
+
+                if (!item && !fallbackId) {
+                    container.appendChild(element('span', 'text-muted', pickerLabels.placeholder));
+                    return;
+                }
+
+                if (!item) {
+                    container.appendChild(element('div', 'fw-semibold', pickerLabels.missingLine.replace(':id', fallbackId)));
+                } else {
+                    container.appendChild(element('div', 'fw-semibold', item.package_name));
+                    const serviceLine = [item.sku, item.service_name].filter(Boolean).join(' — ');
+                    if (serviceLine) {
+                        container.appendChild(element('div', '', serviceLine));
+                    }
+                    if (item.variant_name) {
+                        container.appendChild(element('div', 'text-muted', item.variant_name));
+                    }
+                    const meta = [
+                        item.day_label,
+                        item.inclusion,
+                        item.quantity > 1 ? '×' + item.quantity : '',
+                        item.provider,
+                    ].filter(Boolean).join(' · ');
+                    if (meta) {
+                        container.appendChild(element('div', 'text-muted small', meta));
+                    }
+                    if (item.schedule) {
+                        container.appendChild(element('div', 'small', pickerLabels.schedule + ': ' + item.schedule));
+                    }
+                }
+
+                const cost = element('div', 'small fw-semibold');
+                cost.dataset.role = 'package-item-summary-cost';
+                container.appendChild(cost);
+            }
+
+            function syncPickerButton(row) {
+                const id = row.querySelector('[data-role="package-item-select"]')?.value ?? '';
+                const button = row.querySelector('[data-role="open-package-item-picker"]');
+                if (button) {
+                    button.textContent = id ? pickerLabels.change : pickerLabels.open;
+                }
+                if (id) {
+                    row.querySelector('[data-role="package-item-picker"]')?.classList.remove('border-danger');
+                }
+            }
+
+            function usedPackageItemIds(exceptRow) {
+                const ids = new Set();
+                itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row) => {
+                    if (row === exceptRow) {
+                        return;
+                    }
+                    const id = row.querySelector('[data-role="package-item-select"]')?.value ?? '';
+                    if (id) {
+                        ids.add(String(id));
+                    }
+                });
+
+                return ids;
+            }
+
+            function pickerCostText(id) {
+                if (!(currencySelect?.value)) {
+                    return '—';
+                }
+                if (!activeCosts) {
+                    return '…';
+                }
+                const entry = activeCosts[String(id)];
+
+                return entry?.has ? entry.formatted : '—';
+            }
+
+            function setCostStatus(message) {
+                const status = document.getElementById('package-item-picker-cost-status');
+                if (status) {
+                    status.textContent = message;
+                }
+            }
+
+            function renderPickerTable() {
+                const tbody = document.getElementById('package-item-picker-body');
+                const countEl = document.getElementById('package-item-picker-count');
+                const searchInput = document.getElementById('package-item-picker-search');
+                if (!tbody) {
+                    return;
+                }
+
+                const query = (searchInput?.value ?? '').trim().toLocaleLowerCase();
+                const used = usedPackageItemIds(activePickerRow);
+                const currentId = String(activePickerRow?.querySelector('[data-role="package-item-select"]')?.value ?? '');
+                const visible = packageCatalog.filter((item) => query === '' || String(item.search).includes(query));
+
+                if (countEl) {
+                    countEl.textContent = pickerLabels.resultsCount.replace(':count', String(visible.length));
+                }
+
+                tbody.replaceChildren();
+
+                if (visible.length === 0) {
+                    const row = document.createElement('tr');
+                    const cell = element('td', 'text-muted p-3', pickerLabels.empty);
+                    cell.colSpan = 9;
+                    row.appendChild(cell);
+                    tbody.appendChild(row);
+                    return;
+                }
+
+                visible.forEach((item) => {
+                    const id = String(item.id);
+                    const taken = used.has(id);
+                    const row = document.createElement('tr');
+                    row.dataset.id = id;
+                    row.classList.add(taken ? 'text-muted' : 'is-available');
+
+                    const packageCell = document.createElement('td');
+                    packageCell.appendChild(element('div', 'text-muted small', item.kind));
+                    packageCell.appendChild(element('div', 'fw-semibold', item.package_name));
+                    row.appendChild(packageCell);
+                    row.appendChild(element('td', 'picker-col-sku', item.sku || '—'));
+
+                    const serviceCell = document.createElement('td');
+                    if (item.service_name) {
+                        serviceCell.appendChild(element('div', '', item.service_name));
+                    }
+                    if (item.variant_name) {
+                        serviceCell.appendChild(element('div', 'text-muted', item.variant_name));
+                    }
+                    row.appendChild(serviceCell);
+                    row.appendChild(element('td', 'picker-col-schedule', item.schedule || '—'));
+                    row.appendChild(element('td', 'picker-col-day', item.day_number === null || item.day_number === undefined ? '—' : String(item.day_number)));
+
+                    const inclusionCell = document.createElement('td');
+                    inclusionCell.appendChild(element('div', '', item.inclusion || '—'));
+                    if (item.quantity > 1) {
+                        inclusionCell.appendChild(element('div', 'text-muted small', '×' + item.quantity));
+                    }
+                    row.appendChild(inclusionCell);
+                    row.appendChild(element('td', '', item.provider || '—'));
+                    row.appendChild(element('td', 'text-end picker-col-cost fw-semibold', pickerCostText(id)));
+
+                    const actionCell = element('td', 'text-end');
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'btn btn-sm ' + (taken ? 'btn-outline-secondary' : 'btn-primary');
+                    button.dataset.role = 'picker-choose';
+                    button.dataset.id = id;
+                    button.disabled = taken;
+                    button.textContent = taken
+                        ? pickerLabels.alreadyUsed
+                        : (id === currentId ? pickerLabels.change : pickerLabels.choose);
+                    actionCell.appendChild(button);
+                    row.appendChild(actionCell);
+                    tbody.appendChild(row);
+                });
+            }
+
+            async function loadPickerCosts(currencyId) {
+                const requestId = ++costRequestSerial;
+                setCostStatus(pickerLabels.loadingCosts);
+
+                try {
+                    const response = await fetch(catalogCostsUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({ currency_id: Number(currencyId) }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('catalog costs');
+                    }
+
+                    const data = await response.json();
+                    const costs = data.costs && !Array.isArray(data.costs) ? data.costs : {};
+                    costCache.set(String(currencyId), costs);
+
+                    if (requestId !== costRequestSerial || String(currencySelect?.value ?? '') !== String(currencyId)) {
+                        return;
+                    }
+
+                    activeCosts = costs;
+                    setCostStatus('');
+                    renderPickerTable();
+                } catch (error) {
+                    console.error(error);
+                    if (requestId !== costRequestSerial) {
+                        return;
+                    }
+                    activeCosts = {};
+                    setCostStatus('');
+                    renderPickerTable();
+                }
+            }
+
+            function ensurePickerCosts() {
+                const currencyId = currencySelect?.value ?? '';
+                if (!currencyId) {
+                    activeCosts = null;
+                    setCostStatus(pickerLabels.costNeedsCurrency);
+                    renderPickerTable();
+                    return;
+                }
+
+                if (costCache.has(String(currencyId))) {
+                    activeCosts = costCache.get(String(currencyId));
+                    setCostStatus('');
+                    renderPickerTable();
+                    return;
+                }
+
+                activeCosts = null;
+                renderPickerTable();
+                loadPickerCosts(currencyId);
+            }
+
+            function openPicker(row) {
+                const modalElement = document.getElementById('package-item-picker-modal');
+                if (!modalElement || !window.bootstrap || !window.bootstrap.Modal) {
+                    return;
+                }
+
+                activePickerRow = row;
+                const searchInput = document.getElementById('package-item-picker-search');
+                if (searchInput instanceof HTMLInputElement) {
+                    searchInput.value = '';
+                }
+                pickerModal = window.bootstrap.Modal.getOrCreateInstance(modalElement);
+                ensurePickerCosts();
+                pickerModal.show();
+            }
+
+            function choosePackageItem(id) {
+                if (!activePickerRow) {
+                    return;
+                }
+
+                const input = activePickerRow.querySelector('[data-role="package-item-select"]');
+                const summary = activePickerRow.querySelector('[data-role="package-item-summary"]');
+                if (!(input instanceof HTMLInputElement) || !summary) {
+                    return;
+                }
+
+                input.value = String(id);
+                renderSummary(summary, catalogById.get(String(id)) ?? null, String(id));
+                syncPickerButton(activePickerRow);
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                pickerModal?.hide();
             }
 
             function bindRowEvents(row) {
@@ -443,12 +869,62 @@
             if (currencySelect) {
                 currencySelect.addEventListener('change', () => {
                     itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row) => scheduleRowPreview(row));
+                    const modalElement = document.getElementById('package-item-picker-modal');
+                    if (modalElement?.classList.contains('show')) {
+                        ensurePickerCosts();
+                    }
+                });
+            }
+
+            const pickerSearch = document.getElementById('package-item-picker-search');
+            if (pickerSearch) {
+                pickerSearch.addEventListener('input', () => renderPickerTable());
+                pickerSearch.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                    }
+                });
+            }
+
+            const pickerBody = document.getElementById('package-item-picker-body');
+            if (pickerBody) {
+                pickerBody.addEventListener('click', (event) => {
+                    const target = event.target;
+                    if (!(target instanceof HTMLElement)) {
+                        return;
+                    }
+                    const row = target.closest('tr');
+                    const button = row?.querySelector('[data-role="picker-choose"]');
+                    if (!(button instanceof HTMLButtonElement) || button.disabled) {
+                        return;
+                    }
+                    choosePackageItem(button.dataset.id ?? '');
+                });
+            }
+
+            const pickerModalElement = document.getElementById('package-item-picker-modal');
+            if (pickerModalElement) {
+                pickerModalElement.addEventListener('shown.bs.modal', () => {
+                    document.getElementById('package-item-picker-search')?.focus();
                 });
             }
 
             itemsBody.addEventListener('click', (event) => {
                 const target = event.target;
-                if (!(target instanceof HTMLElement) || !target.classList.contains('btn-remove-item')) {
+                if (!(target instanceof HTMLElement)) {
+                    return;
+                }
+
+                const pickerButton = target.closest('[data-role="open-package-item-picker"]');
+                if (pickerButton) {
+                    const row = pickerButton.closest('tr');
+                    if (row) {
+                        openPicker(row);
+                    }
+                    return;
+                }
+
+                if (!target.classList.contains('btn-remove-item')) {
                     return;
                 }
 
@@ -471,6 +947,9 @@
                     const pane = target.closest('.tab-pane');
                     if (!pane || !pane.id) {
                         return;
+                    }
+                    if (target.matches('[data-role="package-item-select"]')) {
+                        target.closest('td')?.querySelector('[data-role="package-item-picker"]')?.classList.add('border-danger');
                     }
                     const tabTrigger = document.querySelector('a.nav-link[href="#' + pane.id + '"]');
                     if (tabTrigger && window.bootstrap && window.bootstrap.Tab) {

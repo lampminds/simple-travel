@@ -1938,6 +1938,7 @@ return [
             'details' => 'Conditions',
             'experiences' => 'Experiences',
             'media' => 'Images',
+            'passenger_fares' => 'Passenger fares',
         ],
 
         'service_media' => [
@@ -2003,8 +2004,8 @@ return [
             'images_scope_service' => 'On the service',
             'images_scope_variant' => 'On each variant',
             'images_scope_help' => 'By default, images are uploaded on the service. Choose each variant when every variant has its own images.',
-            'has_differentiated_prices' => 'Differentiated fares',
-            'has_differentiated_prices_help' => 'When booking, the account passenger categories are applied on top of the regular price.',
+            'passenger_policy' => 'Passenger policy',
+            'passenger_policy_help' => 'Optional. If you do not choose a policy, this service does not use age-based prices.',
         ],
 
         'service_columns' => [
@@ -2149,21 +2150,15 @@ return [
         'passenger_categories' => 'Passenger categories',
         'passenger_category_tabs' => [
             'general' => 'General',
+            'translations' => 'Translations',
         ],
         'passenger_category_fields' => [
-            'account_id' => 'Account',
             'name' => 'Name',
             'code' => 'Code',
-            'age_min' => 'Minimum age',
-            'age_max' => 'Maximum age',
-            'is_active' => 'Active',
         ],
         'passenger_category_columns' => [
-            'account' => 'Account',
             'name' => 'Name',
             'code' => 'Code',
-            'age_range' => 'Ages',
-            'is_active' => 'Active',
         ],
         'passenger_category_validation' => [
             'age_min_greater_than_max' => 'Minimum age cannot be greater than maximum age.',
@@ -2201,6 +2196,33 @@ return [
         'passenger_category_price_rule_validation' => [
             'currency_required' => 'Choose a currency for the fixed amount.',
         ],
+        'provider_passenger_policy' => 'Provider passenger policy',
+        'provider_passenger_policies' => 'Provider passenger policies',
+        'service_passenger_policy' => 'Service passenger policy',
+        'service_passenger_policies' => 'Service passenger policies',
+        'passenger_policy_tabs' => [
+            'ages' => 'Ages',
+            'prices' => 'Fares',
+        ],
+        'passenger_policy_fields' => [
+            'provider' => 'Provider',
+            'name' => 'Name',
+            'service' => 'Service',
+            'included' => 'Use this category',
+            'age_min' => 'Minimum age',
+            'age_max' => 'Maximum age',
+            'age_max_help' => 'Empty means no upper limit. The range is inclusive.',
+            'variant' => 'Variant',
+            'category' => 'Category',
+            'adjustment_type' => 'Adjustment type',
+            'adjustment_value' => 'Value',
+            'variant_prices' => 'Fares by variant',
+            'add_price' => 'Add fare',
+            'list_item' => 'Price list item',
+        ],
+        'passenger_policy_columns' => [
+            'bands' => 'Categories',
+        ],
 
         'provider_price_list' => 'Provider price list',
         'provider_price_lists' => 'Provider price lists',
@@ -2208,6 +2230,7 @@ return [
         'provider_price_list_tabs' => [
             'general' => 'General',
             'assignments' => 'Operator assignments',
+            'passenger_fares' => 'Passenger fares',
         ],
 
         'provider_price_list_fields' => [

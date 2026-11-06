@@ -45,8 +45,9 @@ class ProviderServicesTable extends Component
 
     /**
      * Base price of each variant, as "ARS 14,500", so the catalog row can be recognized by price.
+     * has_policy is true when that variant has party-size prices or age fares.
      *
-     * @return list<string>
+     * @return list<array{label: string, has_policy: bool}>
      */
     public function variantPriceLabels(Service $service): array
     {
@@ -59,7 +60,12 @@ class ProviderServicesTable extends Component
                 continue;
             }
 
-            $labels[] = $this->formatVariantPrice($variant, $formatter, $accountId);
+            $labels[] = [
+                'label' => $this->formatVariantPrice($variant, $formatter, $accountId),
+                'has_policy' => $variant->usesPaxBands()
+                    || ($variant->relationLoaded('passengerPriceRules') && $variant->passengerPriceRules->isNotEmpty())
+                    || (bool) ($variant->passenger_price_rules_exists ?? false),
+            ];
         }
 
         return $labels;
@@ -81,16 +87,23 @@ class ProviderServicesTable extends Component
             return;
         }
 
-        $needsLoad = $this->services->contains(
-            fn (Service $service): bool => ! $service->relationLoaded('serviceVariants')
-        );
+        $needsLoad = $this->services->contains(function (Service $service): bool {
+            if (! $service->relationLoaded('serviceVariants')) {
+                return true;
+            }
+
+            return $service->serviceVariants->contains(
+                fn (ServiceVariant $variant): bool => ! $variant->relationLoaded('paxBands')
+                    || ! $variant->relationLoaded('passengerPriceRules')
+            );
+        });
         if (! $needsLoad) {
             return;
         }
 
         $variants = ServiceVariant::query()
             ->whereIn('service_id', $this->services->pluck('id')->all())
-            ->with('currency.lmpCurrency')
+            ->with(['currency.lmpCurrency', 'paxBands', 'passengerPriceRules'])
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()

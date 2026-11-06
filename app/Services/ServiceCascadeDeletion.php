@@ -8,6 +8,7 @@ use App\Models\ServiceVariant;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -115,6 +116,39 @@ final class ServiceCascadeDeletion
 
         DB::transaction(function () use ($service, $serviceId): void {
             $variantIds = self::variantIds($serviceId);
+
+            if ($variantIds->isNotEmpty()) {
+                $itemIds = DB::table('provider_price_list_items')
+                    ->whereIn('service_variant_id', $variantIds)
+                    ->pluck('id');
+
+                if (Schema::hasTable('service_price_rules')) {
+                    DB::table('service_price_rules')
+                        ->where(function ($query) use ($variantIds, $itemIds): void {
+                            $query->whereIn('service_variant_id', $variantIds);
+                            if ($itemIds->isNotEmpty()) {
+                                $query->orWhereIn('provider_price_list_item_id', $itemIds);
+                            }
+                        })
+                        ->delete();
+                }
+
+                if (Schema::hasTable('service_variant_pax_bands')) {
+                    $bandIds = DB::table('service_variant_pax_bands')
+                        ->whereIn('service_variant_id', $variantIds)
+                        ->pluck('id');
+
+                    if ($bandIds->isNotEmpty() && Schema::hasTable('service_variant_pax_band_prices')) {
+                        DB::table('service_variant_pax_band_prices')
+                            ->whereIn('service_variant_pax_band_id', $bandIds)
+                            ->delete();
+                    }
+
+                    DB::table('service_variant_pax_bands')
+                        ->whereIn('service_variant_id', $variantIds)
+                        ->delete();
+                }
+            }
 
             DB::table('provider_price_list_items')
                 ->whereIn('service_variant_id', $variantIds)

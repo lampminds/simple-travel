@@ -39,7 +39,7 @@ return [
     'package_book_submit' => 'Book',
     'package_book_hint' => 'The booking stays pending until the operator validates it.',
     'package_book_passengers' => 'Passengers',
-    'package_book_passengers_hint' => 'Enter at least one passenger.',
+    'package_book_passengers_hint' => 'Enter each passenger age. At least one age is required.',
     'package_book_pending' => 'Accept this package offer before booking.',
     'package_book_pending_action' => 'View offers',
     'package_book_unavailable' => 'This package is not enabled for booking yet.',

@@ -31,7 +31,7 @@ class CreateService extends LmpCreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        return Arr::except($data, ['translations']);
+        return Arr::except($data, ['translations', 'variant_prices']);
     }
 
     protected function afterCreate(): void

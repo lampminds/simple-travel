@@ -95,9 +95,43 @@ final class AccountAgencyReservationController extends Controller
             'offer' => $packageOffer,
             'packageLabel' => $this->packageLabelForOffer($packageOffer),
             'agencyPrice' => $this->resolveAgencyPrice($packageOffer, $agencyId),
+            'quotedPrice' => null,
+            'reservationInput' => null,
             'operatorLabel' => $packageOffer->operatorAccount?->commercial_name
                 ?? $packageOffer->operatorAccount?->name
                 ?? ('#'.$packageOffer->operator_id),
+        ]);
+    }
+
+    public function preview(Request $request): View
+    {
+        $account = AccountBusinessTypeGate::assertAgencyAccount($request);
+        $agencyId = (int) $account->id;
+        $validated = $this->validatedReservation($request);
+        $passengersSnapshot = BookingPassengersSnapshot::fromAges($validated['ages']);
+        BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
+
+        $offer = PackageOffer::query()
+            ->where('uuid', $validated['package_offer_uuid'])
+            ->firstOrFail();
+
+        $this->assertBookableOffer($offer, $agencyId);
+        $offer->load([
+            'operatorAccount',
+            'catalog.translations.language.locale',
+            'priceList.currency.lmpCurrency',
+        ]);
+
+        return view('account.reservations.agency.create', [
+            'account' => $account,
+            'offer' => $offer,
+            'packageLabel' => $this->packageLabelForOffer($offer),
+            'agencyPrice' => $this->resolveAgencyPrice($offer, $agencyId),
+            'quotedPrice' => $this->resolveQuotedPrice($offer, $agencyId, $passengersSnapshot, $validated['travel_start_date']),
+            'operatorLabel' => $offer->operatorAccount?->commercial_name
+                ?? $offer->operatorAccount?->name
+                ?? ('#'.$offer->operator_id),
+            'reservationInput' => $validated,
         ]);
     }
 
@@ -106,17 +140,8 @@ final class AccountAgencyReservationController extends Controller
         $account = AccountBusinessTypeGate::assertAgencyAccount($request);
         $agencyId = (int) $account->id;
 
-        $validated = $request->validate(
-            array_merge([
-                'package_offer_uuid' => ['required', 'string', 'uuid'],
-                'travel_start_date' => ['required', 'date'],
-                'travel_end_date' => ['required', 'date', 'after_or_equal:travel_start_date'],
-                'remarks_customer' => ['nullable', 'string', 'max:2000'],
-            ], BookingPassengersSnapshot::validationRules()),
-            BookingPassengersSnapshot::validationAttributes(),
-        );
-
-        $passengersSnapshot = BookingPassengersSnapshot::normalize($validated['passengers'] ?? []);
+        $validated = $this->validatedReservation($request);
+        $passengersSnapshot = BookingPassengersSnapshot::fromAges($validated['ages']);
         BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
 
         $offer = PackageOffer::query()
@@ -186,6 +211,50 @@ final class AccountAgencyReservationController extends Controller
             'has_amount' => (bool) ($resolved['has_amount'] ?? false),
             'formatted' => (string) ($resolved['formatted'] ?? '—'),
         ];
+    }
+
+    /**
+     * @param  array{ages: list<int>, total: int}  $passengersSnapshot
+     * @return array{has_amount: bool, formatted: string}
+     */
+    private function resolveQuotedPrice(PackageOffer $offer, int $agencyId, array $passengersSnapshot, string $travelStart): array
+    {
+        $catalog = $offer->catalog;
+        $priceList = $offer->priceList;
+        if ($catalog === null || $priceList === null) {
+            return ['has_amount' => false, 'formatted' => '—'];
+        }
+
+        $resolved = $this->packagePriceResolver->resolvePackageTotal(
+            $catalog,
+            $priceList,
+            $agencyId,
+            (int) $offer->operator_id,
+            \Carbon\Carbon::parse($travelStart)->startOfDay(),
+            $passengersSnapshot,
+        );
+
+        return [
+            'has_amount' => (bool) ($resolved['has_amount'] ?? false) && ! ($resolved['is_zero'] ?? true),
+            'formatted' => (string) ($resolved['formatted'] ?? '—'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatedReservation(Request $request): array
+    {
+        return $request->validate(
+            array_merge([
+                'package_offer_uuid' => ['required', 'string', 'uuid'],
+                'travel_start_date' => ['required', 'date'],
+                'travel_end_date' => ['required', 'date', 'after_or_equal:travel_start_date'],
+                'remarks_customer' => ['nullable', 'string', 'max:2000'],
+            ], BookingPassengersSnapshot::validationRules()),
+            [],
+            BookingPassengersSnapshot::validationAttributes(),
+        );
     }
 
     private function packageLabelForOffer(PackageOffer $offer): string

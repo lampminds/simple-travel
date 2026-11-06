@@ -8,10 +8,16 @@ use App\Models\OperatorPackageItem;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Normalizes passenger-type counts stored on bookings.passengers_snapshot.
+ * Passenger data stored on bookings.passengers_snapshot.
+ *
+ * New bookings store ages. Older bookings keep adult/child/infant/senior counts.
  */
 final class BookingPassengersSnapshot
 {
+    public const MAX_PASSENGERS = 30;
+
+    public const MAX_AGE = 120;
+
     public const TYPE_ADULT = 'adult';
 
     public const TYPE_CHILD = 'child';
@@ -38,13 +44,10 @@ final class BookingPassengersSnapshot
      */
     public static function validationRules(): array
     {
-        $rules = [];
-
-        foreach (self::types() as $type) {
-            $rules["passengers.{$type}"] = ['required', 'integer', 'min:0', 'max:999'];
-        }
-
-        return $rules;
+        return [
+            'ages' => ['required', 'array', 'min:1', 'max:'.self::MAX_PASSENGERS],
+            'ages.*' => ['required', 'integer', 'min:0', 'max:'.self::MAX_AGE],
+        ];
     }
 
     /**
@@ -52,13 +55,28 @@ final class BookingPassengersSnapshot
      */
     public static function validationAttributes(): array
     {
-        $attributes = [];
+        return [
+            'ages' => (string) __('account.reservations.passengers_heading'),
+            'ages.*' => (string) __('account.reservations.field_age'),
+        ];
+    }
 
-        foreach (self::types() as $type) {
-            $attributes["passengers.{$type}"] = (string) __('account.reservations.passenger_types.'.$type);
+    /**
+     * @param  list<int|string>  $ages
+     * @return array{ages: list<int>, total: int}
+     */
+    public static function fromAges(array $ages): array
+    {
+        $normalized = [];
+
+        foreach (array_values($ages) as $age) {
+            $normalized[] = max(0, min(self::MAX_AGE, (int) $age));
         }
 
-        return $attributes;
+        return [
+            'ages' => $normalized,
+            'total' => count($normalized),
+        ];
     }
 
     /**
@@ -83,11 +101,50 @@ final class BookingPassengersSnapshot
      */
     public static function assertHasPassengers(array $snapshot): void
     {
-        if (($snapshot['total'] ?? 0) < 1) {
+        if (self::headcount($snapshot) < 1) {
             throw ValidationException::withMessages([
-                'passengers' => (string) __('account.reservations.validation.passengers_required'),
+                'ages' => (string) __('account.reservations.validation.passengers_required'),
             ]);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $snapshot
+     */
+    public static function headcount(?array $snapshot): int
+    {
+        if ($snapshot === null) {
+            return 0;
+        }
+
+        if (isset($snapshot['ages']) && is_array($snapshot['ages'])) {
+            return count($snapshot['ages']);
+        }
+
+        if (array_key_exists('total', $snapshot) && ! self::hasTypeCounts($snapshot)) {
+            return max(0, (int) $snapshot['total']);
+        }
+
+        $sum = 0;
+        foreach (self::types() as $type) {
+            $sum += max(0, (int) ($snapshot[$type] ?? 0));
+        }
+
+        return $sum;
+    }
+
+    /**
+     * @param  array<string, mixed>  $snapshot
+     */
+    private static function hasTypeCounts(array $snapshot): bool
+    {
+        foreach (self::types() as $type) {
+            if (array_key_exists($type, $snapshot)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -104,7 +161,9 @@ final class BookingPassengersSnapshot
         $pricingType = $packageItem->serviceVariant?->pricing_type;
 
         if ($pricingType === 'per_person') {
-            $passengerTotal = max(1, (int) ($passengersSnapshot['total'] ?? 1));
+            $passengerTotal = $passengersSnapshot === null
+                ? 1
+                : max(1, self::headcount($passengersSnapshot));
 
             return $packageQuantity * $passengerTotal;
         }
@@ -119,6 +178,15 @@ final class BookingPassengersSnapshot
     {
         if ($snapshot === null) {
             return '—';
+        }
+
+        if (isset($snapshot['ages']) && is_array($snapshot['ages']) && $snapshot['ages'] !== []) {
+            $ages = array_map(static fn (mixed $age): int => (int) $age, $snapshot['ages']);
+
+            return (string) trans_choice('account.reservations.passenger_ages_summary', count($ages), [
+                'count' => count($ages),
+                'ages' => implode(', ', $ages),
+            ]);
         }
 
         $normalized = self::normalize($snapshot);
