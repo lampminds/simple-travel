@@ -217,6 +217,7 @@ final class BookingRequiredFieldsResolver
 
         return match ($field->inputType) {
             ProviderBookingField::TYPE_TEXTAREA => [$presence, 'string', 'max:2000'],
+            ProviderBookingField::TYPE_NUMBER => [$presence, 'regex:/^-?\d+(\.\d+)?$/'],
             ProviderBookingField::TYPE_DATE => [$presence, 'date'],
             ProviderBookingField::TYPE_TIME => [$presence, 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
             ProviderBookingField::TYPE_PHONE => [$presence, 'string', 'max:40'],

@@ -122,13 +122,13 @@ final class AccountAgencyPackageOfferController extends Controller
 
     private function resolveOfferStatusFilter(Request $request): string
     {
-        $raw = trim((string) $request->query('status', self::OFFER_FILTER_PENDING));
+        $raw = trim((string) $request->query('status', self::OFFER_FILTER_ALL));
 
         return in_array($raw, [
             self::OFFER_FILTER_PENDING,
             self::OFFER_FILTER_ACCEPTED,
             self::OFFER_FILTER_ALL,
-        ], true) ? $raw : self::OFFER_FILTER_PENDING;
+        ], true) ? $raw : self::OFFER_FILTER_ALL;
     }
 
     /**
@@ -181,14 +181,14 @@ final class AccountAgencyPackageOfferController extends Controller
     private function agencyIndexRouteParams(Request $request): array
     {
         $params = ['as' => 'agency'];
-        $raw = trim((string) ($request->query('status', $request->input('status', self::OFFER_FILTER_PENDING))));
+        $raw = trim((string) ($request->query('status', $request->input('status', self::OFFER_FILTER_ALL))));
         $statusFilter = in_array($raw, [
             self::OFFER_FILTER_PENDING,
             self::OFFER_FILTER_ACCEPTED,
             self::OFFER_FILTER_ALL,
-        ], true) ? $raw : self::OFFER_FILTER_PENDING;
+        ], true) ? $raw : self::OFFER_FILTER_ALL;
 
-        if ($statusFilter !== self::OFFER_FILTER_PENDING) {
+        if ($statusFilter !== self::OFFER_FILTER_ALL) {
             $params['status'] = $statusFilter;
         }
 

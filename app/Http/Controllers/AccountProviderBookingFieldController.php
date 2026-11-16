@@ -8,7 +8,6 @@ use App\Models\Account;
 use App\Models\Language;
 use App\Models\ProviderBookingField;
 use App\Models\ProviderBookingTemplate;
-use App\Models\ProviderBookingTemplateItem;
 use App\Models\Service;
 use App\Services\ProviderBookingFieldWriter;
 use Illuminate\Http\RedirectResponse;
@@ -236,7 +235,7 @@ final class AccountProviderBookingFieldController extends Controller
         return view('account.booking-fields.templates.form', [
             'account' => $account,
             'template' => null,
-            'languages' => $this->languages(),
+            'fields' => $this->templateFields($account, null),
             'rows' => $this->templateRows(null),
         ]);
     }
@@ -255,12 +254,12 @@ final class AccountProviderBookingFieldController extends Controller
     {
         $account = $this->account($request);
         $this->assertTemplate($template, (int) $account->id);
-        $template->load('items.translations');
+        $template->load('items');
 
         return view('account.booking-fields.templates.form', [
             'account' => $account,
             'template' => $template,
-            'languages' => $this->languages(),
+            'fields' => $this->templateFields($account, $template),
             'rows' => $this->templateRows($template),
         ]);
     }
@@ -352,13 +351,51 @@ final class AccountProviderBookingFieldController extends Controller
     }
 
     /**
+     * Active catalog fields, plus any field already chosen on this template.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, ProviderBookingField>
+     */
+    private function templateFields(Account $account, ?ProviderBookingTemplate $template)
+    {
+        $selected = [];
+
+        if ($template !== null) {
+            $selected = $template->items
+                ->pluck('provider_booking_field_id')
+                ->map(static fn (mixed $id): int => (int) $id)
+                ->all();
+        }
+
+        $posted = old('items');
+        if (is_array($posted)) {
+            foreach ($posted as $row) {
+                if (is_array($row) && is_numeric($row['provider_booking_field_id'] ?? null)) {
+                    $selected[] = (int) $row['provider_booking_field_id'];
+                }
+            }
+        }
+
+        $selected = array_values(array_unique($selected));
+
+        return ProviderBookingField::query()
+            ->where('account_id', $account->id)
+            ->where(function ($query) use ($selected): void {
+                $query->where('is_active', true);
+                if ($selected !== []) {
+                    $query->orWhereIn('id', $selected);
+                }
+            })
+            ->with('translations.language.locale')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
      * @return list<array{
-     *     id: int|string|null,
-     *     scope: string,
-     *     input_type: string,
+     *     provider_booking_field_id: int|string,
      *     is_required: bool,
-     *     sort_order: int|string,
-     *     translations: array<int|string, mixed>
+     *     sort_order: int|string
      * }>
      */
     private function templateRows(?ProviderBookingTemplate $template): array
@@ -373,12 +410,9 @@ final class AccountProviderBookingFieldController extends Controller
                 }
 
                 $rows[] = [
-                    'id' => $row['id'] ?? null,
-                    'scope' => (string) ($row['scope'] ?? ProviderBookingField::SCOPE_PASSENGER),
-                    'input_type' => (string) ($row['input_type'] ?? ProviderBookingField::TYPE_TEXT),
+                    'provider_booking_field_id' => $row['provider_booking_field_id'] ?? '',
                     'is_required' => ! empty($row['is_required']),
                     'sort_order' => $row['sort_order'] ?? 10,
-                    'translations' => is_array($row['translations'] ?? null) ? $row['translations'] : [],
                 ];
             }
 
@@ -387,34 +421,17 @@ final class AccountProviderBookingFieldController extends Controller
 
         if ($template === null) {
             return [[
-                'id' => null,
-                'scope' => ProviderBookingField::SCOPE_PASSENGER,
-                'input_type' => ProviderBookingField::TYPE_TEXT,
+                'provider_booking_field_id' => '',
                 'is_required' => true,
                 'sort_order' => 10,
-                'translations' => [],
             ]];
         }
 
-        return $template->items->map(function (ProviderBookingTemplateItem $item): array {
-            $translations = [];
-
-            foreach ($item->translations as $translation) {
-                $translations[(int) $translation->language_id] = [
-                    'label' => $translation->label,
-                    'help_text' => $translation->help_text,
-                ];
-            }
-
-            return [
-                'id' => (int) $item->id,
-                'scope' => (string) $item->scope,
-                'input_type' => (string) $item->input_type,
-                'is_required' => (bool) $item->is_required,
-                'sort_order' => (int) $item->sort_order,
-                'translations' => $translations,
-            ];
-        })->all();
+        return $template->items->map(static fn ($item): array => [
+            'provider_booking_field_id' => (int) $item->provider_booking_field_id,
+            'is_required' => (bool) $item->is_required,
+            'sort_order' => (int) $item->sort_order,
+        ])->all();
     }
 
     /**

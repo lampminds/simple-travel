@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Provider-owned booking questions, reused across that provider's services.
+     * Provider-owned booking questions.
      *
-     * A field is defined once (passenger or whole booking) and then assigned to
-     * the services that need it. The agency form asks each field a single time,
-     * for the services included in the package.
+     * A field is defined once: prompt, input type, and whether it is asked per
+     * passenger or once per booking. Templates and services reference that
+     * field. The agency form asks each field a single time.
      */
     public function up(): void
     {
@@ -21,7 +21,7 @@ return new class extends Migration
                 ->constrained('accounts', 'id', 'pbf_account_fk')
                 ->restrictOnDelete();
             $table->enum('scope', ['passenger', 'booking']);
-            $table->enum('input_type', ['text', 'textarea', 'date', 'time', 'phone', 'country']);
+            $table->enum('input_type', ['text', 'textarea', 'number', 'date', 'time', 'phone', 'country']);
             $table->unsignedSmallInteger('sort_order')->default(9999);
             $table->boolean('is_active')->default(true);
 

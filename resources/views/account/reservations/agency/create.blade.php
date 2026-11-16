@@ -134,11 +134,13 @@
                                                             \App\Models\ProviderBookingField::TYPE_DATE => 'date',
                                                             \App\Models\ProviderBookingField::TYPE_TIME => 'time',
                                                             \App\Models\ProviderBookingField::TYPE_PHONE => 'tel',
+                                                            \App\Models\ProviderBookingField::TYPE_NUMBER => 'number',
                                                             default => 'text',
                                                         } }}"
                                                         name="booking_fields[{{ $field->id }}]"
                                                         class="form-control @error('booking_fields.'.$field->id) is-invalid @enderror"
                                                         value="{{ $bookingValue }}"
+                                                        @if ($field->inputType === \App\Models\ProviderBookingField::TYPE_NUMBER) step="any" inputmode="decimal" @endif
                                                         @if ($field->inputType === \App\Models\ProviderBookingField::TYPE_PHONE) maxlength="40" @elseif ($field->inputType === \App\Models\ProviderBookingField::TYPE_TEXT) maxlength="255" @endif
                                                         @if ($field->required) required @endif
                                                     >

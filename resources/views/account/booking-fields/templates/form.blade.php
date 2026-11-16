@@ -12,65 +12,74 @@
                 :instructions="__('account.booking_fields.templates.form_instructions')"
             />
 
-            <form method="POST" action="{{ $template ? route('account.booking-templates.update', $template) : route('account.booking-templates.store') }}" class="card mt-4">
-                @csrf
-                @if ($template)
-                    @method('PUT')
-                @endif
-                <div class="card-body">
-                    <div class="mb-4">
-                        <label class="form-label" for="template-name">{{ __('account.booking_fields.templates.col_name') }}</label>
-                        <input
-                            type="text"
-                            id="template-name"
-                            name="name"
-                            class="form-control @error('name') is-invalid @enderror"
-                            value="{{ old('name', $template?->name ?? '') }}"
-                            maxlength="120"
-                            required
-                        >
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
+            @if ($fields->isEmpty())
+                <div class="alert alert-info mt-4" role="alert">
+                    {{ __('account.booking_fields.templates.no_fields') }}
+                    <a href="{{ route('account.booking-fields.create') }}">{{ __('account.booking_fields.add') }}</a>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                    <a class="btn btn-outline-secondary" href="{{ route('account.booking-templates.index') }}">{{ __('account.booking_fields.cancel') }}</a>
+                </div>
+            @else
+                <form method="POST" action="{{ $template ? route('account.booking-templates.update', $template) : route('account.booking-templates.store') }}" class="card mt-4">
+                    @csrf
+                    @if ($template)
+                        @method('PUT')
+                    @endif
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label" for="template-name">{{ __('account.booking_fields.templates.col_name') }}</label>
+                            <input
+                                type="text"
+                                id="template-name"
+                                name="name"
+                                class="form-control @error('name') is-invalid @enderror"
+                                value="{{ old('name', $template?->name ?? '') }}"
+                                maxlength="120"
+                                required
+                            >
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        @error('items')
+                            <div class="alert alert-danger" role="alert">{{ $message }}</div>
                         @enderror
-                    </div>
 
-                    @error('items')
-                        <div class="alert alert-danger" role="alert">{{ $message }}</div>
-                    @enderror
+                        <div id="booking-order-body">
+                            @foreach ($rows as $index => $row)
+                                @include('account.booking-fields.templates.partials.item', ['index' => $index, 'row' => $row])
+                            @endforeach
+                        </div>
 
-                    <div id="booking-order-body">
-                        @foreach ($rows as $index => $row)
-                            @include('account.booking-fields.templates.partials.item', ['index' => $index, 'row' => $row])
-                        @endforeach
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-2 justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-primary" id="add-template-item">
-                            {{ __('account.booking_fields.templates.add_item') }}
-                        </button>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a class="btn btn-outline-secondary" href="{{ route('account.booking-templates.index') }}">{{ __('account.booking_fields.cancel') }}</a>
-                            <button type="submit" class="btn btn-primary">{{ __('account.booking_fields.save') }}</button>
+                        <div class="d-flex flex-wrap gap-2 justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary" id="add-template-item">
+                                {{ __('account.booking_fields.templates.add_item') }}
+                            </button>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-outline-secondary" href="{{ route('account.booking-templates.index') }}">{{ __('account.booking_fields.cancel') }}</a>
+                                <button type="submit" class="btn btn-primary">{{ __('account.booking_fields.save') }}</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
+                </form>
+            @endif
         </div>
     </section>
 
-    <template id="booking-template-item-prototype">
-        @include('account.booking-fields.templates.partials.item', [
-            'index' => '__INDEX__',
-            'row' => [
-                'id' => null,
-                'scope' => \App\Models\ProviderBookingField::SCOPE_PASSENGER,
-                'input_type' => \App\Models\ProviderBookingField::TYPE_TEXT,
-                'is_required' => true,
-                'sort_order' => 10,
-                'translations' => [],
-            ],
-        ])
-    </template>
+    @if ($fields->isNotEmpty())
+        <template id="booking-template-item-prototype">
+            @include('account.booking-fields.templates.partials.item', [
+                'index' => '__INDEX__',
+                'row' => [
+                    'provider_booking_field_id' => '',
+                    'is_required' => true,
+                    'sort_order' => 10,
+                ],
+            ])
+        </template>
+    @endif
 
     <x-site-footer-simple />
 

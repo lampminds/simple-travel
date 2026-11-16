@@ -8,8 +8,6 @@ use App\Models\Account;
 use App\Models\ProviderBookingField;
 use App\Models\ProviderBookingFieldTranslation;
 use App\Models\ProviderBookingTemplate;
-use App\Models\ProviderBookingTemplateItem;
-use App\Models\ProviderBookingTemplateItemTranslation;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -177,8 +175,10 @@ final class ProviderBookingFieldWriter
     }
 
     /**
-     * Saves the template's own items. Items keep their id so a later replicate
-     * still finds the catalog snapshot created from that item.
+     * Saves the template as an ordered set of catalog fields.
+     *
+     * Each item keeps the field's prompt, type and scope. The template only
+     * stores the order and whether that use is required.
      *
      * @param  array<string, mixed>  $input
      */
@@ -187,60 +187,68 @@ final class ProviderBookingFieldWriter
         $validated = validator($input, [
             'name' => ['required', 'string', 'max:120'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.id' => ['nullable', 'integer'],
-            'items.*.scope' => ['required', Rule::in(ProviderBookingField::scopes())],
-            'items.*.input_type' => ['required', Rule::in(ProviderBookingField::inputTypes())],
+            'items.*.provider_booking_field_id' => ['required', 'integer'],
             'items.*.is_required' => ['nullable', 'boolean'],
-            'items.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
-            'items.*.translations' => ['required', 'array'],
-            'items.*.translations.*.language_id' => ['required', 'integer', Rule::exists(\App\Models\Language::class, 'id')],
-            'items.*.translations.*.label' => ['nullable', 'string', 'max:120'],
-            'items.*.translations.*.help_text' => ['nullable', 'string', 'max:255'],
+            'items.*.sort_order' => ['nullable'],
+        ], [
+            'items.required' => (string) __('account.booking_fields.templates.validation.items_required'),
+            'items.min' => (string) __('account.booking_fields.templates.validation.items_required'),
+            'items.*.provider_booking_field_id.required' => (string) __('account.booking_fields.templates.validation.field_required'),
+            'items.*.provider_booking_field_id.integer' => (string) __('account.booking_fields.templates.validation.field_required'),
         ])->validate();
 
         $name = trim((string) $validated['name']);
-        $ownedIds = $template === null
-            ? []
-            : $template->items()->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all();
-        $owned = array_fill_keys($ownedIds, true);
+        $allowed = ProviderBookingField::query()
+            ->where('account_id', $account->id)
+            ->pluck('id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all();
+        $allowed = array_fill_keys($allowed, true);
         $rows = [];
+        $seen = [];
 
         foreach ($validated['items'] as $index => $item) {
             if (! is_array($item)) {
                 continue;
             }
 
-            $translations = $this->translationsFromInput($item['translations'] ?? []);
-            if ($translations === []) {
+            $fieldId = (int) $item['provider_booking_field_id'];
+            if (! isset($allowed[$fieldId])) {
                 throw ValidationException::withMessages([
-                    'items.'.$index.'.translations' => (string) __('account.booking_fields.templates.validation.item_label_required'),
+                    'items.'.$index.'.provider_booking_field_id' => (string) __('account.booking_fields.validation.field_not_allowed'),
                 ]);
             }
 
-            $postedId = $item['id'] ?? null;
-            $id = is_numeric($postedId) ? (int) $postedId : null;
-            if ($id !== null && ! isset($owned[$id])) {
-                $id = null;
+            if (isset($seen[$fieldId])) {
+                throw ValidationException::withMessages([
+                    'items.'.$index.'.provider_booking_field_id' => (string) __('account.booking_fields.templates.validation.field_duplicate'),
+                ]);
             }
 
+            $seen[$fieldId] = true;
             $sort = $item['sort_order'] ?? 9999;
-            if ($sort === '' || $sort === null) {
+            if ($sort === '' || $sort === null || ! is_numeric($sort)) {
                 $sort = 9999;
             }
 
             $rows[] = [
-                'id' => $id,
-                'scope' => (string) $item['scope'],
-                'input_type' => (string) $item['input_type'],
+                'provider_booking_field_id' => $fieldId,
                 'is_required' => ! empty($item['is_required']),
                 'sort_order' => max(0, min(9999, (int) $sort)),
-                'translations' => $translations,
             ];
         }
 
         if ($rows === []) {
             throw ValidationException::withMessages([
                 'items' => (string) __('account.booking_fields.templates.validation.items_required'),
+            ]);
+        }
+
+        if ($name === '') {
+            throw ValidationException::withMessages([
+                'name' => (string) __('validation.required', [
+                    'attribute' => __('account.booking_fields.templates.col_name'),
+                ]),
             ]);
         }
 
@@ -267,79 +275,32 @@ final class ProviderBookingFieldWriter
                 $template->update(['name' => $name]);
             }
 
-            $kept = [];
+            $template->items()->delete();
 
             foreach ($rows as $row) {
-                if ($row['id'] !== null) {
-                    $item = $template->items()->whereKey($row['id'])->first();
-                } else {
-                    $item = null;
-                }
-
-                $values = [
-                    'scope' => $row['scope'],
-                    'input_type' => $row['input_type'],
-                    'is_required' => $row['is_required'],
-                    'sort_order' => $row['sort_order'],
-                ];
-
-                if ($item instanceof ProviderBookingTemplateItem) {
-                    $item->update($values);
-                } else {
-                    $item = $template->items()->create($values);
-                }
-
-                $this->replaceItemTranslations($item, $row['translations']);
-                $kept[] = (int) $item->id;
+                $template->items()->create($row);
             }
-
-            $template->items()->whereNotIn('id', $kept)->delete();
 
             return $template;
         });
     }
 
     /**
-     * Replicates the template onto one service.
+     * Applies the template onto one service.
      *
-     * The first replicate of an item creates a catalog field. Later replicates
-     * reuse that field, so included services ask the question once. Assignment
-     * order and the required flag follow the template at the moment of this
-     * replicate. The catalog wording stays as it was on the first replicate.
+     * Assignments point at the same catalog fields. Order and the required
+     * flag follow the template at this moment. Fields already on the service
+     * that are not in the template stay as they are.
      */
     public function copyTemplateToService(Service $service, ProviderBookingTemplate $template): void
     {
-        $template->load('items.translations');
+        $template->load('items.field');
 
         DB::transaction(function () use ($service, $template): void {
             foreach ($template->items as $item) {
-                $field = ProviderBookingField::query()
-                    ->where('source_template_item_id', $item->id)
-                    ->first();
-
-                if ($field instanceof ProviderBookingField && (int) $field->account_id !== (int) $service->account_id) {
+                $field = $item->field;
+                if (! $field instanceof ProviderBookingField || (int) $field->account_id !== (int) $service->account_id) {
                     continue;
-                }
-
-                if (! $field instanceof ProviderBookingField) {
-                    $next = (int) ProviderBookingField::query()
-                        ->where('account_id', $service->account_id)
-                        ->max('sort_order');
-
-                    $field = ProviderBookingField::query()->create([
-                        'account_id' => (int) $service->account_id,
-                        'source_template_item_id' => (int) $item->id,
-                        'scope' => $item->scope,
-                        'input_type' => $item->input_type,
-                        'sort_order' => $next > 0 ? $next + 10 : 10,
-                        'is_active' => true,
-                    ]);
-
-                    $this->replaceTranslations($field, $item->translations->map(static fn (ProviderBookingTemplateItemTranslation $translation): array => [
-                        'language_id' => (int) $translation->language_id,
-                        'label' => (string) $translation->label,
-                        'help_text' => $translation->help_text,
-                    ])->all());
                 }
 
                 $values = [
@@ -362,51 +323,5 @@ final class ProviderBookingFieldWriter
                 $assignment->update($values);
             }
         });
-    }
-
-    /**
-     * @param  array<int|string, mixed>  $input
-     * @return list<array{language_id: int, label: string, help_text: string|null}>
-     */
-    private function translationsFromInput(array $input): array
-    {
-        $translations = [];
-
-        foreach ($input as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-
-            $label = trim((string) ($row['label'] ?? ''));
-            if ($label === '') {
-                continue;
-            }
-
-            $help = trim((string) ($row['help_text'] ?? ''));
-            $translations[] = [
-                'language_id' => (int) $row['language_id'],
-                'label' => $label,
-                'help_text' => $help !== '' ? $help : null,
-            ];
-        }
-
-        return $translations;
-    }
-
-    /**
-     * @param  list<array{language_id: int, label: string, help_text: string|null}>  $translations
-     */
-    private function replaceItemTranslations(ProviderBookingTemplateItem $item, array $translations): void
-    {
-        $item->translations()->delete();
-
-        foreach ($translations as $row) {
-            ProviderBookingTemplateItemTranslation::query()->create([
-                'provider_booking_template_item_id' => (int) $item->id,
-                'language_id' => $row['language_id'],
-                'label' => $row['label'],
-                'help_text' => $row['help_text'],
-            ]);
-        }
     }
 }

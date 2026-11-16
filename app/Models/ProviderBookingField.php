@@ -19,6 +19,8 @@ class ProviderBookingField extends Model
 
     public const TYPE_TEXTAREA = 'textarea';
 
+    public const TYPE_NUMBER = 'number';
+
     public const TYPE_DATE = 'date';
 
     public const TYPE_TIME = 'time';
@@ -29,7 +31,6 @@ class ProviderBookingField extends Model
 
     protected $fillable = [
         'account_id',
-        'source_template_item_id',
         'scope',
         'input_type',
         'sort_order',
@@ -37,7 +38,6 @@ class ProviderBookingField extends Model
     ];
 
     protected $casts = [
-        'source_template_item_id' => 'integer',
         'sort_order' => 'integer',
         'is_active' => 'boolean',
     ];
@@ -61,6 +61,7 @@ class ProviderBookingField extends Model
         return [
             self::TYPE_TEXT,
             self::TYPE_TEXTAREA,
+            self::TYPE_NUMBER,
             self::TYPE_DATE,
             self::TYPE_TIME,
             self::TYPE_PHONE,
@@ -73,11 +74,6 @@ class ProviderBookingField extends Model
         return $this->belongsTo(Account::class, 'account_id');
     }
 
-    public function sourceTemplateItem(): BelongsTo
-    {
-        return $this->belongsTo(ProviderBookingTemplateItem::class, 'source_template_item_id');
-    }
-
     public function translations(): HasMany
     {
         return $this->hasMany(ProviderBookingFieldTranslation::class);
@@ -86,6 +82,11 @@ class ProviderBookingField extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(ServiceBookingFieldAssignment::class);
+    }
+
+    public function templateItems(): HasMany
+    {
+        return $this->hasMany(ProviderBookingTemplateItem::class);
     }
 
     public function scopeLabel(): string
