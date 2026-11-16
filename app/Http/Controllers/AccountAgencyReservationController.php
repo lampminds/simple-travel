@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\LmpCountry;
 use App\Models\PackageOffer;
+use App\Models\ProviderBookingField;
 use App\Services\AgencyBookingFromPackageOfferService;
 use App\Services\BookingPriceBreakdownService;
+use App\Services\BookingRequiredFieldsResolver;
 use App\Services\OperatorPackageAgencyPriceResolver;
 use App\Services\PriceFormatService;
 use App\Support\AccountBusinessTypeGate;
+use App\Support\BookingFieldAnswersPresenter;
 use App\Support\BookingPassengersSnapshot;
+use App\Support\ResolvedBookingField;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -23,6 +28,7 @@ final class AccountAgencyReservationController extends Controller
         private readonly AgencyBookingFromPackageOfferService $bookingCreator,
         private readonly BookingPriceBreakdownService $priceBreakdown,
         private readonly PriceFormatService $priceFormatService,
+        private readonly BookingRequiredFieldsResolver $fieldResolver,
     ) {
     }
 
@@ -90,7 +96,7 @@ final class AccountAgencyReservationController extends Controller
             'priceList.currency.lmpCurrency',
         ]);
 
-        return view('account.reservations.agency.create', [
+        return view('account.reservations.agency.create', array_merge([
             'account' => $account,
             'offer' => $packageOffer,
             'packageLabel' => $this->packageLabelForOffer($packageOffer),
@@ -100,14 +106,14 @@ final class AccountAgencyReservationController extends Controller
             'operatorLabel' => $packageOffer->operatorAccount?->commercial_name
                 ?? $packageOffer->operatorAccount?->name
                 ?? ('#'.$packageOffer->operator_id),
-        ]);
+        ], $this->reservationFormFields($packageOffer)));
     }
 
     public function preview(Request $request): View
     {
         $account = AccountBusinessTypeGate::assertAgencyAccount($request);
         $agencyId = (int) $account->id;
-        $validated = $this->validatedReservation($request);
+        $validated = $this->validatedReservation($request, $agencyId);
         $passengersSnapshot = BookingPassengersSnapshot::fromAges($validated['ages']);
         BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
 
@@ -122,7 +128,7 @@ final class AccountAgencyReservationController extends Controller
             'priceList.currency.lmpCurrency',
         ]);
 
-        return view('account.reservations.agency.create', [
+        return view('account.reservations.agency.create', array_merge([
             'account' => $account,
             'offer' => $offer,
             'packageLabel' => $this->packageLabelForOffer($offer),
@@ -132,7 +138,7 @@ final class AccountAgencyReservationController extends Controller
                 ?? $offer->operatorAccount?->name
                 ?? ('#'.$offer->operator_id),
             'reservationInput' => $validated,
-        ]);
+        ], $this->reservationFormFields($offer)));
     }
 
     public function store(Request $request): RedirectResponse
@@ -140,7 +146,7 @@ final class AccountAgencyReservationController extends Controller
         $account = AccountBusinessTypeGate::assertAgencyAccount($request);
         $agencyId = (int) $account->id;
 
-        $validated = $this->validatedReservation($request);
+        $validated = $this->validatedReservation($request, $agencyId);
         $passengersSnapshot = BookingPassengersSnapshot::fromAges($validated['ages']);
         BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
 
@@ -153,6 +159,10 @@ final class AccountAgencyReservationController extends Controller
             'travel_end_date' => $validated['travel_end_date'],
             'passengers_snapshot' => $passengersSnapshot,
             'remarks_customer' => $validated['remarks_customer'] ?? null,
+            'field_answers' => [
+                'passenger_fields' => $validated['passenger_fields'] ?? [],
+                'booking_fields' => $validated['booking_fields'] ?? [],
+            ],
         ]);
 
         return redirect()
@@ -178,6 +188,7 @@ final class AccountAgencyReservationController extends Controller
             'booking' => $booking,
             'packageLabel' => $this->packageLabelForBooking($booking),
             'priceBreakdown' => $this->priceBreakdown->build($booking),
+            'fieldAnswers' => BookingFieldAnswersPresenter::present($booking),
         ]);
     }
 
@@ -243,9 +254,9 @@ final class AccountAgencyReservationController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validatedReservation(Request $request): array
+    private function validatedReservation(Request $request, int $agencyId): array
     {
-        return $request->validate(
+        $validated = $request->validate(
             array_merge([
                 'package_offer_uuid' => ['required', 'string', 'uuid'],
                 'travel_start_date' => ['required', 'date'],
@@ -255,6 +266,49 @@ final class AccountAgencyReservationController extends Controller
             [],
             BookingPassengersSnapshot::validationAttributes(),
         );
+
+        $offer = PackageOffer::query()
+            ->where('uuid', $validated['package_offer_uuid'])
+            ->firstOrFail();
+        $this->assertBookableOffer($offer, $agencyId);
+
+        $resolved = $this->fieldResolver->forPackageOffer($offer);
+        $spec = $this->fieldResolver->validationSpec($resolved, count($validated['ages']));
+        $answers = $spec['rules'] === []
+            ? []
+            : $request->validate($spec['rules'], $spec['messages'], $spec['attributes']);
+
+        $validated['passenger_fields'] = is_array($answers['passenger_fields'] ?? null) ? $answers['passenger_fields'] : [];
+        $validated['booking_fields'] = is_array($answers['booking_fields'] ?? null) ? $answers['booking_fields'] : [];
+
+        return $validated;
+    }
+
+    /**
+     * @return array{
+     *     passengerFields: list<ResolvedBookingField>,
+     *     bookingFields: list<ResolvedBookingField>,
+     *     countries: \Illuminate\Support\Collection<int, LmpCountry>
+     * }
+     */
+    private function reservationFormFields(PackageOffer $offer): array
+    {
+        $resolved = $this->fieldResolver->forPackageOffer($offer);
+        $needsCountries = false;
+        foreach (array_merge($resolved['passenger'], $resolved['booking']) as $field) {
+            if ($field->inputType === ProviderBookingField::TYPE_COUNTRY) {
+                $needsCountries = true;
+                break;
+            }
+        }
+
+        return [
+            'passengerFields' => $resolved['passenger'],
+            'bookingFields' => $resolved['booking'],
+            'countries' => $needsCountries
+                ? LmpCountry::query()->orderBy('name')->get(['id', 'name'])
+                : collect(),
+        ];
     }
 
     private function packageLabelForOffer(PackageOffer $offer): string

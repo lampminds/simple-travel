@@ -23,6 +23,9 @@
                             <a href="{{ route('account.relationships.index', ['as' => 'provider']) }}" class="btn btn-primary">
                                 {{ __('account.relationships.hub_card_provider_button') }}
                             </a>
+                            <a href="{{ route('account.invitations.company', ['as' => 'provider']) }}" class="btn btn-outline-primary mt-2">
+                                {{ __('account.provider_supply.invite') }}
+                            </a>
                         </div>
                     </div>
                 </div>

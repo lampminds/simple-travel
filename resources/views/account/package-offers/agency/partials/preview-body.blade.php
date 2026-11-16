@@ -7,25 +7,52 @@
     $conditions = $preview['conditions'] ?? [];
     $heroImages = $preview['hero_images'] ?? [];
     $galleries = $preview['galleries'] ?? [];
+    $passengerPricing = is_array($preview['passenger_pricing'] ?? null) ? $preview['passenger_pricing'] : null;
+    $pricingServices = is_array($passengerPricing['services'] ?? null) ? $passengerPricing['services'] : [];
+    $pricingServicesLabel = implode(', ', array_filter($pricingServices, fn ($name): bool => is_string($name) && $name !== ''));
+    $pricingNoticeKey = null;
+    if (is_array($passengerPricing) && $pricingServicesLabel !== '') {
+        $byPassengerType = (bool) ($passengerPricing['by_passenger_type'] ?? false);
+        $byGroup = (bool) ($passengerPricing['by_group'] ?? false);
+        if ($byPassengerType && $byGroup) {
+            $pricingNoticeKey = 'agency_preview_pricing_notice_both';
+        } elseif ($byGroup) {
+            $pricingNoticeKey = 'agency_preview_pricing_notice_group';
+        } elseif ($byPassengerType) {
+            $pricingNoticeKey = 'agency_preview_pricing_notice_passenger_type';
+        }
+    }
 @endphp
 
 <div @class(['package-offer-preview' => ! $forPdf])>
-    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4 @if ($locales !== [] || $heroImages !== []) pb-3 border-bottom @endif">
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            @if (($preview['operator_name'] ?? '') !== '')
-                <span class="text-muted">{{ $preview['operator_name'] }}</span>
-            @endif
-            @if (($preview['price_list_name'] ?? '') !== '')
-                <span class="badge bg-light text-dark border">{{ __('account.package_offers.agency_preview_price_list') }}: {{ $preview['price_list_name'] }}</span>
-            @endif
+    <div class="@if ($locales !== [] || $heroImages !== [] || $pricingNoticeKey !== null) mb-4 pb-3 border-bottom @else mb-4 @endif">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                @if (($preview['operator_name'] ?? '') !== '')
+                    <span class="text-muted">{{ $preview['operator_name'] }}</span>
+                @endif
+                @if (($preview['price_list_name'] ?? '') !== '')
+                    <span class="badge bg-light text-dark border">{{ __('account.package_offers.agency_preview_price_list') }}: {{ $preview['price_list_name'] }}</span>
+                @endif
+            </div>
+            <div class="text-lg-end">
+                <div class="text-muted text-uppercase fs-12">{{ __('account.package_offers.agency_preview_price') }}</div>
+                <div class="fs-3 fw-semibold text-primary mb-0">{{ $preview['agency_price'] ?? '—' }}</div>
+                @if (($preview['agency_price_usd_hint'] ?? '') !== '')
+                    <div class="small text-muted mt-1">{{ $preview['agency_price_usd_hint'] }}</div>
+                @endif
+            </div>
         </div>
-        <div class="text-lg-end">
-            <div class="text-muted text-uppercase fs-12">{{ __('account.package_offers.agency_preview_price') }}</div>
-            <div class="fs-3 fw-semibold text-primary mb-0">{{ $preview['agency_price'] ?? '—' }}</div>
-            @if (($preview['agency_price_usd_hint'] ?? '') !== '')
-                <div class="small text-muted mt-1">{{ $preview['agency_price_usd_hint'] }}</div>
+
+        @if ($pricingNoticeKey !== null)
+            @if ($forPdf)
+                <div class="preview-pricing-note">{{ __('account.package_offers.'.$pricingNoticeKey, ['services' => $pricingServicesLabel]) }}</div>
+            @else
+                <div class="border border-info-subtle bg-info-subtle text-info-emphasis rounded small px-3 py-2 mt-3" role="status">
+                    {{ __('account.package_offers.'.$pricingNoticeKey, ['services' => $pricingServicesLabel]) }}
+                </div>
             @endif
-        </div>
+        @endif
     </div>
 
     @foreach ($locales as $localeBlock)

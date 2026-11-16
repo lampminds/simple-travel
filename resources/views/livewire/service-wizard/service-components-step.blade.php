@@ -26,6 +26,12 @@
             </div>
         </div>
 
+        @if (! empty($componentWarnings))
+            <div class="alert alert-warning" role="status">
+                {{ __('wizard.components_supply_warning') }}
+            </div>
+        @endif
+
         @if ($selectedComponents->isEmpty())
             <div class="alert alert-light border" role="status">
                 {{ __('wizard.components_none') }}
@@ -45,7 +51,20 @@
                     <tbody>
                         @foreach ($selectedComponents as $component)
                             <tr>
-                                <td>{{ $component->childVariant?->dropdownLabel() ?? ('#'.$component->child_variant_id) }}</td>
+                                <td>
+                                    {{ $component->childVariant?->dropdownLabel() ?? ('#'.$component->child_variant_id) }}
+                                    @if ($component->childVariant?->service?->account && (int) $component->childVariant->service->account_id !== (int) $service->account_id)
+                                        <div class="small text-muted">
+                                            {{ $component->childVariant->service->account->commercial_name ?: $component->childVariant->service->account->name }}
+                                        </div>
+                                    @endif
+                                    @if (! empty($componentCosts[(int) $component->child_variant_id]))
+                                        <div class="small text-muted">{{ __('wizard.components_cost', ['cost' => $componentCosts[(int) $component->child_variant_id]]) }}</div>
+                                    @endif
+                                    @if (! empty($componentWarnings[$component->id]))
+                                        <div class="small text-danger">{{ $componentWarnings[$component->id] }}</div>
+                                    @endif
+                                </td>
                                 <td>{{ $component->quantity }}</td>
                                 <td>{{ $component->day_number ?? '—' }}</td>
                                 <td>{{ __('wizard.components_inclusion.'.$component->inclusion_mode) }}</td>
@@ -68,7 +87,7 @@
                     <select id="component-child-variant" class="form-select" wire:model="form.child_variant_id">
                         <option value="">{{ __('wizard.components_select_child') }}</option>
                         @foreach ($eligibleChildVariants as $variant)
-                            <option value="{{ $variant->id }}">{{ $variant->dropdownLabel() }}</option>
+                            <option value="{{ $variant->id }}">{{ $variant->picker_label ?? $variant->dropdownLabel() }}</option>
                         @endforeach
                     </select>
                     @error('form.child_variant_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror

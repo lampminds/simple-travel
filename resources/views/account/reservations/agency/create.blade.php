@@ -15,7 +15,7 @@
             </div>
 
             <div class="row mt-4">
-                <div class="col-lg-8">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <dl class="row mb-4">
@@ -49,38 +49,39 @@
                                     if (! is_array($ageValues) || $ageValues === []) {
                                         $ageValues = [''];
                                     }
+                                    $passengerFields = $passengerFields ?? [];
+                                    $bookingFields = $bookingFields ?? [];
+                                    $countries = $countries ?? collect();
+                                    $passengerFieldValues = old('passenger_fields');
+                                    if (! is_array($passengerFieldValues)) {
+                                        $passengerFieldValues = is_array($submittedInput['passenger_fields'] ?? null)
+                                            ? $submittedInput['passenger_fields']
+                                            : [];
+                                    }
+                                    $bookingFieldValues = old('booking_fields');
+                                    if (! is_array($bookingFieldValues)) {
+                                        $bookingFieldValues = is_array($submittedInput['booking_fields'] ?? null)
+                                            ? $submittedInput['booking_fields']
+                                            : [];
+                                    }
                                 @endphp
 
                                 <h6 class="mb-2">{{ __('account.reservations.passengers_heading') }}</h6>
                                 <p class="text-muted small mb-3">{{ __('account.reservations.passengers_intro') }}</p>
+                                @if ($passengerFields !== [])
+                                    <p class="text-muted small mb-3">{{ __('account.reservations.extra_passenger_intro') }}</p>
+                                @endif
 
                                 <div id="passenger-ages" class="mb-2">
                                     @foreach ($ageValues as $index => $ageValue)
-                                        <div class="row g-2 align-items-end mb-2 passenger-age-row">
-                                            <div class="col-6 col-md-4">
-                                                <label class="form-label" @if ($index === 0) for="passenger_age_0" @endif>
-                                                    {{ __('account.reservations.field_age') }}
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    name="ages[]"
-                                                    @if ($index === 0) id="passenger_age_0" @endif
-                                                    class="form-control @error('ages.'.$index) is-invalid @enderror @error('ages') is-invalid @enderror"
-                                                    value="{{ $ageValue }}"
-                                                    min="0"
-                                                    max="120"
-                                                    required
-                                                >
-                                                @error('ages.'.$index)
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-auto">
-                                                <button type="button" class="btn btn-outline-secondary remove-passenger-age">
-                                                    {{ __('account.reservations.remove_passenger') }}
-                                                </button>
-                                            </div>
-                                        </div>
+                                        @include('account.reservations.agency.partials.passenger-row', [
+                                            'ageValue' => $ageValue,
+                                            'passengerIndex' => $index,
+                                            'passengerFields' => $passengerFields,
+                                            'passengerFieldValues' => $passengerFieldValues,
+                                            'countries' => $countries,
+                                            'showErrors' => true,
+                                        ])
                                     @endforeach
                                 </div>
                                 @error('ages')
@@ -89,6 +90,69 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="add-passenger-age">
                                     {{ __('account.reservations.add_passenger') }}
                                 </button>
+
+                                @if ($bookingFields !== [])
+                                    <h6 class="mb-2">{{ __('account.reservations.extra_booking_heading') }}</h6>
+                                    <p class="text-muted small mb-3">{{ __('account.reservations.extra_booking_intro') }}</p>
+                                    <div class="row g-3 mb-4">
+                                        @foreach ($bookingFields as $field)
+                                            @php
+                                                $bookingValue = $bookingFieldValues[$field->id] ?? $bookingFieldValues[(string) $field->id] ?? '';
+                                            @endphp
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="booking-field-{{ $field->id }}">
+                                                    {{ $field->label }}
+                                                    @if ($field->required)
+                                                        <span class="text-danger">*</span>
+                                                    @endif
+                                                </label>
+                                                @if ($field->inputType === \App\Models\ProviderBookingField::TYPE_TEXTAREA)
+                                                    <textarea
+                                                        id="booking-field-{{ $field->id }}"
+                                                        name="booking_fields[{{ $field->id }}]"
+                                                        rows="2"
+                                                        class="form-control @error('booking_fields.'.$field->id) is-invalid @enderror"
+                                                        maxlength="2000"
+                                                        @if ($field->required) required @endif
+                                                    >{{ $bookingValue }}</textarea>
+                                                @elseif ($field->inputType === \App\Models\ProviderBookingField::TYPE_COUNTRY)
+                                                    <select
+                                                        id="booking-field-{{ $field->id }}"
+                                                        name="booking_fields[{{ $field->id }}]"
+                                                        class="form-select @error('booking_fields.'.$field->id) is-invalid @enderror"
+                                                        @if ($field->required) required @endif
+                                                    >
+                                                        <option value="">{{ __('account.booking_fields.country_placeholder') }}</option>
+                                                        @foreach ($countries as $country)
+                                                            <option value="{{ $country->id }}" @selected((string) $bookingValue === (string) $country->id)>{{ $country->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    <input
+                                                        id="booking-field-{{ $field->id }}"
+                                                        type="{{ match ($field->inputType) {
+                                                            \App\Models\ProviderBookingField::TYPE_DATE => 'date',
+                                                            \App\Models\ProviderBookingField::TYPE_TIME => 'time',
+                                                            \App\Models\ProviderBookingField::TYPE_PHONE => 'tel',
+                                                            default => 'text',
+                                                        } }}"
+                                                        name="booking_fields[{{ $field->id }}]"
+                                                        class="form-control @error('booking_fields.'.$field->id) is-invalid @enderror"
+                                                        value="{{ $bookingValue }}"
+                                                        @if ($field->inputType === \App\Models\ProviderBookingField::TYPE_PHONE) maxlength="40" @elseif ($field->inputType === \App\Models\ProviderBookingField::TYPE_TEXT) maxlength="255" @endif
+                                                        @if ($field->required) required @endif
+                                                    >
+                                                @endif
+                                                @if ($field->help)
+                                                    <div class="form-text">{{ $field->help }}</div>
+                                                @endif
+                                                @error('booking_fields.'.$field->id)
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
 
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -150,17 +214,14 @@
                                 </div>
                             </form>
                             <template id="passenger-age-template">
-                                <div class="row g-2 align-items-end mb-2 passenger-age-row">
-                                    <div class="col-6 col-md-4">
-                                        <label class="form-label">{{ __('account.reservations.field_age') }}</label>
-                                        <input type="number" name="ages[]" class="form-control" min="0" max="120" required>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="button" class="btn btn-outline-secondary remove-passenger-age">
-                                            {{ __('account.reservations.remove_passenger') }}
-                                        </button>
-                                    </div>
-                                </div>
+                                @include('account.reservations.agency.partials.passenger-row', [
+                                    'ageValue' => '',
+                                    'passengerIndex' => null,
+                                    'passengerFields' => $passengerFields ?? [],
+                                    'passengerFieldValues' => [],
+                                    'countries' => $countries ?? collect(),
+                                    'showErrors' => false,
+                                ])
                             </template>
                             <script>
                                 (function () {

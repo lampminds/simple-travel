@@ -29,6 +29,17 @@
                 </div>
             </div>
 
+            @if (! empty($unsellableCombos))
+                <div class="alert alert-warning mt-3" role="status">
+                    <p class="mb-2">{{ __('account.provider_supply.offer_blocked_intro') }}</p>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($unsellableCombos as $line)
+                            <li>{{ $line }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="row mt-3">
                 <div class="col-lg-12">
                     <form method="get" action="{{ route('account.service-offers.operators.edit', $operator) }}" class="d-flex flex-wrap align-items-end gap-2 mb-0">

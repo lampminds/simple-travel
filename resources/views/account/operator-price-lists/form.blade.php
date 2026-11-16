@@ -19,6 +19,38 @@
             'pricing_mode' => '',
             'price' => '',
         ]]);
+    $suggestedItemCount = 0;
+    if (! is_array($itemsOld)) {
+        $requestedIds = [];
+        foreach (explode(',', (string) request()->query('add_items', '')) as $rawId) {
+            $id = (int) trim($rawId);
+            if ($id > 0) {
+                $requestedIds[$id] = $id;
+            }
+        }
+
+        if ($requestedIds !== []) {
+            $existingIds = [];
+            foreach ($items as $row) {
+                $existingIds[(int) ($row['operator_package_item_id'] ?? 0)] = true;
+            }
+
+            foreach ($requestedIds as $id) {
+                if (isset($existingIds[$id]) || ! isset($packageItemCatalogById[(string) $id])) {
+                    continue;
+                }
+
+                $items[] = [
+                    'operator_package_item_id' => $id,
+                    'pricing_mode' => '',
+                    'price' => '',
+                    'suggested' => true,
+                ];
+                $existingIds[$id] = true;
+                $suggestedItemCount++;
+            }
+        }
+    }
     $activePriceListTab = 'general';
     $priceDecimals = max(0, min(3, (int) ($priceFormatSettings['decimals'] ?? 2)));
     $priceStep = $priceDecimals === 0 ? '1' : '0.'.str_repeat('0', $priceDecimals - 1).'1';
@@ -32,6 +64,8 @@
                 break;
             }
         }
+    } elseif ($suggestedItemCount > 0 || request()->query('tab') === 'items') {
+        $activePriceListTab = 'items';
     }
 @endphp
 
@@ -235,6 +269,11 @@
                                         <p class="small text-muted mb-3">
                                             {{ __('account.price_lists.fields.price') }}: 12{{ $thousandsSeparator }}345{{ $decimalSeparator }}{{ str_repeat('0', max(1, $priceDecimals)) }}
                                         </p>
+                                        @if ($suggestedItemCount > 0)
+                                            <div class="alert alert-warning mb-3">
+                                                {{ __('account.operator_price_lists.missing_lines_prefilled', ['count' => $suggestedItemCount]) }}
+                                            </div>
+                                        @endif
 
                                         @if ($packageItemCatalog === [])
                                             <div class="alert alert-info mb-3">{{ __('account.operator_price_lists.no_package_items') }}</div>
@@ -865,6 +904,11 @@
             addButton.addEventListener('click', addRow);
 
             itemsBody.querySelectorAll('[data-role="price-list-item-row"]').forEach((row) => bindRowEvents(row));
+
+            const suggestedRow = itemsBody.querySelector('[data-suggested-line="1"]');
+            if (suggestedRow) {
+                suggestedRow.scrollIntoView({ block: 'center' });
+            }
 
             if (currencySelect) {
                 currencySelect.addEventListener('change', () => {

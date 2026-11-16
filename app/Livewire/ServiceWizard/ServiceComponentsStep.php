@@ -5,10 +5,13 @@ namespace App\Livewire\ServiceWizard;
 use App\Models\Service;
 use App\Models\ServiceComponent;
 use App\Models\ServiceVariant;
+use App\Services\ProviderSupplyComponentHealth;
+use App\Services\ProviderSupplyCostResolver;
 use App\Services\ServiceComponentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 /**
@@ -90,14 +93,21 @@ class ServiceComponentsStep extends Component
             ->with('service.serviceType')
             ->findOrFail((int) $validated['form']['child_variant_id']);
 
-        $components->addComponent($parentVariant, $childVariant, [
-            'quantity' => (int) $validated['form']['quantity'],
-            'day_number' => $validated['form']['day_number'] !== '' && $validated['form']['day_number'] !== null
-                ? (int) $validated['form']['day_number']
-                : null,
-            'inclusion_mode' => (string) $validated['form']['inclusion_mode'],
-            'notes' => $validated['form']['notes'] ?? null,
-        ]);
+        try {
+            $components->addComponent($parentVariant, $childVariant, [
+                'quantity' => (int) $validated['form']['quantity'],
+                'day_number' => $validated['form']['day_number'] !== '' && $validated['form']['day_number'] !== null
+                    ? (int) $validated['form']['day_number']
+                    : null,
+                'inclusion_mode' => (string) $validated['form']['inclusion_mode'],
+                'notes' => $validated['form']['notes'] ?? null,
+            ]);
+        } catch (ValidationException $exception) {
+            $message = collect($exception->errors())->flatten()->first();
+            throw ValidationException::withMessages([
+                'form.child_variant_id' => $message ?: __('wizard.components_supply_offer_required'),
+            ]);
+        }
 
         $this->form = [
             'child_variant_id' => '',
@@ -175,8 +185,11 @@ class ServiceComponentsStep extends Component
 
         $parentVariants = $service->serviceVariants()
             ->with([
+                'service.serviceType',
+                'components.childVariant.service.account',
                 'components.childVariant.service.translations.language.locale',
                 'components.childVariant.translations.language.locale',
+                'components.childVariant.currency.lmpCurrency',
             ])
             ->get();
 
@@ -189,12 +202,44 @@ class ServiceComponentsStep extends Component
             ? $parentVariants->firstWhere('id', $this->parentVariantId)
             : null;
 
+        $eligibleChildVariants = $components->eligibleChildVariants($service);
+        $buyerId = (int) $service->account_id;
+        $costLabels = app(ProviderSupplyCostResolver::class)->labelsForVariants($buyerId, $eligibleChildVariants);
+        $eligibleChildVariants->each(function (ServiceVariant $variant) use ($costLabels): void {
+            $label = $variant->dropdownLabel();
+            $supplierName = trim((string) $variant->getAttribute('supply_supplier_name'));
+            if ($supplierName !== '') {
+                $label .= ' · '.$supplierName;
+            }
+            $cost = $costLabels[(int) $variant->id] ?? null;
+            if (is_string($cost) && $cost !== '') {
+                $label .= ' · '.__('wizard.components_cost', ['cost' => $cost]);
+            }
+            $variant->setAttribute('picker_label', $label);
+        });
+
+        $componentWarnings = [];
+        if ($selectedParent instanceof ServiceVariant) {
+            foreach (app(ProviderSupplyComponentHealth::class)->issues($selectedParent) as $issue) {
+                $componentWarnings[(int) $issue['component_id']] = $issue['label'].' ('.__('account.provider_supply.health.'.$issue['reason']).')';
+            }
+        }
+
+        $selectedCosts = app(ProviderSupplyCostResolver::class)->labelsForVariants(
+            $buyerId,
+            collect($selectedParent?->components ?? [])
+                ->map(fn (ServiceComponent $component) => $component->childVariant)
+                ->filter()
+        );
+
         return view('livewire.service-wizard.service-components-step', [
             'service' => $service,
             'parentVariants' => $parentVariants,
             'selectedParent' => $selectedParent,
             'selectedComponents' => $selectedParent?->components ?? collect(),
-            'eligibleChildVariants' => $components->eligibleChildVariants($service),
+            'eligibleChildVariants' => $eligibleChildVariants,
+            'componentWarnings' => $componentWarnings,
+            'componentCosts' => $selectedCosts,
         ]);
     }
 }

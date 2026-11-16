@@ -11,10 +11,13 @@ use Lampminds\Customization\Filament\LmpCustomization\Traits\AuditTrait;
  * One component line of a combo variant: parent variant -> child variant.
  *
  * Invariants (enforced by the wizard / sync layer, documented on Service):
- * - parent and child variants belong to services of the same account;
+ * - a child variant belongs to the same account, or to a supplier provider
+ *   that has an accepted active offer of that variant to the buyer;
  * - the parent service is a "combo" service, the child service is not
  *   (combos cannot contain combos in v1);
- * - price comes from the parent variant only.
+ * - a supply edge cannot create a circle between providers;
+ * - price comes from the parent variant only. The supplier price is an
+ *   internal cost and is not added to the parent price.
  */
 class ServiceComponent extends Model
 {

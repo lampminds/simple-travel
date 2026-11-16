@@ -8,6 +8,9 @@
             @if (session('status'))
                 <div class="alert alert-success mb-3" role="alert">{{ session('status') }}</div>
             @endif
+            @if ($errors->any())
+                <div class="alert alert-danger mb-3" role="alert">{{ $errors->first() }}</div>
+            @endif
 
             <div class="row">
                 <div class="col-lg-12">
@@ -16,21 +19,17 @@
                             class="flex-grow-1"
                             :title="__('account.relationships.heading')"
                             :subtitle="$accountLabel"
-                            :instructions="match ($perspective) {
-                                'agency' => __('account.relationships.intro_agency_instructions'),
-                                'provider' => __('account.relationships.intro_provider_instructions'),
-                                default => __('account.relationships.intro_operator_instructions'),
-                            }"
+                            :instructions="__('account.relationships.intro_unified_instructions')"
                         />
                         <div class="d-flex flex-wrap gap-2 flex-shrink-0">
-                            @if (($perspective ?? '') === 'operator')
-                                <a href="{{ route('account.invitations.company') }}" class="btn btn-primary btn-sm">
-                                    {{ __('account.relationships.invite_company') }}
+                            @if ($canInviteProvider ?? false)
+                                <a href="{{ route('account.invitations.company', ['as' => 'provider']) }}" class="btn btn-primary btn-sm">
+                                    {{ __('account.provider_supply.invite') }}
                                 </a>
                             @endif
-                            @if ($showHubBack ?? false)
-                                <a href="{{ route('account.relationships.index') }}" class="btn btn-outline-secondary btn-sm">
-                                    {{ __('account.relationships.hub_back') }}
+                            @if ($canInviteOperator ?? false)
+                                <a href="{{ route('account.invitations.company') }}" class="btn btn-primary btn-sm">
+                                    {{ __('account.relationships.invite_company') }}
                                 </a>
                             @endif
                         </div>
@@ -38,55 +37,93 @@
                 </div>
             </div>
 
-            @if (in_array($perspective ?? '', ['provider', 'agency'], true) && ($pendingIncomingInvitations ?? collect())->isNotEmpty())
+            @if (($pendingIncomingInvitations ?? collect())->isNotEmpty() || ($pendingOutgoingInvitations ?? collect())->isNotEmpty())
                 <div class="row mt-4">
                     <div class="col-lg-12">
                         <div class="card border-warning border-opacity-50 shadow-sm">
                             <div class="card-body">
-                                <h4 class="h6 fw-semibold mb-3">{{ __('account.relationships.pending_invitations_heading') }}</h4>
-                                <p class="text-muted small mb-3">{{ __('account.relationships.pending_invitations_intro') }}</p>
+                                <h4 class="h6 fw-semibold mb-3">{{ __('account.relationships.pending_invitations_heading_all') }}</h4>
+                                <p class="text-muted small mb-3">{{ __('account.relationships.pending_invitations_intro_all') }}</p>
                                 <div class="table-responsive">
                                     <table class="table table-sm align-middle mb-0">
                                         <thead>
                                             <tr>
-                                                <th>{{ __('account.relationships.pending_invitations_operator') }}</th>
+                                                <th style="width: 3rem;"></th>
+                                                <th>{{ __('account.relationships.columns.counterpart') }}</th>
+                                                <th>{{ __('account.relationships.columns.type') }}</th>
                                                 <th>{{ __('account.relationships.pending_invitations_contact') }}</th>
                                                 <th>{{ __('account.relationships.pending_invitations_expires_label') }}</th>
-                                                <th class="text-end">{{ __('account.relationships.columns.actions') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach ($pendingIncomingInvitations as $incoming)
                                                 @php
-                                                    $operatorAccount = $incoming->accountInviting ?? $incoming->account;
-                                                    $operatorLabel = $operatorAccount
-                                                        ? ($operatorAccount->commercial_name ?? $operatorAccount->name ?? '#'.$operatorAccount->id)
+                                                    $fromAccount = $incoming->accountInviting ?? $incoming->account;
+                                                    $fromLabel = $fromAccount
+                                                        ? ($fromAccount->commercial_name ?? $fromAccount->name ?? '#'.$fromAccount->id)
                                                         : '—';
+                                                    $incomingIsSupply = $incoming->purpose === \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY;
                                                 @endphp
                                                 <tr>
-                                                    <td class="fw-medium">{{ $operatorLabel }}</td>
+                                                    <td class="text-nowrap">
+                                                        <div class="dropdown">
+                                                            <a class="btn-link text-muted dropdown-toggle arrow-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="icon icon-xs" data-feather="more-horizontal"></i>
+                                                            </a>
+                                                            <div class="dropdown-menu">
+                                                                <form method="post" action="{{ route('account.relationships.incoming.accept', $incoming) }}">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item">{{ __('account.relationships.pending_invitations_accept') }}</button>
+                                                                </form>
+                                                                <form method="post" action="{{ route('account.relationships.incoming.decline', $incoming) }}" onsubmit="return confirm(@js(__('account.relationships.pending_invitations_decline_confirm')));">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item">{{ __('account.relationships.pending_invitations_decline') }}</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="fw-medium">{{ $fromLabel }}</td>
+                                                    <td>{{ $incomingIsSupply ? __('account.relationships.link_type.supply_buyer') : __('account.relationships.link_type.operator') }}</td>
                                                     <td class="text-muted small">
                                                         {{ $incoming->name }}<br>
                                                         <span class="text-body-secondary">{{ $incoming->email }}</span>
                                                     </td>
                                                     <td class="text-muted small text-nowrap">
                                                         @if ($incoming->expires_at)
-                                                            {{ __('account.relationships.pending_invitations_expires', ['date' => locale_date($incoming->expires_at->timezone(config('app.timezone')))]) }}
+                                                            {{ locale_date($incoming->expires_at->timezone(config('app.timezone'))) }}
                                                         @else
                                                             —
                                                         @endif
                                                     </td>
-                                                    <td class="text-end text-nowrap">
-                                                        @php $relationshipsAs = request('as'); @endphp
-                                                        <form method="post" action="{{ route('account.relationships.incoming.accept', $incoming) }}{{ $relationshipsAs ? '?as='.urlencode((string) $relationshipsAs) : '' }}" class="d-inline">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-primary">{{ __('account.relationships.pending_invitations_accept') }}</button>
-                                                        </form>
-                                                        <form method="post" action="{{ route('account.relationships.incoming.decline', $incoming) }}{{ $relationshipsAs ? '?as='.urlencode((string) $relationshipsAs) : '' }}" class="d-inline ms-1"
-                                                              onsubmit="return confirm(@js(__('account.relationships.pending_invitations_decline_confirm')));">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-outline-secondary">{{ __('account.relationships.pending_invitations_decline') }}</button>
-                                                        </form>
+                                                </tr>
+                                            @endforeach
+                                            @foreach ($pendingOutgoingInvitations ?? [] as $outgoing)
+                                                <tr>
+                                                    <td class="text-nowrap">
+                                                        <div class="dropdown">
+                                                            <a class="btn-link text-muted dropdown-toggle arrow-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="icon icon-xs" data-feather="more-horizontal"></i>
+                                                            </a>
+                                                            <div class="dropdown-menu">
+                                                                <form method="post" action="{{ route('account.provider-supply.outgoing.revoke', $outgoing) }}" onsubmit="return confirm(@js(__('account.provider_supply.revoke_confirm')));">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item text-danger">{{ __('account.provider_supply.action_revoke') }}</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="fw-medium">{{ $outgoing->company_name ?: '—' }}</td>
+                                                    <td>{{ __('account.relationships.link_type.supply_supplier') }} <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ __('account.relationships.pending_direction_out') }}</span></td>
+                                                    <td class="text-muted small">
+                                                        {{ $outgoing->name }}<br>
+                                                        <span class="text-body-secondary">{{ $outgoing->email }}</span>
+                                                    </td>
+                                                    <td class="text-muted small text-nowrap">
+                                                        @if ($outgoing->expires_at)
+                                                            {{ locale_date($outgoing->expires_at->timezone(config('app.timezone'))) }}
+                                                        @else
+                                                            —
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -99,66 +136,32 @@
                 </div>
             @endif
 
-            @if (($perspective ?? '') === 'operator' && ($operatorTab ?? null) !== null)
-                @php
-                    $relationshipsTabQuery = array_filter([
-                        'as' => request('as'),
-                    ]);
-                @endphp
-                <div class="row mt-3">
-                    <div class="col-lg-12">
-                        <ul class="nav nav-pills mb-0 gap-2">
-                            <li class="nav-item">
-                                <a
-                                    class="nav-link @if ($operatorTab === 'providers') active @endif"
-                                    href="{{ route('account.relationships.index', array_merge($relationshipsTabQuery, ['tab' => 'providers'])) }}"
-                                >
-                                    {{ __('account.relationships.tab_providers') }}
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a
-                                    class="nav-link @if ($operatorTab === 'agencies') active @endif"
-                                    href="{{ route('account.relationships.index', array_merge($relationshipsTabQuery, ['tab' => 'agencies'])) }}"
-                                >
-                                    {{ __('account.relationships.tab_agencies') }}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            @endif
-
             <div class="row mt-4">
                 <div class="col-lg-12">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             @if ($rows->isEmpty())
-                                <p class="text-muted mb-2">
-                                    {{ ($perspective ?? '') === 'operator' && ($operatorTab ?? null) === 'agencies'
-                                        ? __('account.relationships.empty_agencies')
-                                        : (($perspective ?? '') === 'operator' && ($operatorTab ?? null) === 'providers'
-                                            ? __('account.relationships.empty_providers')
-                                            : __('account.relationships.empty')) }}
-                                </p>
-                                @if (($perspective ?? '') === 'operator')
-                                    <a href="{{ route('account.invitations.company') }}" class="btn btn-outline-primary btn-sm">
-                                        {{ __('account.relationships.invite_company') }}
-                                    </a>
-                                @elseif (($perspective ?? '') !== 'agency')
-                                    <a href="{{ route('account.invitations.company') }}" class="btn btn-outline-primary btn-sm">
-                                        {{ __('account.relationships.empty_invite') }}
-                                    </a>
-                                @endif
+                                <p class="text-muted mb-2">{{ __('account.relationships.empty') }}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @if ($canInviteProvider ?? false)
+                                        <a href="{{ route('account.invitations.company', ['as' => 'provider']) }}" class="btn btn-outline-primary btn-sm">
+                                            {{ __('account.provider_supply.invite') }}
+                                        </a>
+                                    @endif
+                                    @if ($canInviteOperator ?? false)
+                                        <a href="{{ route('account.invitations.company') }}" class="btn btn-outline-primary btn-sm">
+                                            {{ __('account.relationships.invite_company') }}
+                                        </a>
+                                    @endif
+                                </div>
                             @else
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
                                         <thead>
                                             <tr>
-                                                @if ($showRoleColumn)
-                                                    <th>{{ __('account.relationships.columns.role') }}</th>
-                                                @endif
+                                                <th style="width: 3rem;"></th>
                                                 <th>{{ __('account.relationships.columns.counterpart') }}</th>
+                                                <th>{{ __('account.relationships.columns.type') }}</th>
                                                 <th>{{ __('account.relationships.columns.status') }}</th>
                                                 <th>{{ __('account.relationships.columns.created_via') }}</th>
                                                 <th>{{ __('account.relationships.columns.approved_at') }}</th>
@@ -168,7 +171,6 @@
                                                         <div class="small fw-normal text-muted">{{ __('account.relationships.catalog_coverage_ratio') }}</div>
                                                     </th>
                                                 @endif
-                                                <th class="text-end">{{ __('account.relationships.columns.actions') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -176,17 +178,72 @@
                                                 @php
                                                     $relationship = $row['relationship'];
                                                     $status = (string) $relationship->status;
+                                                    $linkKind = (string) ($row['link_kind'] ?? '');
                                                     $statusClass = match ($status) {
                                                         'approved' => 'bg-success-subtle text-success-emphasis border border-success-subtle',
                                                         'suspended' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                                                         default => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
                                                     };
+                                                    $typeKey = match ($linkKind) {
+                                                        'sells_to_agency' => 'agency',
+                                                        'buys_from_provider' => 'provider',
+                                                        'supply_supplier' => 'supply_supplier',
+                                                        'supply_buyer' => 'supply_buyer',
+                                                        default => 'operator',
+                                                    };
                                                 @endphp
                                                 <tr>
-                                                    @if ($showRoleColumn)
-                                                        <td>{{ __('account.relationships.role.' . $row['viewer_role']) }}</td>
-                                                    @endif
-                                                    <td class="fw-medium">{{ $row['counterpart_label'] }}</td>
+                                                    <td class="text-nowrap">
+                                                        @if ($status === 'approved')
+                                                            <div class="dropdown">
+                                                                <a class="btn-link text-muted dropdown-toggle arrow-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                    <i class="icon icon-xs" data-feather="more-horizontal"></i>
+                                                                </a>
+                                                                <div class="dropdown-menu">
+                                                                    @if ($linkKind === 'sells_to_operator')
+                                                                        <a class="dropdown-item" href="{{ route('account.service-offers.operators.edit', $row['counterpart']) }}">
+                                                                            {{ __('account.relationships.actions.manage_offers') }}
+                                                                        </a>
+                                                                    @endif
+                                                                    @if ($linkKind === 'sells_as_agency' || ($linkKind === 'sells_to_operator' && ($row['also_agency'] ?? false)))
+                                                                        <a class="dropdown-item" href="{{ route('account.package-offers.index', ['as' => 'agency']) }}">
+                                                                            {{ __('account.relationships.actions.view_package_offers') }}
+                                                                        </a>
+                                                                    @endif
+                                                                    @if ($linkKind === 'buys_from_provider')
+                                                                        <a class="dropdown-item" href="{{ route('account.service-offers.index', ['as' => 'operator']) }}">
+                                                                            {{ __('account.relationships.actions.view_offers') }}
+                                                                        </a>
+                                                                    @endif
+                                                                    @if ($linkKind === 'sells_to_agency')
+                                                                        <a class="dropdown-item" href="{{ route('account.package-offers.agencies.edit', $row['counterpart']) }}">
+                                                                            {{ __('account.relationships.actions.manage_package_offers') }}
+                                                                        </a>
+                                                                    @endif
+                                                                    @if ($linkKind === 'supply_supplier')
+                                                                        <a class="dropdown-item" href="{{ route('account.provider-supply.offers.review', $row['counterpart']) }}">
+                                                                            {{ __('account.provider_supply.action_review_offers') }}
+                                                                        </a>
+                                                                    @endif
+                                                                    @if ($linkKind === 'supply_buyer')
+                                                                        <a class="dropdown-item" href="{{ route('account.provider-supply.offers.edit', $row['counterpart']) }}">
+                                                                            {{ __('account.provider_supply.action_offer') }}
+                                                                        </a>
+                                                                        <a class="dropdown-item" href="{{ route('account.provider-supply.price-list.edit', $row['counterpart']) }}">
+                                                                            {{ __('account.provider_supply.action_price_list') }}
+                                                                        </a>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{ $row['counterpart_label'] }}
+                                                        @if (($row['pending_offers'] ?? 0) > 0)
+                                                            <div class="small text-warning-emphasis">{{ __('account.relationships.pending_offers_count', ['count' => $row['pending_offers']]) }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ __('account.relationships.link_type.'.$typeKey) }}</td>
                                                     <td>
                                                         <span class="badge {{ $statusClass }}">
                                                             {{ __('account.relationships.status.' . $status) }}
@@ -203,35 +260,20 @@
                                                         @endif
                                                     </td>
                                                     @if ($showCatalogCoverage ?? false)
-                                                        @php
-                                                            $catalogAccepted = (int) ($row['catalog_accepted'] ?? 0);
-                                                            $catalogTotal = (int) ($row['catalog_total'] ?? 0);
-                                                        @endphp
                                                         <td class="text-center text-nowrap">
-                                                            <span title="{{ __('account.relationships.catalog_coverage_hint', ['accepted' => $catalogAccepted, 'total' => $catalogTotal]) }}">
-                                                                {{ $catalogAccepted }} / {{ $catalogTotal }}
-                                                            </span>
+                                                            @if ($linkKind === 'buys_from_provider')
+                                                                @php
+                                                                    $catalogAccepted = (int) ($row['catalog_accepted'] ?? 0);
+                                                                    $catalogTotal = (int) ($row['catalog_total'] ?? 0);
+                                                                @endphp
+                                                                <span title="{{ __('account.relationships.catalog_coverage_hint', ['accepted' => $catalogAccepted, 'total' => $catalogTotal]) }}">
+                                                                    {{ $catalogAccepted }} / {{ $catalogTotal }}
+                                                                </span>
+                                                            @else
+                                                                —
+                                                            @endif
                                                         </td>
                                                     @endif
-                                                    <td class="text-end">
-                                                        @if ($status === 'approved' && $row['viewer_role'] === 'provider')
-                                                            <a href="{{ route('account.service-offers.operators.edit', $row['counterpart']) }}" class="btn btn-sm btn-primary">
-                                                                {{ __('account.relationships.actions.manage_offers') }}
-                                                            </a>
-                                                        @elseif ($status === 'approved' && $row['viewer_role'] === 'operator' && ($row['counterpart_kind'] ?? '') === 'provider')
-                                                            <a href="{{ route('account.service-offers.index', ['as' => 'operator']) }}" class="btn btn-sm btn-outline-primary">
-                                                                {{ __('account.relationships.actions.view_offers') }}
-                                                            </a>
-                                                        @elseif ($status === 'approved' && $row['viewer_role'] === 'operator' && ($row['counterpart_kind'] ?? '') === 'agency')
-                                                            <a href="{{ route('account.package-offers.agencies.edit', $row['counterpart']) }}" class="btn btn-sm btn-primary">
-                                                                {{ __('account.relationships.actions.manage_package_offers') }}
-                                                            </a>
-                                                        @elseif ($status === 'approved' && $row['viewer_role'] === 'agency')
-                                                            <a href="{{ route('account.package-offers.index', ['as' => 'agency']) }}" class="btn btn-sm btn-outline-primary">
-                                                                {{ __('account.relationships.actions.view_package_offers') }}
-                                                            </a>
-                                                        @endif
-                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>

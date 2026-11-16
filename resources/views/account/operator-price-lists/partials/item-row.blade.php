@@ -11,7 +11,11 @@
         default => (string) $rawPricingMode,
     };
 @endphp
-<tr class="price-list-item-row" data-role="price-list-item-row">
+<tr
+    class="price-list-item-row @if (! empty($item['suggested'])) table-warning @endif"
+    data-role="price-list-item-row"
+    @if (! empty($item['suggested'])) data-suggested-line="1" @endif
+>
     <td class="position-relative" style="min-width: 18rem;">
         <input
             type="text"

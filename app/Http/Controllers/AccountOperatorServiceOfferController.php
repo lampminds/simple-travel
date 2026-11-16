@@ -11,6 +11,7 @@ use App\Services\OperatorDirectServiceCatalogService;
 use App\Services\OperatorPassengerPricingSummary;
 use App\Services\OperatorPreviewLocalePriceService;
 use App\Services\OperatorVariantPriceResolver;
+use App\Services\ProviderSupplyComponentHealth;
 use App\Services\ServiceOfferPreviewPdfGenerator;
 use App\Services\ServiceOfferSyncService;
 use Illuminate\Database\Eloquent\Builder;
@@ -121,13 +122,28 @@ final class AccountOperatorServiceOfferController extends Controller
         return $priceResolver->resolve($variant, $providerId, $operatorAccountId);
     }
 
-    public function accept(Request $request, ServiceOffer $offer, ServiceOfferSyncService $serviceOfferSync): RedirectResponse
-    {
+    public function accept(
+        Request $request,
+        ServiceOffer $offer,
+        ServiceOfferSyncService $serviceOfferSync,
+        ProviderSupplyComponentHealth $comboHealth,
+    ): RedirectResponse {
         $account = $this->resolveOperatorAccount($request);
         $this->assertOfferForOperator($offer, $account->id);
 
         $user = $request->user();
         abort_unless($user !== null, 401);
+
+        $offer->loadMissing([
+            'serviceVariant.service.serviceType',
+            'serviceVariant.components.childVariant.service',
+        ]);
+        $variant = $offer->serviceVariant;
+        if ($variant instanceof \App\Models\ServiceVariant && ! $comboHealth->isSellable($variant)) {
+            return redirect()
+                ->back()
+                ->withErrors(['offer' => __('account.provider_supply.operator_accept_blocked')]);
+        }
 
         $offer->update([
             'status' => ServiceOffer::STATUS_ACCEPTED,

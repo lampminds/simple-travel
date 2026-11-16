@@ -105,6 +105,9 @@ final class PackageOfferPreviewBuilder
             'items.serviceVariant.features.translations.language.locale',
             'items.serviceVariant.service.features.serviceFeatureCategory.translations.language.locale',
             'items.serviceVariant.service.features.translations.language.locale',
+            'items.serviceVariant.paxBands',
+            'items.service.passengerPolicy.rules',
+            'items.serviceVariant.service.passengerPolicy.rules',
             'items.conditionOverrides.translations.language.locale',
             'conditionOverrides.translations.language.locale',
         ]);
@@ -129,6 +132,60 @@ final class PackageOfferPreviewBuilder
             'conditions' => $conditionRows,
             'hero_images' => $heroImages,
             'galleries' => $galleries,
+            'passenger_pricing' => $this->passengerPricingNotice($catalog),
+        ];
+    }
+
+    /**
+     * Included lines that carry a passenger-category policy or party-size bands.
+     * The sheet shows a notice only; the fare table stays out of this layout.
+     *
+     * @return array{by_passenger_type: bool, by_group: bool, services: list<string>}|null
+     */
+    private function passengerPricingNotice(OperatorServiceCatalog $catalog): ?array
+    {
+        $byPassengerType = false;
+        $byGroup = false;
+        $services = [];
+
+        foreach ($catalog->items->sortBy(['sort_order', 'id']) as $item) {
+            if (! $item instanceof OperatorPackageItem || $item->inclusion_mode !== 'included') {
+                continue;
+            }
+
+            $variant = $item->serviceVariant;
+            $service = $item->service instanceof Service
+                ? $item->service
+                : ($variant instanceof ServiceVariant ? $variant->service : null);
+
+            $hasGroup = $variant instanceof ServiceVariant && $variant->paxBands->isNotEmpty();
+            $rules = $service instanceof Service ? $service->passengerPolicy?->rules : null;
+            $hasPassengerType = $rules !== null && $rules->isNotEmpty();
+
+            if (! $hasGroup && ! $hasPassengerType) {
+                continue;
+            }
+
+            $byGroup = $byGroup || $hasGroup;
+            $byPassengerType = $byPassengerType || $hasPassengerType;
+
+            $name = trim((string) ($service?->name ?? ''));
+            if ($name === '') {
+                $name = trim((string) ($variant?->sku ?? ''));
+            }
+            if ($name !== '' && ! in_array($name, $services, true)) {
+                $services[] = $name;
+            }
+        }
+
+        if (! $byPassengerType && ! $byGroup) {
+            return null;
+        }
+
+        return [
+            'by_passenger_type' => $byPassengerType,
+            'by_group' => $byGroup,
+            'services' => $services,
         ];
     }
 

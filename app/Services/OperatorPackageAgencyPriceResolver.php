@@ -366,7 +366,7 @@ final class OperatorPackageAgencyPriceResolver
     /**
      * Human-readable blockers when no price list can be used to propose this package.
      *
-     * @return list<string>
+     * @return list<array{text: string, url?: string, link_label?: string}>
      */
     public function ineligibilityMessages(
         OperatorServiceCatalog $package,
@@ -385,7 +385,9 @@ final class OperatorPackageAgencyPriceResolver
             ->get();
 
         if ($assignedLists->isEmpty()) {
-            $messages[] = (string) __('account.package_offers.blockers.no_assignment');
+            $messages[] = [
+                'text' => (string) __('account.package_offers.blockers.no_assignment'),
+            ];
 
             return $messages;
         }
@@ -395,7 +397,9 @@ final class OperatorPackageAgencyPriceResolver
             ->filter(fn (OperatorPackageItem $item): bool => $item->inclusion_mode === 'included');
 
         if ($includedItems->isEmpty()) {
-            $messages[] = (string) __('account.package_offers.blockers.no_included_items');
+            $messages[] = [
+                'text' => (string) __('account.package_offers.blockers.no_included_items'),
+            ];
 
             return $messages;
         }
@@ -406,7 +410,9 @@ final class OperatorPackageAgencyPriceResolver
             $listLabel = $list->name !== '' ? $list->name : ('#'.$list->id);
 
             if (! $list->is_active) {
-                $listIssues[] = __('account.package_offers.blockers.list_inactive', ['list' => $listLabel]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.list_inactive', ['list' => $listLabel]),
+                ];
 
                 continue;
             }
@@ -417,13 +423,17 @@ final class OperatorPackageAgencyPriceResolver
             }
 
             if (! $assignment->is_active) {
-                $listIssues[] = __('account.package_offers.blockers.assignment_inactive', ['list' => $listLabel]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.assignment_inactive', ['list' => $listLabel]),
+                ];
 
                 continue;
             }
 
             if (! $this->assignmentIsValidOnDate($assignment, $pricingDate)) {
-                $listIssues[] = __('account.package_offers.blockers.assignment_outside_dates', ['list' => $listLabel]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.assignment_outside_dates', ['list' => $listLabel]),
+                ];
 
                 continue;
             }
@@ -441,10 +451,18 @@ final class OperatorPackageAgencyPriceResolver
             }
 
             if ($missingLines !== []) {
-                $listIssues[] = __('account.package_offers.blockers.missing_package_lines', [
-                    'list' => $listLabel,
-                    'count' => count($missingLines),
-                ]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.missing_package_lines', [
+                        'list' => $listLabel,
+                        'count' => count($missingLines),
+                    ]),
+                    'url' => route('account.operator-price-lists.edit', [
+                        'operatorPriceList' => $list,
+                        'tab' => 'items',
+                        'add_items' => implode(',', $missingLines),
+                    ]),
+                    'link_label' => (string) __('account.package_offers.blockers.missing_package_lines_link'),
+                ];
 
                 continue;
             }
@@ -458,21 +476,32 @@ final class OperatorPackageAgencyPriceResolver
             );
 
             if (! $resolved['has_amount']) {
-                $listIssues[] = __('account.package_offers.blockers.price_not_computable', ['list' => $listLabel]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.price_not_computable', ['list' => $listLabel]),
+                ];
 
                 continue;
             }
 
             if ($resolved['is_zero']) {
-                $listIssues[] = __('account.package_offers.blockers.zero_total', ['list' => $listLabel]);
+                $listIssues[] = [
+                    'text' => (string) __('account.package_offers.blockers.zero_total', ['list' => $listLabel]),
+                ];
             }
         }
 
         if ($listIssues === []) {
-            $messages[] = (string) __('account.package_offers.blockers.unknown');
+            $messages[] = [
+                'text' => (string) __('account.package_offers.blockers.unknown'),
+            ];
         } else {
-            foreach (array_unique($listIssues) as $issue) {
-                $messages[] = (string) $issue;
+            $seen = [];
+            foreach ($listIssues as $issue) {
+                if (isset($seen[$issue['text']])) {
+                    continue;
+                }
+                $seen[$issue['text']] = true;
+                $messages[] = $issue;
             }
         }
 

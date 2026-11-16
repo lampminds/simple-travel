@@ -419,6 +419,78 @@ class CatMenuTranslationsTableSeeder extends Seeder
                 'name' => 'Servicios por paquete',
                 'tip' => 'Consulta en qué paquetes comerciales está incluido cada servicio de prestador aceptado.',
             ),
+            50 => 
+            array (
+                'id' => 56,
+                'menu_id' => 35,
+                'language_id' => 1,
+                'name' => 'Reservations',
+                'tip' => 'Receive and manage bookings for your services.',
+            ),
+            51 => 
+            array (
+                'id' => 57,
+                'menu_id' => 35,
+                'language_id' => 2,
+                'name' => 'Reservas',
+                'tip' => 'Recibe y gestiona las reservas de tus servicios.',
+            ),
+            52 => 
+            array (
+                'id' => 58,
+                'menu_id' => 35,
+                'language_id' => 3,
+                'name' => 'Reservas',
+                'tip' => 'Receba e gerencie as reservas dos seus serviços.',
+            ),
+            53 => 
+            array (
+                'id' => 59,
+                'menu_id' => 36,
+                'language_id' => 1,
+                'name' => 'Booking details',
+                'tip' => 'Define the extra details each service asks for when it is booked.',
+            ),
+            54 => 
+            array (
+                'id' => 60,
+                'menu_id' => 36,
+                'language_id' => 2,
+                'name' => 'Datos de reservas',
+                'tip' => 'Define los datos extra que cada servicio pide al reservar.',
+            ),
+            55 => 
+            array (
+                'id' => 61,
+                'menu_id' => 36,
+                'language_id' => 3,
+                'name' => 'Dados da reserva',
+                'tip' => 'Defina os dados extras que cada serviço pede ao reservar.',
+            ),
+            56 => 
+            array (
+                'id' => 62,
+                'menu_id' => 37,
+                'language_id' => 1,
+                'name' => 'Passenger policies',
+                'tip' => 'Define age policies and assign them to your services.',
+            ),
+            57 => 
+            array (
+                'id' => 63,
+                'menu_id' => 37,
+                'language_id' => 2,
+                'name' => 'Políticas de pasajeros',
+                'tip' => 'Define las edades de cada política y asígnalas a tus servicios.',
+            ),
+            58 => 
+            array (
+                'id' => 64,
+                'menu_id' => 37,
+                'language_id' => 3,
+                'name' => 'Políticas de passageiros',
+                'tip' => 'Defina as idades de cada política e atribua-as aos seus serviços.',
+            ),
         ));
         
         

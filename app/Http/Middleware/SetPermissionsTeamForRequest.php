@@ -40,7 +40,14 @@ class SetPermissionsTeamForRequest
         $routeName = (string) optional($request->route())->getName();
         if (
             $requiresSelection
-            && ! in_array($routeName, ['account.select', 'account.switch', 'logout'], true)
+            && ! in_array($routeName, [
+                'account.select',
+                'account.switch',
+                'logout',
+                'invitations.accept',
+                'invitations.accept.leave',
+                'invitations.accept.switch',
+            ], true)
         ) {
             return redirect()->route('account.select');
         }

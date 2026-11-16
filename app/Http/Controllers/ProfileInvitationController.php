@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\AccountPerson;
 use App\Models\ContactDepartment;
 use App\Models\ContactPosition;
@@ -12,6 +13,7 @@ use App\Models\UserInvitation;
 use App\Notifications\UserInvitationNotification;
 use App\Services\ExternalCompanyInvitationService;
 use App\Services\PendingInvitationUserCleanup;
+use App\Services\ProviderSupplyInvitationService;
 use App\Services\ReplicateDefaultRolesToAccountService;
 use App\Support\CurrentAccountSession;
 use Illuminate\Http\RedirectResponse;
@@ -124,6 +126,11 @@ class ProfileInvitationController extends Controller
                 ->get();
         }
 
+        $typeCodes = $this->activeBusinessTypeCodes((int) $accountId);
+        $canInviteAsOperator = $typeCodes->contains('operator');
+        $canInviteProviderSupply = $typeCodes->contains('provider');
+        $invitePurpose = $this->selectedInvitePurpose($request, $canInviteAsOperator, $canInviteProviderSupply);
+
         return view('account.invitations', [
             'invitations' => $invitations,
             'invitationExpirationDays' => $this->parameterReader->invitationExpirationDays($accountId),
@@ -142,6 +149,9 @@ class ProfileInvitationController extends Controller
             'targetAccountChoices' => $invitationType === UserInvitation::TYPE_EXTERNAL
                 ? session('external_invite_account_choices', [])
                 : [],
+            'canInviteAsOperator' => $canInviteAsOperator,
+            'canInviteProviderSupply' => $canInviteProviderSupply,
+            'invitePurpose' => $invitePurpose,
         ]);
     }
 
@@ -245,6 +255,10 @@ class ProfileInvitationController extends Controller
         }
 
         UserInvitation::syncExpiredForAccount($accountId);
+
+        if ($invitationType === UserInvitation::TYPE_EXTERNAL && $this->shouldInviteProviderSupply($request, (int) $accountId)) {
+            return $this->storeProviderSupplyInvitation($request, (int) $accountId, $user);
+        }
 
         if ($invitationType === UserInvitation::TYPE_INTERNAL) {
             $this->cleanupStaleInternalStubFromRequest($request, (int) $accountId);
@@ -630,6 +644,104 @@ class ProfileInvitationController extends Controller
                 ['status' => $returnStatus]
             )
             ->with('status', __('invitations.resent'));
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, string>
+     */
+    private function activeBusinessTypeCodes(int $accountId): \Illuminate\Support\Collection
+    {
+        $account = Account::query()->find($accountId);
+        if ($account === null) {
+            return collect();
+        }
+
+        return $account->accountTypes()
+            ->where('cat_account_types.active', true)
+            ->pluck('cat_account_types.code')
+            ->map(fn ($code) => (string) $code);
+    }
+
+    private function selectedInvitePurpose(Request $request, bool $canInviteAsOperator, bool $canInviteProviderSupply): string
+    {
+        $old = (string) old('invite_purpose', '');
+        if ($old === UserInvitation::PURPOSE_PROVIDER_SUPPLY && $canInviteProviderSupply) {
+            return UserInvitation::PURPOSE_PROVIDER_SUPPLY;
+        }
+
+        if ($old === 'commercial' && $canInviteAsOperator) {
+            return 'commercial';
+        }
+
+        $requested = (string) $request->query('as', '');
+        if ($requested === 'provider' && $canInviteProviderSupply) {
+            return UserInvitation::PURPOSE_PROVIDER_SUPPLY;
+        }
+
+        if ($requested === 'operator' && $canInviteAsOperator) {
+            return 'commercial';
+        }
+
+        if ($canInviteProviderSupply && ! $canInviteAsOperator) {
+            return UserInvitation::PURPOSE_PROVIDER_SUPPLY;
+        }
+
+        return 'commercial';
+    }
+
+    private function shouldInviteProviderSupply(Request $request, int $accountId): bool
+    {
+        $codes = $this->activeBusinessTypeCodes($accountId);
+        if (! $codes->contains('provider')) {
+            if ((string) $request->input('invite_purpose') === UserInvitation::PURPOSE_PROVIDER_SUPPLY) {
+                abort(403);
+            }
+
+            return false;
+        }
+
+        if (! $codes->contains('operator')) {
+            return true;
+        }
+
+        $purpose = (string) $request->input('invite_purpose', '');
+        if (! in_array($purpose, ['commercial', UserInvitation::PURPOSE_PROVIDER_SUPPLY], true)) {
+            throw ValidationException::withMessages([
+                'invite_purpose' => __('invitations.invite_purpose_required'),
+            ]);
+        }
+
+        return $purpose === UserInvitation::PURPOSE_PROVIDER_SUPPLY;
+    }
+
+    private function storeProviderSupplyInvitation(Request $request, int $accountId, \App\Models\User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'company_name' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'invited_account_id' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $result = app(ProviderSupplyInvitationService::class)->send(
+            buyerAccountId: $accountId,
+            invitedByUserId: (int) $user->id,
+            name: (string) $validated['name'],
+            email: (string) $validated['email'],
+            companyName: isset($validated['company_name']) ? (string) $validated['company_name'] : null,
+            selectedAccountId: isset($validated['invited_account_id']) ? (int) $validated['invited_account_id'] : null,
+        );
+
+        if ($result['outcome'] === ProviderSupplyInvitationService::OUTCOME_CHOOSE) {
+            return redirect()
+                ->route('account.invitations.company', ['as' => 'provider'])
+                ->withInput($request->only(['name', 'email', 'company_name', 'invite_purpose']))
+                ->with('external_invite_account_choices', $result['choices'] ?? []);
+        }
+
+        return redirect()
+            ->route('account.invitations.company', ['as' => 'provider', 'status' => UserInvitation::STATUS_PENDING])
+            ->with('status', __('account.provider_supply.invite_sent'));
     }
 
 }

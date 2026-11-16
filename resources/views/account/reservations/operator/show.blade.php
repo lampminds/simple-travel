@@ -38,10 +38,7 @@
                                     —
                                     {{ locale_date($booking->travel_end_date) }}
                                 </dd>
-                                <dt class="col-sm-4">{{ __('account.reservations.show_passengers') }}</dt>
-                                <dd class="col-sm-8">
-                                    {{ \App\Support\BookingPassengersSnapshot::formatSummary($booking->passengers_snapshot) }}
-                                </dd>
+                                @include('account.reservations.partials.field-answers', ['booking' => $booking, 'fieldAnswers' => $fieldAnswers])
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_status') }}</dt>
                                 <dd class="col-sm-8">{{ $booking->status?->displayLabel() ?? '—' }}</dd>
                                 <dt class="col-sm-4">{{ __('account.package_offers.agency_index_col_price') }}</dt>

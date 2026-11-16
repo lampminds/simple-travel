@@ -144,6 +144,13 @@ class Service extends Model implements HasMedia
         return $this->belongsTo(ProviderPassengerPolicy::class, 'provider_passenger_policy_id');
     }
 
+    public function bookingFieldAssignments(): HasMany
+    {
+        return $this->hasMany(ServiceBookingFieldAssignment::class)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     /** Whether this service is a combo (parent) service. */
     public function isCombo(): bool
     {

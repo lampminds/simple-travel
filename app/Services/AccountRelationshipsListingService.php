@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\AccountRelationship;
+use App\Models\ProviderServiceOffer;
+use App\Models\ProviderSupplyRelationship;
 use App\Models\Service;
 use App\Models\ServiceOffer;
 use App\Models\ServiceVariant;
@@ -82,6 +84,82 @@ final class AccountRelationshipsListingService
     }
 
     /**
+     * Commercial links and provider-to-provider links in one list.
+     *
+     * Each row is one relationship. The same company can appear more than once
+     * when the link type is different (operator, agency, or provider supply).
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function unifiedForAccount(Account $account): Collection
+    {
+        $accountId = (int) $account->id;
+        $typeCodes = $account->accountTypes()
+            ->where('cat_account_types.active', true)
+            ->pluck('cat_account_types.code');
+        $hasProvider = $typeCodes->contains('provider');
+        $hasAgency = $typeCodes->contains('agency');
+
+        $rows = $this->forAccount($accountId)->map(function (array $row) use ($accountId, $hasProvider, $hasAgency): array {
+            $relationship = $row['relationship'];
+            $isSellingSide = (int) $relationship->provider_account_id === $accountId;
+
+            if ($isSellingSide && $hasAgency && ! $hasProvider) {
+                $row['link_kind'] = 'sells_as_agency';
+                $row['viewer_role'] = 'agency';
+            } elseif ($isSellingSide) {
+                $row['link_kind'] = 'sells_to_operator';
+                $row['viewer_role'] = 'provider';
+                $row['also_agency'] = $hasAgency;
+            } elseif (($row['counterpart_kind'] ?? '') === 'agency') {
+                $row['link_kind'] = 'sells_to_agency';
+                $row['viewer_role'] = 'operator';
+            } else {
+                $row['link_kind'] = 'buys_from_provider';
+                $row['viewer_role'] = 'operator';
+            }
+
+            $row['pending_offers'] = 0;
+
+            return $row;
+        });
+
+        if ($hasProvider) {
+            $rows = $rows->concat($this->supplyRows($accountId));
+        }
+
+        return $rows
+            ->sortBy([
+                fn (array $row): int => match ((string) $row['relationship']->status) {
+                    'approved' => 0,
+                    'suspended' => 1,
+                    default => 2,
+                },
+                fn (array $row): string => mb_strtolower((string) $row['counterpart_label']),
+            ])
+            ->values();
+    }
+
+    /**
+     * Pending supply invitations this account sent and has not resolved yet.
+     *
+     * @return Collection<int, UserInvitation>
+     */
+    public function pendingOutgoingSupplyInvitations(int $accountId): Collection
+    {
+        UserInvitation::syncExpiredForAccount($accountId);
+
+        return UserInvitation::query()
+            ->where('account_id', $accountId)
+            ->where('purpose', UserInvitation::PURPOSE_PROVIDER_SUPPLY)
+            ->where('status', UserInvitation::STATUS_PENDING)
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '>', now())
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /**
      * Accepted services and combos versus the provider catalog, for one operator.
      *
      * A catalog item counts as accepted when at least one of its variants has an
@@ -134,7 +212,8 @@ final class AccountRelationshipsListingService
             ->where('expires_at', '>', now())
             ->with(['accountInviting', 'account', 'invitedBy'])
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->values();
     }
 
     public function accountDisplayName(Account $account): string
@@ -146,6 +225,61 @@ final class AccountRelationshipsListingService
         }
 
         return '#'.$account->id;
+    }
+
+    /**
+     * @return Collection<int, array<string, mixed>>
+     */
+    private function supplyRows(int $accountId): Collection
+    {
+        $relationships = ProviderSupplyRelationship::query()
+            ->where(function ($query) use ($accountId): void {
+                $query->where('buyer_account_id', $accountId)
+                    ->orWhere('supplier_account_id', $accountId);
+            })
+            ->with(['buyerAccount.accountTypes', 'supplierAccount.accountTypes'])
+            ->get();
+
+        $supplierIds = $relationships
+            ->filter(fn (ProviderSupplyRelationship $relationship): bool => (int) $relationship->buyer_account_id === $accountId)
+            ->map(fn (ProviderSupplyRelationship $relationship): int => (int) $relationship->supplier_account_id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $pendingOffers = $supplierIds === []
+            ? collect()
+            : ProviderServiceOffer::query()
+                ->where('buyer_id', $accountId)
+                ->where('status', ProviderServiceOffer::STATUS_PENDING)
+                ->whereIn('supplier_id', $supplierIds)
+                ->selectRaw('supplier_id, COUNT(*) as aggregate')
+                ->groupBy('supplier_id')
+                ->pluck('aggregate', 'supplier_id');
+
+        return $relationships
+            ->map(function (ProviderSupplyRelationship $relationship) use ($accountId, $pendingOffers): ?array {
+                $isBuyer = (int) $relationship->buyer_account_id === $accountId;
+                $counterpart = $isBuyer ? $relationship->supplierAccount : $relationship->buyerAccount;
+                if (! $counterpart instanceof Account) {
+                    return null;
+                }
+
+                $supplierId = (int) $relationship->supplier_account_id;
+
+                return [
+                    'relationship' => $relationship,
+                    'viewer_role' => $isBuyer ? 'supply_buyer' : 'supply_supplier',
+                    'counterpart' => $counterpart,
+                    'counterpart_label' => $this->accountDisplayName($counterpart),
+                    'counterpart_kind' => 'supply',
+                    'link_kind' => $isBuyer ? 'supply_supplier' : 'supply_buyer',
+                    'also_agency' => false,
+                    'pending_offers' => $isBuyer ? (int) ($pendingOffers[$supplierId] ?? 0) : 0,
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     private function normalizePerspective(?string $perspective): ?string

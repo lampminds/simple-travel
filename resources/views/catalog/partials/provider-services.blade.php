@@ -12,7 +12,14 @@
 @unless ($hideOwnServicesHeadingAndList)
     <div id="provider-services-list" class="row mt-4" tabindex="-1">
         <div class="col-lg-12">
-            <h4 class="h5 mb-3">{{ $servicesSectionTitle ?? __('wizard.provider_services_title') }}</h4>
+            <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-2 mb-3">
+                <h4 class="h5 mb-0">{{ $servicesSectionTitle ?? __('wizard.provider_services_title') }}</h4>
+                @if ($showBookingFieldsLink ?? false)
+                    <a class="btn btn-outline-primary btn-sm" href="{{ route('account.booking-fields.index') }}">
+                        {{ __('account.booking_fields.provider_link') }}
+                    </a>
+                @endif
+            </div>
 
             @if ($services->isEmpty())
                 <div class="alert alert-light border mb-3" role="status">

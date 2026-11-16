@@ -1,4 +1,7 @@
-<div>
+<div
+    x-data
+    x-on:visibilitychange.window="if (document.visibilityState === 'visible') $wire.$refresh()"
+>
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label required-label d-inline-flex align-items-center gap-1">
@@ -90,7 +93,15 @@
         </div>
 
         <div class="col-md-6">
-            <label class="form-label" for="passenger-policy">{{ __('wizard.step2_fields.passenger_policy') }}</label>
+            <div class="d-flex align-items-baseline justify-content-between gap-2">
+                <label class="form-label mb-1" for="passenger-policy">{{ __('wizard.step2_fields.passenger_policy') }}</label>
+                <a
+                    href="{{ route('account.passenger-policies.index') }}"
+                    class="small text-nowrap mb-1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >{{ __('wizard.step2_fields.go_to_passenger_policies') }}</a>
+            </div>
             <select class="form-select @error('form.provider_passenger_policy_id') is-invalid @enderror" id="passenger-policy" wire:model.live="form.provider_passenger_policy_id">
                 <option value="">{{ __('wizard.step2_fields.passenger_policy_none') }}</option>
                 @foreach ($passengerPolicies as $policy)

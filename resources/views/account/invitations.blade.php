@@ -22,10 +22,14 @@
                 <div class="col-lg-12">
                     <x-account-page-header
                         :title="($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
-                            ? __('invitations.section_title_company')
+                            ? ((($invitePurpose ?? '') === \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY)
+                                ? __('invitations.section_title_provider_supply')
+                                : __('invitations.section_title_company'))
                             : __('invitations.section_title_employee')"
                         :instructions="($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL
-                            ? __('invitations.section_intro_external', ['days' => $invitationExpirationDays ?? 7])
+                            ? ((($invitePurpose ?? '') === \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY)
+                                ? __('invitations.section_intro_provider_supply', ['days' => $invitationExpirationDays ?? 7])
+                                : __('invitations.section_intro_external', ['days' => $invitationExpirationDays ?? 7]))
                             : __('invitations.section_intro_internal', ['days' => $invitationExpirationDays ?? 7])"
                     />
                 </div>
@@ -44,6 +48,27 @@
                             </h2>
                             <form method="post" action="{{ route($storeRoute ?? 'account.invitations.store_employee') }}" class="mb-0">
                                 @csrf
+                                @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL && ($canInviteProviderSupply ?? false))
+                                    @php
+                                        $selectedInvitePurpose = old('invite_purpose', $invitePurpose ?? \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY);
+                                    @endphp
+                                    @if ($canInviteAsOperator ?? false)
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-12 col-lg-8">
+                                                <label for="invite_purpose" class="form-label">{{ __('invitations.invite_purpose_label') }}</label>
+                                                <select name="invite_purpose" id="invite_purpose" class="form-select @error('invite_purpose') is-invalid @enderror" required>
+                                                    <option value="commercial" @selected($selectedInvitePurpose === 'commercial')>{{ __('invitations.invite_purpose_operator') }}</option>
+                                                    <option value="{{ \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY }}" @selected($selectedInvitePurpose === \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY)>{{ __('invitations.invite_purpose_provider') }}</option>
+                                                </select>
+                                                <div class="form-text">{{ __('invitations.invite_purpose_provider_help') }}</div>
+                                                <x-form-field-error name="invite_purpose" />
+                                            </div>
+                                        </div>
+                                    @else
+                                        <input type="hidden" name="invite_purpose" value="{{ \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY }}">
+                                        <p class="text-muted small mb-3">{{ __('invitations.invite_purpose_provider_only') }}</p>
+                                    @endif
+                                @endif
                                 <x-form-validation-summary />
                                 <div class="row g-2 align-items-end">
                                     @if (($invitationType ?? \App\Models\UserInvitation::TYPE_INTERNAL) === \App\Models\UserInvitation::TYPE_EXTERNAL)
@@ -224,7 +249,9 @@
                                                     <td>{{ $inv->company_name ?? '—' }}</td>
                                                     <td class="text-nowrap">
                                                         @php $inviteeKind = $inv->resolveInviteeCompanyKind(); @endphp
-                                                        @if ($inviteeKind === 'agency')
+                                                        @if ($inv->purpose === \App\Models\UserInvitation::PURPOSE_PROVIDER_SUPPLY)
+                                                            {{ __('invitations.company_kind_provider_supply') }}
+                                                        @elseif ($inviteeKind === 'agency')
                                                             {{ __('invitations.company_kind_agency') }}
                                                         @elseif ($inviteeKind === 'provider')
                                                             {{ __('invitations.company_kind_provider') }}

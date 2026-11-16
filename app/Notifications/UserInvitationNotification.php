@@ -53,7 +53,9 @@ class UserInvitationNotification extends Notification
             $mailMessage->line(__('invitations.mail.role', ['role' => $roleName]));
         }
 
-        if (! $isInternal) {
+        if (! $isInternal && $invitation->purpose === UserInvitation::PURPOSE_PROVIDER_SUPPLY) {
+            $mailMessage->line(__('invitations.mail.external_provider_supply', ['company' => $accountName]));
+        } elseif (! $isInternal) {
             $mailMessage
                 ->line(__('invitations.mail.external_provider'))
                 ->line(__('invitations.mail.external_agency'))

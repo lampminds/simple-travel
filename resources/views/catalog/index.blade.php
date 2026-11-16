@@ -75,6 +75,7 @@
                     'services' => $services,
                     'serviceTypes' => $serviceTypes,
                     'showRequestFromProviders' => false,
+                    'showBookingFieldsLink' => true,
                     'hideOwnServicesHeadingAndList' => $catalogHideFilterAndOwnServicesList,
                 ])
             @elseif ($mode === 'operator')

@@ -71,4 +71,9 @@ class Booking extends Model
     {
         return $this->hasMany(BookingItem::class, 'booking_id');
     }
+
+    public function fieldAnswers(): HasMany
+    {
+        return $this->hasMany(BookingFieldAnswer::class, 'booking_id')->orderBy('id');
+    }
 }

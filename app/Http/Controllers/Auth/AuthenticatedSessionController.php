@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthLoginRedirectService;
+use App\Support\ExternalInvitationAcceptanceRedirect;
 use App\Support\SafeReturnUrl;
 use App\Models\UserInvitation;
 use App\Services\UserInvitationAcceptanceService;
@@ -48,9 +49,7 @@ class AuthenticatedSessionController extends Controller
                     ->with('status', __('invitations.internal_accepted_existing'));
             }
             if ($invitation && $acceptanceService->acceptExternalForExistingUser($invitation, $request->user())) {
-                return redirect()
-                    ->route('account.dashboard')
-                    ->with('status', __('invitations.accepted_relationship'));
+                return ExternalInvitationAcceptanceRedirect::toRelationships($request, $request->user(), $invitation);
             }
         }
 

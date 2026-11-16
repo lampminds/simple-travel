@@ -26,6 +26,8 @@ class UserInvitation extends Model
 
     public const TYPE_EXTERNAL = 'external';
 
+    public const PURPOSE_PROVIDER_SUPPLY = 'provider_supply';
+
     protected $fillable = [
         'account_id',
         'account_inviting',
@@ -40,6 +42,7 @@ class UserInvitation extends Model
         'declined_at',
         'invited_by',
         'type',
+        'purpose',
         'status',
         'invited_user_id',
         'invited_person_id',

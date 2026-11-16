@@ -22,9 +22,6 @@
                             :instructions="__('account.price_lists.intro_instructions')"
                         />
                         <div class="d-flex gap-2">
-                            <a href="{{ route('account.passenger-policies.index') }}" class="btn btn-outline-secondary">
-                                {{ __('account.passenger_policies.provider_link') }}
-                            </a>
                             <a href="{{ route('account.provider-price-lists.create') }}" class="btn btn-primary">
                                 {{ __('account.price_lists.create_button') }}
                             </a>

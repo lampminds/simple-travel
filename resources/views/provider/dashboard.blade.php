@@ -5,6 +5,9 @@
 
     <section class="position-relative p-3 bg-gradient2">
         <div class="container">
+            @if (session('status'))
+                <div class="alert alert-success mb-3" role="alert">{{ session('status') }}</div>
+            @endif
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-title">
@@ -28,6 +31,9 @@
                         </a>
                         <a href="{{ route('catalog') }}" class="btn btn-primary">
                             {{ __('catalog.title') }}
+                        </a>
+                        <a href="{{ route('account.booking-fields.index') }}" class="btn btn-outline-primary">
+                            {{ __('account.booking_fields.provider_link') }}
                         </a>
                         @if (auth()->user()?->shouldShowBackToAccountDashboard())
                         <a href="{{ url('/account/dashboard') }}" class="btn btn-outline-primary">

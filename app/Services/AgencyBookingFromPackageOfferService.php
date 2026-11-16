@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\BookingFieldAnswer;
 use App\Models\BookingItem;
 use App\Models\CatBookingStatus;
 use App\Models\OperatorPackageItem;
@@ -27,6 +28,7 @@ final class AgencyBookingFromPackageOfferService
         private readonly AgencyPassengerLinePricer $passengerLinePricer,
         private readonly BookingNotificationService $bookingNotifications,
         private readonly BookingAvailabilityValidationService $availabilityValidation,
+        private readonly BookingRequiredFieldsResolver $fieldResolver,
     ) {
     }
 
@@ -110,6 +112,12 @@ final class AgencyBookingFromPackageOfferService
             $passengersSnapshot,
         );
 
+        $answerRows = $this->fieldResolver->rowsForStorage(
+            $this->fieldResolver->forPackageOffer($offer),
+            is_array($payload['field_answers'] ?? null) ? $payload['field_answers'] : [],
+            count($passengersSnapshot['ages'] ?? []),
+        );
+
         $listItems = OperatorPriceListItem::query()
             ->where('operator_price_list_id', $priceList->id)
             ->get()
@@ -140,6 +148,7 @@ final class AgencyBookingFromPackageOfferService
             $catalog,
             $passengersSnapshot,
             $pricingMeta,
+            $answerRows,
         ): Booking {
             $booking = Booking::query()->create([
                 'booking_code' => $this->bookingCodeGenerator->generate(),
@@ -202,6 +211,18 @@ final class AgencyBookingFromPackageOfferService
                     'currency_id' => $currencyId,
                     'package_snapshot' => $snapshot,
                     'total' => (float) $priced['total'],
+                ]);
+            }
+
+            foreach ($answerRows as $answerRow) {
+                BookingFieldAnswer::query()->create([
+                    'booking_id' => (int) $booking->id,
+                    'provider_booking_field_id' => $answerRow['provider_booking_field_id'],
+                    'passenger_index' => $answerRow['passenger_index'],
+                    'label_snapshot' => $answerRow['label_snapshot'],
+                    'input_type_snapshot' => $answerRow['input_type_snapshot'],
+                    'scope_snapshot' => $answerRow['scope_snapshot'],
+                    'value' => $answerRow['value'],
                 ]);
             }
 

@@ -22,6 +22,7 @@ final class ServiceOfferSyncService
 {
     public function __construct(
         private readonly AccountNotificationService $accountNotifications,
+        private readonly ProviderSupplyComponentHealth $comboHealth,
     ) {}
 
     /**
@@ -60,6 +61,31 @@ final class ServiceOfferSyncService
 
         foreach ($proposedVariantIds as $vid) {
             abort_unless(in_array($vid, $allowedVariantIds, true), 422);
+        }
+
+        $alreadyAcceptedIds = ServiceOffer::query()
+            ->where('provider_id', $providerAccountId)
+            ->where('operator_id', $operatorAccountId)
+            ->where('status', ServiceOffer::STATUS_ACCEPTED)
+            ->whereIn('service_variant_id', $proposedVariantIds !== [] ? $proposedVariantIds : [0])
+            ->pluck('service_variant_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $checkIds = array_values(array_diff($proposedVariantIds, $alreadyAcceptedIds));
+        if ($checkIds !== []) {
+            $variants = ServiceVariant::query()
+                ->whereIn('id', $checkIds)
+                ->with([
+                    'service.serviceType',
+                    'service.translations.language.locale',
+                    'translations.language.locale',
+                    'components.childVariant.service',
+                    'components.childVariant.translations.language.locale',
+                    'components.childVariant.service.translations.language.locale',
+                ])
+                ->get();
+            $this->comboHealth->assertSellable($variants);
         }
 
         $newPendingCount = 0;

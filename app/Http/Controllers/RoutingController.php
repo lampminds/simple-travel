@@ -84,7 +84,13 @@ class RoutingController extends BaseController
                     AccountDashboardLane::set($account, $typeId);
                 }
 
-                return redirect()->route($soleRoute);
+                $redirect = redirect()->route($soleRoute);
+                $status = session('status');
+                if (is_string($status) && $status !== '') {
+                    $redirect->with('status', $status);
+                }
+
+                return $redirect;
             }
         }
 

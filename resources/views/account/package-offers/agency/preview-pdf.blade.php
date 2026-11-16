@@ -71,6 +71,14 @@
             color: #6b7280;
         }
         .preview-muted { color: #6b7280; }
+        .preview-pricing-note {
+            margin: 10px 0 0;
+            padding: 8px 10px;
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 10px;
+        }
         .preview-label {
             font-size: 9px;
             text-transform: uppercase;

@@ -11,6 +11,7 @@ use App\Http\Controllers\AccountSelectionController;
 use App\Http\Controllers\OperatorDashboardController;
 use App\Http\Controllers\AgencyDashboardController;
 use App\Http\Controllers\AccountPassengerPolicyController;
+use App\Http\Controllers\AccountProviderBookingFieldController;
 use App\Http\Controllers\ServiceWizardController;
 use App\Http\Controllers\RoutingController;
 use App\Http\Controllers\SelectDashboardLaneController;
@@ -30,6 +31,8 @@ use App\Http\Controllers\AccountTransferVehicleTypesController;
 use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AccountOperatorServiceOfferController;
 use App\Http\Controllers\AccountProviderServiceOfferController;
+use App\Http\Controllers\AccountProviderSupplyController;
+use App\Http\Controllers\AccountProviderSupplyOfferController;
 use App\Http\Controllers\AccountProviderServiceStatusReportController;
 use App\Http\Controllers\AccountServiceOfferHubController;
 use App\Http\Controllers\AccountPackageOfferHubController;
@@ -172,6 +175,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('account/relationships/incoming/{invitation}/decline', [AccountRelationshipController::class, 'declineIncomingInvitation'])
         ->name('account.relationships.incoming.decline');
 
+    Route::get('account/provider-supply', [AccountProviderSupplyController::class, 'index'])
+        ->name('account.provider-supply.index');
+    Route::get('account/provider-supply/invite', [AccountProviderSupplyController::class, 'createInvite'])
+        ->name('account.provider-supply.invite');
+    Route::post('account/provider-supply/invite', [AccountProviderSupplyController::class, 'storeInvite'])
+        ->name('account.provider-supply.invite.store');
+    Route::post('account/provider-supply/incoming/{invitation}/accept', [AccountProviderSupplyController::class, 'acceptIncoming'])
+        ->name('account.provider-supply.incoming.accept');
+    Route::post('account/provider-supply/incoming/{invitation}/decline', [AccountProviderSupplyController::class, 'declineIncoming'])
+        ->name('account.provider-supply.incoming.decline');
+    Route::post('account/provider-supply/outgoing/{invitation}/revoke', [AccountProviderSupplyController::class, 'revokeOutgoing'])
+        ->name('account.provider-supply.outgoing.revoke');
+    Route::get('account/provider-supply/buyers/{buyer}/offers', [AccountProviderSupplyOfferController::class, 'editOffers'])
+        ->name('account.provider-supply.offers.edit');
+    Route::put('account/provider-supply/buyers/{buyer}/offers', [AccountProviderSupplyOfferController::class, 'updateOffers'])
+        ->name('account.provider-supply.offers.update');
+    Route::get('account/provider-supply/suppliers/{supplier}/offers', [AccountProviderSupplyOfferController::class, 'reviewOffers'])
+        ->name('account.provider-supply.offers.review');
+    Route::post('account/provider-supply/suppliers/{supplier}/offers/{offer}/accept', [AccountProviderSupplyOfferController::class, 'acceptOffer'])
+        ->name('account.provider-supply.offers.accept');
+    Route::post('account/provider-supply/suppliers/{supplier}/offers/{offer}/reject', [AccountProviderSupplyOfferController::class, 'rejectOffer'])
+        ->name('account.provider-supply.offers.reject');
+    Route::get('account/provider-supply/buyers/{buyer}/price-list', [AccountProviderSupplyOfferController::class, 'editPriceList'])
+        ->name('account.provider-supply.price-list.edit');
+    Route::put('account/provider-supply/buyers/{buyer}/price-list', [AccountProviderSupplyOfferController::class, 'updatePriceList'])
+        ->name('account.provider-supply.price-list.update');
+
     Route::get('account/contacts', [AccountContactsController::class, 'index'])->name('account.contacts.index');
     Route::get('account/contacts/{accountPerson}', [AccountContactsController::class, 'show'])->name('account.contacts.show');
     Route::post('account/contacts/{accountPerson}/message', [AccountContactsController::class, 'storeMessage'])
@@ -199,6 +229,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.services.passenger-policy.update');
     Route::delete('account/services/{service}/passenger-policy', [AccountPassengerPolicyController::class, 'destroyService'])
         ->name('account.services.passenger-policy.destroy');
+
+    Route::get('account/booking-fields', [AccountProviderBookingFieldController::class, 'index'])
+        ->name('account.booking-fields.index');
+    Route::get('account/booking-fields/create', [AccountProviderBookingFieldController::class, 'create'])
+        ->name('account.booking-fields.create');
+    Route::post('account/booking-fields', [AccountProviderBookingFieldController::class, 'store'])
+        ->name('account.booking-fields.store');
+    Route::get('account/booking-fields/{field}/edit', [AccountProviderBookingFieldController::class, 'edit'])
+        ->name('account.booking-fields.edit');
+    Route::put('account/booking-fields/{field}', [AccountProviderBookingFieldController::class, 'update'])
+        ->name('account.booking-fields.update');
+    Route::post('account/booking-fields/{field}/active', [AccountProviderBookingFieldController::class, 'toggleActive'])
+        ->name('account.booking-fields.toggle');
+    Route::patch('account/booking-fields/{field}/move/{direction}', [AccountProviderBookingFieldController::class, 'move'])
+        ->name('account.booking-fields.move');
+    Route::get('account/services/{service}/booking-fields', [AccountProviderBookingFieldController::class, 'editService'])
+        ->name('account.services.booking-fields.edit');
+    Route::put('account/services/{service}/booking-fields', [AccountProviderBookingFieldController::class, 'updateService'])
+        ->name('account.services.booking-fields.update');
+    Route::post('account/services/{service}/booking-fields/copy', [AccountProviderBookingFieldController::class, 'copyTemplate'])
+        ->name('account.services.booking-fields.copy');
+
+    Route::get('account/booking-templates', [AccountProviderBookingFieldController::class, 'templatesIndex'])
+        ->name('account.booking-templates.index');
+    Route::get('account/booking-templates/create', [AccountProviderBookingFieldController::class, 'templatesCreate'])
+        ->name('account.booking-templates.create');
+    Route::post('account/booking-templates', [AccountProviderBookingFieldController::class, 'templatesStore'])
+        ->name('account.booking-templates.store');
+    Route::get('account/booking-templates/{template}/edit', [AccountProviderBookingFieldController::class, 'templatesEdit'])
+        ->name('account.booking-templates.edit');
+    Route::put('account/booking-templates/{template}', [AccountProviderBookingFieldController::class, 'templatesUpdate'])
+        ->name('account.booking-templates.update');
+    Route::delete('account/booking-templates/{template}', [AccountProviderBookingFieldController::class, 'templatesDestroy'])
+        ->name('account.booking-templates.destroy');
 
     Route::get('account/service-offers/operators/{operator}', [AccountProviderServiceOfferController::class, 'edit'])
         ->name('account.service-offers.operators.edit');

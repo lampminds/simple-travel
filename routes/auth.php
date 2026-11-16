@@ -22,6 +22,14 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
 Route::get('/invitations/accept/{token}', InvitationLinkController::class)
     ->name('invitations.accept');
 
+Route::post('/invitations/accept/{token}/leave', [InvitationLinkController::class, 'leave'])
+    ->middleware('auth')
+    ->name('invitations.accept.leave');
+
+Route::post('/invitations/accept/{token}/switch', [InvitationLinkController::class, 'switchAccount'])
+    ->middleware('auth')
+    ->name('invitations.accept.switch');
+
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])
     ->middleware('guest')
     ->name('login');

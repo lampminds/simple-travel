@@ -12,7 +12,6 @@ use App\Support\AccountBusinessTypeGate;
 use App\Support\CurrentAccountSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 final class AccountRelationshipController extends Controller
@@ -36,77 +35,32 @@ final class AccountRelationshipController extends Controller
 
         abort_unless($hasProvider || $hasOperator || $hasAgency, 403);
 
-        if ($hasProvider && $hasOperator) {
-            $as = (string) $request->query('as', '');
-            if ($as === '') {
-                return view('account.relationships.hub-pick', [
-                    'account' => $account,
-                ]);
-            }
-
-            if ($as === 'provider') {
-                return $this->listView($account, 'provider');
-            }
-
-            if ($as === 'operator') {
-                return $this->listView($account, 'operator');
-            }
-        }
-
-        if ($hasAgency && ! $hasProvider && ! $hasOperator) {
-            return $this->listView($account, 'agency');
-        }
-
-        if ($hasProvider) {
-            return $this->listView($account, 'provider');
-        }
-
-        if ($hasOperator) {
-            return $this->listView($account, 'operator');
-        }
-
-        return $this->listView($account, 'agency');
+        return $this->listView($account, $hasProvider, $hasOperator);
     }
 
-    private function listView(Account $account, string $perspective): View
+    private function listView(Account $account, bool $hasProvider, bool $hasOperator): View
     {
-        $typeCodes = $account->accountTypes()
-            ->where('active', true)
-            ->pluck('code');
-
-        $pendingIncoming = in_array($perspective, ['provider', 'agency'], true)
-            ? $this->listing->pendingIncomingExternalInvitations((int) $account->id)
-            : collect();
-
-        $operatorTab = null;
-        $counterpartKind = null;
-
-        if ($perspective === 'operator') {
-            $operatorTab = (string) request()->query('tab', 'providers');
-            if (! in_array($operatorTab, ['providers', 'agencies'], true)) {
-                $operatorTab = 'providers';
-            }
-
-            $counterpartKind = $operatorTab === 'agencies' ? 'agency' : 'provider';
-        }
-
-        $rows = $this->listing->forAccount((int) $account->id, $perspective, $counterpartKind);
-        $showCatalogCoverage = $perspective === 'operator' && $operatorTab === 'providers';
+        $accountId = (int) $account->id;
+        $rows = $this->listing->unifiedForAccount($account);
+        $showCatalogCoverage = $hasOperator && $rows->contains(
+            fn (array $row): bool => ($row['link_kind'] ?? '') === 'buys_from_provider'
+        );
 
         if ($showCatalogCoverage) {
-            $rows = $this->listing->attachProviderCatalogCoverage($rows, (int) $account->id);
+            $rows = $this->listing->attachProviderCatalogCoverage($rows, $accountId);
         }
 
         return view('account.relationships.index', [
             'account' => $account,
             'accountLabel' => $this->listing->accountDisplayName($account),
-            'perspective' => $perspective,
             'rows' => $rows,
-            'pendingIncomingInvitations' => $pendingIncoming,
-            'showRoleColumn' => false,
-            'showHubBack' => $typeCodes->contains('provider') && $typeCodes->contains('operator'),
-            'operatorTab' => $operatorTab,
+            'pendingIncomingInvitations' => $this->listing->pendingIncomingExternalInvitations($accountId),
+            'pendingOutgoingInvitations' => $hasProvider
+                ? $this->listing->pendingOutgoingSupplyInvitations($accountId)
+                : collect(),
             'showCatalogCoverage' => $showCatalogCoverage,
+            'canInviteProvider' => $hasProvider,
+            'canInviteOperator' => $hasOperator,
         ]);
     }
 
@@ -185,9 +139,6 @@ final class AccountRelationshipController extends Controller
             return false;
         }
 
-        $invitationEmail = Str::lower((string) $invitation->email);
-        $userEmail = Str::lower((string) $user->email);
-
-        return $invitationEmail !== '' && $invitationEmail === $userEmail;
+        return $user->belongsToAccount($accountId);
     }
 }

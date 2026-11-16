@@ -141,6 +141,7 @@ final class ExternalCompanyInvitationService
         int $invitedUserId,
         int $invitedAccountId,
         ?string $companyName = null,
+        ?string $purpose = null,
     ): UserInvitation {
         $resolvedCompanyName = trim((string) $companyName);
         if ($resolvedCompanyName === '') {
@@ -162,6 +163,7 @@ final class ExternalCompanyInvitationService
             'invited_by' => $invitedByUserId,
             'invited_user_id' => $invitedUserId,
             'type' => UserInvitation::TYPE_EXTERNAL,
+            'purpose' => $purpose,
             'status' => UserInvitation::STATUS_PENDING,
         ]);
     }

@@ -105,7 +105,17 @@
                                                         @if (($package->ineligibility_messages ?? []) !== [])
                                                             <ul class="small text-danger mb-0 ps-3 mt-1">
                                                                 @foreach ($package->ineligibility_messages as $message)
-                                                                    <li>{{ $message }}</li>
+                                                                    @php
+                                                                        $messageText = is_array($message) ? (string) ($message['text'] ?? '') : (string) $message;
+                                                                        $messageUrl = is_array($message) ? (string) ($message['url'] ?? '') : '';
+                                                                        $messageLink = is_array($message) ? (string) ($message['link_label'] ?? '') : '';
+                                                                    @endphp
+                                                                    <li>
+                                                                        {{ $messageText }}
+                                                                        @if ($messageUrl !== '' && $messageLink !== '')
+                                                                            <a href="{{ $messageUrl }}" class="link-danger fw-semibold text-decoration-underline">{{ $messageLink }}</a>
+                                                                        @endif
+                                                                    </li>
                                                                 @endforeach
                                                             </ul>
                                                         @endif

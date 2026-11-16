@@ -35,6 +35,9 @@ final class ServiceCascadeDeletion
         };
 
         $add('filament.resources.service_delete_cascade.labels.translations', (int) DB::table('service_translations')->where('service_id', $serviceId)->count());
+        if (Schema::hasTable('service_booking_field_assignments')) {
+            $add('filament.resources.service_delete_cascade.labels.booking_field_assignments', (int) DB::table('service_booking_field_assignments')->where('service_id', $serviceId)->count());
+        }
         $add('filament.resources.service_delete_cascade.labels.experience_assignments', (int) DB::table('service_experience_assignments')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.details', (int) DB::table('service_details')->where('service_id', $serviceId)->count());
         $add('filament.resources.service_delete_cascade.labels.feature_links', self::featureLinkCount($serviceId, $variantIds));
@@ -200,6 +203,9 @@ final class ServiceCascadeDeletion
             DB::table('service_experience_assignments')->where('service_id', $serviceId)->delete();
             self::deleteFeatureLinks($serviceId, $variantIds);
             DB::table('service_translations')->where('service_id', $serviceId)->delete();
+            if (Schema::hasTable('service_booking_field_assignments')) {
+                DB::table('service_booking_field_assignments')->where('service_id', $serviceId)->delete();
+            }
 
             $service->delete();
         });

@@ -11,6 +11,7 @@ use App\Models\ServiceOffer;
 use App\Models\ServiceVariant;
 use App\Services\OperatorDirectServiceCatalogService;
 use App\Services\OperatorVariantPriceResolver;
+use App\Services\ProviderSupplyComponentHealth;
 use App\Services\ServiceOfferSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ final class AccountProviderServiceOfferController extends Controller
         ]);
     }
 
-    public function edit(Request $request, Account $operator, OperatorVariantPriceResolver $priceResolver): View
+    public function edit(Request $request, Account $operator, OperatorVariantPriceResolver $priceResolver, ProviderSupplyComponentHealth $comboHealth): View
     {
         $account = $this->resolveProviderAccount($request);
         abort_unless(
@@ -143,6 +144,7 @@ final class AccountProviderServiceOfferController extends Controller
             'operatorHasPriceList' => $operatorHasPriceList,
             'operatorPriceListName' => $operatorPriceListName,
             'operatorPriceListValidity' => $operatorPriceListValidity,
+            'unsellableCombos' => $comboHealth->unsellableSummaries((int) $account->id),
         ]);
     }
 

@@ -142,6 +142,15 @@
                                             {{ __('account.passenger_policies.service_link') }}
                                         </a>
                                     </li>
+                                    <li>
+                                        <a
+                                            href="{{ route('account.services.booking-fields.edit', $svc) }}"
+                                            class="dropdown-item"
+                                        >
+                                            <i class="icon-xxs icon me-2 text-primary" data-feather="clipboard" aria-hidden="true"></i>
+                                            {{ __('account.booking_fields.service_link') }}
+                                        </a>
+                                    </li>
                                     @if ($this->hasAdvancedStepForType($svc->serviceType->code))
                                         <li>
                                             <a

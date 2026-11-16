@@ -2026,6 +2026,7 @@ return [
             'grand_total' => 'Total de filas a eliminar (incluido este servicio): :count',
             'labels' => [
                 'translations' => 'Traducciones del servicio',
+                'booking_field_assignments' => 'Datos de reserva asignados',
                 'experience_assignments' => 'Asignaciones de experiencias',
                 'details' => 'Filas de condición del servicio',
                 'feature_links' => 'Vínculos a características',

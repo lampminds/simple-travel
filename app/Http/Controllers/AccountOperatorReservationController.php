@@ -10,6 +10,7 @@ use App\Services\BookingPriceBreakdownService;
 use App\Services\BookingStatusTransitionService;
 use App\Services\PriceFormatService;
 use App\Support\AccountBusinessTypeGate;
+use App\Support\BookingFieldAnswersPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -93,6 +94,7 @@ final class AccountOperatorReservationController extends Controller
             'priceBreakdown' => $this->priceBreakdown->build($booking),
             'canDecide' => $this->statusTransitions->operatorCanDecide($booking, (int) $account->id),
             'customerRemarks' => $this->customerRemarks($booking),
+            'fieldAnswers' => BookingFieldAnswersPresenter::present($booking),
         ]);
     }
 

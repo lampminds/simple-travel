@@ -255,6 +255,16 @@ class Account extends Model implements HasMedia
         return $this->hasMany(ProviderPassengerPolicy::class, 'provider_id');
     }
 
+    public function providerBookingFields(): HasMany
+    {
+        return $this->hasMany(ProviderBookingField::class, 'account_id');
+    }
+
+    public function providerBookingTemplates(): HasMany
+    {
+        return $this->hasMany(ProviderBookingTemplate::class, 'account_id')->orderBy('name');
+    }
+
     public function hasActiveType(string $code): bool
     {
         $types = $this->relationLoaded('accountTypes')

@@ -327,6 +327,36 @@ class CatMenusTableSeeder extends Seeder
                 'sort_order' => 3,
                 'active' => 1,
             ),
+            31 => 
+            array (
+                'id' => 35,
+                'slug' => 'provider_reservations',
+                'icon' => NULL,
+                'route' => NULL,
+                'parent_id' => NULL,
+                'sort_order' => 6,
+                'active' => 1,
+            ),
+            32 => 
+            array (
+                'id' => 36,
+                'slug' => 'provider_booking_fields',
+                'icon' => NULL,
+                'route' => 'account.booking-fields.index',
+                'parent_id' => 35,
+                'sort_order' => 1,
+                'active' => 1,
+            ),
+            33 => 
+            array (
+                'id' => 37,
+                'slug' => 'provider_passenger_policies',
+                'icon' => NULL,
+                'route' => 'account.passenger-policies.index',
+                'parent_id' => 3,
+                'sort_order' => 4,
+                'active' => 1,
+            ),
         );
 
         $parents = array_values(array_filter($rows, fn (array $row): bool => $row['parent_id'] === null));

@@ -2024,6 +2024,7 @@ return [
             'grand_total' => 'Total rows to remove (including this service): :count',
             'labels' => [
                 'translations' => 'Service translations',
+                'booking_field_assignments' => 'Assigned booking details',
                 'experience_assignments' => 'Experience assignments',
                 'details' => 'Service condition rows',
                 'feature_links' => 'Feature links',

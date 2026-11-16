@@ -60,6 +60,21 @@ final class AccountNotificationService
         $operatorAccount = $invitation->accountInviting ?? $invitation->account;
         $operatorName = (string) ($operatorAccount?->commercial_name ?: $operatorAccount?->name ?: '#'.$invitation->account_id);
 
+        if ($invitation->purpose === UserInvitation::PURPOSE_PROVIDER_SUPPLY) {
+            return $this->createForAccount(
+                accountId: (int) $invitation->invited_account_id,
+                type: 'provider_supply_invitation_received',
+                title: (string) __('account.provider_supply.notification_received_title', ['company' => $operatorName]),
+                message: (string) __('account.provider_supply.notification_received_message', ['company' => $operatorName]),
+                recipientUserId: null,
+                data: [
+                    'invitation_id' => (int) $invitation->id,
+                    'buyer_account_id' => (int) ($operatorAccount?->id ?? $invitation->account_id),
+                    'buyer_account_name' => $operatorName,
+                ],
+            );
+        }
+
         return $this->createForAccount(
             accountId: (int) $invitation->invited_account_id,
             type: 'external_invitation_received',
@@ -84,6 +99,21 @@ final class AccountNotificationService
     ): AccountNotification {
         $operatorAccountId = (int) ($invitation->account_inviting ?: $invitation->account_id);
         $companyName = (string) ($providerAccount->commercial_name ?: $providerAccount->name);
+
+        if ($invitation->purpose === UserInvitation::PURPOSE_PROVIDER_SUPPLY) {
+            return $this->createForAccount(
+                accountId: $operatorAccountId,
+                type: 'provider_supply_invitation_accepted',
+                title: (string) __('account.provider_supply.notification_accepted_title', ['company' => $companyName]),
+                message: (string) __('account.provider_supply.notification_accepted_message', ['company' => $companyName]),
+                recipientUserId: $invitation->invited_by !== null ? (int) $invitation->invited_by : null,
+                data: [
+                    'invitation_id' => (int) $invitation->id,
+                    'supplier_account_id' => (int) $providerAccount->id,
+                    'supplier_account_name' => $companyName,
+                ],
+            );
+        }
 
         return $this->createForAccount(
             accountId: $operatorAccountId,

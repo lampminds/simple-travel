@@ -1950,6 +1950,7 @@ return [
             'grand_total' => 'Total de linhas a remover (incluindo este serviço): :count',
             'labels' => [
                 'translations' => 'Traduções do serviço',
+                'booking_field_assignments' => 'Dados da reserva atribuídos',
                 'experience_assignments' => 'Atribuições de experiências',
                 'details' => 'Linhas de condição do serviço',
                 'feature_links' => 'Ligações a características',
