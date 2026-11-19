@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\CurrentAccountSession;
+use App\Support\OperatorWebsiteAgencyRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Spatie\Permission\PermissionRegistrar;
@@ -29,6 +30,10 @@ class AccountSwitchController extends Controller
         CurrentAccountSession::put($request, $request->user(), (int) $accountId);
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($accountId);
+
+        if (OperatorWebsiteAgencyRedirect::applies($request, $request->user()->currentAccount())) {
+            return OperatorWebsiteAgencyRedirect::toLanding($request);
+        }
 
         $redirectTo = $request->input('redirect_to');
         if (is_string($redirectTo) && str_starts_with($redirectTo, '/')) {

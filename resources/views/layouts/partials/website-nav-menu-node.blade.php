@@ -6,11 +6,12 @@
     $href = WebsiteNavigation::urlForMenu($menu);
     $label = $menu->admin_label;
     $hasNavTarget = $href !== '#';
+    $openInNewTab = WebsiteNavigation::opensInNewTab($menu);
 @endphp
 @if ($level === 0)
     @if ($children->isEmpty())
         <li class="nav-item pe-3">
-            <a class="nav-link" href="{{ $href }}">{{ $label }}</a>
+            <a class="nav-link" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ $label }}</a>
         </li>
     @else
         <li class="nav-item dropdown pe-3">
@@ -21,7 +22,7 @@
                    data-bs-toggle="dropdown" data-bs-target="#websiteNavMenu{{ $menu->id }}"
                    aria-controls="websiteNavMenu{{ $menu->id }}" aria-expanded="false">{{ $label }}</a>
                 <div class="website-nav-split d-none d-lg-flex align-items-center">
-                    <a class="nav-link pe-1" href="{{ $href }}">{{ $label }}</a>
+                    <a class="nav-link pe-1" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ $label }}</a>
                     <a class="nav-link dropdown-toggle ps-1" href="#" id="websiteNavDd{{ $menu->id }}"
                        role="button" data-bs-toggle="dropdown" data-bs-target="#websiteNavMenu{{ $menu->id }}"
                        aria-controls="websiteNavMenu{{ $menu->id }}" aria-expanded="false"
@@ -30,7 +31,7 @@
                 <ul id="websiteNavMenu{{ $menu->id }}" class="dropdown-menu"
                     aria-labelledby="websiteNavDdMob{{ $menu->id }} websiteNavDd{{ $menu->id }}">
                     <li class="d-lg-none">
-                        <a class="dropdown-item fw-medium" href="{{ $href }}">{{ __('nav.link_to_parent', ['label' => $label]) }}</a>
+                        <a class="dropdown-item fw-medium" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ __('nav.link_to_parent', ['label' => $label]) }}</a>
                     </li>
                     @foreach ($children as $child)
                         @include('layouts.partials.website-nav-menu-node', ['menu' => $child, 'level' => 1])
@@ -49,7 +50,7 @@
     @endif
 @else
     @if ($children->isEmpty())
-        <li><a class="dropdown-item" href="{{ $href }}">{{ $label }}</a></li>
+        <li><a class="dropdown-item" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ $label }}</a></li>
     @else
         @if ($hasNavTarget)
             <li class="dropend">
@@ -58,7 +59,7 @@
                    data-bs-toggle="dropdown" data-bs-target="#websiteNavSubMenu{{ $menu->id }}"
                    aria-controls="websiteNavSubMenu{{ $menu->id }}" aria-expanded="false">{{ $label }}</a>
                 <div class="d-none d-lg-flex align-items-stretch w-100">
-                    <a class="dropdown-item flex-grow-1 align-self-center" href="{{ $href }}">{{ $label }}</a>
+                    <a class="dropdown-item flex-grow-1 align-self-center" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ $label }}</a>
                     <a class="dropdown-item dropdown-toggle w-auto align-self-center py-2 px-2" href="#"
                        id="websiteNavSub{{ $menu->id }}" role="button" data-bs-toggle="dropdown"
                        data-bs-target="#websiteNavSubMenu{{ $menu->id }}"
@@ -68,7 +69,7 @@
                 <ul id="websiteNavSubMenu{{ $menu->id }}" class="dropdown-menu"
                     aria-labelledby="websiteNavSubMob{{ $menu->id }} websiteNavSub{{ $menu->id }}">
                     <li class="d-lg-none">
-                        <a class="dropdown-item fw-medium" href="{{ $href }}">{{ __('nav.link_to_parent', ['label' => $label]) }}</a>
+                        <a class="dropdown-item fw-medium" href="{{ $href }}" @if ($openInNewTab) target="_blank" rel="noopener noreferrer" @endif>{{ __('nav.link_to_parent', ['label' => $label]) }}</a>
                     </li>
                     @foreach ($children as $child)
                         @include('layouts.partials.website-nav-menu-node', ['menu' => $child, 'level' => $level + 1])

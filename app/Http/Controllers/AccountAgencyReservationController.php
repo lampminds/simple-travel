@@ -17,6 +17,7 @@ use App\Support\AccountBusinessTypeGate;
 use App\Support\BookingFieldAnswersPresenter;
 use App\Support\BookingPassengersSnapshot;
 use App\Support\ResolvedBookingField;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -102,6 +103,8 @@ final class AccountAgencyReservationController extends Controller
             'packageLabel' => $this->packageLabelForOffer($packageOffer),
             'agencyPrice' => $this->resolveAgencyPrice($packageOffer, $agencyId),
             'quotedPrice' => null,
+            'rowQuotes' => null,
+            'partyRows' => BookingPassengersSnapshot::blankPartyRows(),
             'reservationInput' => null,
             'operatorLabel' => $packageOffer->operatorAccount?->commercial_name
                 ?? $packageOffer->operatorAccount?->name
@@ -113,7 +116,7 @@ final class AccountAgencyReservationController extends Controller
     {
         $account = AccountBusinessTypeGate::assertAgencyAccount($request);
         $agencyId = (int) $account->id;
-        $validated = $this->validatedReservation($request, $agencyId);
+        $validated = $this->validatedReservation($request, $agencyId, false);
         $passengersSnapshot = BookingPassengersSnapshot::fromAges($validated['ages']);
         BookingPassengersSnapshot::assertHasPassengers($passengersSnapshot);
 
@@ -128,12 +131,18 @@ final class AccountAgencyReservationController extends Controller
             'priceList.currency.lmpCurrency',
         ]);
 
+        $quotedPrice = $this->resolveQuotedPrice($offer, $agencyId, $passengersSnapshot, $validated['travel_start_date']);
+
         return view('account.reservations.agency.create', array_merge([
             'account' => $account,
             'offer' => $offer,
             'packageLabel' => $this->packageLabelForOffer($offer),
             'agencyPrice' => $this->resolveAgencyPrice($offer, $agencyId),
-            'quotedPrice' => $this->resolveQuotedPrice($offer, $agencyId, $passengersSnapshot, $validated['travel_start_date']),
+            'quotedPrice' => $quotedPrice,
+            'rowQuotes' => ($quotedPrice['has_amount'] ?? false)
+                ? $this->rowQuotes($offer, $agencyId, $validated['party_rows'], $validated['ages'], $validated['travel_start_date'])
+                : null,
+            'partyRows' => $validated['party_rows'],
             'operatorLabel' => $offer->operatorAccount?->commercial_name
                 ?? $offer->operatorAccount?->name
                 ?? ('#'.$offer->operator_id),
@@ -241,7 +250,7 @@ final class AccountAgencyReservationController extends Controller
             $priceList,
             $agencyId,
             (int) $offer->operator_id,
-            \Carbon\Carbon::parse($travelStart)->startOfDay(),
+            Carbon::parse($travelStart)->startOfDay(),
             $passengersSnapshot,
         );
 
@@ -254,7 +263,81 @@ final class AccountAgencyReservationController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validatedReservation(Request $request, int $agencyId): array
+    /**
+     * @param  list<array{age: string, quantity: int}>  $partyRows
+     * @param  list<int>  $ages
+     * @return list<array{base_formatted: string, has_discount: bool, discount_formatted: string}|null>
+     */
+    private function rowQuotes(PackageOffer $offer, int $agencyId, array $partyRows, array $ages, string $travelStart): array
+    {
+        $catalog = $offer->catalog;
+        $priceList = $offer->priceList;
+        if ($catalog === null || $priceList === null) {
+            return array_fill(0, count($partyRows), null);
+        }
+
+        $perAge = $this->packagePriceResolver->quotePassengerAges(
+            $catalog,
+            $priceList,
+            $agencyId,
+            (int) $offer->operator_id,
+            Carbon::parse($travelStart)->startOfDay(),
+            $ages,
+        );
+
+        $quotes = [];
+        $cursor = 0;
+
+        foreach ($partyRows as $row) {
+            if (($row['age'] ?? '') === '') {
+                $quotes[] = null;
+
+                continue;
+            }
+
+            $quantity = max(1, (int) ($row['quantity'] ?? 1));
+            $base = 0.0;
+            $amount = 0.0;
+            $priced = false;
+
+            for ($copy = 0; $copy < $quantity; $copy++) {
+                $slice = $perAge[$cursor] ?? null;
+                $cursor++;
+                if (! is_array($slice) || ! ($slice['priced'] ?? false)) {
+                    continue;
+                }
+
+                $base += (float) $slice['base'];
+                $amount += (float) $slice['amount'];
+                $priced = true;
+            }
+
+            if (! $priced) {
+                $quotes[] = null;
+
+                continue;
+            }
+
+            $discount = round($base - $amount, 2);
+            $quotes[] = [
+                'base_formatted' => $this->priceFormatService->formatWithCurrency(
+                    $base,
+                    currency: $priceList->currency,
+                    accountId: (int) $offer->operator_id,
+                ),
+                'has_discount' => $discount > 0.009,
+                'discount_formatted' => $this->priceFormatService->formatWithCurrency(
+                    max(0, $discount),
+                    currency: $priceList->currency,
+                    accountId: (int) $offer->operator_id,
+                ),
+            ];
+        }
+
+        return $quotes;
+    }
+
+    private function validatedReservation(Request $request, int $agencyId, bool $requireExtraFields = true): array
     {
         $validated = $request->validate(
             array_merge([
@@ -262,10 +345,16 @@ final class AccountAgencyReservationController extends Controller
                 'travel_start_date' => ['required', 'date'],
                 'travel_end_date' => ['required', 'date', 'after_or_equal:travel_start_date'],
                 'remarks_customer' => ['nullable', 'string', 'max:2000'],
-            ], BookingPassengersSnapshot::validationRules()),
+            ], BookingPassengersSnapshot::partyRowRules()),
             [],
-            BookingPassengersSnapshot::validationAttributes(),
+            BookingPassengersSnapshot::partyRowAttributes(),
         );
+
+        $expanded = BookingPassengersSnapshot::expandPartyRows(
+            is_array($validated['party_rows'] ?? null) ? $validated['party_rows'] : [],
+        );
+        $validated['party_rows'] = $expanded['rows'];
+        $validated['ages'] = $expanded['ages'];
 
         $offer = PackageOffer::query()
             ->where('uuid', $validated['package_offer_uuid'])
@@ -274,9 +363,16 @@ final class AccountAgencyReservationController extends Controller
 
         $resolved = $this->fieldResolver->forPackageOffer($offer);
         $spec = $this->fieldResolver->validationSpec($resolved, count($validated['ages']));
-        $answers = $spec['rules'] === []
-            ? []
-            : $request->validate($spec['rules'], $spec['messages'], $spec['attributes']);
+        if (! $requireExtraFields || $spec['rules'] === []) {
+            $postedPassengers = $request->input('passenger_fields', []);
+            $postedBooking = $request->input('booking_fields', []);
+            $answers = [
+                'passenger_fields' => is_array($postedPassengers) ? $postedPassengers : [],
+                'booking_fields' => is_array($postedBooking) ? $postedBooking : [],
+            ];
+        } else {
+            $answers = $request->validate($spec['rules'], $spec['messages'], $spec['attributes']);
+        }
 
         $validated['passenger_fields'] = is_array($answers['passenger_fields'] ?? null) ? $answers['passenger_fields'] : [];
         $validated['booking_fields'] = is_array($answers['booking_fields'] ?? null) ? $answers['booking_fields'] : [];

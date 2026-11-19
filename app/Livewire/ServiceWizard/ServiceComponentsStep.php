@@ -204,16 +204,22 @@ class ServiceComponentsStep extends Component
 
         $eligibleChildVariants = $components->eligibleChildVariants($service);
         $buyerId = (int) $service->account_id;
-        $costLabels = app(ProviderSupplyCostResolver::class)->labelsForVariants($buyerId, $eligibleChildVariants);
-        $eligibleChildVariants->each(function (ServiceVariant $variant) use ($costLabels): void {
+        $selectedVariants = collect($selectedParent?->components ?? [])
+            ->map(fn (ServiceComponent $component) => $component->childVariant)
+            ->filter();
+        $priceLabels = app(ProviderSupplyCostResolver::class)->componentPriceLabels(
+            $buyerId,
+            $eligibleChildVariants->concat($selectedVariants),
+        );
+        $eligibleChildVariants->each(function (ServiceVariant $variant) use ($priceLabels): void {
             $label = $variant->dropdownLabel();
             $supplierName = trim((string) $variant->getAttribute('supply_supplier_name'));
             if ($supplierName !== '') {
                 $label .= ' · '.$supplierName;
             }
-            $cost = $costLabels[(int) $variant->id] ?? null;
-            if (is_string($cost) && $cost !== '') {
-                $label .= ' · '.__('wizard.components_cost', ['cost' => $cost]);
+            $price = $priceLabels[(int) $variant->id] ?? null;
+            if (is_string($price) && $price !== '') {
+                $label .= ' · '.__('wizard.components_price', ['price' => $price]);
             }
             $variant->setAttribute('picker_label', $label);
         });
@@ -225,13 +231,6 @@ class ServiceComponentsStep extends Component
             }
         }
 
-        $selectedCosts = app(ProviderSupplyCostResolver::class)->labelsForVariants(
-            $buyerId,
-            collect($selectedParent?->components ?? [])
-                ->map(fn (ServiceComponent $component) => $component->childVariant)
-                ->filter()
-        );
-
         return view('livewire.service-wizard.service-components-step', [
             'service' => $service,
             'parentVariants' => $parentVariants,
@@ -239,7 +238,7 @@ class ServiceComponentsStep extends Component
             'selectedComponents' => $selectedParent?->components ?? collect(),
             'eligibleChildVariants' => $eligibleChildVariants,
             'componentWarnings' => $componentWarnings,
-            'componentCosts' => $selectedCosts,
+            'componentCosts' => $priceLabels,
         ]);
     }
 }

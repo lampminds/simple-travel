@@ -299,11 +299,17 @@ class AccountResource extends LmpResource
                 Section::make('')->schema([
                     SpatieMediaLibraryFileUpload::make('home_background')
                         ->label(__('filament.resources.account_fields.public_profile_home_background'))
-                        ->helperText(__('filament.resources.account_fields.public_profile_home_background_help'))
+                        ->helperText(__('filament.resources.account_fields.public_profile_home_background_help', [
+                            'max' => Account::HOME_BACKGROUND_MAX_SLIDES,
+                        ]))
                         ->collection(Account::MEDIA_COLLECTION_HOME_BACKGROUND)
                         ->disk('account_home_backgrounds')
                         ->conversion(Account::MEDIA_CONVERSION_HOME_BACKGROUND)
                         ->image()
+                        ->multiple()
+                        ->reorderable()
+                        ->appendFiles()
+                        ->maxFiles(Account::HOME_BACKGROUND_MAX_SLIDES)
                         ->maxSize(Account::MEDIA_MAX_HOME_BACKGROUND_KB)
                         ->acceptedFileTypes(Account::HOME_BACKGROUND_MIME_TYPES)
                         ->getUploadedFileNameForStorageUsing(

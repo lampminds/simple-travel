@@ -142,7 +142,7 @@ class CatMenusTableSeeder extends Seeder
                 'id' => 15,
                 'slug' => 'website_configuration',
                 'icon' => NULL,
-                'route' => 'website_configuration',
+                'route' => 'account.public-profile.edit',
                 'parent_id' => 14,
                 'sort_order' => 8,
                 'active' => 1,

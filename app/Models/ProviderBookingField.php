@@ -89,6 +89,11 @@ class ProviderBookingField extends Model
         return $this->hasMany(ProviderBookingTemplateItem::class);
     }
 
+    public function answers(): HasMany
+    {
+        return $this->hasMany(BookingFieldAnswer::class);
+    }
+
     public function scopeLabel(): string
     {
         return (string) __('account.booking_fields.scope_'.$this->scope);

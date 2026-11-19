@@ -186,14 +186,11 @@ final class ProviderBookingFieldWriter
     {
         $validated = validator($input, [
             'name' => ['required', 'string', 'max:120'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.provider_booking_field_id' => ['required', 'integer'],
+            'items' => ['nullable', 'array'],
+            'items.*.provider_booking_field_id' => ['nullable', 'integer'],
             'items.*.is_required' => ['nullable', 'boolean'],
             'items.*.sort_order' => ['nullable'],
         ], [
-            'items.required' => (string) __('account.booking_fields.templates.validation.items_required'),
-            'items.min' => (string) __('account.booking_fields.templates.validation.items_required'),
-            'items.*.provider_booking_field_id.required' => (string) __('account.booking_fields.templates.validation.field_required'),
             'items.*.provider_booking_field_id.integer' => (string) __('account.booking_fields.templates.validation.field_required'),
         ])->validate();
 
@@ -207,12 +204,15 @@ final class ProviderBookingFieldWriter
         $rows = [];
         $seen = [];
 
-        foreach ($validated['items'] as $index => $item) {
+        foreach ($validated['items'] ?? [] as $index => $item) {
             if (! is_array($item)) {
                 continue;
             }
 
-            $fieldId = (int) $item['provider_booking_field_id'];
+            $fieldId = (int) ($item['provider_booking_field_id'] ?? 0);
+            if ($fieldId < 1) {
+                continue;
+            }
             if (! isset($allowed[$fieldId])) {
                 throw ValidationException::withMessages([
                     'items.'.$index.'.provider_booking_field_id' => (string) __('account.booking_fields.validation.field_not_allowed'),
@@ -236,12 +236,6 @@ final class ProviderBookingFieldWriter
                 'is_required' => ! empty($item['is_required']),
                 'sort_order' => max(0, min(9999, (int) $sort)),
             ];
-        }
-
-        if ($rows === []) {
-            throw ValidationException::withMessages([
-                'items' => (string) __('account.booking_fields.templates.validation.items_required'),
-            ]);
         }
 
         if ($name === '') {

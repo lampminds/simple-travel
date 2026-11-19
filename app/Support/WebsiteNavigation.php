@@ -202,14 +202,36 @@ final class WebsiteNavigation
             ->values();
     }
 
+    /**
+     * "Ver sitio web" leaves the operator panel and opens the public host.
+     */
+    public static function opensInNewTab(Menu $menu): bool
+    {
+        return $menu->slug === 'browse_website';
+    }
+
     public static function urlForMenu(Menu $menu): string
     {
-        $name = $menu->route;
-        if (! is_string($name)) {
+        if ($menu->slug === 'browse_website') {
+            $account = Auth::user()?->currentAccount();
+            if ($account instanceof Account) {
+                return TenantWebsiteHostParser::publicWebsiteUrlForAccount($account) ?? '#';
+            }
+
             return '#';
         }
 
+        $name = $menu->route;
+        if (! is_string($name)) {
+            $name = '';
+        }
+
         $name = trim($name);
+
+        if ($menu->slug === 'website_configuration' || $name === 'website_configuration') {
+            return route('account.public-profile.edit');
+        }
+
         if ($name === '') {
             return '#';
         }

@@ -21,9 +21,6 @@
                     <a class="btn btn-outline-primary" href="{{ route('account.booking-templates.index') }}">
                         {{ __('account.booking_fields.templates.link') }}
                     </a>
-                    <a class="btn btn-outline-primary" href="{{ route('account.booking-fields.create') }}">
-                        {{ __('account.booking_fields.add') }}
-                    </a>
                 </div>
             </div>
 
@@ -60,8 +57,8 @@
                         {{ __('account.booking_fields.service_empty_with_templates') }}
                     @else
                         {{ __('account.booking_fields.service_empty') }}
+                        <a href="{{ route('account.booking-templates.index') }}">{{ __('account.booking_fields.templates.link') }}</a>
                     @endif
-                    <a href="{{ route('account.booking-fields.index') }}">{{ __('account.booking_fields.service_open_catalog') }}</a>
                 </div>
                 <div class="d-flex justify-content-end mt-3">
                     <a class="btn btn-outline-secondary" href="{{ route('catalog') }}">{{ __('account.booking_fields.back_catalog') }}</a>
@@ -97,7 +94,7 @@
                             <table class="table align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>{{ __('account.booking_fields.assigned') }}</th>
+                                        <th class="text-nowrap" style="width: 1%;"></th>
                                         <th class="text-center text-nowrap" style="width: 1%;">{{ __('account.booking_fields.col_order') }}</th>
                                         <th>{{ __('account.booking_fields.col_label') }}</th>
                                         <th>{{ __('account.booking_fields.col_scope') }}</th>
@@ -110,9 +107,6 @@
                                         @php
                                             $stored = $assignments->get($field->id);
                                             $postedRow = $usePosted ? ($posted[$field->id] ?? $posted[(string) $field->id] ?? []) : null;
-                                            $isAssigned = $usePosted
-                                                ? ! empty($postedRow['assigned'])
-                                                : $stored !== null;
                                             $isRequired = $usePosted
                                                 ? ! empty($postedRow['is_required'])
                                                 : ($stored === null || (bool) $stored->is_required);
@@ -122,15 +116,22 @@
                                             $label = $field->labelForDisplay();
                                         @endphp
                                         <tr class="booking-order-row">
-                                            <td>
-                                                <input
-                                                    type="checkbox"
-                                                    class="form-check-input"
-                                                    name="assignments[{{ $field->id }}][assigned]"
-                                                    value="1"
-                                                    aria-label="{{ __('account.booking_fields.assigned') }}: {{ $label !== '' ? $label : __('account.booking_fields.untitled') }}"
-                                                    @checked($isAssigned)
-                                                >
+                                            <td class="text-nowrap">
+                                                <input type="hidden" name="assignments[{{ $field->id }}][assigned]" value="1">
+                                                <div class="dropdown">
+                                                    <a class="btn-link text-muted dropdown-toggle arrow-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="icon icon-xs" data-feather="more-horizontal"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <button
+                                                            type="submit"
+                                                            name="remove_field_id"
+                                                            value="{{ $field->id }}"
+                                                            class="dropdown-item"
+                                                            onclick="return confirm(@js(__('account.booking_fields.remove_from_service_confirm')))"
+                                                        >{{ __('account.booking_fields.remove_from_service') }}</button>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td class="text-center text-nowrap">
                                                 <input type="hidden" class="booking-order-input" name="assignments[{{ $field->id }}][sort_order]" value="{{ $sortOrder }}">
@@ -159,11 +160,29 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
-                            <a class="btn btn-outline-secondary" href="{{ route('catalog') }}">{{ __('account.booking_fields.back_catalog') }}</a>
-                            <button type="submit" class="btn btn-primary">{{ __('account.booking_fields.save') }}</button>
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mt-4">
+                            <div>
+                                <button type="submit" class="btn btn-outline-danger" form="clear-service-booking-fields">
+                                    {{ __('account.booking_fields.clear_all') }}
+                                </button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-outline-secondary" href="{{ route('catalog') }}">{{ __('account.booking_fields.back_catalog') }}</a>
+                                <button type="submit" class="btn btn-primary">{{ __('account.booking_fields.save') }}</button>
+                            </div>
                         </div>
                     </div>
+                </form>
+                <form
+                    id="clear-service-booking-fields"
+                    method="POST"
+                    action="{{ route('account.services.booking-fields.update', $service) }}"
+                    class="d-none"
+                    onsubmit="return confirm(@js(__('account.booking_fields.clear_all_confirm')))"
+                >
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="clear_all" value="1">
                 </form>
             @endif
         </div>

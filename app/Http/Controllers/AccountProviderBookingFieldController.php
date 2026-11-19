@@ -93,6 +93,28 @@ final class AccountProviderBookingFieldController extends Controller
             ->with('status', __('account.booking_fields.status_saved'));
     }
 
+    public function destroy(Request $request, ProviderBookingField $field): RedirectResponse
+    {
+        $account = $this->account($request);
+        $this->assertField($field, (int) $account->id);
+
+        $services = $field->assignments()->count();
+        $templates = $field->templateItems()->count();
+        $bookings = $field->answers()->count();
+
+        if ($services > 0 || $templates > 0 || $bookings > 0) {
+            return redirect()
+                ->route('account.booking-fields.index')
+                ->with('error', $this->deleteBlockedMessage($services, $templates, $bookings));
+        }
+
+        $field->delete();
+
+        return redirect()
+            ->route('account.booking-fields.index')
+            ->with('status', __('account.booking_fields.status_deleted'));
+    }
+
     public function toggleActive(Request $request, ProviderBookingField $field): RedirectResponse
     {
         $account = $this->account($request);
@@ -163,18 +185,15 @@ final class AccountProviderBookingFieldController extends Controller
             ->map(static fn (mixed $id): int => (int) $id)
             ->all();
 
-        $fields = ProviderBookingField::query()
-            ->where('account_id', $account->id)
-            ->where(function ($query) use ($assignedIds): void {
-                $query->where('is_active', true);
-                if ($assignedIds !== []) {
-                    $query->orWhereIn('id', $assignedIds);
-                }
-            })
-            ->with('translations.language.locale')
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
+        $fields = $assignedIds === []
+            ? collect()
+            : ProviderBookingField::query()
+                ->where('account_id', $account->id)
+                ->whereIn('id', $assignedIds)
+                ->with('translations.language.locale')
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
 
         $assignments = $service->bookingFieldAssignments->keyBy('provider_booking_field_id');
         $fields = $fields->sort(function (ProviderBookingField $left, ProviderBookingField $right) use ($assignments): int {
@@ -292,6 +311,17 @@ final class AccountProviderBookingFieldController extends Controller
         $account = $this->account($request);
         $this->assertService($service, (int) $account->id);
 
+        $removeFieldId = (int) $request->input('remove_field_id', 0);
+        if ($removeFieldId > 0) {
+            $service->bookingFieldAssignments()
+                ->where('provider_booking_field_id', $removeFieldId)
+                ->delete();
+
+            return redirect()
+                ->route('account.services.booking-fields.edit', $service)
+                ->with('status', __('account.booking_fields.field_removed'));
+        }
+
         $request->validate([
             'assignments' => ['nullable', 'array'],
             'assignments.*.assigned' => ['nullable', 'boolean'],
@@ -316,11 +346,18 @@ final class AccountProviderBookingFieldController extends Controller
             ->map(static fn (mixed $id): int => (int) $id)
             ->all();
 
-        $this->writer->syncServiceAssignments($service, $allowedIds, $request->all());
+        $cleared = $request->boolean('clear_all');
+        $this->writer->syncServiceAssignments(
+            $service,
+            $allowedIds,
+            $cleared ? [] : $request->all(),
+        );
 
         return redirect()
             ->route('account.services.booking-fields.edit', $service)
-            ->with('status', __('account.booking_fields.service_saved'));
+            ->with('status', __($cleared
+                ? 'account.booking_fields.clear_all_saved'
+                : 'account.booking_fields.service_saved'));
     }
 
     private function account(Request $request): Account
@@ -338,6 +375,33 @@ final class AccountProviderBookingFieldController extends Controller
     private function assertField(ProviderBookingField $field, int $accountId): void
     {
         abort_unless((int) $field->account_id === $accountId, 404);
+    }
+
+    private function deleteBlockedMessage(int $services, int $templates, int $bookings): string
+    {
+        $reasons = [];
+
+        if ($services > 0) {
+            $reasons[] = trans_choice('account.booking_fields.delete_blocked_services', $services, [
+                'count' => $services,
+            ]);
+        }
+
+        if ($templates > 0) {
+            $reasons[] = trans_choice('account.booking_fields.delete_blocked_templates', $templates, [
+                'count' => $templates,
+            ]);
+        }
+
+        if ($bookings > 0) {
+            $reasons[] = trans_choice('account.booking_fields.delete_blocked_bookings', $bookings, [
+                'count' => $bookings,
+            ]);
+        }
+
+        return (string) __('account.booking_fields.delete_blocked', [
+            'reasons' => implode(', ', $reasons),
+        ]);
     }
 
     private function assertService(Service $service, int $accountId): void

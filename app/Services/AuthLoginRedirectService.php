@@ -6,6 +6,7 @@ use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use App\Support\CurrentAccountSession;
+use App\Support\OperatorWebsiteAgencyRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,10 @@ class AuthLoginRedirectService
 
         if ($accountIds->count() === 1) {
             CurrentAccountSession::put($request, $user, (int) $accountIds->first());
+
+            if (OperatorWebsiteAgencyRedirect::applies($request, $user->currentAccount())) {
+                return OperatorWebsiteAgencyRedirect::toLanding($request);
+            }
         } elseif ($accountIds->count() > 1) {
             $request->session()->forget(SetPermissionsTeamForRequest::SESSION_CURRENT_ACCOUNT_ID);
             $request->session()->forget(CurrentAccountSession::SESSION_ACCOUNT_NAME);

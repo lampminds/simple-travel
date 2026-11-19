@@ -10,6 +10,7 @@ use App\Models\ProviderServiceOffer;
 use App\Models\ProviderSupplyPriceListAssignment;
 use App\Models\ProviderSupplyRelationship;
 use App\Services\AccountRelationshipsListingService;
+use App\Services\ProviderSupplyCostResolver;
 use App\Services\ProviderSupplyOfferSyncService;
 use App\Support\AccountBusinessTypeGate;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,7 @@ final class AccountProviderSupplyOfferController extends Controller
     public function __construct(
         private readonly AccountRelationshipsListingService $accountLabels,
         private readonly ProviderSupplyOfferSyncService $offerSync,
+        private readonly ProviderSupplyCostResolver $costResolver,
     ) {
     }
 
@@ -115,17 +117,25 @@ final class AccountProviderSupplyOfferController extends Controller
             ->where('supplier_id', $supplier->id)
             ->with([
                 'serviceVariant.translations.language.locale',
+                'serviceVariant.currency.lmpCurrency',
+                'serviceVariant.service.account',
                 'serviceVariant.service.translations.language.locale',
             ])
             ->orderByDesc('offered_at')
             ->orderByDesc('id')
             ->get();
 
+        $priceLabels = $this->costResolver->labelsForVariants(
+            (int) $buyer->id,
+            $offers->map(fn (ProviderServiceOffer $offer) => $offer->serviceVariant)->filter(),
+        );
+
         return view('account.provider-supply.review', [
             'account' => $buyer,
             'counterpart' => $supplier,
             'counterpartLabel' => $this->accountLabels->accountDisplayName($supplier),
             'offers' => $offers,
+            'priceLabels' => $priceLabels,
         ]);
     }
 

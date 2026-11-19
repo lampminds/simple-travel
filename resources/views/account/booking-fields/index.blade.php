@@ -9,6 +9,9 @@
             @if (session('status'))
                 <div class="alert alert-success mb-3" role="alert">{{ session('status') }}</div>
             @endif
+            @if (session('error'))
+                <div class="alert alert-danger mb-3" role="alert">{{ session('error') }}</div>
+            @endif
 
             <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-start gap-3">
                 <x-account-page-header
@@ -57,10 +60,19 @@
                                                         {{ $field->is_active ? __('account.booking_fields.deactivate') : __('account.booking_fields.activate') }}
                                                     </button>
                                                 </li>
+                                                <li>
+                                                    <button class="dropdown-item" type="submit" form="delete-field-{{ $field->id }}">
+                                                        {{ __('account.booking_fields.delete') }}
+                                                    </button>
+                                                </li>
                                             </ul>
                                         </div>
                                         <form id="toggle-field-{{ $field->id }}" method="POST" action="{{ route('account.booking-fields.toggle', $field) }}" class="d-none">
                                             @csrf
+                                        </form>
+                                        <form id="delete-field-{{ $field->id }}" method="POST" action="{{ route('account.booking-fields.destroy', $field) }}" class="d-none" onsubmit="return confirm(@js(__('account.booking_fields.delete_confirm')))">
+                                            @csrf
+                                            @method('DELETE')
                                         </form>
                                     </td>
                                     <td class="text-center text-nowrap">

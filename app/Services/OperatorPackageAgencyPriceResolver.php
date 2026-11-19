@@ -177,6 +177,97 @@ final class OperatorPackageAgencyPriceResolver
     }
 
     /**
+     * Agency base and charged amount for each age, summed across per-person lines.
+     *
+     * Amounts already include the package item quantity. Lines that are not priced
+     * per passenger are left out; they stay in the reservation total.
+     *
+     * @param  list<int>  $ages
+     * @return list<array{base: float, amount: float, priced: bool}>
+     */
+    public function quotePassengerAges(
+        OperatorServiceCatalog $package,
+        OperatorPriceList $priceList,
+        int $agencyAccountId,
+        int $operatorAccountId,
+        CarbonInterface $pricingDate,
+        array $ages,
+    ): array {
+        $quotes = [];
+        foreach (array_values($ages) as $unused) {
+            $quotes[] = ['base' => 0.0, 'amount' => 0.0, 'priced' => false];
+        }
+
+        if ($quotes === [] || (int) $priceList->operator_id !== $operatorAccountId) {
+            return $quotes;
+        }
+
+        $assignment = $this->findActiveAssignment($priceList, $agencyAccountId, $pricingDate);
+        if ($assignment === null) {
+            return $quotes;
+        }
+
+        $package->loadMissing([
+            'items.serviceVariant.paxBands',
+            'items.serviceVariant.service',
+            'items.serviceOffer',
+        ]);
+
+        $listItems = OperatorPriceListItem::query()
+            ->where('operator_price_list_id', $priceList->id)
+            ->get()
+            ->keyBy(fn (OperatorPriceListItem $row) => (int) $row->operator_package_item_id);
+
+        $listCurrencyId = (int) $priceList->currency_id;
+
+        foreach ($package->items as $packageItem) {
+            if (! $packageItem instanceof OperatorPackageItem || $packageItem->inclusion_mode !== 'included') {
+                continue;
+            }
+
+            $listItem = $listItems->get((int) $packageItem->id);
+            $variant = $packageItem->serviceVariant;
+            if ($listItem === null || ! $variant instanceof ServiceVariant) {
+                continue;
+            }
+
+            $pricesEachPassenger = $variant->pricing_type === 'per_person' || $variant->usesPaxBands();
+            if (! $pricesEachPassenger) {
+                continue;
+            }
+
+            $priced = $this->passengerLinePricer->price(
+                $packageItem,
+                $operatorAccountId,
+                $listCurrencyId,
+                $this->normalizeListItemMode($listItem),
+                (float) $listItem->price,
+                $pricingDate,
+                $ages,
+            );
+
+            if (! $priced['has_amount'] || $priced['fares'] === []) {
+                continue;
+            }
+
+            $packageQuantity = max(1, (int) $packageItem->quantity);
+            foreach ($priced['fares'] as $index => $fare) {
+                if (! is_array($fare) || ! isset($quotes[$index])) {
+                    continue;
+                }
+
+                $regular = (float) ($fare['agency_regular_amount'] ?? $fare['agency_amount'] ?? 0);
+                $amount = (float) ($fare['agency_amount'] ?? 0);
+                $quotes[$index]['base'] += $regular * $packageQuantity;
+                $quotes[$index]['amount'] += $amount * $packageQuantity;
+                $quotes[$index]['priced'] = true;
+            }
+        }
+
+        return $quotes;
+    }
+
+    /**
      * Package total from one operator price list, without an agency assignment adjustment.
      * Included lines only. Per-person lines count one passenger.
      * Returns an empty amount when any included line cannot be priced.

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Account;
 use Illuminate\Support\Str;
 
 /**
@@ -64,6 +65,17 @@ final class TenantWebsiteHostParser
         }
 
         return $sub;
+    }
+
+    /**
+     * Public website of an operator account.
+     *
+     * Local: {nick}{development_host_suffix}. Production: {nick}.{production_domain}.
+     * A custom portal hostname (accounts.portal_host) is the B2B sign-in host, not this site.
+     */
+    public static function publicWebsiteUrlForAccount(Account $account): ?string
+    {
+        return self::publicWebsiteUrlForNick((string) $account->nick);
     }
 
     /**

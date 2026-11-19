@@ -18,6 +18,10 @@ final class BookingPassengersSnapshot
 
     public const MAX_AGE = 120;
 
+    public const PARTY_ROW_COUNT = 4;
+
+    public const PARTY_AGE_MAX = 110;
+
     public const TYPE_ADULT = 'adult';
 
     public const TYPE_CHILD = 'child';
@@ -59,6 +63,118 @@ final class BookingPassengersSnapshot
             'ages' => (string) __('account.reservations.passengers_heading'),
             'ages.*' => (string) __('account.reservations.field_age'),
         ];
+    }
+
+    /**
+     * @return list<array{age: string, quantity: int}>
+     */
+    public static function blankPartyRows(): array
+    {
+        $rows = [];
+
+        for ($index = 0; $index < self::PARTY_ROW_COUNT; $index++) {
+            $rows[] = [
+                'age' => '',
+                'quantity' => 1,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public static function partyRowRules(): array
+    {
+        return [
+            'party_rows' => ['required', 'array', 'size:'.self::PARTY_ROW_COUNT],
+            'party_rows.*.age' => ['nullable', 'integer', 'min:0', 'max:'.self::PARTY_AGE_MAX],
+            'party_rows.*.quantity' => ['nullable', 'integer', 'min:1', 'max:'.self::MAX_PASSENGERS],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function partyRowAttributes(): array
+    {
+        return [
+            'party_rows' => (string) __('account.reservations.passengers_heading'),
+            'party_rows.*.age' => (string) __('account.reservations.field_age'),
+            'party_rows.*.quantity' => (string) __('account.reservations.field_quantity'),
+        ];
+    }
+
+    /**
+     * Rows without an age are ignored. The rest expand to one age per passenger.
+     *
+     * @param  list<array<string, mixed>|mixed>  $inputRows
+     * @return array{rows: list<array{age: string, quantity: int}>, ages: list<int>}
+     */
+    public static function normalizePartyRows(array $inputRows): array
+    {
+        $rows = [];
+        $ages = [];
+        $inputRows = array_values($inputRows);
+
+        for ($index = 0; $index < self::PARTY_ROW_COUNT; $index++) {
+            $input = is_array($inputRows[$index] ?? null) ? $inputRows[$index] : [];
+            $ageRaw = $input['age'] ?? '';
+            $hasAge = $ageRaw !== '' && $ageRaw !== null;
+            $age = $hasAge ? max(0, min(self::PARTY_AGE_MAX, (int) $ageRaw)) : null;
+            $quantity = (int) ($input['quantity'] ?? 1);
+            if ($quantity < 1) {
+                $quantity = 1;
+            }
+            if ($quantity > self::MAX_PASSENGERS) {
+                $quantity = self::MAX_PASSENGERS;
+            }
+
+            $rows[] = [
+                'age' => $age === null ? '' : (string) $age,
+                'quantity' => $quantity,
+            ];
+
+            if ($age === null) {
+                continue;
+            }
+
+            for ($copy = 0; $copy < $quantity; $copy++) {
+                $ages[] = $age;
+            }
+        }
+
+        return [
+            'rows' => $rows,
+            'ages' => $ages,
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>|mixed>  $inputRows
+     * @return array{rows: list<array{age: string, quantity: int}>, ages: list<int>}
+     */
+    public static function expandPartyRows(array $inputRows): array
+    {
+        $normalized = self::normalizePartyRows($inputRows);
+        $ages = $normalized['ages'];
+
+        if ($ages === []) {
+            throw ValidationException::withMessages([
+                'party_rows' => (string) __('account.reservations.validation.passengers_required'),
+            ]);
+        }
+
+        if (count($ages) > self::MAX_PASSENGERS) {
+            throw ValidationException::withMessages([
+                'party_rows' => (string) __('account.reservations.validation.passengers_too_many', [
+                    'max' => self::MAX_PASSENGERS,
+                ]),
+            ]);
+        }
+
+        return $normalized;
     }
 
     /**

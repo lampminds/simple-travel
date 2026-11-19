@@ -44,11 +44,13 @@
 
                                 @php
                                     $submittedInput = is_array($reservationInput ?? null) ? $reservationInput : [];
-                                    $submittedAges = $submittedInput['ages'] ?? null;
-                                    $ageValues = old('ages', is_array($submittedAges) && $submittedAges !== [] ? $submittedAges : ['']);
-                                    if (! is_array($ageValues) || $ageValues === []) {
-                                        $ageValues = [''];
+                                    $partyRows = old('party_rows', $partyRows ?? \App\Support\BookingPassengersSnapshot::blankPartyRows());
+                                    if (! is_array($partyRows) || $partyRows === []) {
+                                        $partyRows = \App\Support\BookingPassengersSnapshot::blankPartyRows();
                                     }
+                                    $normalizedParty = \App\Support\BookingPassengersSnapshot::normalizePartyRows($partyRows);
+                                    $partyRows = $normalizedParty['rows'];
+                                    $expandedAges = $normalizedParty['ages'];
                                     $passengerFields = $passengerFields ?? [];
                                     $bookingFields = $bookingFields ?? [];
                                     $countries = $countries ?? collect();
@@ -64,32 +66,74 @@
                                             ? $submittedInput['booking_fields']
                                             : [];
                                     }
+                                    $rowQuotes = $rowQuotes ?? null;
                                 @endphp
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label for="travel_start_date" class="form-label">{{ __('account.reservations.field_travel_start') }}</label>
+                                        <input
+                                            type="date"
+                                            name="travel_start_date"
+                                            id="travel_start_date"
+                                            class="form-control @error('travel_start_date') is-invalid @enderror"
+                                            value="{{ old('travel_start_date', $submittedInput['travel_start_date'] ?? '') }}"
+                                            required
+                                        >
+                                        @error('travel_start_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="travel_end_date" class="form-label">{{ __('account.reservations.field_travel_end') }}</label>
+                                        <input
+                                            type="date"
+                                            name="travel_end_date"
+                                            id="travel_end_date"
+                                            class="form-control @error('travel_end_date') is-invalid @enderror"
+                                            value="{{ old('travel_end_date', $submittedInput['travel_end_date'] ?? '') }}"
+                                            required
+                                        >
+                                        @error('travel_end_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
 
                                 <h6 class="mb-2">{{ __('account.reservations.passengers_heading') }}</h6>
                                 <p class="text-muted small mb-3">{{ __('account.reservations.passengers_intro') }}</p>
-                                @if ($passengerFields !== [])
-                                    <p class="text-muted small mb-3">{{ __('account.reservations.extra_passenger_intro') }}</p>
-                                @endif
 
-                                <div id="passenger-ages" class="mb-2">
-                                    @foreach ($ageValues as $index => $ageValue)
-                                        @include('account.reservations.agency.partials.passenger-row', [
-                                            'ageValue' => $ageValue,
-                                            'passengerIndex' => $index,
-                                            'passengerFields' => $passengerFields,
-                                            'passengerFieldValues' => $passengerFieldValues,
-                                            'countries' => $countries,
-                                            'showErrors' => true,
-                                        ])
-                                    @endforeach
-                                </div>
-                                @error('ages')
+                                @foreach ($partyRows as $index => $partyRow)
+                                    @include('account.reservations.agency.partials.party-row', [
+                                        'index' => $index,
+                                        'partyRow' => is_array($partyRow) ? $partyRow : ['age' => '', 'quantity' => 1],
+                                        'rowQuote' => is_array($rowQuotes) ? ($rowQuotes[$index] ?? null) : null,
+                                    ])
+                                @endforeach
+                                @error('party_rows')
                                     <div class="alert alert-danger py-2" role="alert">{{ $message }}</div>
                                 @enderror
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="add-passenger-age">
-                                    {{ __('account.reservations.add_passenger') }}
-                                </button>
+
+                                @if ($passengerFields !== [] && $expandedAges !== [])
+                                    <h6 class="mb-2 mt-4">{{ __('account.reservations.extra_passenger_heading') }}</h6>
+                                    <p class="text-muted small mb-3">{{ __('account.reservations.extra_passenger_intro') }}</p>
+                                    @foreach ($expandedAges as $passengerIndex => $passengerAge)
+                                        <div class="border rounded p-3 mb-2">
+                                            <div class="fw-medium mb-2">{{ __('account.reservations.show_passenger_age', ['age' => $passengerAge]) }}</div>
+                                            <div class="row g-3">
+                                                @foreach ($passengerFields as $field)
+                                                    @include('account.reservations.agency.partials.passenger-field', [
+                                                        'field' => $field,
+                                                        'passengerIndex' => $passengerIndex,
+                                                        'passengerFieldValues' => $passengerFieldValues,
+                                                        'countries' => $countries,
+                                                        'showErrors' => true,
+                                                    ])
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
 
                                 @if ($bookingFields !== [])
                                     <h6 class="mb-2">{{ __('account.reservations.extra_booking_heading') }}</h6>
@@ -157,34 +201,6 @@
                                 @endif
 
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label for="travel_start_date" class="form-label">{{ __('account.reservations.field_travel_start') }}</label>
-                                        <input
-                                            type="date"
-                                            name="travel_start_date"
-                                            id="travel_start_date"
-                                            class="form-control @error('travel_start_date') is-invalid @enderror"
-                                            value="{{ old('travel_start_date', $submittedInput['travel_start_date'] ?? '') }}"
-                                            required
-                                        >
-                                        @error('travel_start_date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="travel_end_date" class="form-label">{{ __('account.reservations.field_travel_end') }}</label>
-                                        <input
-                                            type="date"
-                                            name="travel_end_date"
-                                            id="travel_end_date"
-                                            class="form-control @error('travel_end_date') is-invalid @enderror"
-                                            value="{{ old('travel_end_date', $submittedInput['travel_end_date'] ?? '') }}"
-                                            required
-                                        >
-                                        @error('travel_end_date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
                                     <div class="col-12">
                                         <label for="remarks_customer" class="form-label">{{ __('account.reservations.field_remarks') }}</label>
                                         <textarea
@@ -215,43 +231,6 @@
                                     </button>
                                 </div>
                             </form>
-                            <template id="passenger-age-template">
-                                @include('account.reservations.agency.partials.passenger-row', [
-                                    'ageValue' => '',
-                                    'passengerIndex' => null,
-                                    'passengerFields' => $passengerFields ?? [],
-                                    'passengerFieldValues' => [],
-                                    'countries' => $countries ?? collect(),
-                                    'showErrors' => false,
-                                ])
-                            </template>
-                            <script>
-                                (function () {
-                                    var list = document.getElementById('passenger-ages');
-                                    var addButton = document.getElementById('add-passenger-age');
-                                    var template = document.getElementById('passenger-age-template');
-                                    if (!list || !addButton || !template) {
-                                        return;
-                                    }
-                                    addButton.addEventListener('click', function () {
-                                        if (list.querySelectorAll('.passenger-age-row').length >= 30) {
-                                            return;
-                                        }
-                                        list.appendChild(template.content.cloneNode(true));
-                                    });
-                                    list.addEventListener('click', function (event) {
-                                        var button = event.target.closest('.remove-passenger-age');
-                                        if (!button) {
-                                            return;
-                                        }
-                                        var rows = list.querySelectorAll('.passenger-age-row');
-                                        if (rows.length < 2) {
-                                            return;
-                                        }
-                                        button.closest('.passenger-age-row').remove();
-                                    });
-                                })();
-                            </script>
                         </div>
                     </div>
                 </div>

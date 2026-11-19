@@ -22,7 +22,7 @@
 
                         $currentAccount = auth()->user()?->currentAccount();
                         $publicWebsiteUrl = $currentAccount
-                            ? \App\Support\TenantWebsiteHostParser::publicWebsiteUrlForNick($currentAccount->nick)
+                            ? \App\Support\TenantWebsiteHostParser::publicWebsiteUrlForAccount($currentAccount)
                             : null;
                         $hasAccountTypes = count(\App\Support\CurrentAccountSession::typeIds(request())) > 0;
                     @endphp

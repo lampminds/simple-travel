@@ -1,14 +1,12 @@
 @extends('site::layouts.main')
 
 @php
-    // Placeholder frames until each account stores its own slides.
-    $heroSlides = [];
-    $uploadedHero = $account->homeBackgroundUrl();
-    if (is_string($uploadedHero) && $uploadedHero !== '') {
-        $heroSlides[] = $uploadedHero;
-    }
-    foreach (['images/bg/4.jpg', 'images/bg/5.jpg', 'images/bg/6.jpg'] as $fallbackSlide) {
-        $heroSlides[] = site_asset($fallbackSlide);
+    $heroSlides = array_column($account->homeBackgroundSlides(), 'url');
+    // Stock frames only while the account has not uploaded its own slider.
+    if ($heroSlides === []) {
+        foreach (['images/bg/4.jpg', 'images/bg/5.jpg', 'images/bg/6.jpg'] as $fallbackSlide) {
+            $heroSlides[] = site_asset($fallbackSlide);
+        }
     }
     $showPassengerSearch = ! $account->hasActiveType('operator');
 @endphp

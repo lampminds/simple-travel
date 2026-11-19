@@ -48,6 +48,9 @@ class Account extends Model implements HasMedia
 
     public const MEDIA_MAX_HOME_BACKGROUND_KB = 5120;
 
+    /** Frames the home-page slider can store for one account. */
+    public const HOME_BACKGROUND_MAX_SLIDES = 8;
+
     /**
      * Hero images. The check uses the detected type, not the filename:
      * an export can keep a .jpeg name while the bytes are AVIF.
@@ -424,7 +427,6 @@ class Account extends Model implements HasMedia
 
         $this->addMediaCollection(self::MEDIA_COLLECTION_HOME_BACKGROUND)
             ->useDisk('account_home_backgrounds')
-            ->singleFile()
             ->acceptsMimeTypes(self::HOME_BACKGROUND_MIME_TYPES);
     }
 
@@ -468,6 +470,23 @@ class Account extends Model implements HasMedia
             'image/webp' => 'webp',
             'image/avif' => 'avif',
             default => strtolower($file->getClientOriginalExtension()) ?: 'jpg',
+        };
+
+        return Str::ulid().'.'.$extension;
+    }
+
+    /**
+     * Storage name for a logo. The extension follows the detected MIME type.
+     */
+    public static function logoFileName(UploadedFile $file): string
+    {
+        $extension = match ($file->getMimeType()) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+            'image/svg+xml' => 'svg',
+            default => strtolower($file->getClientOriginalExtension()) ?: 'png',
         };
 
         return Str::ulid().'.'.$extension;
@@ -523,21 +542,33 @@ class Account extends Model implements HasMedia
     }
 
     /**
-     * Home hero image URL, or null when the account has none.
-     * Local disks stay root-relative. Object storage returns a signed URL.
+     * First slider frame. Inner pages and the sign-in screen use this still.
      */
     public function homeBackgroundUrl(): ?string
     {
-        $media = $this->getFirstMedia(self::MEDIA_COLLECTION_HOME_BACKGROUND);
-        if ($media === null) {
-            return null;
-        }
+        return $this->homeBackgroundSlides()[0]['url'] ?? null;
+    }
 
-        $conversion = $media->hasGeneratedConversion(self::MEDIA_CONVERSION_HOME_BACKGROUND)
-            ? self::MEDIA_CONVERSION_HOME_BACKGROUND
-            : '';
+    /**
+     * Home-page slider frames, in the order the operator chose.
+     *
+     * @return list<array{id: int, url: string}>
+     */
+    public function homeBackgroundSlides(): array
+    {
+        return $this->getMedia(self::MEDIA_COLLECTION_HOME_BACKGROUND)
+            ->map(function (MediaModel $media): array {
+                $conversion = $media->hasGeneratedConversion(self::MEDIA_CONVERSION_HOME_BACKGROUND)
+                    ? self::MEDIA_CONVERSION_HOME_BACKGROUND
+                    : '';
 
-        return $this->storedMediaUrl($media, 'account-home-backgrounds', $conversion);
+                return [
+                    'id' => (int) $media->getKey(),
+                    'url' => $this->storedMediaUrl($media, 'account-home-backgrounds', $conversion),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\SetPermissionsTeamForRequest;
 use App\Support\CurrentAccountSession;
+use App\Support\OperatorWebsiteAgencyRedirect;
 use App\Support\SafeReturnUrl;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,10 @@ class AccountSelectionController extends Controller
                 CurrentAccountSession::put($request, $user, (int) $accountId);
             }
             $request->session()->forget(SetPermissionsTeamForRequest::SESSION_REQUIRES_ACCOUNT_SELECTION);
+
+            if (OperatorWebsiteAgencyRedirect::applies($request, $user->currentAccount())) {
+                return OperatorWebsiteAgencyRedirect::toLanding($request);
+            }
 
             return redirect()->intended(route('account.dashboard'));
         }

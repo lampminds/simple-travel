@@ -240,6 +240,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('account.booking-fields.edit');
     Route::put('account/booking-fields/{field}', [AccountProviderBookingFieldController::class, 'update'])
         ->name('account.booking-fields.update');
+    Route::delete('account/booking-fields/{field}', [AccountProviderBookingFieldController::class, 'destroy'])
+        ->name('account.booking-fields.destroy');
     Route::post('account/booking-fields/{field}/active', [AccountProviderBookingFieldController::class, 'toggleActive'])
         ->name('account.booking-fields.toggle');
     Route::patch('account/booking-fields/{field}/move/{direction}', [AccountProviderBookingFieldController::class, 'move'])

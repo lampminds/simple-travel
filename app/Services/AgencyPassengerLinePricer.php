@@ -179,6 +179,7 @@ final class AgencyPassengerLinePricer
 
             $sum += $agencyUnit;
             $fare = $priced['fare'];
+            $fare['agency_regular_amount'] = round($regularUnit, 2);
             $fare['agency_amount'] = round($agencyUnit, 2);
             $storedFares[] = $fare;
         }

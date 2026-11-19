@@ -58,6 +58,57 @@ final class ProviderSupplyCostResolver
         return $labels;
     }
 
+    /**
+     * Price of every variant the account can put in a combo: the assigned
+     * supplier cost for another provider's variant, or its own base price.
+     *
+     * @param  Collection<int, mixed>  $variants
+     * @return array<int, string> variant id => formatted price
+     */
+    public function componentPriceLabels(int $accountId, Collection $variants): array
+    {
+        $variants = $variants
+            ->filter(fn (mixed $variant): bool => $variant instanceof ServiceVariant)
+            ->values();
+
+        $labels = $this->labelsForVariants($accountId, $variants);
+
+        foreach ($variants as $variant) {
+            $variantId = (int) $variant->id;
+            if (isset($labels[$variantId])) {
+                continue;
+            }
+
+            $ownerId = (int) ($variant->service?->account_id ?? 0);
+            if ($ownerId !== $accountId) {
+                continue;
+            }
+
+            $label = $this->basePriceLabel($variant, $accountId);
+            if ($label !== null) {
+                $labels[$variantId] = $label;
+            }
+        }
+
+        return $labels;
+    }
+
+    private function basePriceLabel(ServiceVariant $variant, int $accountId): ?string
+    {
+        if ($variant->base_price === null || $variant->base_price === '') {
+            return null;
+        }
+
+        $currencyCode = $this->currencyCode($variant->currency);
+
+        return $this->priceFormat->formatWithCurrency(
+            $variant->base_price,
+            null,
+            $currencyCode !== '' ? $currencyCode : null,
+            $accountId,
+        );
+    }
+
     private function activeAssignment(int $supplierAccountId, int $buyerAccountId): ?ProviderSupplyPriceListAssignment
     {
         $today = Carbon::today();

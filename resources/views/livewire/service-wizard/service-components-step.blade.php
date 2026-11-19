@@ -42,6 +42,7 @@
                     <thead class="table-light">
                         <tr>
                             <th scope="col">{{ __('wizard.components_col_child') }}</th>
+                            <th scope="col" class="text-end">{{ __('wizard.components_col_price') }}</th>
                             <th scope="col">{{ __('wizard.components_col_quantity') }}</th>
                             <th scope="col">{{ __('wizard.components_col_day') }}</th>
                             <th scope="col">{{ __('wizard.components_col_inclusion') }}</th>
@@ -58,13 +59,11 @@
                                             {{ $component->childVariant->service->account->commercial_name ?: $component->childVariant->service->account->name }}
                                         </div>
                                     @endif
-                                    @if (! empty($componentCosts[(int) $component->child_variant_id]))
-                                        <div class="small text-muted">{{ __('wizard.components_cost', ['cost' => $componentCosts[(int) $component->child_variant_id]]) }}</div>
-                                    @endif
                                     @if (! empty($componentWarnings[$component->id]))
                                         <div class="small text-danger">{{ $componentWarnings[$component->id] }}</div>
                                     @endif
                                 </td>
+                                <td class="text-end text-nowrap">{{ $componentCosts[(int) $component->child_variant_id] ?? '—' }}</td>
                                 <td>{{ $component->quantity }}</td>
                                 <td>{{ $component->day_number ?? '—' }}</td>
                                 <td>{{ __('wizard.components_inclusion.'.$component->inclusion_mode) }}</td>

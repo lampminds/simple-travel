@@ -29,6 +29,7 @@
                                     <tr>
                                         <th></th>
                                         <th>{{ __('account.provider_supply.col_variant') }}</th>
+                                        <th class="text-end">{{ __('account.provider_supply.col_price') }}</th>
                                         <th>{{ __('account.provider_supply.col_offer_status') }}</th>
                                         <th>{{ __('account.provider_supply.col_availability') }}</th>
                                     </tr>
@@ -56,6 +57,7 @@
                                                 @endif
                                             </td>
                                             <td>{{ $offer->serviceVariant?->dropdownLabel() ?? ('#'.$offer->service_variant_id) }}</td>
+                                            <td class="text-end text-nowrap">{{ $priceLabels[(int) $offer->service_variant_id] ?? '—' }}</td>
                                             <td>{{ __('account.provider_supply.offer_status.'.$offer->status) }}</td>
                                             <td>{{ __('account.provider_supply.availability.'.$offer->availability) }}</td>
                                         </tr>
