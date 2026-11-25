@@ -152,6 +152,8 @@ return [
     'step6_select_topic' => 'Choose a topic…',
     'step6_saved' => 'Service conditions were saved successfully.',
     'step6_translate' => 'Translate from this language',
+    'translate_empty_source' => 'Fill in the name or description in the source language first.',
+    'translate_error' => 'Could not translate: :message',
     'step6_no_catalog' => 'There are no condition categories or topics configured yet. An administrator must create them in the admin panel.',
     'step6_topic_category_mismatch' => 'The topic does not belong to the selected category.',
     'step6_validation_heading' => 'Please fix the following:',

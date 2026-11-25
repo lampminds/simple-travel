@@ -279,6 +279,13 @@
 
                             <p class="text-muted small mb-2">{{ __('wizard.step6_modal_translations_help') }}</p>
 
+                            @if ($translationNotice)
+                                <div class="alert alert-warning alert-dismissible fade show" role="status">
+                                    {{ $translationNotice }}
+                                    <button type="button" class="btn-close" wire:click="$set('translationNotice', null)" aria-label="{{ __('filament.common.close') }}"></button>
+                                </div>
+                            @endif
+
                             <div class="row">
                                 @foreach ($languages as $language)
                                     @php $langId = (int) $language->id; @endphp

@@ -38,6 +38,8 @@ class ServiceDetailsStep extends Component
     /** Visibility context for the add/edit modal (public | operator | internal). */
     public string $modalVisibility = 'public';
 
+    public ?string $translationNotice = null;
+
     /**
      * Each line is one logical detail (all languages share sort_order and active).
      *
@@ -141,6 +143,7 @@ class ServiceDetailsStep extends Component
     public function openAddModal(): void
     {
         $this->resetValidation();
+        $this->translationNotice = null;
         $this->modalLineIndex = null;
         $this->modalVisibility = $this->activeVisibilityTab;
         $this->modalLine = $this->blankLine();
@@ -153,6 +156,7 @@ class ServiceDetailsStep extends Component
             return;
         }
         $this->resetValidation();
+        $this->translationNotice = null;
         $this->modalLineIndex = $index;
         $this->modalVisibility = $this->lineVisibility($this->lines[$index]);
         $this->activeVisibilityTab = $this->modalVisibility;
@@ -165,6 +169,7 @@ class ServiceDetailsStep extends Component
         $this->showModal = false;
         $this->modalLineIndex = null;
         $this->modalLine = $this->blankLine();
+        $this->translationNotice = null;
         $this->resetValidation();
     }
 
@@ -175,6 +180,7 @@ class ServiceDetailsStep extends Component
 
     public function translateModal(int $sourceLanguageId): void
     {
+        $this->translationNotice = null;
         $payload = [];
         foreach ($this->wizardLanguages() as $lang) {
             $id = (int) $lang->id;
@@ -202,6 +208,12 @@ class ServiceDetailsStep extends Component
         );
 
         if (! $result['ok']) {
+            if (! empty($result['unavailable'])) {
+                $this->translationNotice = $result['message'];
+
+                return;
+            }
+
             throw ValidationException::withMessages([
                 'modalLine.translations' => $result['message'],
             ]);

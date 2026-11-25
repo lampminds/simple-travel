@@ -165,6 +165,11 @@ PROMPT;
             return [];
         }
 
+        $unavailable = app(\App\Services\Translation\TranslationService::class)->openAiTranslationUnavailableMessage();
+        if ($unavailable !== null) {
+            throw new RuntimeException($unavailable);
+        }
+
         $targetList = implode(', ', $targetLanguageCodes);
         $chunks = count($names) <= 25
             ? [$names]

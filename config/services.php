@@ -61,11 +61,15 @@ return [
     ],
 
     /*
-     * Translation API endpoint for wizard auto-translation.
-     * Default uses a free public service for modest usage.
+     * Automatic translation (wizard, packages, OpenAI location labels).
+     * Suspended unless explicitly enabled and a provider key is set.
+     * Without that, callers get a user-facing "service unavailable" message
+     * and no request is sent to Google, MyMemory, or OpenAI.
      */
     'translation' => [
+        'enabled' => filter_var(env('TRANSLATION_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
         'url' => env('TRANSLATION_API_URL', 'https://api.mymemory.translated.net/get'),
+        'google_api_key' => env('GOOGLE_TRANSLATE_API_KEY'),
     ],
 
     /*

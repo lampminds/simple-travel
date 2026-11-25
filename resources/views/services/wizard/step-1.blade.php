@@ -171,6 +171,8 @@
                                     />
                                 </div>
 
+                                @include('partials.auto-translation-notice')
+
                                 <div class="row">
                                     @foreach ($languages as $language)
                                         <div class="col-12 col-md-6 col-lg-4">
@@ -255,6 +257,35 @@
             const descriptionFields = Array.from(document.querySelectorAll('textarea[name^="translations"][name$="[description]"]'));
             const nameFields = Array.from(document.querySelectorAll('input[name^="translations"][name$="[name]"]'));
             const defaultButtonMarkup = '<span aria-hidden="true">🌐</span>';
+            const emptySourceMessage = @json(__('wizard.translate_empty_source'));
+            const translateErrorTemplate = @json(__('wizard.translate_error', ['message' => '__MESSAGE__']));
+            const translationNotice = document.querySelector('[data-auto-translation-notice]');
+            const translationNoticeText = translationNotice?.querySelector('[data-auto-translation-notice-text]');
+            const translationNoticeClose = translationNotice?.querySelector('[data-auto-translation-notice-close]');
+
+            function showTranslationNotice(message, tone) {
+                if (!translationNotice || !translationNoticeText) {
+                    alert(message);
+                    return;
+                }
+
+                translationNotice.classList.remove('d-none', 'alert-warning', 'alert-danger');
+                translationNotice.classList.add(tone === 'danger' ? 'alert-danger' : 'alert-warning', 'show');
+                translationNoticeText.textContent = message;
+            }
+
+            function hideTranslationNotice() {
+                if (!translationNotice) {
+                    return;
+                }
+
+                translationNotice.classList.add('d-none');
+                translationNotice.classList.remove('show');
+            }
+
+            if (translationNoticeClose) {
+                translationNoticeClose.addEventListener('click', hideTranslationNotice);
+            }
 
             if (!searchInput || !cityIdInput || !cityNameInput || !resultsBox) {
                 return;
@@ -403,9 +434,11 @@
                 const sourceDescription = (sourceData.description || '').trim();
 
                 if (!sourceName && !sourceDescription) {
-                    alert('Primero completa nombre o descripción en el idioma origen.');
+                    showTranslationNotice(emptySourceMessage, 'warning');
                     return;
                 }
+
+                hideTranslationNotice();
 
                 const allButtons = translateButtons;
                 allButtons.forEach((button) => button.disabled = true);
@@ -431,8 +464,10 @@
 
                     if (!response.ok) {
                         let message = `Error HTTP ${response.status}`;
+                        let unavailable = false;
                         try {
                             const errorPayload = await response.json();
+                            unavailable = Boolean(errorPayload.unavailable);
                             if (errorPayload.message) {
                                 message = errorPayload.message;
                             } else if (errorPayload.errors) {
@@ -443,6 +478,10 @@
                             }
                         } catch (parseError) {
                             // Non-JSON responses (for example, CSRF/session HTML page) keep HTTP status message.
+                        }
+                        if (unavailable) {
+                            showTranslationNotice(message, 'warning');
+                            return;
                         }
                         throw new Error(message);
                     }
@@ -464,7 +503,8 @@
                         }
                     });
                 } catch (error) {
-                    alert(`No se pudo traducir: ${error.message}`);
+                    const message = error instanceof Error ? error.message : String(error);
+                    showTranslationNotice(translateErrorTemplate.replace('__MESSAGE__', message), 'danger');
                 } finally {
                     allButtons.forEach((button) => button.disabled = false);
                     if (triggerButton) {

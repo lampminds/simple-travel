@@ -24,6 +24,7 @@ return [
         'cluster_subnav_hide' => 'Hide module menu',
         'cluster_subnav_show' => 'Show module menu',
         'tickets' => 'Tickets',
+        'tickets_unavailable' => 'The ticket system is not available.',
         'back_to_site' => 'Back to site',
     ],
 
@@ -724,7 +725,7 @@ return [
             'replace_existing' => 'Replace existing system catalog for this city',
             'replace_existing_help' => 'Deletes all system transfer locations linked to this city before inserting new ones.',
             'translate_to_other_languages' => 'Translate to other active languages',
-            'translate_to_other_languages_help' => 'Second OpenAI request translates every name into the other active languages in one or two batch calls.',
+            'translate_to_other_languages_help' => 'Translates names into the other languages only when automatic translation is enabled and a provider key is set. Otherwise names stay in the source language and a notice is shown.',
             'source_language' => 'Source language for AI labels',
             'max_suggestions' => 'Maximum suggestions',
             'additional_context' => 'Additional context (optional)',

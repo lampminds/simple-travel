@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Pages\TicketsUnavailablePage;
+use App\Support\KbPortal;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +20,10 @@ class OpenKbPortalController extends Controller
      */
     public function __invoke(): RedirectResponse
     {
+        if (! KbPortal::isConfigured()) {
+            return redirect()->to(TicketsUnavailablePage::getUrl(panel: 'smpl_adm'));
+        }
+
         $user = auth()->user();
 
         $response = Http::withToken(config('services.kb.key'))

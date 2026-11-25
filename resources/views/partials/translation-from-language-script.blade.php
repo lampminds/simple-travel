@@ -14,6 +14,34 @@
         const translateErrorTemplate = @json($translateErrorTemplate ?? __('account.operator_packages.translate_error', ['message' => '__MESSAGE__']));
         const defaultButtonMarkup = '<span aria-hidden="true">🌐</span>';
 
+        const translationNotice = formRoot.querySelector('[data-auto-translation-notice]');
+        const translationNoticeText = translationNotice?.querySelector('[data-auto-translation-notice-text]');
+        const translationNoticeClose = translationNotice?.querySelector('[data-auto-translation-notice-close]');
+
+        function showTranslationNotice(message, tone) {
+            if (!translationNotice || !translationNoticeText) {
+                alert(message);
+                return;
+            }
+
+            translationNotice.classList.remove('d-none', 'alert-warning', 'alert-danger');
+            translationNotice.classList.add(tone === 'danger' ? 'alert-danger' : 'alert-warning', 'show');
+            translationNoticeText.textContent = message;
+        }
+
+        function hideTranslationNotice() {
+            if (!translationNotice) {
+                return;
+            }
+
+            translationNotice.classList.add('d-none');
+            translationNotice.classList.remove('show');
+        }
+
+        if (translationNoticeClose) {
+            translationNoticeClose.addEventListener('click', hideTranslationNotice);
+        }
+
         const translateButtons = Array.from(formRoot.querySelectorAll('.translate-from-language-btn'));
         const descriptionFields = Array.from(formRoot.querySelectorAll('textarea[name^="translations"][name$="[description]"]'));
         const nameFields = Array.from(formRoot.querySelectorAll('input[name^="translations"][name$="[name]"]'));
@@ -55,9 +83,11 @@
             const sourceDescription = (sourceData.description || '').trim();
 
             if (!sourceName && !sourceDescription) {
-                alert(emptySourceMessage);
+                showTranslationNotice(emptySourceMessage, 'warning');
                 return;
             }
+
+            hideTranslationNotice();
 
             translateButtons.forEach((button) => button.disabled = true);
             if (triggerButton) {
@@ -82,8 +112,10 @@
 
                 if (!response.ok) {
                     let message = `HTTP ${response.status}`;
+                    let unavailable = false;
                     try {
                         const errorPayload = await response.json();
+                        unavailable = Boolean(errorPayload.unavailable);
                         if (errorPayload.message) {
                             message = errorPayload.message;
                         } else if (errorPayload.errors) {
@@ -94,6 +126,10 @@
                         }
                     } catch (parseError) {
                         // Keep HTTP status message for non-JSON responses.
+                    }
+                    if (unavailable) {
+                        showTranslationNotice(message, 'warning');
+                        return;
                     }
                     throw new Error(message);
                 }
@@ -116,7 +152,7 @@
                 });
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
-                alert(translateErrorTemplate.replace('__MESSAGE__', message));
+                showTranslationNotice(translateErrorTemplate.replace('__MESSAGE__', message), 'danger');
             } finally {
                 translateButtons.forEach((button) => button.disabled = false);
                 if (triggerButton) {

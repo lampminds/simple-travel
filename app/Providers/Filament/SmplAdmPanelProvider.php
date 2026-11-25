@@ -2,9 +2,11 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\TicketsUnavailablePage;
 use App\Http\Controllers\Filament\SetPanelLocaleController;
 use App\Http\Middleware\SetLocaleFromSession;
 use App\Models\Language;
+use App\Support\KbPortal;
 use Filament\Navigation\NavigationItem;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -46,7 +48,14 @@ class SmplAdmPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('kb-tickets')
                     ->label(fn (): string => __('filament.panel.tickets'))
-                    ->url(fn (): string => route('kb.open'), shouldOpenInNewTab: true)
+                    ->url(
+                        fn (): string => KbPortal::isConfigured()
+                            ? route('kb.open')
+                            : TicketsUnavailablePage::getUrl(panel: 'smpl_adm'),
+                        shouldOpenInNewTab: fn (): bool => KbPortal::isConfigured(),
+                    )
+                    ->isActiveWhen(fn (): bool => ! KbPortal::isConfigured()
+                        && request()->routeIs(TicketsUnavailablePage::getRouteName()))
                     ->icon('heroicon-o-ticket')
                     ->sort(998),
                 NavigationItem::make('back-to-site')

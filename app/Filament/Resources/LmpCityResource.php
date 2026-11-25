@@ -261,6 +261,15 @@ class LmpCityResource extends BaseResource
                                 return;
                             }
 
+                            $translationNotice = trim((string) ($result['translation_notice'] ?? ''));
+                            if ($translationNotice !== '') {
+                                Notification::make()
+                                    ->title(__('translation.service_unavailable_title'))
+                                    ->body($translationNotice)
+                                    ->warning()
+                                    ->send();
+                            }
+
                             $created = (int) ($result['created'] ?? 0);
                             $skipped = (int) ($result['skipped'] ?? 0);
                             $removed = (int) ($result['removed'] ?? 0);

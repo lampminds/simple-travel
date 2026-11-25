@@ -26,6 +26,7 @@ return [
         'cluster_subnav_hide' => 'Ocultar menú del módulo',
         'cluster_subnav_show' => 'Mostrar menú del módulo',
         'tickets' => 'Tickets',
+        'tickets_unavailable' => 'El sistema de tickets no está disponible.',
         'back_to_site' => 'Volver al sitio',
     ],
 
@@ -726,7 +727,7 @@ return [
             'replace_existing' => 'Reemplazar catálogo existente de esta ciudad',
             'replace_existing_help' => 'Elimina todas las ubicaciones de sistema vinculadas a esta ciudad antes de insertar las nuevas.',
             'translate_to_other_languages' => 'Traducir a los demás idiomas activos',
-            'translate_to_other_languages_help' => 'Segunda solicitud a OpenAI: traduce todos los nombres a los demás idiomas activos en una o dos llamadas por lote.',
+            'translate_to_other_languages_help' => 'Traduce los nombres a los demás idiomas solo si el servicio de traducción está habilitado y tiene una clave configurada. Si no, los nombres quedan en el idioma origen y verás un aviso.',
             'source_language' => 'Idioma origen para etiquetas de la IA',
             'max_suggestions' => 'Máximo de sugerencias',
             'additional_context' => 'Contexto adicional (opcional)',

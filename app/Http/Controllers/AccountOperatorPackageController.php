@@ -201,6 +201,7 @@ final class AccountOperatorPackageController extends Controller
         if (! $result['ok']) {
             return response()->json([
                 'message' => $result['message'],
+                'unavailable' => (bool) ($result['unavailable'] ?? false),
                 'failures' => $result['failures'],
             ], 422);
         }

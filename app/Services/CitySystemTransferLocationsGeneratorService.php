@@ -7,6 +7,7 @@ use App\Models\LmpCity;
 use App\Models\ServiceTransferLocation;
 use App\Models\ServiceTransferLocationTranslation;
 use App\Models\ServiceTransferLocationType;
+use App\Services\Translation\TranslationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -29,7 +30,8 @@ final class CitySystemTransferLocationsGeneratorService
      *   removed: int,
      *   ai_count: int,
      *   translation_fallbacks: int,
-     *   openai_calls: int
+     *   openai_calls: int,
+     *   translation_notice: ?string
      * }
      */
     public function generateFromAi(
@@ -66,18 +68,23 @@ final class CitySystemTransferLocationsGeneratorService
 
         $targetLanguages = $this->targetLanguagesExcludingSource($languages, $sourceLanguageId);
         $batchTranslations = [];
+        $translationNotice = null;
 
         if ($translateToOtherLanguages && $targetLanguages->isNotEmpty()) {
-            $targetCodes = $targetLanguages->pluck('code')->values()->all();
-            $nameList = array_map(static fn (array $row): string => (string) $row['name'], $suggestions);
-            $translationChunks = count($nameList) <= 25 ? 1 : 2;
-            $openaiCalls += $translationChunks;
+            $translationNotice = app(TranslationService::class)->openAiTranslationUnavailableMessage();
 
-            $batchTranslations = $this->planner->translateLocationNamesBatch(
-                $nameList,
-                $sourceLocaleCode,
-                $targetCodes,
-            );
+            if ($translationNotice === null) {
+                $targetCodes = $targetLanguages->pluck('code')->values()->all();
+                $nameList = array_map(static fn (array $row): string => (string) $row['name'], $suggestions);
+                $translationChunks = count($nameList) <= 25 ? 1 : 2;
+                $openaiCalls += $translationChunks;
+
+                $batchTranslations = $this->planner->translateLocationNamesBatch(
+                    $nameList,
+                    $sourceLocaleCode,
+                    $targetCodes,
+                );
+            }
         }
 
         $typeIds = ServiceTransferLocationType::query()
@@ -89,6 +96,7 @@ final class CitySystemTransferLocationsGeneratorService
         $created = 0;
         $skipped = 0;
         $translationFallbacks = 0;
+        $applyTranslation = $translateToOtherLanguages && $translationNotice === null;
 
         DB::transaction(function () use (
             $cityId,
@@ -96,7 +104,7 @@ final class CitySystemTransferLocationsGeneratorService
             $suggestions,
             $typeIds,
             $sourceLanguageId,
-            $translateToOtherLanguages,
+            $applyTranslation,
             $batchTranslations,
             $languages,
             &$removed,
@@ -148,7 +156,7 @@ final class CitySystemTransferLocationsGeneratorService
 
                     if ($langId === $sourceLanguageId) {
                         $label = $row['name'];
-                    } elseif ($translateToOtherLanguages) {
+                    } elseif ($applyTranslation) {
                         $label = trim((string) ($translatedRow[$code] ?? ''));
                         if ($label === '') {
                             $label = $row['name'];
@@ -176,6 +184,7 @@ final class CitySystemTransferLocationsGeneratorService
             'ai_count' => count($suggestions),
             'translation_fallbacks' => $translationFallbacks,
             'openai_calls' => $openaiCalls,
+            'translation_notice' => $translationNotice,
         ];
     }
 

@@ -152,6 +152,8 @@ return [
     'step6_select_topic' => 'Elige un tópico…',
     'step6_saved' => 'Las condiciones del servicio se guardaron correctamente.',
     'step6_translate' => 'Traducir desde este idioma',
+    'translate_empty_source' => 'Completa primero el nombre o la descripción en el idioma origen.',
+    'translate_error' => 'No se pudo traducir: :message',
     'step6_no_catalog' => 'Aún no hay categorías o tópicos de condición configurados. Un administrador debe crearlos en el panel.',
     'step6_topic_category_mismatch' => 'El tópico no corresponde a la categoría elegida.',
     'step6_validation_heading' => 'Revisa los siguientes puntos:',

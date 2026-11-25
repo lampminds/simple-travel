@@ -194,6 +194,12 @@
 
 <div @class(['d-none' => $activeVariantTab !== 'descriptions'])>
     <p class="text-muted small mb-3">{{ __('wizard.variants_descriptions_help') }}</p>
+    @if ($translationNotice)
+        <div class="alert alert-warning alert-dismissible fade show" role="status">
+            {{ $translationNotice }}
+            <button type="button" class="btn-close" wire:click="$set('translationNotice', null)" aria-label="{{ __('filament.common.close') }}"></button>
+        </div>
+    @endif
     <div class="row g-3">
         @foreach ($languages as $language)
             <div class="col-12 col-md-6 col-lg-4" wire:key="variant-lang-{{ $language->id }}">

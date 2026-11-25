@@ -40,6 +40,8 @@ class ServiceVariantsStep extends Component
 
     public ?string $flashMessage = null;
 
+    public ?string $translationNotice = null;
+
     public bool $isCopy = false;
 
     /** True while the variant form (create / edit / copy) is shown in a modal over the list. */
@@ -108,6 +110,7 @@ class ServiceVariantsStep extends Component
     public function startCreate(): void
     {
         $this->clearFlash();
+        $this->translationNotice = null;
         $this->resetValidation();
         $this->mode = self::MODE_LIST;
         $this->showVariantFormModal = true;
@@ -135,6 +138,7 @@ class ServiceVariantsStep extends Component
     public function startEdit(int $variantId): void
     {
         $this->clearFlash();
+        $this->translationNotice = null;
         $this->resetValidation();
         $service = $this->authorizedService();
         $variant = ServiceVariant::query()
@@ -172,6 +176,7 @@ class ServiceVariantsStep extends Component
     public function copyFrom(int $variantId): void
     {
         $this->clearFlash();
+        $this->translationNotice = null;
         $this->resetValidation();
         $service = $this->authorizedService();
         $variant = ServiceVariant::query()
@@ -279,6 +284,7 @@ class ServiceVariantsStep extends Component
     public function cancel(): void
     {
         $this->clearFlash();
+        $this->translationNotice = null;
         $this->resetValidation();
         $this->mode = self::MODE_LIST;
         $this->showVariantFormModal = false;
@@ -364,6 +370,7 @@ class ServiceVariantsStep extends Component
 
     public function translateDescriptions(int $sourceLanguageId): void
     {
+        $this->translationNotice = null;
         $payload = [];
         foreach ($this->wizardLanguages() as $lang) {
             $id = (int) $lang->id;
@@ -391,6 +398,12 @@ class ServiceVariantsStep extends Component
         );
 
         if (! $result['ok']) {
+            if (! empty($result['unavailable'])) {
+                $this->translationNotice = $result['message'];
+
+                return;
+            }
+
             throw ValidationException::withMessages([
                 'form.translations' => $result['message'],
             ]);
@@ -512,6 +525,7 @@ class ServiceVariantsStep extends Component
         $this->resetValidation();
 
         $this->flashMessage = __('wizard.variants_saved');
+        $this->translationNotice = null;
         $this->mode = self::MODE_LIST;
         $this->showVariantFormModal = false;
         $this->editingVariantId = null;

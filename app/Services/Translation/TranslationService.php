@@ -18,7 +18,8 @@ class TranslationService
      *   message: string,
      *   translations: array<string, array{name: ?string, description: ?string}>,
      *   providers: array<string, array{name?: string, description?: string}>,
-     *   failures: array<int, array{to: string, reason: string}>
+     *   failures: array<int, array{to: string, reason: string}>,
+     *   unavailable?: bool
      * }
      */
     public function translateFromLanguage(
@@ -27,6 +28,11 @@ class TranslationService
         ?int $userId = null,
         ?AiUsageContext $usageContext = null,
     ): array {
+        $unavailable = $this->googleTranslationUnavailableMessage();
+        if ($unavailable !== null) {
+            return $this->fail($unavailable, [], true);
+        }
+
         $languages = Language::query()
             ->with('locale')
             ->get()
@@ -197,10 +203,42 @@ class TranslationService
         return $length > 0 ? (int) max(1, (int) ceil($length / 4)) : 0;
     }
 
-    protected function fail(string $message, array $failures): array
+    /**
+     * Wizard and package auto-translate stays off unless translation is enabled
+     * and GOOGLE_TRANSLATE_API_KEY is set. Keyless MyMemory / Google calls are not used.
+     */
+    public function googleTranslationUnavailableMessage(): ?string
+    {
+        $enabled = (bool) config('services.translation.enabled', false);
+        $googleKey = trim((string) config('services.translation.google_api_key', ''));
+
+        if ($enabled && $googleKey !== '') {
+            return null;
+        }
+
+        return (string) __('translation.service_unavailable');
+    }
+
+    /**
+     * OpenAI batch translation stays off unless translation is enabled and OPENAI_API_KEY is set.
+     */
+    public function openAiTranslationUnavailableMessage(): ?string
+    {
+        $enabled = (bool) config('services.translation.enabled', false);
+        $openAiKey = trim((string) config('services.openai.api_key', ''));
+
+        if ($enabled && $openAiKey !== '') {
+            return null;
+        }
+
+        return (string) __('translation.service_unavailable');
+    }
+
+    protected function fail(string $message, array $failures, bool $unavailable = false): array
     {
         return [
             'ok' => false,
+            'unavailable' => $unavailable,
             'message' => $message,
             'translations' => [],
             'providers' => [],
@@ -294,6 +332,15 @@ class TranslationService
                 'translated' => null,
                 'provider' => null,
                 'reason' => 'Invalid translation parameters.',
+            ];
+        }
+
+        $unavailable = $this->googleTranslationUnavailableMessage();
+        if ($unavailable !== null) {
+            return [
+                'translated' => null,
+                'provider' => null,
+                'reason' => $unavailable,
             ];
         }
 
