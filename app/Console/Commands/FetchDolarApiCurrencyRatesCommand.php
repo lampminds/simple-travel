@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
  * Quotes are in ARS per 1 unit of foreign currency. Rows use source "dolarapi".
  * Config: DOLARAPI_URL, DOLARAPI_CASA (default oficial).
  *
- * Scheduled daily via routes/console.php at the `daily_update_time` system parameter.
+ * The daily schedule in routes/console.php is paused. Run this command manually when needed.
  */
 class FetchDolarApiCurrencyRatesCommand extends Command
 {

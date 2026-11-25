@@ -3,8 +3,6 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schedule;
-use App\Http\Controllers\ParameterReaderController;
 use App\Models\Language;
 use App\Models\ServiceGastronomyFeature;
 use App\Models\ServiceGastronomyFeatureCategory;
@@ -921,14 +919,7 @@ Artisan::command('service-feature-scopes:import {--dry-run : Show what would be 
     $this->info("Done. Scope rows: {$created}, Missing features: {$missing}, Skipped unresolved types: {$skippedTypes}.");
 });
 
-// Daily: fetch buy/sell rates from dolarapi.com (official casa) into currency_rates.
-// Time comes from the system parameter `daily_update_time` (fallback 10:10).
-$currencyRatesDailyTime = '10:10';
-try {
-    $currencyRatesDailyTime = app(ParameterReaderController::class)->dailyUpdateTime();
-} catch (\Throwable) {
-    // DB may be unavailable during install; keep default.
-}
-
-Schedule::command('currency:fetch-dolarapi-rates')->dailyAt($currencyRatesDailyTime);
+// Paused: the daily dolarapi fetch is not used in production for now.
+// To restore it, read `daily_update_time` (fallback 10:10) and schedule:
+// Schedule::command('currency:fetch-dolarapi-rates')->dailyAt($currencyRatesDailyTime);
 
